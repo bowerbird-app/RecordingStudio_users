@@ -9,10 +9,13 @@ class ConfigurationTest < Minitest::Test
 
   def test_defaults_are_fail_closed_and_host_owned
     controller = Object.new
+    user = Struct.new(:id).new("user-1")
 
     assert_equal "application", @configuration.layout_for(controller: controller)
+    assert_equal "User", @configuration.user_class_name
     assert_nil @configuration.current_actor_for(controller: controller)
     assert_nil @configuration.current_root_for(controller: controller)
+    assert_equal user, @configuration.provisioning_actor_for(user: user)
     refute @configuration.authorized?(controller: controller, actor: nil, root_recording: nil)
     assert_instance_of RecordingStudioUsers::Hooks, @configuration.hooks
   end
@@ -27,6 +30,7 @@ class ConfigurationTest < Minitest::Test
     @configuration.user_scope_resolver = ->(**) { [user] }
     @configuration.user_resolver = ->(email:, **) { user if email == "member@example.com" }
     @configuration.user_label_resolver = ->(user:) { "User #{user.object_id}" }
+    @configuration.provisioning_actor_resolver = ->(user:, **) { user }
     @configuration.authorizer = ->(actor:, root_recording:, **) { actor && root_recording }
 
     assert_same actor, @configuration.current_actor_for(controller: controller)
@@ -34,7 +38,21 @@ class ConfigurationTest < Minitest::Test
     assert_equal [user], @configuration.users_for(controller: controller)
     assert_same user, @configuration.user_for(controller: controller, email: "member@example.com")
     assert_match "User ", @configuration.user_label_for(user: user)
+    assert_same user, @configuration.provisioning_actor_for(user: user, controller: controller)
     assert @configuration.authorized?(controller: controller, actor: actor, root_recording: root)
+  end
+
+  def test_user_class_constantizes_configured_name
+    @configuration.user_class_name = "String"
+
+    assert_equal String, @configuration.user_class
+  end
+
+  def test_user_class_raises_for_invalid_constant
+    @configuration.user_class_name = "NotARealClass"
+
+    error = assert_raises(ArgumentError) { @configuration.user_class }
+    assert_includes error.message, "could not be constantized"
   end
 
   def test_merge_updates_known_attributes_and_ignores_unknown_keys

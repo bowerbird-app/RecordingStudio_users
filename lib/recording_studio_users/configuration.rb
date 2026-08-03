@@ -5,7 +5,8 @@ require_relative "hooks"
 module RecordingStudioUsers
   class Configuration
     attr_accessor :current_actor_resolver, :current_root_resolver, :user_scope_resolver,
-                  :user_resolver, :user_label_resolver, :layout, :authorizer
+                  :user_resolver, :user_label_resolver, :layout, :authorizer,
+                  :user_class_name, :provisioning_actor_resolver
     attr_reader :hooks
 
     def initialize
@@ -16,12 +17,15 @@ module RecordingStudioUsers
       @user_label_resolver = method(:default_user_label)
       @layout = "application"
       @authorizer = method(:default_authorizer)
+      @user_class_name = "User"
+      @provisioning_actor_resolver = method(:default_provisioning_actor)
       @hooks = Hooks.new
     end
 
     def to_h
       {
         layout: layout,
+        user_class_name: user_class_name,
         hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
       }
     end
@@ -41,8 +45,16 @@ module RecordingStudioUsers
     def users_for(controller:) = call(user_scope_resolver, controller: controller)
     def user_for(controller:, email:) = call(user_resolver, controller: controller, email: email)
     def user_label_for(user:) = call(user_label_resolver, user: user)
+    def provisioning_actor_for(user:, controller: nil) =
+      call(provisioning_actor_resolver, user: user, controller: controller)
     def authorized?(controller:, actor:, root_recording:) =
       !!call(authorizer, controller: controller, actor: actor, root_recording: root_recording)
+
+    def user_class
+      user_class_name.to_s.constantize
+    rescue NameError
+      raise ArgumentError, "Configured user_class_name '#{user_class_name}' could not be constantized"
+    end
 
     def layout_for(controller:)
       layout.respond_to?(:call) ? call(layout, controller: controller) : layout
@@ -87,6 +99,11 @@ module RecordingStudioUsers
       _controller = controller
       actor && root_recording &&
         RecordingStudioAccessible.authorized?(actor: actor, recording: root_recording, role: :admin)
+    end
+
+    def default_provisioning_actor(user:, controller:)
+      _controller = controller
+      user
     end
 
     def call(callable, **arguments)
