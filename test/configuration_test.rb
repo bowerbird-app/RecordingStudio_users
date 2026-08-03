@@ -44,6 +44,15 @@ class ConfigurationTest < Minitest::Test
     refute_respond_to @configuration, :unknown_key
   end
 
+  def test_default_user_label_handles_deleted_users_and_prefers_name
+    named_user = Struct.new(:name, :email).new("Member Name", "member@example.com")
+    unnamed_user = Struct.new(:name, :email).new(nil, "member@example.com")
+
+    assert_equal "Member Name", @configuration.user_label_for(user: named_user)
+    assert_equal "member@example.com", @configuration.user_label_for(user: unnamed_user)
+    assert_equal "Deleted user", @configuration.user_label_for(user: nil)
+  end
+
   def test_to_h_reports_registered_hooks
     @configuration.hooks.before_initialize { nil }
 

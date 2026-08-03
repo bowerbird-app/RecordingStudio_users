@@ -80,7 +80,7 @@ module RecordingStudioUsers
     end
 
     def default_user_label(user:)
-      user.respond_to?(:name) && user.name.present? ? user.name : user.email
+      user.respond_to?(:name) && user.name.present? ? user.name : (user&.email || "Deleted user")
     end
 
     def default_authorizer(controller:, actor:, root_recording:)
