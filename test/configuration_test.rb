@@ -55,11 +55,20 @@ class ConfigurationTest < Minitest::Test
     assert_includes error.message, "could not be constantized"
   end
 
-  def test_merge_updates_known_attributes_and_ignores_unknown_keys
-    @configuration.merge!("layout" => "host", unknown_key: "ignored")
+  def test_merge_updates_known_attributes
+    result = @configuration.merge!("layout" => "host")
 
     assert_equal "host", @configuration.layout
-    refute_respond_to @configuration, :unknown_key
+    assert_same @configuration, result
+  end
+
+  def test_merge_rejects_unknown_keys_without_partially_applying_configuration
+    error = assert_raises(ArgumentError) do
+      @configuration.merge!("layout" => "host", unknown_key: "invalid")
+    end
+
+    assert_includes error.message, "unknown_key"
+    assert_equal "application", @configuration.layout
   end
 
   def test_default_user_label_handles_deleted_users_and_prefers_name

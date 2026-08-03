@@ -24,6 +24,10 @@ module RecordingStudioUsers
         template "recording_studio_users_initializer.rb", "config/initializers/recording_studio_users.rb"
       end
 
+      def install_migrations
+        rails_command "recording_studio_users:install:migrations"
+      end
+
       def add_tailwind_source
         tailwind_css_path = Rails.root.join("app/assets/tailwind/application.css")
         return show_missing_tailwind_notice unless File.exist?(tailwind_css_path)
@@ -90,7 +94,8 @@ module RecordingStudioUsers
       def tailwind_source_lines
         [
           '@source "../../vendor/bundle/**/recording_studio_users/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_users-*/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+          'recording_studio_users-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]

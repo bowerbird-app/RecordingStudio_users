@@ -31,13 +31,17 @@ module RecordingStudioUsers
     end
 
     def merge!(hash)
-      return unless hash.respond_to?(:each)
+      return self unless hash.respond_to?(:each)
 
-      hash.each do |k, v|
-        key = k.to_s
-        setter = "#{key}="
-        public_send(setter, v) if respond_to?(setter)
+      attributes = {}
+      hash.each { |key, value| attributes[key.to_s] = value }
+      validate_configuration_keys!(attributes)
+
+      attributes.each do |key, value|
+        public_send("#{key}=", value)
       end
+
+      self
     end
 
     def current_actor_for(controller:) = call(current_actor_resolver, controller: controller)
@@ -45,10 +49,14 @@ module RecordingStudioUsers
     def users_for(controller:) = call(user_scope_resolver, controller: controller)
     def user_for(controller:, email:) = call(user_resolver, controller: controller, email: email)
     def user_label_for(user:) = call(user_label_resolver, user: user)
-    def provisioning_actor_for(user:, controller: nil) =
+
+    def provisioning_actor_for(user:, controller: nil)
       call(provisioning_actor_resolver, user: user, controller: controller)
-    def authorized?(controller:, actor:, root_recording:) =
+    end
+
+    def authorized?(controller:, actor:, root_recording:)
       !!call(authorizer, controller: controller, actor: actor, root_recording: root_recording)
+    end
 
     def user_class
       user_class_name.to_s.constantize
@@ -73,7 +81,7 @@ module RecordingStudioUsers
         root_recording = controller.send(:current_root_recording)
         return root_recording if root_recording
       end
-      return RecordingStudio::RootSwitchable.current_root_recording if
+      RecordingStudio::RootSwitchable.current_root_recording if
         defined?(RecordingStudio::RootSwitchable) &&
         RecordingStudio::RootSwitchable.respond_to?(:current_root_recording)
     end
@@ -104,6 +112,13 @@ module RecordingStudioUsers
     def default_provisioning_actor(user:, controller:)
       _controller = controller
       user
+    end
+
+    def validate_configuration_keys!(attributes)
+      unknown_keys = attributes.keys.reject { |key| respond_to?("#{key}=") }
+      return if unknown_keys.empty?
+
+      raise ArgumentError, "Unknown RecordingStudioUsers configuration: #{unknown_keys.sort.join(', ')}"
     end
 
     def call(callable, **arguments)

@@ -4,6 +4,7 @@ require "test_helper"
 require "fileutils"
 require "tmpdir"
 require "generators/recording_studio_users/install/install_generator"
+require "generators/recording_studio_users/migrations/migrations_generator"
 
 class InstallGeneratorTest < Minitest::Test
   INSTALL_TEMPLATE_PATH = File.expand_path(
@@ -35,6 +36,28 @@ class InstallGeneratorTest < Minitest::Test
     end
 
     assert_equal ["mount RecordingStudioUsers::Engine, at: \"/addons/recording\""], routes
+  end
+
+  def test_install_migrations_runs_engine_migration_task
+    generator = build_generator("/tmp")
+    commands = []
+
+    generator.stub(:rails_command, ->(command) { commands << command }) do
+      generator.install_migrations
+    end
+
+    assert_equal ["recording_studio_users:install:migrations"], commands
+  end
+
+  def test_standalone_migrations_generator_runs_engine_migration_task
+    generator = RecordingStudioUsers::Generators::MigrationsGenerator.new([], {}, destination_root: "/tmp")
+    commands = []
+
+    generator.stub(:rails_command, ->(command) { commands << command }) do
+      generator.copy_migrations
+    end
+
+    assert_equal ["recording_studio_users:install:migrations"], commands
   end
 
   def test_add_tailwind_source_injects_engine_and_flatpack_sources
@@ -135,12 +158,14 @@ class InstallGeneratorTest < Minitest::Test
     assert_equal ["INSTALL.md"], shown_templates
   end
 
-  def test_install_guide_explains_accessible_and_host_setup
+  def test_install_guide_explains_migrations_and_host_setup
     install_guide = File.read(INSTALL_TEMPLATE_PATH)
 
     assert_includes install_guide, "recording_studio_accessible"
-    assert_includes install_guide, "has no migrations"
-    assert_includes install_guide, "does not own user authentication"
+    assert_includes install_guide, "bin/rails db:migrate"
+    assert_includes install_guide, "RecordingStudioUsers::User"
+    assert_includes install_guide, "Devise remains authoritative"
+    refute_includes install_guide, "has no migrations"
   end
 
   private

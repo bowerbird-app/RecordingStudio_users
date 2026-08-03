@@ -27,6 +27,16 @@ class EngineTest < Minitest::Test
     assert after_called
   end
 
+  def test_register_recordable_types_initializer_registers_engine_types_in_parent_first_order
+    registered_types = []
+
+    RecordingStudio.stub(:register_recordable_type, ->(type_name) { registered_types << type_name }) do
+      find_initializer("recording_studio_users.register_recordable_types").block.call
+    end
+
+    assert_equal RecordingStudioUsers::Engine::RECORDABLE_TYPES, registered_types
+  end
+
   def test_load_config_merges_config_sources_and_runs_on_configuration_hook
     hook_called = false
     hook_payload = nil
@@ -50,9 +60,11 @@ class EngineTest < Minitest::Test
     assert_equal "from_x", RecordingStudioUsers.configuration.layout
   end
 
-  def test_load_config_handles_errors_and_each_pair_fallback
+  def test_load_config_supports_each_pair_fallback
     pair_config = Class.new do
       def each_pair
+        return enum_for(:each_pair) unless block_given?
+
         yield(:layout, "fallback")
       end
     end.new
@@ -62,7 +74,7 @@ class EngineTest < Minitest::Test
 
     app = Struct.new(:config) do
       def config_for(_name)
-        raise "missing file"
+        nil
       end
     end.new(app_config)
 
@@ -71,7 +83,7 @@ class EngineTest < Minitest::Test
     assert_equal "fallback", RecordingStudioUsers.configuration.layout
   end
 
-  def test_load_config_swallow_each_pair_errors
+  def test_load_config_propagates_each_pair_errors
     bad_pair_config = Class.new do
       def each_pair
         raise "bad pair"
@@ -86,10 +98,11 @@ class EngineTest < Minitest::Test
       end
     end.new(app_config)
 
-    # Should not raise even if xcfg.each_pair fails.
-    find_initializer("recording_studio_users.load_config").block.call(app)
+    error = assert_raises(RuntimeError) do
+      find_initializer("recording_studio_users.load_config").block.call(app)
+    end
 
-    assert_equal "ok", RecordingStudioUsers.configuration.layout
+    assert_equal "bad pair", error.message
   end
 
   def test_load_config_is_noop_without_config_sources
@@ -100,7 +113,7 @@ class EngineTest < Minitest::Test
     assert_equal "application", RecordingStudioUsers.configuration.layout
   end
 
-  def test_load_config_ignores_non_enumerable_yaml_and_merge_errors
+  def test_load_config_propagates_yaml_merge_errors
     yaml = Class.new do
       def each
         raise "bad yaml"
@@ -118,9 +131,26 @@ class EngineTest < Minitest::Test
     end.new(app_config)
     app.yaml = yaml
 
-    find_initializer("recording_studio_users.load_config").block.call(app)
+    error = assert_raises(RuntimeError) do
+      find_initializer("recording_studio_users.load_config").block.call(app)
+    end
 
-    assert_equal "host", RecordingStudioUsers.configuration.layout
+    assert_equal "bad yaml", error.message
+    assert_equal "application", RecordingStudioUsers.configuration.layout
+  end
+
+  def test_load_config_propagates_config_for_errors_when_file_is_expected
+    app = Struct.new(:config) do
+      def config_for(_name)
+        raise "invalid yaml"
+      end
+    end.new(Object.new)
+
+    error = assert_raises(RuntimeError) do
+      find_initializer("recording_studio_users.load_config").block.call(app)
+    end
+
+    assert_equal "invalid yaml", error.message
   end
 
   def test_apply_extension_initializers_register_active_support_on_load_callbacks

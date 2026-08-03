@@ -11,15 +11,17 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
 
   test "dummy app validates v3 recordable declarations" do
     assert RecordingStudio.validate_recordable_declarations!
-    assert_equal [ "Workspace" ], RecordingStudio.root_recordable_types
+    assert_equal [ "Workspace", "RecordingStudioUsers::UserRoot" ], RecordingStudio.root_recordable_types
     assert_equal [ "Workspace", "Folder" ], RecordingStudio.allowed_parent_types_for("Page")
   end
 
-  test "dummy app schema installs only the addon access table" do
+  test "dummy app schema installs addon access and user topology tables" do
     connection = ActiveRecord::Base.connection
 
     assert connection.column_exists?(:recording_studio_recordings, :root_recording_id)
     assert connection.table_exists?(:recording_studio_accesses)
+    assert connection.table_exists?(:recording_studio_users_user_roots)
+    assert connection.table_exists?(:recording_studio_users_profiles)
     refute connection.table_exists?(:recording_studio_access_boundaries)
     refute connection.table_exists?(:recording_studio_device_sessions)
   end

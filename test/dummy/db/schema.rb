@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_03_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_03_061450) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -86,6 +86,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_000000) do
     t.index ["actor_type", "actor_id", "device_key", "scope_key"], name: "idx_rs_root_switchable_actor_device_scope", unique: true, where: "(actor_id IS NOT NULL)"
     t.index ["device_key", "scope_key"], name: "idx_rs_root_switchable_anonymous_device_scope", unique: true, where: "(actor_id IS NULL)"
     t.index ["root_recording_id"], name: "idx_rs_root_switchable_root_recording"
+  end
+
+  create_table "recording_studio_users_profiles", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "biography"
+    t.datetime "created_at", null: false
+    t.string "display_name"
+    t.string "locale"
+    t.string "time_zone"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "recording_studio_users_user_roots", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.string "user_type", null: false
+    t.index ["user_type", "user_id"], name: "idx_rs_users_user_roots_on_user", unique: true
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
