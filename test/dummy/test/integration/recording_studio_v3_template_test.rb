@@ -15,11 +15,11 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
     assert_equal [ "Workspace", "Folder" ], RecordingStudio.allowed_parent_types_for("Page")
   end
 
-  test "dummy app schema excludes removed access control tables" do
+  test "dummy app schema installs only the addon access table" do
     connection = ActiveRecord::Base.connection
 
     assert connection.column_exists?(:recording_studio_recordings, :root_recording_id)
-    refute connection.table_exists?(:recording_studio_accesses)
+    assert connection.table_exists?(:recording_studio_accesses)
     refute connection.table_exists?(:recording_studio_access_boundaries)
     refute connection.table_exists?(:recording_studio_device_sessions)
   end

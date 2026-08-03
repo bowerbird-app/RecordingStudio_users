@@ -1,0 +1,73 @@
+<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Workspace members",
+    subtitle: "Manage access to #{current_workspace_label}",
+    variant: :h1
+  ) %>
+
+  <% if flash[:notice].present? %>
+    <%= render FlatPack::Alert::Component.new(description: flash[:notice], style: :success) %>
+  <% end %>
+  <% if flash[:alert].present? %>
+    <%= render FlatPack::Alert::Component.new(description: flash[:alert], style: :danger) %>
+  <% end %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::SectionTitle::Component.new(
+        title: "Add an existing user",
+        subtitle: "Users and authentication remain owned by the host application."
+      ) %>
+    <% end %>
+    <% card.body do %>
+      <%= form_with url: memberships_path, scope: :membership, class: "grid gap-4 md:grid-cols-[1fr_16rem_auto] md:items-end" do %>
+        <%= render FlatPack::EmailInput::Component.new(
+          name: "membership[email]",
+          label: "Email",
+          placeholder: "person@example.com",
+          required: true
+        ) %>
+        <%= render FlatPack::RadioGroup::Component.new(
+          name: "membership[role]",
+          options: membership_role_options,
+          value: "view",
+          label: "Role",
+          required: true
+        ) %>
+        <%= render FlatPack::Button::Component.new(text: "Add member", style: :primary, type: "submit") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::SectionTitle::Component.new(
+        title: "Current members",
+        subtitle: "At least one admin must remain."
+      ) %>
+    <% end %>
+    <% card.body do %>
+      <%= render FlatPack::Table::Component.new(data: @memberships) do |table| %>
+        <% table.column(title: "User") { |row| membership_user_label(row[:user]) } %>
+        <% table.column(title: "Role") do |row| %>
+          <%= form_with url: membership_path(row[:access_recording]), scope: :membership, method: :patch,
+                        class: "flex flex-wrap items-center gap-2" do %>
+            <%= render FlatPack::RadioGroup::Component.new(
+              name: "membership[role]",
+              options: membership_role_options,
+              value: row[:role],
+              required: true
+            ) %>
+            <%= render FlatPack::Button::Component.new(text: "Update", style: :secondary, size: :sm, type: "submit") %>
+          <% end %>
+        <% end %>
+        <% table.column(title: "Actions") do |row| %>
+          <%= form_with url: membership_path(row[:access_recording]), method: :delete,
+                        data: { turbo_confirm: "Remove this workspace member?" } do %>
+            <%= render FlatPack::Button::Component.new(text: "Remove", style: :ghost, size: :sm, type: "submit") %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

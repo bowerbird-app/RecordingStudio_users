@@ -15,7 +15,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     sign_in user
 
     workspace = Workspace.create!(name: "Dropdown Workspace")
-    RecordingStudio.root_recording_for(workspace)
+    grant_root_access(workspace, user)
 
     get root_path
 
@@ -32,7 +32,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     sign_in user
 
     workspace = Workspace.create!(name: "Switch Page Workspace")
-    RecordingStudio.root_recording_for(workspace)
+    grant_root_access(workspace, user)
 
     get "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces"
 
@@ -50,8 +50,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     source_workspace = Workspace.create!(name: "Source Workspace")
     target_workspace = Workspace.create!(name: "Target Workspace")
-    target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    RecordingStudio.root_recording_for(source_workspace)
+    target_root_recording = grant_root_access(target_workspace, user)
+    grant_root_access(source_workspace, user)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "all_workspaces",
@@ -74,8 +74,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     source_workspace = Workspace.create!(name: "Fallback Source Workspace")
     target_workspace = Workspace.create!(name: "Fallback Target Workspace")
-    target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    RecordingStudio.root_recording_for(source_workspace)
+    target_root_recording = grant_root_access(target_workspace, user)
+    grant_root_access(source_workspace, user)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "all_workspaces",
@@ -86,5 +86,22 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to "/"
+  end
+
+  private
+
+  def grant_root_access(workspace, user)
+    root_recording = RecordingStudio.root_recording_for(workspace)
+    original_authorizer = RecordingStudioAccessible.configuration.access_management_authorizer
+    RecordingStudioAccessible.configuration.access_management_authorizer = ->(**) { true }
+    RecordingStudioAccessible.grant_access(
+      recording: root_recording,
+      actor: user,
+      role: :admin,
+      manager_actor: user
+    ).value!
+    root_recording
+  ensure
+    RecordingStudioAccessible.configuration.access_management_authorizer = original_authorizer
   end
 end

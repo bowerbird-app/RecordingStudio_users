@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
-GemTemplate::Engine.routes.draw do
-  root "home#index"
+RecordingStudioUsers::Engine.routes.draw do
+  root "memberships#index"
+  resources :memberships, only: %i[create update destroy]
 end

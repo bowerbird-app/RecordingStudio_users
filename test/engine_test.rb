@@ -4,24 +4,24 @@ require "test_helper"
 
 class EngineTest < Minitest::Test
   def setup
-    @original_configuration = GemTemplate.instance_variable_get(:@configuration)
-    GemTemplate.instance_variable_set(:@configuration, GemTemplate::Configuration.new)
+    @original_configuration = RecordingStudioUsers.instance_variable_get(:@configuration)
+    RecordingStudioUsers.instance_variable_set(:@configuration, RecordingStudioUsers::Configuration.new)
   end
 
   def teardown
-    GemTemplate.configuration.hooks.clear!
-    GemTemplate.instance_variable_set(:@configuration, @original_configuration)
+    RecordingStudioUsers.configuration.hooks.clear!
+    RecordingStudioUsers.instance_variable_set(:@configuration, @original_configuration)
   end
 
   def test_before_and_after_initialize_initializers_run_hooks
     before_called = false
     after_called = false
 
-    GemTemplate.configuration.hooks.before_initialize { |_engine| before_called = true }
-    GemTemplate.configuration.hooks.after_initialize { |_engine| after_called = true }
+    RecordingStudioUsers.configuration.hooks.before_initialize { |_engine| before_called = true }
+    RecordingStudioUsers.configuration.hooks.after_initialize { |_engine| after_called = true }
 
-    find_initializer("gem_template.before_initialize").block.call(Object.new)
-    find_initializer("gem_template.after_initialize").block.call(Object.new)
+    find_initializer("recording_studio_users.before_initialize").block.call(Object.new)
+    find_initializer("recording_studio_users.after_initialize").block.call(Object.new)
 
     assert before_called
     assert after_called
@@ -30,36 +30,34 @@ class EngineTest < Minitest::Test
   def test_load_config_merges_config_sources_and_runs_on_configuration_hook
     hook_called = false
     hook_payload = nil
-    GemTemplate.configuration.hooks.on_configuration do |cfg|
+    RecordingStudioUsers.configuration.hooks.on_configuration do |cfg|
       hook_called = true
       hook_payload = cfg
     end
 
-    xcfg = Struct.new(:gem_template).new({ enable_feature_x: true })
+    xcfg = Struct.new(:recording_studio_users).new({ layout: "from_x" })
     app_config = Struct.new(:x).new(xcfg)
     app = Struct.new(:config) do
       def config_for(_name)
-        { api_key: "from_yaml", timeout: 12 }
+        { layout: "from_yaml" }
       end
     end.new(app_config)
 
-    find_initializer("gem_template.load_config").block.call(app)
+    find_initializer("recording_studio_users.load_config").block.call(app)
 
     assert hook_called
-    assert_equal GemTemplate.configuration, hook_payload
-    assert_equal "from_yaml", GemTemplate.configuration.api_key
-    assert_equal 12, GemTemplate.configuration.timeout
-    assert_equal true, GemTemplate.configuration.enable_feature_x
+    assert_equal RecordingStudioUsers.configuration, hook_payload
+    assert_equal "from_x", RecordingStudioUsers.configuration.layout
   end
 
   def test_load_config_handles_errors_and_each_pair_fallback
     pair_config = Class.new do
       def each_pair
-        yield(:timeout, 15)
+        yield(:layout, "fallback")
       end
     end.new
 
-    xcfg = Struct.new(:gem_template).new(pair_config)
+    xcfg = Struct.new(:recording_studio_users).new(pair_config)
     app_config = Struct.new(:x).new(xcfg)
 
     app = Struct.new(:config) do
@@ -68,9 +66,9 @@ class EngineTest < Minitest::Test
       end
     end.new(app_config)
 
-    find_initializer("gem_template.load_config").block.call(app)
+    find_initializer("recording_studio_users.load_config").block.call(app)
 
-    assert_equal 15, GemTemplate.configuration.timeout
+    assert_equal "fallback", RecordingStudioUsers.configuration.layout
   end
 
   def test_load_config_swallow_each_pair_errors
@@ -80,28 +78,26 @@ class EngineTest < Minitest::Test
       end
     end.new
 
-    xcfg = Struct.new(:gem_template).new(bad_pair_config)
+    xcfg = Struct.new(:recording_studio_users).new(bad_pair_config)
     app_config = Struct.new(:x).new(xcfg)
     app = Struct.new(:config) do
       def config_for(_name)
-        { api_key: "ok" }
+        { layout: "ok" }
       end
     end.new(app_config)
 
     # Should not raise even if xcfg.each_pair fails.
-    find_initializer("gem_template.load_config").block.call(app)
+    find_initializer("recording_studio_users.load_config").block.call(app)
 
-    assert_equal "ok", GemTemplate.configuration.api_key
+    assert_equal "ok", RecordingStudioUsers.configuration.layout
   end
 
   def test_load_config_is_noop_without_config_sources
     app = Struct.new(:config).new(Object.new)
 
-    find_initializer("gem_template.load_config").block.call(app)
+    find_initializer("recording_studio_users.load_config").block.call(app)
 
-    assert_nil GemTemplate.configuration.api_key
-    assert_equal 5, GemTemplate.configuration.timeout
-    assert_equal false, GemTemplate.configuration.enable_feature_x
+    assert_equal "application", RecordingStudioUsers.configuration.layout
   end
 
   def test_load_config_ignores_non_enumerable_yaml_and_merge_errors
@@ -111,7 +107,7 @@ class EngineTest < Minitest::Test
       end
     end.new
 
-    xcfg = Struct.new(:gem_template).new({ timeout: 22 })
+    xcfg = Struct.new(:recording_studio_users).new({ layout: "host" })
     app_config = Struct.new(:x).new(xcfg)
     app = Struct.new(:config) do
       attr_accessor :yaml
@@ -122,9 +118,9 @@ class EngineTest < Minitest::Test
     end.new(app_config)
     app.yaml = yaml
 
-    find_initializer("gem_template.load_config").block.call(app)
+    find_initializer("recording_studio_users.load_config").block.call(app)
 
-    assert_equal 22, GemTemplate.configuration.timeout
+    assert_equal "host", RecordingStudioUsers.configuration.layout
   end
 
   def test_apply_extension_initializers_register_active_support_on_load_callbacks
@@ -134,9 +130,9 @@ class EngineTest < Minitest::Test
       to_prepare_blocks << block
     end
 
-    GemTemplate::Engine.stub(:config, config_stub) do
-      find_initializer("gem_template.apply_model_extensions").block.call
-      find_initializer("gem_template.apply_controller_extensions").block.call
+    RecordingStudioUsers::Engine.stub(:config, config_stub) do
+      find_initializer("recording_studio_users.apply_model_extensions").block.call
+      find_initializer("recording_studio_users.apply_controller_extensions").block.call
     end
 
     assert_equal 2, to_prepare_blocks.size
@@ -163,12 +159,12 @@ class EngineTest < Minitest::Test
     active_record_base = Class.new
     active_record_base.define_singleton_method(:descendants) { [abstract_model, concrete_model] }
 
-    GemTemplate::Engine.stub(:config, config_stub) do
-      find_initializer("gem_template.apply_model_extensions").block.call
+    RecordingStudioUsers::Engine.stub(:config, config_stub) do
+      find_initializer("recording_studio_users.apply_model_extensions").block.call
     end
 
     with_temporary_nested_constant(:ActiveRecord, :Base, active_record_base) do
-      GemTemplate::Engine.stub(:apply_model_extensions, ->(model) { applied << model }) do
+      RecordingStudioUsers::Engine.stub(:apply_model_extensions, ->(model) { applied << model }) do
         to_prepare_blocks.first.call
       end
     end
@@ -189,12 +185,12 @@ class EngineTest < Minitest::Test
     action_controller_base = Class.new
     action_controller_base.define_singleton_method(:descendants) { [first_controller, second_controller] }
 
-    GemTemplate::Engine.stub(:config, config_stub) do
-      find_initializer("gem_template.apply_controller_extensions").block.call
+    RecordingStudioUsers::Engine.stub(:config, config_stub) do
+      find_initializer("recording_studio_users.apply_controller_extensions").block.call
     end
 
     with_temporary_nested_constant(:ActionController, :Base, action_controller_base) do
-      GemTemplate::Engine.stub(:apply_controller_extensions, ->(controller) { applied << controller }) do
+      RecordingStudioUsers::Engine.stub(:apply_controller_extensions, ->(controller) { applied << controller }) do
         to_prepare_blocks.first.call
       end
     end
@@ -209,14 +205,14 @@ class EngineTest < Minitest::Test
       end
     end
 
-    GemTemplate.configuration.hooks.extend_model(:ExampleRecord) do
+    RecordingStudioUsers.configuration.hooks.extend_model(:ExampleRecord) do
       def template_extension_method
         :applied
       end
     end
 
-    GemTemplate::Engine.apply_model_extensions(model_class)
-    GemTemplate::Engine.apply_model_extensions(model_class)
+    RecordingStudioUsers::Engine.apply_model_extensions(model_class)
+    RecordingStudioUsers::Engine.apply_model_extensions(model_class)
 
     instance = model_class.new
     assert_equal :applied, instance.template_extension_method
@@ -229,13 +225,13 @@ class EngineTest < Minitest::Test
       end
     end
 
-    GemTemplate.configuration.hooks.extend_controller(:DashboardController) do
+    RecordingStudioUsers.configuration.hooks.extend_controller(:DashboardController) do
       def template_controller_extension
         :applied
       end
     end
 
-    GemTemplate::Engine.apply_controller_extensions(controller_class)
+    RecordingStudioUsers::Engine.apply_controller_extensions(controller_class)
 
     instance = controller_class.new
     assert_equal :applied, instance.template_controller_extension
@@ -249,14 +245,14 @@ class EngineTest < Minitest::Test
       end
     end
 
-    GemTemplate::Engine.send(:apply_extensions, target, [nil, [extension, extension]])
+    RecordingStudioUsers::Engine.send(:apply_extensions, target, [nil, [extension, extension]])
 
     assert_equal :generated, target.new.generated_method
-    assert_equal true, target.instance_variable_get(:@gem_template_applied_extensions).compare_by_identity?
+    assert_equal true, target.instance_variable_get(:@recording_studio_users_applied_extensions).compare_by_identity?
   end
 
   def test_apply_extensions_returns_without_target
-    assert_nil GemTemplate::Engine.send(:apply_extensions, nil, [])
+    assert_nil RecordingStudioUsers::Engine.send(:apply_extensions, nil, [])
   end
 
   def test_extension_keys_for_includes_demodulized_name
@@ -269,7 +265,7 @@ class EngineTest < Minitest::Test
     expected_keys = [:"Admin::ReportsController"]
     expected_keys << :ReportsController
 
-    assert_equal expected_keys, GemTemplate::Engine.send(:extension_keys_for, namespaced)
+    assert_equal expected_keys, RecordingStudioUsers::Engine.send(:extension_keys_for, namespaced)
   end
 
   def test_extension_keys_for_removes_duplicate_names
@@ -279,7 +275,7 @@ class EngineTest < Minitest::Test
       end
     end
 
-    assert_equal [:ReportsController], GemTemplate::Engine.send(:extension_keys_for, plain)
+    assert_equal [:ReportsController], RecordingStudioUsers::Engine.send(:extension_keys_for, plain)
   end
 
   private
@@ -299,6 +295,6 @@ class EngineTest < Minitest::Test
   end
 
   def find_initializer(name)
-    GemTemplate::Engine.initializers.find { |initializer| initializer.name == name }
+    RecordingStudioUsers::Engine.initializers.find { |initializer| initializer.name == name }
   end
 end
