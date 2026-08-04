@@ -11,7 +11,7 @@ gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attach
 
 gemspec
 
-gem "puma"
+gem "puma", ">= 7.2.1"
 gem "sprockets-rails"
 
 group :development, :test do
