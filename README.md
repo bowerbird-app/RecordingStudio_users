@@ -1,139 +1,202 @@
-# GemTemplate
+# RecordingStudioUsers
 
-Internal template for building Rails engine addons on top of RecordingStudio.
+`recording_studio_users` is a Rails 8.1 engine that adds Devise authentication integration,
+private revisioned Profiles, authorized avatars, identity helpers, User search, and a native
+read-only RecordingStudioAdmin Users screen.
 
-## What's Included
+## Installation
 
-- **RecordingStudio** gem installed and configured
-- **Devise** authentication with a pre-seeded admin user
-- **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
-- **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a FlatPack-based sign-in screen, a simple home page, mounted RecordingStudio routes, and FlatPack's built-in rounded theme enabled by default
+Add the gem beside the current Recording Studio ecosystem gems, then run:
 
-The dummy app ships with a starter sidebar documentation shell for authenticated pages. The menu entries in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` and the linked docs pages are intended to be rewritten to suit the addon you are building; the template provides the structure and styling, not final product copy. By default, that starter shell uses FlatPack's built-in rounded theme via the root layout attribute rather than custom Tailwind theme recreation.
+```sh
+bin/rails generate recording_studio_users:install
+bin/rails db:migrate
+```
 
-## Quick Start
+The installer is conservative: it skips existing files, reports edits it cannot make safely, and
+prints manual next steps. Configure a **persisted system actor** before registration or backfill:
 
-### GitHub Codespaces (Recommended)
+```ruby
+RecordingStudioUsers.configure do |config|
+  config.user_class_name = "User"
+  config.provisioning_actor = ->(user: nil) { SystemActor.find_by(key: "users") }
+end
+```
 
-1. Click **Code** → **Codespaces** → **Create codespace**
-2. Wait for setup to complete
-3. Run:
-   ```bash
-   cd test/dummy
-   bin/rails db:setup
-   bin/dev
-   ```
-4. Open port 3000 — you'll land on the dummy app home page and can sign in at `/users/sign_in`
+An existing User class can be integrated independently:
 
-The dummy app is intended as a host-app validation surface for authentication, FlatPack rendering, Tailwind source scanning, and RecordingStudio route wiring.
+```sh
+bin/rails generate recording_studio_users:integrate_user
+bin/rails generate recording_studio_users:migrations
+```
 
-### Login Credentials
+The resulting host model declaration is:
 
-| Field    | Value             |
-|----------|-------------------|
-| Email    | admin@admin.com   |
-| Password | Password          |
+```ruby
+class User < ApplicationRecord
+  include RecordingStudioUsers::User
+end
+```
 
-The login form is prefilled with these credentials for fast access.
-
-### Useful Routes
-
-- `/` — dummy app home page
-- `/users/sign_in` — Devise sign-in page
-- `/recording_studio` — redirect to `/` while the mounted RecordingStudio engine remains data/API-focused
-- `/docs/install` — install guide rendered inside the dummy app
-- `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` — starter sidebar pages to customize for your gem
-
-The home page in `test/dummy/app/views/home/index.html.erb` is also a deliberate starting point. Keep it focused on a minimal demo of the gem's primary behavior; use the sidebar pages for deeper explanations and supporting reference material.
+Authentication fields remain on the host User. Profile fields and files do not.
 
 ## Architecture
 
-### Root Recording Pattern
+The User is a mutable Recording Studio actor, **not** a recordable and not a root. Each User owns
+one lightweight `RecordingStudioUsers::UserRoot`, which is a private Recording Studio root. That
+root has exactly one active direct self-admin grant and one stable Profile recording.
 
-This template follows RecordingStudio's root recording pattern:
+Profile edits duplicate the current `Profile` snapshot and revise the stable Profile recording.
+The avatar logically belongs to the User but is structurally the only permitted active direct
+Attachable child of the Profile recording. Replacing an avatar revises the Attachable snapshot
+without changing the stable avatar recording.
 
-- **Workspace** is the top-level recordable
-- **Folder** and **Page** demonstrate nested recordables under the workspace root
-- Each configured recordable declares `recording_studio_recordable(...)`; strict declaration validation stays enabled
-- A root `RecordingStudio::Recording` wraps the Workspace
-- `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
+Private-root `admin` authority is limited to that private root. It never grants workspace,
+company, site, or RecordingStudioAdmin authority.
 
-### Extending RecordingStudio
+## Provisioning and existing Users
 
-To add new recordable types:
-
-1. Create your model (e.g., `Page`, `Comment`)
-2. Register it in `config/initializers/recording_studio.rb`:
-   ```ruby
-   RecordingStudio.configure do |config|
-     config.recordable_types = ["Workspace", "YourNewType"]
-   end
-   ```
-3. Declare whether the model can be a root and which parents may contain it:
-   ```ruby
-   class YourNewType < ApplicationRecord
-     recording_studio_recordable label: "Your new type",
-                                 root: false,
-                                 allowed_parent_types: ["Workspace", "Folder"]
-   end
-   ```
-4. Validate declarations and create recordings under the root:
-   ```ruby
-   RecordingStudio.validate_recordable_declarations!
-   root_recording = RecordingStudio.root_recording_for(workspace)
-   root_recording.record(YourNewType) do |record|
-     record.title = "Example"
-   end
-   ```
-
-### RecordingStudio v3 Declarations
-
-RecordingStudio v3 expects every configured ActiveRecord recordable type to declare its hierarchy rules:
-
-- `Workspace` declares `root: true`
-- `Folder` and `Page` declare `root: false, allowed_parent_types: ["Workspace", "Folder"]`
-- `config.require_recordable_declarations = true` remains enabled in the dummy app initializer
-
-Useful console checks:
+New Users provision through an `after_create` callback; a provisioning failure raises so
+registration cannot report success with incomplete topology.
 
 ```ruby
-RecordingStudio.validate_recordable_declarations!
-RecordingStudio.root_recordable_types
-RecordingStudio.allowed_parent_types_for("Page")
+RecordingStudioUsers.provision(user, actor: system_actor)
+RecordingStudioUsers.provisioned?(user)
+RecordingStudioUsers.validate_user_profile!(user)
 ```
 
-### FlatPack UI Components
+Backfill is restart-safe and reports every success, skip, and failure:
 
-All views use FlatPack ViewComponents. Available components include:
+```sh
+BATCH_SIZE=250 bin/rails recording_studio_users:backfill_profiles
+```
 
-- `FlatPack::Button::Component` — Buttons (`:primary`, `:secondary`, `:ghost`)
-- `FlatPack::Card::Component` — Cards (`:default`, `:elevated`, `:outlined`)
-- `FlatPack::Alert::Component` — Alerts (`:success`, `:error`, `:warning`, `:info`)
-- `FlatPack::Badge::Component` — Status badges
-- `FlatPack::Table::Component` — Data tables
-- `FlatPack::TextInput::Component`, `EmailInput`, `PasswordInput` — Form inputs
-- `FlatPack::Breadcrumb::Component` — Navigation breadcrumbs
-- `FlatPack::Navbar::Component` — Navigation sidebar
+Provisioning serializes on the persisted User row, uses database uniqueness for UserRoot ownership,
+uses only `RecordingStudioAccessible.grant_access`, validates the resulting grant, and clears its
+execution-local bootstrap context with `ensure`.
 
-Use the live FlatPack demo app at [flatpack-c6p8f.ondigitalocean.app](https://flatpack-c6p8f.ondigitalocean.app/) as the approved UI reference for current shared patterns. Its component table is the fastest way to discover available FlatPack components before introducing new custom UI, and user-provided FlatPack demo URLs should be treated as task context.
+## Profiles and avatars
 
-In GitHub Codespaces or other restricted environments, you may need to enable access to that URL before the agent can inspect the app. If access is unavailable, provide sanitized screenshots, copied markup, or component details so the agent can stay aligned with the shared UI.
+```ruby
+RecordingStudioUsers.revise_profile(
+  user: user,
+  actor: current_user,
+  attributes: { display_name: "Ada", locale: "en" }
+)
 
-See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full documentation.
+RecordingStudioUsers.upload_avatar(user:, signed_blob_id:, actor:)
+RecordingStudioUsers.replace_avatar(user:, signed_blob_id:, actor:)
+RecordingStudioUsers.remove_avatar(user:, actor:)
+```
 
-## Tech Stack
+Only configured Profile fields are accepted. Authentication and security attributes are rejected.
+Avatar services use Attachable's public upload, replacement, and removal services; the engine never
+creates dependency-owned records directly or purges blobs directly.
 
-| Component       | Version |
-|-----------------|---------|
-| Ruby            | 3.3+    |
-| Rails           | 8.1+    |
-| PostgreSQL      | 16      |
-| TailwindCSS     | 4       |
-| RecordingStudio | v3.0.0 (pinned to `recording_studio/v3.0.0` in `test/dummy/Gemfile`) |
-| FlatPack        | v0.1.129 (pinned in `test/dummy/Gemfile`) |
-| Devise          | latest  |
+Profile direct attachments are reserved for the avatar. Zero or one active direct attachment is
+valid; more than one fails topology validation.
 
-## Documentation
+## Privacy and avatar delivery
 
-The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material. Use it as background on the engine conventions; the README and dummy app are the source of truth for the Recording Studio addon workflow.
+Identity visibility, email visibility, private Profile access, Profile editing, and stored-avatar
+delivery are separate fail-closed policies. Identity visibility does not imply private-Profile
+access.
+
+Stored files are returned only through Attachable's authorized preview route and a configured,
+trusted variant mapping. Storage URLs, blob keys, signed blob IDs, and provider URLs are never
+returned. Attachable routes cannot evaluate arbitrary workspace/comment presentation context, so
+stored-avatar delivery must use a context-independent policy the route can verify. Otherwise the
+engine falls back to a configured external avatar and then generated initials. It never grants
+private-Profile access merely to display an avatar.
+
+## Helpers and components
+
+```erb
+<%= recording_studio_user_name(user) %>
+<%= recording_studio_user_avatar(user, size: :small) %>
+<%= recording_studio_user_identity(user, show_email: false) %>
+<%= recording_studio_user_byline(user) %>
+```
+
+The engine provides FlatPack-backed avatar, identity, Profile-link, byline, picker-result, auth,
+and Profile UI. `show_email: true` still passes the email policy.
+
+## User picker and search
+
+`recording_studio_user_picker` uses `FlatPack::Picker::Component` with remote search. Search requires
+an authenticated persisted actor, the configured safe User relation, and an explicit authorizer.
+Optional root-scoped searches also require Accessible `view` authority. Wildcards are escaped,
+results are bounded and bulk-loaded, invisible identities are omitted, and JSON contains only
+presentation fields plus the User ID.
+
+There is no public User directory.
+
+## Bulk loading and performance
+
+```ruby
+RecordingStudioUsers.preload_user_information(
+  users,
+  include: %i[profile avatar],
+  context: request_context
+)
+```
+
+Arrays and relations preserve order. The request/execution-local loader batch-loads UserRoots,
+root recordings, Profile recordings and snapshots, avatar recordings and snapshots, and public
+Active Storage associations with structured relations. It performs no writes and tolerates
+incomplete topology. Context keys isolate authorization-sensitive presentation.
+
+The Admin table triggers this loader only from its first User-backed column after final-page rows
+exist, once per context/include set, including async table rendering.
+
+## RecordingStudioAdmin
+
+When `recording_studio_admin` is loaded, the engine registers exactly one site-blast-radius `Users`
+section and one read-only `Users` screen with a native summary, created-over-time line chart,
+date/group filters, sortable paginated table, authorized identity/avatar/email presentation, and
+no mutations or row actions.
+
+Enable `section :users` on the host's configured Admin root. Site access remains controlled by
+RecordingStudioAdmin's configured site-access recording and Accessible. The engine never checks
+`current_user.admin?`, email allowlists, or special IDs.
+
+## Devise
+
+Default modules are `database_authenticatable`, `registerable`, `recoverable`, `rememberable`, and
+`validatable`. The installer supplies FlatPack views for sign-in, registration, password reset,
+confirmation, and unlock workflows without replacing existing host views. Confirmable, lockable,
+trackable, timeoutable, and OmniAuth remain host choices.
+
+## Public API
+
+See [`docs/API.md`](docs/API.md). All mutation APIs return a normalized result supporting
+`success?`, `failure?`, `value`, `error`, and `errors`.
+
+## Extension and no-upstream tradeoffs
+
+The engine composes current public RecordingStudio, Accessible, Attachable, Admin, Active Record,
+and Active Storage surfaces. It does not monkey-patch dependency internals, use private creation
+contexts, create Access/Attachment/Event records directly, or require upstream changes.
+
+The intentional tradeoffs are:
+
+- all direct Profile attachments are reserved for the singleton avatar;
+- stored-avatar visibility must be independently verifiable by Attachable's route;
+- Admin page rows preload lazily because Admin has no upstream preload hook;
+- unsafe or unavailable authorization context fails closed.
+
+## Security and troubleshooting
+
+See [`docs/SECURITY.md`](docs/SECURITY.md) and
+[`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
+
+## Development
+
+```sh
+bundle exec rake test
+bundle exec rake test:all
+bundle exec rubocop
+```
+
+The dummy app uses PostgreSQL UUIDs and exercises Devise, Profiles, avatars, FlatPack, Accessible,
+and Recording Studio integration.

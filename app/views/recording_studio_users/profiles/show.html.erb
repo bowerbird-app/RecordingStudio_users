@@ -1,0 +1,71 @@
+<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+  <% card.header do %>
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Your profile",
+      subtitle: "Manage the identity information shared by supported Recording Studio features.",
+      variant: :h2
+    ) %>
+  <% end %>
+
+  <% card.body do %>
+    <div class="space-y-6">
+      <%= recording_studio_user_identity(current_recording_studio_user, show_email: true) %>
+
+      <dl class="space-y-3">
+        <div>
+          <dt class="text-sm font-medium">Biography</dt>
+          <dd class="text-sm"><%= @profile.biography.presence || "Not provided" %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium">Locale</dt>
+          <dd class="text-sm"><%= @profile.locale.presence || "Default" %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium">Time zone</dt>
+          <dd class="text-sm"><%= @profile.time_zone.presence || "Default" %></dd>
+        </div>
+      </dl>
+    </div>
+  <% end %>
+
+  <% card.footer do %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Edit profile",
+      style: :primary,
+      url: edit_profile_path
+    ) %>
+  <% end %>
+<% end %>
+
+<%= render FlatPack::Card::Component.new(style: :default, class: "mt-6") do |card| %>
+  <% card.header do %>
+    <%= render FlatPack::PageTitle::Component.new(title: "Avatar", variant: :h3) %>
+  <% end %>
+
+  <% card.body do %>
+    <div class="space-y-4">
+      <%= recording_studio_user_avatar(current_recording_studio_user, size: :large) %>
+
+      <%= form_with url: avatar_profile_path, method: @avatar_recording ? :patch : :post, multipart: true do %>
+        <%= render FlatPack::FileInput::Component.new(
+          name: "avatar",
+          label: @avatar_recording ? "Replace avatar" : "Upload avatar",
+          accept: RecordingStudioUsers.configuration.avatar_content_types.join(","),
+          max_size: RecordingStudioUsers.configuration.avatar_max_byte_size,
+          required: true
+        ) %>
+        <div class="mt-4">
+          <%= render FlatPack::Button::Component.new(
+            text: @avatar_recording ? "Replace avatar" : "Upload avatar",
+            style: :primary,
+            type: "submit"
+          ) %>
+        </div>
+      <% end %>
+
+      <% if @avatar_recording %>
+        <%= button_to "Remove avatar", avatar_profile_path, method: :delete, class: "text-sm text-red-700" %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

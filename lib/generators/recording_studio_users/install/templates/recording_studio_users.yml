@@ -1,0 +1,13 @@
+default: &default
+  public_registration: true
+  picker_limit: 20
+  avatar_max_byte_size: 5242880
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

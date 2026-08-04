@@ -1,0 +1,17 @@
+<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+  <% card.header do %>
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Account security",
+      subtitle: "Authentication settings remain owned by your host application's Devise configuration.",
+      variant: :h2
+    ) %>
+  <% end %>
+
+  <% card.body do %>
+    <%= render FlatPack::Alert::Component.new(
+      title: "Devise-managed security",
+      message: "Use the host application's password, confirmation, unlock, or connected-account screens.",
+      style: :info
+    ) %>
+  <% end %>
+<% end %>

@@ -1,0 +1,60 @@
+<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+  <% card.header do %>
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Edit profile",
+      subtitle: "Profile changes create a new Recording Studio revision.",
+      variant: :h2
+    ) %>
+  <% end %>
+
+  <% card.body do %>
+    <%= form_with scope: :profile, url: profile_path, method: :patch do %>
+      <div class="space-y-4">
+        <% if RecordingStudioUsers.configuration.profile_fields.include?(:display_name) %>
+          <%= render FlatPack::TextInput::Component.new(
+            name: "profile[display_name]",
+            label: "Display name",
+            value: @profile.display_name
+          ) %>
+        <% end %>
+
+        <% if RecordingStudioUsers.configuration.profile_fields.include?(:biography) %>
+          <%= render FlatPack::Textarea::Component.new(
+            name: "profile[biography]",
+            label: "Biography",
+            value: @profile.biography
+          ) %>
+        <% end %>
+
+        <% if RecordingStudioUsers.configuration.profile_fields.include?(:locale) %>
+          <%= render FlatPack::TextInput::Component.new(
+            name: "profile[locale]",
+            label: "Locale",
+            value: @profile.locale
+          ) %>
+        <% end %>
+
+        <% if RecordingStudioUsers.configuration.profile_fields.include?(:time_zone) %>
+          <%= render FlatPack::TextInput::Component.new(
+            name: "profile[time_zone]",
+            label: "Time zone",
+            value: @profile.time_zone
+          ) %>
+        <% end %>
+
+        <div class="flex gap-2">
+          <%= render FlatPack::Button::Component.new(
+            text: "Save profile",
+            style: :primary,
+            type: "submit"
+          ) %>
+          <%= render FlatPack::Button::Component.new(
+            text: "Cancel",
+            style: :secondary,
+            url: profile_path
+          ) %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

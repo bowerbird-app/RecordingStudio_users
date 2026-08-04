@@ -1,0 +1,27 @@
+<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+  <% card.header { render FlatPack::PageTitle::Component.new(title: "Sign in", variant: :h2) } %>
+  <% card.body do %>
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |form| %>
+      <div class="space-y-4">
+        <%= render FlatPack::EmailInput::Component.new(
+          name: "#{resource_name}[email]",
+          label: "Email",
+          value: resource.email,
+          required: true
+        ) %>
+        <%= render FlatPack::PasswordInput::Component.new(
+          name: "#{resource_name}[password]",
+          label: "Password",
+          required: true
+        ) %>
+        <% if devise_mapping.rememberable? %>
+          <%= render FlatPack::Checkbox::Component.new(
+            name: "#{resource_name}[remember_me]",
+            label: "Remember me"
+          ) %>
+        <% end %>
+        <%= render FlatPack::Button::Component.new(text: "Sign in", style: :primary, type: "submit") %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

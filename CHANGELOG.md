@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+- Renamed the template to `recording_studio_users`.
+- Added private UserRoot provisioning, revisioned Profiles, authorized singleton avatars, privacy
+  policies, presentation helpers, batched loading, safe User search, FlatPack UI, native read-only
+  Admin integration, generators, backfill, and documentation.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -30,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/gem_template/compare/v0.1.2...HEAD
-[0.1.2]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.2
-[0.1.1]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.1
-[0.1.0]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.0
+[Unreleased]: https://github.com/bowerbird-app/recording_studio_users/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/bowerbird-app/recording_studio_users/releases/tag/v0.1.2
+[0.1.1]: https://github.com/bowerbird-app/recording_studio_users/releases/tag/v0.1.1
+[0.1.0]: https://github.com/bowerbird-app/recording_studio_users/releases/tag/v0.1.0

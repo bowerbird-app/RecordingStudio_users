@@ -4,70 +4,61 @@ require "test_helper"
 
 class ConfigurationTest < Minitest::Test
   def setup
-    @configuration = GemTemplate::Configuration.new
+    @configuration = RecordingStudioUsers::Configuration.new
   end
 
-  def test_merge_updates_known_attributes
-    @configuration.merge!(api_key: "abc123", timeout: 9, enable_feature_x: true)
+  def test_defaults_fail_closed
+    user = Object.new
 
-    assert_equal "abc123", @configuration.api_key
-    assert_equal 9, @configuration.timeout
-    assert_equal true, @configuration.enable_feature_x
+    refute RecordingStudioUsers.call_configured(@configuration.search_authorizer, actor: user)
+    assert_equal %i[display_name biography locale time_zone], @configuration.profile_fields
+    assert_equal({small: :square_small, medium: :square_med, large: :square_large},
+                 @configuration.avatar_variant_mapping)
   end
 
-  def test_merge_ignores_unknown_keys
-    @configuration.merge!(unknown_key: "ignored", timeout: 7)
-
-    refute_respond_to @configuration, :unknown_key
-    assert_equal 7, @configuration.timeout
-  end
-
-  def test_merge_with_non_enumerable_is_noop
-    original = @configuration.to_h
-
-    @configuration.merge!(nil)
-
-    assert_nil @configuration.api_key if original[:api_key].nil?
-    assert_equal original[:api_key], @configuration.api_key unless original[:api_key].nil?
-    assert_equal original[:timeout], @configuration.timeout
-    assert_equal original[:enable_feature_x], @configuration.enable_feature_x
-  end
-
-  def test_initialize_uses_environment_api_key_and_defaults
-    previous_value = ENV.fetch("GEM_TEMPLATE_API_KEY", nil)
-    ENV["GEM_TEMPLATE_API_KEY"] = "env-token"
-
-    configuration = GemTemplate::Configuration.new
-
-    assert_equal "env-token", configuration.api_key
-    assert_equal false, configuration.enable_feature_x
-    assert_equal 5, configuration.timeout
-    assert_instance_of GemTemplate::Hooks, configuration.hooks
-  ensure
-    ENV["GEM_TEMPLATE_API_KEY"] = previous_value
-  end
-
-  def test_merge_accepts_string_keys
-    @configuration.merge!("api_key" => "string-key", "timeout" => 12)
-
-    assert_equal "string-key", @configuration.api_key
-    assert_equal 12, @configuration.timeout
-  end
-
-  def test_to_h_reports_registered_hook_counts
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.after_service { nil }
+  def test_to_h_redacts_callables_and_actor_records
+    actor = Object.new
+    @configuration.provisioning_actor = ->(**) { actor }
+    @configuration.external_avatar_resolver = ->(**) { "https://example.test/avatar" }
 
     result = @configuration.to_h
 
-    assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
-    assert_equal 1, result.fetch(:hooks_registered).fetch(:after_service)
+    assert_equal :configured, result[:provisioning_actor]
+    assert_equal :configured, result[:external_avatar_resolver]
+    refute_includes result.values, actor
+    refute result.key?(:tokens)
   end
 
-  def test_configure_without_block_is_safe
-    GemTemplate.configure
+  def test_validate_rejects_unknown_profile_fields
+    @configuration.profile_fields = %i[display_name encrypted_password]
 
-    assert_kind_of GemTemplate::Configuration, GemTemplate.configuration
+    error = assert_raises(RecordingStudioUsers::ConfigurationError) { @configuration.validate! }
+
+    assert_includes error.message, "encrypted_password"
+  end
+
+  def test_validate_rejects_unknown_avatar_size
+    @configuration.avatar_variant_mapping = {tiny: :square_small}
+
+    assert_raises(RecordingStudioUsers::ConfigurationError) { @configuration.validate! }
+  end
+
+  def test_validate_rejects_non_image_avatar_types
+    @configuration.avatar_content_types = ["image/png", "application/pdf"]
+
+    assert_raises(RecordingStudioUsers::ConfigurationError) { @configuration.validate! }
+  end
+
+  def test_validate_rejects_untrusted_variants
+    @configuration.avatar_variant_mapping[:medium] = :request_controlled
+
+    assert_raises(RecordingStudioUsers::ConfigurationError) { @configuration.validate! }
+  end
+
+  def test_merge_ignores_unknown_keys
+    @configuration.merge!("picker_limit" => 12, "unknown" => true)
+
+    assert_equal 12, @configuration.picker_limit
+    refute_respond_to @configuration, :unknown
   end
 end

@@ -1,0 +1,16 @@
+<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+  <% card.header { render FlatPack::PageTitle::Component.new(title: "Resend confirmation", variant: :h2) } %>
+  <% card.body do %>
+    <%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do %>
+      <div class="space-y-4">
+        <%= render FlatPack::EmailInput::Component.new(
+          name: "#{resource_name}[email]",
+          label: "Email",
+          value: resource.email,
+          required: true
+        ) %>
+        <%= render FlatPack::Button::Component.new(text: "Resend confirmation", style: :primary, type: "submit") %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
