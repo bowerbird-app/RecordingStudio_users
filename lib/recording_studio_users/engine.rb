@@ -5,7 +5,8 @@ module RecordingStudioUsers
     isolate_namespace RecordingStudioUsers
 
     initializer "recording_studio_users.load_config" do |app|
-      if app.respond_to?(:config_for)
+      config_file = File.join(app.config.paths["config"].first, "recording_studio_users.yml")
+      if app.respond_to?(:config_for) && File.exist?(config_file)
         yaml = app.config_for(:recording_studio_users)
         RecordingStudioUsers.configuration.merge!(yaml) if yaml.respond_to?(:each)
       end
