@@ -12,5 +12,5 @@ RecordingStudioUsers::Engine.routes.draw do
     collection { get :search }
   end
 
-  root to: redirect("/profile")
+  root "profiles#show"
 end

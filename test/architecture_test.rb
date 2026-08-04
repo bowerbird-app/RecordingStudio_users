@@ -9,8 +9,8 @@ class ArchitectureTest < Minitest::Test
     migration = source("db/migrate/20250101000001_create_recording_studio_users_user_roots.rb")
 
     assert_includes migration, "id: :uuid"
-    assert_includes migration, "index: {unique: true}"
-    assert_includes migration, "null: false"
+    assert_includes migration, "t.string :user_id, null: false"
+    assert_includes migration, "%i[user_type user_id]"
   end
 
   def test_user_is_actor_not_recordable

@@ -5,6 +5,8 @@ require "active_support/core_ext"
 require "recording_studio"
 require "recording_studio_accessible"
 require "recording_studio_attachable"
+require "recording_studio_admin"
+require "flat_pack"
 require "recording_studio_users/version"
 require "recording_studio_users/errors"
 require "recording_studio_users/result"
@@ -173,7 +175,7 @@ module RecordingStudioUsers
       return unless user == actor
       return unless profile_visible?(user, actor:, context:)
 
-      Engine.routes.url_helpers.profile_path
+      mounted_route_proxy(:recording_studio_users)&.profile_path
     end
 
     def profile_complete?(user)
@@ -305,10 +307,19 @@ module RecordingStudioUsers
     end
 
     def avatar_preview_path(recording, variant)
-      RecordingStudioAttachable::Engine.routes.url_helpers.attachment_preview_file_path(
+      mounted_route_proxy(:recording_studio_attachable)&.attachment_preview_file_path(
         recording.id,
         variant_name: variant
       )
+    end
+
+    def mounted_route_proxy(name)
+      context = Object.new
+      context.define_singleton_method(:_routes_context) { self }
+      context.extend(Rails.application.routes.mounted_helpers)
+      context.public_send(name)
+    rescue NoMethodError
+      nil
     end
   end
 end

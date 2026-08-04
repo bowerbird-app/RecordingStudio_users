@@ -122,6 +122,9 @@ private-Profile access merely to display an avatar.
 
 The engine provides FlatPack-backed avatar, identity, Profile-link, byline, picker-result, auth,
 and Profile UI. `show_email: true` still passes the email policy.
+Mount the engines with the generator-provided `recording_studio_users` and
+`recording_studio_attachable` route aliases so generated Profile and avatar paths retain host
+mount prefixes.
 
 ## User picker and search
 

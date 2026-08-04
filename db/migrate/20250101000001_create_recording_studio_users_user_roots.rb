@@ -4,7 +4,7 @@ class CreateRecordingStudioUsersUserRoots < ActiveRecord::Migration[8.1]
   def change
     create_table :recording_studio_users_user_roots, id: :uuid do |t|
       t.string :user_type, null: false
-      t.uuid :user_id, null: false
+      t.string :user_id, null: false
       t.timestamps
     end
 

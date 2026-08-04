@@ -45,12 +45,15 @@ module RecordingStudioUsers
 
       def mount_engine
         routes = destination_path("config/routes.rb")
-        return if File.exist?(routes) && File.read(routes).include?("RecordingStudioUsers::Engine")
+        content = File.exist?(routes) ? File.read(routes) : ""
 
-        route %(mount RecordingStudioUsers::Engine, at: "#{options[:mount_path]}")
-        return if File.exist?(routes) && File.read(routes).include?("RecordingStudioAttachable::Engine")
+        unless content.include?("RecordingStudioUsers::Engine")
+          route %(mount RecordingStudioUsers::Engine, at: "#{options[:mount_path]}", as: :recording_studio_users)
+        end
+        return if content.include?("RecordingStudioAttachable::Engine")
 
-        route %(mount RecordingStudioAttachable::Engine, at: "/recording_studio_attachable")
+        route "mount RecordingStudioAttachable::Engine, at: \"/recording_studio_attachable\", " \
+              "as: :recording_studio_attachable"
       end
 
       def copy_initializer

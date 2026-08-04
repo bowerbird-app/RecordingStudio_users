@@ -35,9 +35,29 @@ class InstallGeneratorTest < Minitest::Test
     end
 
     assert_equal [
-      "mount RecordingStudioUsers::Engine, at: \"/addons/recording\"",
-      "mount RecordingStudioAttachable::Engine, at: \"/recording_studio_attachable\""
+      "mount RecordingStudioUsers::Engine, at: \"/addons/recording\", as: :recording_studio_users",
+      "mount RecordingStudioAttachable::Engine, at: \"/recording_studio_attachable\", " \
+      "as: :recording_studio_attachable"
     ], routes
+  end
+
+  def test_mount_engine_adds_missing_attachable_mount_on_repeated_install
+    with_temp_app do |dir|
+      FileUtils.mkdir_p(File.join(dir, "config"))
+      File.write(
+        File.join(dir, "config/routes.rb"),
+        "mount RecordingStudioUsers::Engine, at: \"/account\", as: :recording_studio_users\n"
+      )
+      routes = []
+      generator = build_generator(dir)
+
+      generator.stub(:route, ->(value) { routes << value }) { generator.mount_engine }
+
+      assert_equal [
+        "mount RecordingStudioAttachable::Engine, at: \"/recording_studio_attachable\", " \
+        "as: :recording_studio_attachable"
+      ], routes
+    end
   end
 
   def test_add_tailwind_source_injects_engine_and_flatpack_sources
