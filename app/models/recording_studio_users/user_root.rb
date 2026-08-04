@@ -12,7 +12,7 @@ module RecordingStudioUsers
     RecordingStudio.enable_capability(:accessible, on: self)
 
     validates :user_type, :user_id, presence: true
-    validates :user_id, uniqueness: {scope: :user_type}
+    validates :user_id, uniqueness: { scope: :user_type }
     validate :user_must_be_persisted
 
     def recordable_name = "User profile root"

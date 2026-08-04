@@ -9,11 +9,11 @@ module RecordingStudioUsers
         root_recording: authorized_root_recording,
         limit: params[:limit],
         exclude_ids: params.fetch(:exclude, []),
-        context: {actor: current_recording_studio_user}
+        context: search_context
       )
-      return render json: {items: picker_items(result.value)} if result.success?
+      return render json: { items: picker_items(result.value) } if result.success?
 
-      render json: {items: [], error: result.error}, status: :forbidden
+      render json: { items: [], error: result.error }, status: :forbidden
     end
 
     private
@@ -34,7 +34,7 @@ module RecordingStudioUsers
           name: RecordingStudioUsers.display_name(user, context: search_context),
           thumbnail_url: avatar.image? ? avatar.image_path : nil,
           meta: avatar.image? ? nil : avatar.initials,
-          payload: {user_id: user.id}
+          payload: { user_id: user.id }
         }
         item[:disabled] = true if disabled_user_ids.include?(user.id.to_s)
         if RecordingStudioUsers.email_visible?(user, actor: current_recording_studio_user, context: search_context)
@@ -45,7 +45,7 @@ module RecordingStudioUsers
     end
 
     def search_context
-      @search_context ||= {actor: current_recording_studio_user}
+      @search_context ||= { actor: current_recording_studio_user }
     end
 
     def disabled_user_ids

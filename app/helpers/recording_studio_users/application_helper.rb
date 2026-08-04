@@ -38,7 +38,7 @@ module RecordingStudioUsers
     private
 
     def recording_studio_user_context
-      {actor: RecordingStudioUsers.current_actor(controller), view_context: self}
+      { actor: RecordingStudioUsers.current_actor(controller), view_context: self }
     end
   end
 end

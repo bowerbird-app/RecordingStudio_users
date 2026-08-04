@@ -12,7 +12,7 @@ class ConfigurationTest < Minitest::Test
 
     refute RecordingStudioUsers.call_configured(@configuration.search_authorizer, actor: user)
     assert_equal %i[display_name biography locale time_zone], @configuration.profile_fields
-    assert_equal({small: :square_small, medium: :square_med, large: :square_large},
+    assert_equal({ small: :square_small, medium: :square_med, large: :square_large },
                  @configuration.avatar_variant_mapping)
   end
 
@@ -38,7 +38,7 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_validate_rejects_unknown_avatar_size
-    @configuration.avatar_variant_mapping = {tiny: :square_small}
+    @configuration.avatar_variant_mapping = { tiny: :square_small }
 
     assert_raises(RecordingStudioUsers::ConfigurationError) { @configuration.validate! }
   end

@@ -10,9 +10,9 @@ module RecordingStudioUsers
     def call
       content_tag(:span, class: "inline-flex items-center gap-2") do
         safe_join([
-          render(AvatarComponent.new(user: @user, size: :small, context: @context)),
-          render(NameComponent.new(user: @user, context: @context, link: true))
-        ])
+                    render(AvatarComponent.new(user: @user, size: :small, context: @context)),
+                    render(NameComponent.new(user: @user, context: @context, link: true))
+                  ])
       end
     end
   end

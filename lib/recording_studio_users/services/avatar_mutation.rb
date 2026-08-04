@@ -67,9 +67,9 @@ module RecordingStudioUsers
         raise TopologyError, "Avatar does not exist" if %i[replace remove].include?(operation) && current.nil?
       end
 
-      def within_context(profile_recording)
-        context = {operation:, user:, profile_recording:, actor:, impersonator:}.freeze
-        ExecutionContext.with(:avatar_mutation, context) { yield }
+      def within_context(profile_recording, &)
+        context = { operation:, user:, profile_recording:, actor:, impersonator: }.freeze
+        ExecutionContext.with(:avatar_mutation, context, &)
       end
 
       def delegate(profile_recording, current)
@@ -82,15 +82,15 @@ module RecordingStudioUsers
         when :upload
           [
             RecordingStudioAttachable::Services::RecordAttachmentUpload,
-            {parent_recording: profile_recording, signed_blob_id:}
+            { parent_recording: profile_recording, signed_blob_id: }
           ]
         when :replace
           [
             RecordingStudioAttachable::Services::ReplaceAttachmentFile,
-            {attachment_recording: current, signed_blob_id:}
+            { attachment_recording: current, signed_blob_id: }
           ]
         when :remove
-          [RecordingStudioAttachable::Services::RemoveAttachment, {attachment_recording: current}]
+          [RecordingStudioAttachable::Services::RemoveAttachment, { attachment_recording: current }]
         end
       end
 

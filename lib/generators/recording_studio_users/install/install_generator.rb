@@ -23,7 +23,7 @@ module RecordingStudioUsers
           RecordingStudioAccessible
           RecordingStudioAttachable
           FlatPack
-        ].reject { |name| name.safe_constantize }
+        ].reject(&:safe_constantize)
         return if missing.empty?
 
         raise Thor::Error, "Missing required dependencies: #{missing.join(', ')}"
@@ -48,20 +48,23 @@ module RecordingStudioUsers
         return if File.exist?(routes) && File.read(routes).include?("RecordingStudioUsers::Engine")
 
         route %(mount RecordingStudioUsers::Engine, at: "#{options[:mount_path]}")
-        unless File.exist?(routes) && File.read(routes).include?("RecordingStudioAttachable::Engine")
-          route %(mount RecordingStudioAttachable::Engine, at: "/recording_studio_attachable")
-        end
+        return if File.exist?(routes) && File.read(routes).include?("RecordingStudioAttachable::Engine")
+
+        route %(mount RecordingStudioAttachable::Engine, at: "/recording_studio_attachable")
       end
 
       def copy_initializer
         destination = "config/initializers/recording_studio_users.rb"
-        return say("#{destination} already exists; leaving it unchanged.", :yellow) if File.exist?(destination_path(destination))
+        if File.exist?(destination_path(destination))
+          return say("#{destination} already exists; leaving it unchanged.",
+                     :yellow)
+        end
 
         template "recording_studio_users_initializer.rb", destination
       end
 
       def copy_devise_views
-        Dir.glob(File.join(self.class.source_root, "devise/**/*.erb")).sort.each do |source|
+        Dir.glob(File.join(self.class.source_root, "devise/**/*.erb")).each do |source|
           relative = source.delete_prefix("#{self.class.source_root}/")
           destination = File.join("app/views", relative)
           next if File.exist?(destination_path(destination))
@@ -71,7 +74,9 @@ module RecordingStudioUsers
       end
 
       def add_yaml_config
-        return unless yes?("Would you like to add `config/recording_studio_users.yml` for environment-specific settings? [y/N]")
+        question = "Would you like to add `config/recording_studio_users.yml` " \
+                   "for environment-specific settings? [y/N]"
+        return unless yes?(question)
 
         template "recording_studio_users.yml", "config/recording_studio_users.yml"
       end
@@ -146,9 +151,11 @@ module RecordingStudioUsers
       def tailwind_source_lines
         [
           '@source "../../vendor/bundle/**/recording_studio_users/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_users-*/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+          'recording_studio_users-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+          'flatpack-*/app/components/**/*.{rb,erb}";'
         ]
       end
     end

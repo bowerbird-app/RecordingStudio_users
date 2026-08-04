@@ -92,6 +92,8 @@ RecordingStudioUsers.remove_avatar(user:, actor:)
 Only configured Profile fields are accepted. Authentication and security attributes are rejected.
 Avatar services use Attachable's public upload, replacement, and removal services; the engine never
 creates dependency-owned records directly or purges blobs directly.
+The bundled Profile form uses Active Storage direct uploads, so the host must load Active Storage's
+JavaScript. The controller accepts only the resulting signed blob identifier and never creates blobs.
 
 Profile direct attachments are reserved for the avatar. Zero or one active direct attachment is
 valid; more than one fails topology validation.

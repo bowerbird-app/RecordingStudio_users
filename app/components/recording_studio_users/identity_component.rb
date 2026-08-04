@@ -18,9 +18,7 @@ module RecordingStudioUsers
 
     def identity_text
       actor = @context[:actor] if @context.respond_to?(:[])
-      email = if @show_email && RecordingStudioUsers.email_visible?(@user, actor:, context: @context)
-                @user.email
-              end
+      email = (@user.email if @show_email && RecordingStudioUsers.email_visible?(@user, actor:, context: @context))
       content_tag(:div) do
         safe_join([
           content_tag(:div, RecordingStudioUsers.display_name(@user, context: @context), class: "font-medium"),

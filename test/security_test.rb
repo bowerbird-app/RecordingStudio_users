@@ -4,14 +4,14 @@ require "test_helper"
 
 class SecurityTest < Minitest::Test
   ROOT = File.expand_path("..", __dir__)
-  FORBIDDEN_OUTPUTS = [
-    "signed_blob_id",
-    "blob_key",
-    "service_url",
-    "encrypted_password",
-    "reset_password_token",
-    "confirmation_token",
-    "unlock_token"
+  FORBIDDEN_OUTPUTS = %w[
+    signed_blob_id
+    blob_key
+    service_url
+    encrypted_password
+    reset_password_token
+    confirmation_token
+    unlock_token
   ].freeze
 
   def test_picker_payload_does_not_expose_topology_or_storage_identifiers
@@ -34,5 +34,13 @@ class SecurityTest < Minitest::Test
 
     refute_match(/params.*constantize/, production_sources)
     refute_match(/params.*safe_constantize/, production_sources)
+  end
+
+  def test_avatar_controller_does_not_create_or_purge_blobs
+    controller = File.read(File.join(ROOT, "app/controllers/recording_studio_users/profiles_controller.rb"))
+
+    refute_includes controller, "ActiveStorage::Blob"
+    refute_includes controller, ".purge"
+    assert_includes controller, "params.require(:signed_blob_id)"
   end
 end

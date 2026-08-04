@@ -46,13 +46,14 @@
     <div class="space-y-4">
       <%= recording_studio_user_avatar(current_recording_studio_user, size: :large) %>
 
-      <%= form_with url: avatar_profile_path, method: @avatar_recording ? :patch : :post, multipart: true do %>
+      <%= form_with url: avatar_profile_path, method: @avatar_recording ? :patch : :post do %>
         <%= render FlatPack::FileInput::Component.new(
-          name: "avatar",
+          name: "signed_blob_id",
           label: @avatar_recording ? "Replace avatar" : "Upload avatar",
           accept: RecordingStudioUsers.configuration.avatar_content_types.join(","),
           max_size: RecordingStudioUsers.configuration.avatar_max_byte_size,
-          required: true
+          required: true,
+          data: {direct_upload_url: main_app.rails_direct_uploads_path}
         ) %>
         <div class="mt-4">
           <%= render FlatPack::Button::Component.new(

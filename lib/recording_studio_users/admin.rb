@@ -31,7 +31,7 @@ module RecordingStudioUsers
         title "Users created over time"
         type :line
         series do |context|
-          [{name: "Users", data: RecordingStudioUsers::Admin.date_series(context)}]
+          [{ name: "Users", data: RecordingStudioUsers::Admin.date_series(context) }]
         end
       end
 
@@ -60,7 +60,7 @@ module RecordingStudioUsers
         bucket = "day" unless %w[day week month year].include?(bucket)
         expression = Arel.sql("DATE_TRUNC('#{bucket}', created_at)")
         context.query_result.relation.except(:order).group(expression).order(expression).count.map do |date, count|
-          {x: date.iso8601, y: count}
+          { x: date.iso8601, y: count }
         end
       end
 

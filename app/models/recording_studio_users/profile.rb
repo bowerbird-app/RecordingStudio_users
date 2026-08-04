@@ -17,10 +17,10 @@ module RecordingStudioUsers
       authorize_with: RecordingStudioUsers::AvatarAuthorization
     )
 
-    validates :locale, length: {maximum: 64}, allow_blank: true
-    validates :time_zone, length: {maximum: 128}, allow_blank: true
-    validates :display_name, length: {maximum: 160}, allow_blank: true
-    validates :biography, length: {maximum: 5000}, allow_blank: true
+    validates :locale, length: { maximum: 64 }, allow_blank: true
+    validates :time_zone, length: { maximum: 128 }, allow_blank: true
+    validates :display_name, length: { maximum: 160 }, allow_blank: true
+    validates :biography, length: { maximum: 5000 }, allow_blank: true
 
     def recordable_name
       display_name.to_s.squish.presence || "User profile"

@@ -4,8 +4,8 @@ module RecordingStudioUsers
   class Configuration
     PROFILE_FIELDS = %i[display_name biography locale time_zone].freeze
     DEFAULT_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"].freeze
-    DEFAULT_VARIANTS = {small: :square_small, medium: :square_med, large: :square_large}.freeze
-    DEFAULT_DIMENSIONS = {small: 32, medium: 40, large: 64}.freeze
+    DEFAULT_VARIANTS = { small: :square_small, medium: :square_med, large: :square_large }.freeze
+    DEFAULT_DIMENSIONS = { small: 32, medium: 40, large: 64 }.freeze
     SUPPORTED_DEVISE_MODULES = %i[
       database_authenticatable registerable recoverable rememberable validatable confirmable lockable
       trackable timeoutable omniauthable
@@ -21,9 +21,11 @@ module RecordingStudioUsers
 
     def initialize
       @user_class_name = "User"
-      @current_actor = ->(controller: nil, **) { controller&.respond_to?(:current_user, true) ? controller.send(:current_user) : nil }
-      @current_impersonator = ->(controller: nil, **) do
-        controller&.respond_to?(:current_impersonator, true) ? controller.send(:current_impersonator) : nil
+      @current_actor = lambda { |controller: nil, **|
+        controller.respond_to?(:current_user, true) ? controller.send(:current_user) : nil
+      }
+      @current_impersonator = lambda do |controller: nil, **|
+        controller.respond_to?(:current_impersonator, true) ? controller.send(:current_impersonator) : nil
       end
       @provisioning_actor = nil
       @layout = "application"
@@ -104,10 +106,15 @@ module RecordingStudioUsers
       self.avatar_variant_mapping = avatar_variant_mapping.to_h.symbolize_keys.transform_values(&:to_sym)
       unknown_sizes = avatar_variant_mapping.keys - DEFAULT_VARIANTS.keys
       raise ConfigurationError, "Unsupported avatar sizes: #{unknown_sizes.join(', ')}" if unknown_sizes.any?
+
       missing_sizes = DEFAULT_VARIANTS.keys - avatar_variant_mapping.keys
       raise ConfigurationError, "Missing avatar sizes: #{missing_sizes.join(', ')}" if missing_sizes.any?
+
       untrusted_variants = avatar_variant_mapping.values - DEFAULT_VARIANTS.values
-      raise ConfigurationError, "Unsupported avatar variants: #{untrusted_variants.join(', ')}" if untrusted_variants.any?
+      if untrusted_variants.any?
+        raise ConfigurationError,
+              "Unsupported avatar variants: #{untrusted_variants.join(', ')}"
+      end
 
       self.avatar_dimensions = avatar_dimensions.to_h.symbolize_keys
       missing_dimensions = DEFAULT_DIMENSIONS.keys - avatar_dimensions.keys
@@ -123,7 +130,10 @@ module RecordingStudioUsers
 
       self.devise_modules = Array(devise_modules).map(&:to_sym)
       unsupported_modules = devise_modules - SUPPORTED_DEVISE_MODULES
-      raise ConfigurationError, "Unsupported Devise modules: #{unsupported_modules.join(', ')}" if unsupported_modules.any?
+      if unsupported_modules.any?
+        raise ConfigurationError,
+              "Unsupported Devise modules: #{unsupported_modules.join(', ')}"
+      end
 
       self.picker_limit = Integer(picker_limit)
       raise ConfigurationError, "picker_limit must be between 1 and 100" unless picker_limit.between?(1, 100)

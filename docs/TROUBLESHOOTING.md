@@ -16,6 +16,11 @@ The stored-avatar delivery policy may be false for the current actor or the Atta
 not be able to verify the presentation context. Use a context-independent route-verifiable policy,
 configure an external resolver, or keep the initials fallback.
 
+## Avatar upload does not submit
+
+Ensure the host application loads Active Storage's JavaScript. The Profile form intentionally uses
+direct uploads and does not accept a server-side multipart fallback.
+
 ## Search returns no users
 
 Configure both `search_scope` and `search_authorizer`. Queries shorter than two characters,

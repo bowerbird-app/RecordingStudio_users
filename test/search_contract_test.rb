@@ -27,4 +27,11 @@ class SearchContractTest < Minitest::Test
     assert_includes source, "item[:disabled] = true"
     assert_includes source, "params[:disabled]"
   end
+
+  def test_search_and_rendering_share_one_loader_context
+    source = File.read(File.join(ROOT, "app/controllers/recording_studio_users/users_controller.rb"))
+
+    assert_operator source.scan("context: search_context").size, :>=, 2
+    refute_includes source, "context: {actor:"
+  end
 end

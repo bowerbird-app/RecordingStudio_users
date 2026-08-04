@@ -2,13 +2,16 @@
 
 module RecordingStudioUsers
   module AvatarAuthorization
-    ACTIONS = {upload: :upload, replace: :revise, remove: :remove}.freeze
+    ACTIONS = { upload: :upload, replace: :revise, remove: :remove }.freeze
 
     module_function
 
     def call(action:, actor:, recording:, **)
-      owner_recording = recording.recordable_type == "RecordingStudioAttachable::Attachment" ?
-        recording.parent_recording : recording
+      owner_recording = if recording.recordable_type == "RecordingStudioAttachable::Attachment"
+                          recording.parent_recording
+                        else
+                          recording
+                        end
       user = user_for_profile_recording(owner_recording)
       return false unless user
 
@@ -21,7 +24,7 @@ module RecordingStudioUsers
         context[:profile_recording] == owner_recording &&
         context[:actor] == actor &&
         RecordingStudioUsers.profile_editable?(user, actor:)
-    rescue KeyError, StandardError
+    rescue StandardError
       false
     end
 

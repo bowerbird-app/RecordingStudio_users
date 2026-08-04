@@ -42,7 +42,7 @@ module RecordingStudioUsers
       @profile = RecordingStudioUsers.profile_for(current_recording_studio_user)
       @avatar = RecordingStudioUsers.avatar_for(
         current_recording_studio_user,
-        context: {actor: current_recording_studio_user}
+        context: { actor: current_recording_studio_user }
       )
       @avatar_recording = RecordingStudioUsers.avatar_recording_for(current_recording_studio_user)
     end
@@ -65,18 +65,7 @@ module RecordingStudioUsers
     end
 
     def signed_blob_id
-      return params[:signed_blob_id] if params[:signed_blob_id].present?
-
-      upload = params[:avatar]
-      raise ActionController::BadRequest, "Avatar file is required" unless upload.respond_to?(:open)
-
-      blob = ActiveStorage::Blob.create_and_upload!(
-        io: upload.open,
-        filename: upload.original_filename,
-        content_type: upload.content_type,
-        identify: true
-      )
-      blob.signed_id
+      params.require(:signed_blob_id)
     end
   end
 end

@@ -48,7 +48,10 @@ module RecordingStudioUsers
 
       def search_relation
         relation = requested_scope || configured_scope
-        raise ArgumentError, "Configured search scope must be an Active Record relation" unless relation.respond_to?(:where)
+        unless relation.respond_to?(:where)
+          raise ArgumentError,
+                "Configured search scope must be an Active Record relation"
+        end
         unless relation.klass.base_class == RecordingStudioUsers.user_class.base_class
           raise ArgumentError, "Configured search scope must select the configured User class"
         end

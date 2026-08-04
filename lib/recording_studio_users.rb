@@ -271,15 +271,15 @@ module RecordingStudioUsers
       raise TopologyError, "Private root must have exactly one active direct grant" unless grants.one?
 
       access = grants.first.recordable
-      unless access&.actor == user && access.role.to_s == "admin"
-        raise TopologyError, "Private root grant must belong to its User with admin role"
-      end
+      return if access&.actor == user && access.role.to_s == "admin"
+
+      raise TopologyError, "Private root grant must belong to its User with admin role"
     end
 
     def persisted_record?(record) = record.respond_to?(:persisted?) && record.persisted?
 
-    def policy_allowed?(name, **kwargs)
-      !!call_configured(configuration.public_send(name), **kwargs)
+    def policy_allowed?(name, **)
+      !!call_configured(configuration.public_send(name), **)
     end
 
     def actor_from_context(context)

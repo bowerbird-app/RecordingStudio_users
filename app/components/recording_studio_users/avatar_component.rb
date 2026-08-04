@@ -2,7 +2,7 @@
 
 module RecordingStudioUsers
   class AvatarComponent < ViewComponent::Base
-    FLATPACK_SIZES = {small: :sm, medium: :md, large: :xl}.freeze
+    FLATPACK_SIZES = { small: :sm, medium: :md, large: :xl }.freeze
 
     def initialize(user:, size: :medium, context: nil)
       @user = user

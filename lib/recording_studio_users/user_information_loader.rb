@@ -94,7 +94,7 @@ module RecordingStudioUsers
           parent_recording_id: profile_recordings.values.map(&:id),
           recordable_type: "RecordingStudioAttachable::Attachment",
           trashed_at: nil
-        ).preload(recordable: {file_attachment: :blob}),
+        ).preload(recordable: { file_attachment: :blob }),
         &:parent_recording_id
       )
     end
@@ -113,16 +113,16 @@ module RecordingStudioUsers
       ordered_users.each do |user|
         root = roots[[user.class.base_class.name, user.id.to_s]]
         root_recording = root && root_recordings[root.id.to_s]
-        profile_recording = valid_recording(root_recording) && profile_recordings[root_recording.id.to_s]
-        avatar_recording = valid_recording(profile_recording) && avatar_recordings[profile_recording.id.to_s]
+        profile_recording = recording_usable?(root_recording) && profile_recordings[root_recording.id.to_s]
+        avatar_recording = recording_usable?(profile_recording) && avatar_recordings[profile_recording.id.to_s]
         valid = [root_recording, profile_recording, avatar_recording].none? { |value| value == :duplicate }
-        profile_recording = nil unless valid_recording(profile_recording)
-        avatar_recording = nil unless valid_recording(avatar_recording)
+        profile_recording = nil unless recording_usable?(profile_recording)
+        avatar_recording = nil unless recording_usable?(avatar_recording)
 
         context_cache[self.class.send(:record_key, user)] = Information.new(
           user:,
           user_root: root,
-          root_recording: valid_recording(root_recording) ? root_recording : nil,
+          root_recording: recording_usable?(root_recording) ? root_recording : nil,
           profile_recording:,
           profile: profile_recording&.recordable,
           avatar_recording:,
@@ -132,6 +132,6 @@ module RecordingStudioUsers
       end
     end
 
-    def valid_recording(recording) = recording.present? && recording != :duplicate
+    def recording_usable?(recording) = recording.present? && recording != :duplicate
   end
 end

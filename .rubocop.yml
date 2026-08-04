@@ -5,6 +5,7 @@ AllCops:
     - 'test/dummy/**/*'
     - 'vendor/**/*'
     - 'bin/**/*'
+    - 'lib/generators/**/templates/**/*'
 
 Style/Documentation:
   Enabled: false
@@ -21,16 +22,61 @@ Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
     - 'lib/recording_studio_users/user_information_loader.rb'
+    - 'lib/recording_studio_users.rb'
+    - 'lib/recording_studio_users/configuration.rb'
+    - 'lib/generators/**/*'
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'lib/recording_studio_users.rb'
 
 Metrics/MethodLength:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'app/controllers/recording_studio_users/users_controller.rb'
+    - 'app/helpers/recording_studio_users/application_helper.rb'
+    - 'lib/recording_studio_users.rb'
+    - 'lib/recording_studio_users/admin.rb'
+    - 'lib/recording_studio_users/avatar_authorization.rb'
+    - 'lib/recording_studio_users/configuration.rb'
+    - 'lib/recording_studio_users/services/**/*'
+    - 'lib/recording_studio_users/user_information_loader.rb'
 
 Metrics/AbcSize:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'app/controllers/recording_studio_users/users_controller.rb'
+    - 'lib/recording_studio_users.rb'
+    - 'lib/recording_studio_users/avatar_authorization.rb'
+    - 'lib/recording_studio_users/configuration.rb'
+    - 'lib/recording_studio_users/provisioning_authorization.rb'
+    - 'lib/recording_studio_users/services/**/*'
+    - 'lib/recording_studio_users/user_information_loader.rb'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/recording_studio_users.rb'
+    - 'lib/recording_studio_users/avatar_authorization.rb'
+    - 'lib/recording_studio_users/configuration.rb'
+    - 'lib/recording_studio_users/provisioning_authorization.rb'
+    - 'lib/recording_studio_users/services/**/*'
+    - 'lib/recording_studio_users/user_information_loader.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/recording_studio_users.rb'
+    - 'lib/recording_studio_users/avatar_authorization.rb'
+    - 'lib/recording_studio_users/configuration.rb'
+    - 'lib/recording_studio_users/provisioning_authorization.rb'
+    - 'lib/recording_studio_users/services/**/*'
+    - 'lib/recording_studio_users/user_information_loader.rb'
+
+Metrics/ParameterLists:
+  Exclude:
+    - 'lib/recording_studio_users.rb'
+    - 'lib/recording_studio_users/services/**/*'
 
 # Allow empty blocks in tests (common for stubs/mocks)
 Lint/EmptyBlock:
@@ -50,5 +96,6 @@ Naming/VariableNumber:
 # Don't require super in service initialize methods
 Lint/MissingSuper:
   Exclude:
+    - 'app/components/**/*'
     - 'lib/recording_studio_users/services/**/*'
     - 'test/services/**/*'

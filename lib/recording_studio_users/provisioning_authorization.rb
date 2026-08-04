@@ -14,21 +14,21 @@ module RecordingStudioUsers
         configuration.access_management_authorizer = wrapper
       end
 
-      def with_context(user:, user_root:, root_recording:, actor:)
-        context = {user:, user_root:, root_recording:, actor:, role: :admin}.freeze
-        ExecutionContext.with(:provisioning, context) { yield }
+      def with_context(user:, user_root:, root_recording:, actor:, &)
+        context = { user:, user_root:, root_recording:, actor:, role: :admin }.freeze
+        ExecutionContext.with(:provisioning, context, &)
       end
 
       private
 
       def build_wrapper(original)
-        lambda do |recording:, actor: nil, controller: nil, **|
+        wrapper = lambda do |recording:, actor: nil, controller: nil, **|
           provisioning_allowed?(recording:, actor:) ||
             call_original(original, recording:, actor:, controller:)
-        end.tap do |wrapper|
-          wrapper.define_singleton_method(:recording_studio_users_authorizer?) { true }
-          wrapper.define_singleton_method(:recording_studio_users_original) { original }
         end
+        wrapper.define_singleton_method(:recording_studio_users_authorizer?) { true }
+        wrapper.define_singleton_method(:recording_studio_users_original) { original }
+        wrapper
       end
 
       def provisioning_allowed?(recording:, actor:)
@@ -45,10 +45,10 @@ module RecordingStudioUsers
         false
       end
 
-      def call_original(original, **kwargs)
+      def call_original(original, **)
         return false unless original.respond_to?(:call)
 
-        !!original.call(**kwargs)
+        !!original.call(**)
       rescue StandardError
         false
       end

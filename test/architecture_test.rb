@@ -14,9 +14,9 @@ class ArchitectureTest < Minitest::Test
   end
 
   def test_user_is_actor_not_recordable
-    concern = source("app/models/concerns/recording_studio_users/user.rb")
+    concern = source("lib/recording_studio_users/user.rb")
 
-    assert_includes concern, "RecordingStudio.actor(self)"
+    assert_includes concern, "RecordingStudioUsers.provision(self)"
     refute_includes concern, "recording_studio_recordable"
   end
 
@@ -27,7 +27,9 @@ class ArchitectureTest < Minitest::Test
     assert_includes user_root, "root: true"
     assert_includes profile, "root: false"
     assert_includes profile, 'allowed_parent_types: ["RecordingStudioUsers::UserRoot"]'
-    assert_includes profile, "strict: true"
+
+    initializer = source("test/dummy/config/initializers/recording_studio.rb")
+    assert_includes initializer, "config.require_recordable_declarations = true"
   end
 
   def test_avatar_services_delegate_to_attachable_public_services
