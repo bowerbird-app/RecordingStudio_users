@@ -1,13 +1,50 @@
-<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-  <% card.header do %>
-    <%= render FlatPack::PageTitle::Component.new(
-      title: "Edit profile",
-      subtitle: "Profile changes create a new Recording Studio revision.",
-      variant: :h2
-    ) %>
-  <% end %>
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Edit profile",
+    subtitle: "Profile changes create a new Recording Studio revision.",
+    variant: :h2
+  ) %>
 
-  <% card.body do %>
+  <section class="space-y-5 border-b border-(--surface-border-color) pb-8" aria-labelledby="avatar-heading">
+    <div>
+      <h3 id="avatar-heading" class="text-lg font-semibold">Avatar</h3>
+      <p class="mt-1 text-sm text-(--surface-muted-content-color)">Choose the image shown with your identity.</p>
+    </div>
+
+    <%= recording_studio_user_avatar(current_recording_studio_user, size: :large) %>
+
+    <%= form_with url: avatar_profile_path, method: @avatar_recording ? :patch : :post do %>
+      <div class="space-y-4">
+        <%= render FlatPack::FileInput::Component.new(
+          name: "signed_blob_id",
+          label: @avatar_recording ? "Replace avatar" : "Upload avatar",
+          accept: RecordingStudioUsers.configuration.avatar_content_types.join(","),
+          max_size: RecordingStudioUsers.configuration.avatar_max_byte_size,
+          required: true,
+          data: {direct_upload_url: main_app.rails_direct_uploads_path}
+        ) %>
+        <%= render FlatPack::Button::Component.new(
+          text: @avatar_recording ? "Replace avatar" : "Upload avatar",
+          style: :primary,
+          type: "submit"
+        ) %>
+      </div>
+    <% end %>
+
+    <% if @avatar_recording %>
+      <%= form_with url: avatar_profile_path, method: :delete do %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Remove avatar",
+          style: :secondary,
+          type: "submit"
+        ) %>
+      <% end %>
+    <% end %>
+  </section>
+
+  <section class="space-y-5" aria-labelledby="profile-fields-heading">
+    <h3 id="profile-fields-heading" class="text-lg font-semibold">Profile information</h3>
+
     <%= form_with scope: :profile, url: profile_path, method: :patch do %>
       <div class="space-y-4">
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:display_name) %>
@@ -19,7 +56,7 @@
         <% end %>
 
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:biography) %>
-          <%= render FlatPack::Textarea::Component.new(
+          <%= render FlatPack::TextArea::Component.new(
             name: "profile[biography]",
             label: "Biography",
             value: @profile.biography
@@ -56,5 +93,5 @@
         </div>
       </div>
     <% end %>
-  <% end %>
-<% end %>
+  </section>
+</div>

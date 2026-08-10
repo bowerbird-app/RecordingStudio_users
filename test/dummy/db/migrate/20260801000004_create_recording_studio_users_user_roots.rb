@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateRecordingStudioUsersUserRootsInDummy < ActiveRecord::Migration[8.1]
+class CreateRecordingStudioUsersUserRoots < ActiveRecord::Migration[8.1]
   def change
     create_table :recording_studio_users_user_roots, id: :uuid do |t|
       t.string :user_type, null: false

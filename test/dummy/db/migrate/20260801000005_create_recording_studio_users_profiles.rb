@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateRecordingStudioUsersProfilesInDummy < ActiveRecord::Migration[8.1]
+class CreateRecordingStudioUsersProfiles < ActiveRecord::Migration[8.1]
   def change
     create_table :recording_studio_users_profiles, id: :uuid do |t|
       t.string :display_name

@@ -19,6 +19,7 @@ module RecordingStudioUsers
 
     def require_recording_studio_user!
       return if current_recording_studio_user&.persisted?
+      return authenticate_user! if respond_to?(:authenticate_user!, true)
 
       head :unauthorized
     end

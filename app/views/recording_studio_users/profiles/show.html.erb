@@ -1,72 +1,48 @@
-<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-  <% card.header do %>
+<div class="mx-auto flex w-full max-w-4xl flex-col gap-6">
+  <%= render FlatPack::PageNav::Component.new(
+    back_tooltip: "Back to previous page",
+    anchor_url: main_app.root_path,
+    anchor_icon: "home",
+    anchor_tooltip: "Home"
+  ) do |component| %>
+    <% component.right_slot do %>
+      <%= render FlatPack::Tooltip::Component.new(text: "Edit profile") do %>
+        <%= render FlatPack::Button::Component.new(
+          icon: "pencil",
+          icon_only: true,
+          style: :secondary,
+          size: :md,
+          url: edit_profile_path,
+          aria: {label: "Edit profile"}
+        ) %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="border-b border-(--surface-border-color) pb-6">
     <%= render FlatPack::PageTitle::Component.new(
       title: "Your profile",
       subtitle: "Manage the identity information shared by supported Recording Studio features.",
       variant: :h2
     ) %>
-  <% end %>
+  </div>
 
-  <% card.body do %>
-    <div class="space-y-6">
-      <%= recording_studio_user_identity(current_recording_studio_user, show_email: true) %>
+  <div class="space-y-6">
+    <%= recording_studio_user_identity(current_recording_studio_user, show_email: true) %>
 
-      <dl class="space-y-3">
-        <div>
-          <dt class="text-sm font-medium">Biography</dt>
-          <dd class="text-sm"><%= @profile.biography.presence || "Not provided" %></dd>
-        </div>
-        <div>
-          <dt class="text-sm font-medium">Locale</dt>
-          <dd class="text-sm"><%= @profile.locale.presence || "Default" %></dd>
-        </div>
-        <div>
-          <dt class="text-sm font-medium">Time zone</dt>
-          <dd class="text-sm"><%= @profile.time_zone.presence || "Default" %></dd>
-        </div>
-      </dl>
-    </div>
-  <% end %>
-
-  <% card.footer do %>
-    <%= render FlatPack::Button::Component.new(
-      text: "Edit profile",
-      style: :primary,
-      url: edit_profile_path
-    ) %>
-  <% end %>
-<% end %>
-
-<%= render FlatPack::Card::Component.new(style: :default, class: "mt-6") do |card| %>
-  <% card.header do %>
-    <%= render FlatPack::PageTitle::Component.new(title: "Avatar", variant: :h3) %>
-  <% end %>
-
-  <% card.body do %>
-    <div class="space-y-4">
-      <%= recording_studio_user_avatar(current_recording_studio_user, size: :large) %>
-
-      <%= form_with url: avatar_profile_path, method: @avatar_recording ? :patch : :post do %>
-        <%= render FlatPack::FileInput::Component.new(
-          name: "signed_blob_id",
-          label: @avatar_recording ? "Replace avatar" : "Upload avatar",
-          accept: RecordingStudioUsers.configuration.avatar_content_types.join(","),
-          max_size: RecordingStudioUsers.configuration.avatar_max_byte_size,
-          required: true,
-          data: {direct_upload_url: main_app.rails_direct_uploads_path}
-        ) %>
-        <div class="mt-4">
-          <%= render FlatPack::Button::Component.new(
-            text: @avatar_recording ? "Replace avatar" : "Upload avatar",
-            style: :primary,
-            type: "submit"
-          ) %>
-        </div>
-      <% end %>
-
-      <% if @avatar_recording %>
-        <%= button_to "Remove avatar", avatar_profile_path, method: :delete, class: "text-sm text-red-700" %>
-      <% end %>
-    </div>
-  <% end %>
-<% end %>
+    <dl class="grid gap-5 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <dt class="text-sm font-medium">Biography</dt>
+        <dd class="mt-1 text-sm leading-6"><%= @profile.biography.presence || "Not provided" %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium">Locale</dt>
+        <dd class="mt-1 text-sm"><%= @profile.locale.presence || "Default" %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium">Time zone</dt>
+        <dd class="mt-1 text-sm"><%= @profile.time_zone.presence || "Default" %></dd>
+      </div>
+    </dl>
+  </div>
+</div>

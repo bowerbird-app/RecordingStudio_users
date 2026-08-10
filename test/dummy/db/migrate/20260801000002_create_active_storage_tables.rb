@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateActiveStorageTablesForUsers < ActiveRecord::Migration[8.1]
+class CreateActiveStorageTables < ActiveRecord::Migration[8.1]
   def change
     create_table :active_storage_blobs, id: :uuid do |t|
       t.string :key, null: false
