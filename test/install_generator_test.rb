@@ -41,6 +41,17 @@ class InstallGeneratorTest < Minitest::Test
     ], routes
   end
 
+  def test_install_attachable_invokes_dependency_installer
+    generator = build_generator("/tmp")
+    invocations = []
+
+    generator.stub(:invoke, ->(name) { invocations << name }) do
+      generator.install_attachable
+    end
+
+    assert_equal ["recording_studio_attachable:install"], invocations
+  end
+
   def test_mount_engine_adds_missing_attachable_mount_on_repeated_install
     with_temp_app do |dir|
       FileUtils.mkdir_p(File.join(dir, "config"))

@@ -35,9 +35,9 @@ class ArchitectureTest < Minitest::Test
   def test_avatar_services_delegate_to_attachable_public_services
     service = source("lib/recording_studio_users/services/avatar_mutation.rb")
 
-    assert_includes service, "RecordingStudioAttachable::RecordAttachmentUpload"
-    assert_includes service, "RecordingStudioAttachable::ReplaceAttachmentFile"
-    assert_includes service, "RecordingStudioAttachable::RemoveAttachment"
+    assert_includes service, "RecordingStudioAttachable::Services::RecordAttachmentUpload"
+    assert_includes service, "RecordingStudioAttachable::Services::ReplaceAttachmentFile"
+    assert_includes service, "RecordingStudioAttachable::Services::RemoveAttachment"
     refute_includes service, "ActiveStorage::Blob"
   end
 

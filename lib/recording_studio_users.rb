@@ -314,12 +314,18 @@ module RecordingStudioUsers
     end
 
     def mounted_route_proxy(name)
-      context = Object.new
-      context.define_singleton_method(:_routes_context) { self }
-      context.extend(Rails.application.routes.mounted_helpers)
-      context.public_send(name)
+      mounted_route_context.public_send(name)
     rescue NoMethodError
       nil
+    end
+
+    def mounted_route_context
+      @mounted_route_context ||= Class.new do
+        include Rails.application.routes.url_helpers
+        include Rails.application.routes.mounted_helpers
+
+        def _routes = Rails.application.routes
+      end.new
     end
   end
 end

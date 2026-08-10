@@ -94,6 +94,9 @@ Avatar services use Attachable's public upload, replacement, and removal service
 creates dependency-owned records directly or purges blobs directly.
 The bundled Profile form uses Active Storage direct uploads, so the host must load Active Storage's
 JavaScript. The controller accepts only the resulting signed blob identifier and never creates blobs.
+Avatar previews use Active Storage variants and require a native image processor. The provided dev
+container installs `libvips-tools`; other hosts must provide libvips or configure Active Storage to
+use another installed variant processor.
 
 Profile direct attachments are reserved for the avatar. Zero or one active direct attachment is
 valid; more than one fails topology validation.

@@ -1,9 +1,18 @@
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Edit profile",
-    subtitle: "Profile changes create a new Recording Studio revision.",
-    variant: :h2
+<div class="mx-auto flex w-full max-w-4xl flex-col gap-6">
+  <%= render FlatPack::PageNav::Component.new(
+    back_tooltip: "Back to previous page",
+    anchor_url: main_app.root_path,
+    anchor_icon: "home",
+    anchor_tooltip: "Home"
   ) %>
+
+  <div class="border-b border-(--surface-border-color) pb-6">
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Edit profile",
+      subtitle: "Profile changes create a new Recording Studio revision.",
+      variant: :h2
+    ) %>
+  </div>
 
   <section class="space-y-5 border-b border-(--surface-border-color) pb-8" aria-labelledby="avatar-heading">
     <div>
@@ -13,20 +22,39 @@
 
     <%= recording_studio_user_avatar(current_recording_studio_user, size: :large) %>
 
-    <%= form_with url: avatar_profile_path, method: @avatar_recording ? :patch : :post do %>
+    <%= form_with(
+      url: avatar_profile_path,
+      method: @avatar_recording ? :patch : :post,
+      data: {
+        controller: "recording-studio-attachable--attachment-revision-upload",
+        action: "change->recording-studio-attachable--attachment-revision-upload#fileSelected " \
+          "submit->recording-studio-attachable--attachment-revision-upload#handleSubmit",
+        recording_studio_attachable__attachment_revision_upload_direct_upload_url_value:
+          main_app.rails_direct_uploads_path,
+        recording_studio_attachable__attachment_revision_upload_max_file_size_value:
+          RecordingStudioUsers.configuration.avatar_max_byte_size
+      }
+    ) do %>
       <div class="space-y-4">
         <%= render FlatPack::FileInput::Component.new(
-          name: "signed_blob_id",
+          name: "avatar_file",
           label: @avatar_recording ? "Replace avatar" : "Upload avatar",
           accept: RecordingStudioUsers.configuration.avatar_content_types.join(","),
           max_size: RecordingStudioUsers.configuration.avatar_max_byte_size,
           required: true,
-          data: {direct_upload_url: main_app.rails_direct_uploads_path}
+          data: {
+            recording_studio_attachable__attachment_revision_upload_target: "fileInput"
+          }
         ) %>
+        <%= hidden_field_tag :signed_blob_id, nil,
+          data: {recording_studio_attachable__attachment_revision_upload_target: "signedBlobInput"} %>
+        <p class="hidden text-sm text-(--surface-muted-content-color)"
+           data-recording-studio-attachable--attachment-revision-upload-target="status"></p>
         <%= render FlatPack::Button::Component.new(
           text: @avatar_recording ? "Replace avatar" : "Upload avatar",
           style: :primary,
-          type: "submit"
+          type: "submit",
+          data: {recording_studio_attachable__attachment_revision_upload_target: "submitButton"}
         ) %>
       </div>
     <% end %>

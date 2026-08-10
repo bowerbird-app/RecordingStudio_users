@@ -52,26 +52,100 @@ class RecordingStudioUsersProfileTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "bg-[var(--card-background-color)]"
   end
 
-  test "signed-in user manages the avatar above profile fields on edit" do
+  test "signed-in user edits pre-filled profile fields below avatar controls" do
     user = User.find_by!(email: "admin@admin.com")
+    profile_attributes = {
+      display_name: "Studio Administrator",
+      biography: "Keeps the recording workflow moving.",
+      locale: "en-AU",
+      time_zone: "Australia/Melbourne"
+    }
+    result = RecordingStudioUsers.revise_profile(
+      user:,
+      actor: user,
+      attributes: profile_attributes
+    )
+
+    assert_predicate result, :success?
 
     sign_in user
     get recording_studio_users.edit_profile_path
 
     assert_response :success
     assert_select "html.h-full.overflow-hidden"
-    assert_select "div.mx-auto.w-full.max-w-3xl"
+    assert_select "div.mx-auto.w-full.max-w-4xl"
+    assert_select "nav[aria-label='Page navigation'][data-controller='flat-pack--page-nav']" do
+      assert_select "button[aria-label='Back to previous page'][data-action='click->flat-pack--page-nav#back']"
+      assert_select "a[href='/'][aria-label='Home'] svg[data-flat-pack--icon-name-value='home']"
+    end
+    assert_select "h2", text: "Edit profile"
+    assert_operator response.body.index('aria-label="Page navigation"'), :<,
+                    response.body.index("Edit profile")
     assert_select "section[aria-labelledby='avatar-heading']" do
       assert_select "h3#avatar-heading", text: "Avatar"
-      assert_select "form[action='#{recording_studio_users.avatar_profile_path}']", count: 1
-      assert_select "input[name='signed_blob_id']"
+      assert_select "form[action='#{recording_studio_users.avatar_profile_path}']" \
+                    "[data-controller='recording-studio-attachable--attachment-revision-upload']" \
+                    "[data-recording-studio-attachable--attachment-revision-upload-direct-upload-url-value=" \
+              "'#{Rails.application.routes.url_helpers.rails_direct_uploads_path}']", count: 1 do |forms|
+        assert_includes forms.first["data-action"],
+                "change->recording-studio-attachable--attachment-revision-upload#fileSelected"
+        assert_includes forms.first["data-action"],
+                "submit->recording-studio-attachable--attachment-revision-upload#handleSubmit"
+        assert_select "input[type='file'][name='avatar_file']" \
+                "[data-recording-studio-attachable--attachment-revision-upload-target='fileInput']" do |inputs|
+          assert_includes inputs.first["data-action"], "change->flat-pack--file-input#handleFiles"
+        end
+        assert_select "input[type='hidden'][name='signed_blob_id']" \
+                      "[data-recording-studio-attachable--attachment-revision-upload-target='signedBlobInput']"
+        assert_select "[data-recording-studio-attachable--attachment-revision-upload-target='status']"
+        assert_select "button[data-recording-studio-attachable--attachment-revision-upload-target='submitButton']"
+      end
     end
     assert_select "section[aria-labelledby='profile-fields-heading']" do
       assert_select "form[action='#{recording_studio_users.profile_path}']", count: 1
-      assert_select "input[name='profile[display_name]']"
+      assert_select "input[name='profile[display_name]'][value='#{profile_attributes[:display_name]}']"
+      assert_select "textarea[name='profile[biography]']", text: profile_attributes[:biography]
+      assert_select "input[name='profile[locale]'][value='#{profile_attributes[:locale]}']"
+      assert_select "input[name='profile[time_zone]'][value='#{profile_attributes[:time_zone]}']"
     end
     assert_operator response.body.index('id="avatar-heading"'), :<,
                     response.body.index('id="profile-fields-heading"')
     refute_includes response.body, "bg-[var(--card-background-color)]"
+  end
+
+  test "signed-in user uploads an avatar from an Active Storage signed blob" do
+    user = User.find_by!(email: "admin@admin.com")
+    if RecordingStudioUsers.avatar_recording_for(user)
+      removal = RecordingStudioUsers.remove_avatar(user:, actor: user)
+      assert_predicate removal, :success?
+    end
+    blob = File.open(Rails.root.join("public/icon.png"), "rb") do |image|
+      ActiveStorage::Blob.create_and_upload!(
+        io: image,
+        filename: "avatar.png",
+        content_type: "image/png"
+      )
+    end
+
+    sign_in user
+    post recording_studio_users.avatar_profile_path, params: {signed_blob_id: blob.signed_id}
+
+    assert_redirected_to recording_studio_users.profile_path
+    assert_equal "Avatar uploaded.", flash[:notice]
+    avatar_recording = RecordingStudioUsers.avatar_recording_for(user)
+    assert_equal "RecordingStudioAttachable::Attachment", avatar_recording.recordable_type
+    assert_equal blob.id, avatar_recording.recordable.file.blob_id
+
+    follow_redirect!
+
+    assert_response :success
+    preview_path = "/recording_studio_attachable/attachments/#{avatar_recording.id}/preview/square_small"
+    assert_includes response.body, preview_path
+
+    get preview_path
+
+    assert_response :success
+    assert_equal "image/png", response.media_type
+    assert_operator response.body.bytesize, :>, 0
   end
 end

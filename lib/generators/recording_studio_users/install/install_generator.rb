@@ -29,6 +29,10 @@ module RecordingStudioUsers
         raise Thor::Error, "Missing required dependencies: #{missing.join(', ')}"
       end
 
+      def install_attachable
+        invoke "recording_studio_attachable:install"
+      end
+
       def install_devise
         generate "devise:install" unless File.exist?(destination_path("config/initializers/devise.rb"))
         model_path = destination_path("app/models/#{options[:user_class].underscore}.rb")
