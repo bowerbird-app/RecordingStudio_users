@@ -1,11 +1,20 @@
 Rails.application.routes.draw do
-  devise_for :users
+  # RecordingStudioUser routes
+  devise_for :users,
+             class_name: RecordingStudioUser.configuration.user_model,
+             controllers: {
+               sessions: "recording_studio_user/devise/sessions",
+               passwords: "recording_studio_user/devise/passwords"
+             }
+  resource :profile,
+           only: %i[show edit update],
+           controller: "recording_studio_user/profiles"
 
   # RecordingStudio engine is data/API-focused and has no browser root route.
   # Keep legacy links working by redirecting the base path to the app home.
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
-  mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
+  recording_studio_admin_for :admin, at: "/admin", root_section: :root
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

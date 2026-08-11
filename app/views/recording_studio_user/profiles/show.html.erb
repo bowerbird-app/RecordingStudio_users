@@ -29,7 +29,7 @@
     <% card.footer do %>
       <%= render FlatPack::Button::Component.new(
         text: "Edit profile",
-        url: edit_profile_path,
+        url: main_app.edit_profile_path,
         style: :primary,
         icon: :pencil
       ) %>

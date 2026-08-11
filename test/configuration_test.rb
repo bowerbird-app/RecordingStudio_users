@@ -7,67 +7,32 @@ class ConfigurationTest < Minitest::Test
     @configuration = RecordingStudioUser::Configuration.new
   end
 
-  def test_merge_updates_known_attributes
-    @configuration.merge!(api_key: "abc123", timeout: 9, enable_feature_x: true)
-
-    assert_equal "abc123", @configuration.api_key
-    assert_equal 9, @configuration.timeout
-    assert_equal true, @configuration.enable_feature_x
+  def test_defaults_use_the_gem_owned_user_and_host_layout
+    assert_equal "RecordingStudioUser::User", @configuration.user_model
+    assert_equal "profile", @configuration.profile_path
+    assert_equal "application", @configuration.default_layout
+    assert_empty @configuration.additional_permitted_profile_attributes
   end
 
-  def test_merge_ignores_unknown_keys
-    @configuration.merge!(unknown_key: "ignored", timeout: 7)
+  def test_profile_parameters_are_deliberately_limited
+    @configuration.additional_permitted_profile_attributes = %w[locale]
 
-    refute_respond_to @configuration, :unknown_key
-    assert_equal 7, @configuration.timeout
+    assert_equal %i[first_name last_name time_zone locale], @configuration.permitted_profile_attributes
   end
 
-  def test_merge_with_non_enumerable_is_noop
-    original = @configuration.to_h
+  def test_merge_updates_known_values_and_ignores_unknown_values
+    @configuration.merge!("default_layout" => "host", "unknown" => true)
 
-    @configuration.merge!(nil)
-
-    assert_nil @configuration.api_key if original[:api_key].nil?
-    assert_equal original[:api_key], @configuration.api_key unless original[:api_key].nil?
-    assert_equal original[:timeout], @configuration.timeout
-    assert_equal original[:enable_feature_x], @configuration.enable_feature_x
+    assert_equal "host", @configuration.default_layout
+    refute_respond_to @configuration, :unknown
   end
 
-  def test_initialize_uses_environment_api_key_and_defaults
-    previous_value = ENV.fetch("RECORDING_STUDIO_USER_API_KEY", nil)
-    ENV["RECORDING_STUDIO_USER_API_KEY"] = "env-token"
+  def test_admin_registration_hook_is_replaceable
+    called = false
+    @configuration.admin_registration_hook = -> { called = true }
 
-    configuration = RecordingStudioUser::Configuration.new
+    @configuration.register_admin!
 
-    assert_equal "env-token", configuration.api_key
-    assert_equal false, configuration.enable_feature_x
-    assert_equal 5, configuration.timeout
-    assert_instance_of RecordingStudioUser::Hooks, configuration.hooks
-  ensure
-    ENV["RECORDING_STUDIO_USER_API_KEY"] = previous_value
-  end
-
-  def test_merge_accepts_string_keys
-    @configuration.merge!("api_key" => "string-key", "timeout" => 12)
-
-    assert_equal "string-key", @configuration.api_key
-    assert_equal 12, @configuration.timeout
-  end
-
-  def test_to_h_reports_registered_hook_counts
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.after_service { nil }
-
-    result = @configuration.to_h
-
-    assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
-    assert_equal 1, result.fetch(:hooks_registered).fetch(:after_service)
-  end
-
-  def test_configure_without_block_is_safe
-    RecordingStudioUser.configure
-
-    assert_kind_of RecordingStudioUser::Configuration, RecordingStudioUser.configuration
+    assert called
   end
 end

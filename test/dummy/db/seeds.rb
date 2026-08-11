@@ -1,52 +1,56 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
+# frozen_string_literal: true
 
-find_or_record_child = lambda do |recordable, root_recording, parent_recording|
-  RecordingStudio::Recording.find_by(
-    root_recording: root_recording,
-    parent_recording: parent_recording,
-    recordable: recordable,
-    trashed_at: nil
-  ) || RecordingStudio.record!(
-    action: "created",
-    recordable: recordable,
-    root_recording: root_recording,
-    parent_recording: parent_recording
-  ).recording
-end
+admin_email = ENV.fetch("DUMMY_ADMIN_EMAIL", "admin@example.com")
+admin_password = ENV.fetch("DUMMY_ADMIN_PASSWORD", "Password123!")
+user_email = ENV.fetch("DUMMY_USER_EMAIL", "user@example.com")
+user_password = ENV.fetch("DUMMY_USER_PASSWORD", "Password123!")
 
-# Create the admin user
-user = User.find_or_create_by!(email: "admin@admin.com") do |u|
-  u.password = "Password"
-  u.password_confirmation = "Password"
-end
+admin_user = User.find_or_initialize_by(email: admin_email)
+admin_user.assign_attributes(
+  first_name: "Avery",
+  last_name: "Admin",
+  time_zone: "Australia/Sydney",
+  password: admin_password,
+  password_confirmation: admin_password
+)
+admin_user.save!
 
-# Create the workspace recordables
-workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
-accessible_workspace = Workspace.find_or_create_by!(name: "Client Workspace")
-private_workspace = Workspace.find_or_create_by!(name: "Private Workspace")
-folder = Folder.find_or_create_by!(name: "Product Docs")
-page = Page.find_or_create_by!(title: "Getting Started")
+normal_user = User.find_or_initialize_by(email: user_email)
+normal_user.assign_attributes(
+  first_name: "Morgan",
+  last_name: "Member",
+  time_zone: "Pacific Time (US & Canada)",
+  password: user_password,
+  password_confirmation: user_password
+)
+normal_user.save!
+
+workspace = Workspace.find_or_create_by!(name: "My workspace")
+admin_root = AdminRoot.find_or_create_by!(name: "Admin")
 
 previous_actor = Current.actor
-Current.actor = user
+previous_authorizer = RecordingStudioAccessible.configuration.access_management_authorizer
+Current.actor = admin_user
+RecordingStudioAccessible.configuration.access_management_authorizer = ->(recording:, **) { recording.present? }
 
 begin
-  # Create the root recording
-  root_recording = RecordingStudio.root_recording_for(workspace)
-  accessible_root_recording = RecordingStudio.root_recording_for(accessible_workspace)
-  private_root_recording = RecordingStudio.root_recording_for(private_workspace)
+  workspace_recording = RecordingStudio.root_recording_for(workspace)
+  admin_recording = RecordingStudio.root_recording_for(admin_root)
 
-  folder_recording = find_or_record_child.call(folder, root_recording, root_recording)
-
-  find_or_record_child.call(page, root_recording, folder_recording)
+  unless RecordingStudioAccessible.authorized?(actor: admin_user, recording: admin_recording, role: :admin)
+    result = RecordingStudioAccessible.grant_access(
+      recording: admin_recording,
+      actor: admin_user,
+      role: :admin,
+      manager_actor: admin_user
+    )
+    raise "Unable to grant dummy admin access: #{result.error}" if result.failure?
+  end
 ensure
+  RecordingStudioAccessible.configuration.access_management_authorizer = previous_authorizer
   Current.actor = previous_actor
 end
 
-puts "Seeded: admin@admin.com / Password"
-puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
-puts "Seeded: Workspace '#{accessible_workspace.name}' with root recording ##{accessible_root_recording.id}"
-puts "Seeded: Workspace '#{private_workspace.name}' with root recording ##{private_root_recording.id}"
-puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
+puts "Seeded users: #{admin_user.email}, #{normal_user.email}"
+puts "Set DUMMY_ADMIN_PASSWORD and DUMMY_USER_PASSWORD to override development passwords."
+puts "Seeded roots: #{workspace.name}, #{admin_root.name}"

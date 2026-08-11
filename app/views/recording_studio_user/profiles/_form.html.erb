@@ -9,7 +9,7 @@
       ) %>
     <% end %>
 
-    <%= form_with scope: :user, url: profile_path, method: :patch, class: "space-y-5" do %>
+    <%= form_with scope: :user, url: main_app.profile_path, method: :patch, class: "space-y-5" do %>
       <%= render FlatPack::TextInput::Component.new(
         name: "user[first_name]",
         label: "First name",
@@ -48,7 +48,7 @@
         <%= render FlatPack::Button::Component.new(
           text: "Cancel",
           style: :secondary,
-          url: profile_path
+          url: main_app.profile_path
         ) %>
       </div>
     <% end %>

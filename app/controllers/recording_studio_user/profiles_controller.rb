@@ -16,7 +16,7 @@ module RecordingStudioUser
       @user = current_user
 
       if @user.update(profile_params)
-        redirect_to profile_path, notice: "Your profile was updated."
+        redirect_to main_app.profile_path, notice: "Your profile was updated."
       else
         render :edit, status: :unprocessable_content
       end
