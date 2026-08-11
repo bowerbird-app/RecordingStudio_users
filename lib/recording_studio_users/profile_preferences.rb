@@ -6,19 +6,21 @@ module RecordingStudioUsers
 
     def locale_options
       I18n.available_locales
-        .map { |locale| locale.to_s.tr("_", "-") }
-        .uniq
-        .sort
-        .map { |locale| [locale, locale] }
+          .map { |locale| locale.to_s.tr("_", "-") }
+          .uniq
+          .sort
+          .map { |locale| [locale, locale] }
     end
 
     def time_zone_options(at: Time.current)
-      TZInfo::Timezone.all_identifiers.filter_map do |identifier|
+      options = TZInfo::Timezone.all_identifiers.filter_map do |identifier|
         time_zone_option(identifier, at:)
       rescue TZInfo::PeriodNotFound
         nil
-      end.sort_by { |label, value, offset| [offset, label, value] }
-        .map { |label, value, _offset| [label, value] }
+      end
+
+      options.sort_by { |label, value, offset| [offset, label, value] }
+             .map { |label, value, _offset| [label, value] }
     end
 
     def with_legacy_value(options, value)
@@ -38,7 +40,7 @@ module RecordingStudioUsers
       sign = offset.negative? ? "-" : "+"
       hours, remaining_seconds = offset.abs.divmod(3600)
       minutes = remaining_seconds / 60
-      format("%s%02d:%02d", sign, hours, minutes)
+      format("%<sign>s%<hours>02d:%<minutes>02d", sign:, hours:, minutes:)
     end
     private_class_method :formatted_offset
   end

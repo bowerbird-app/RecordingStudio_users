@@ -129,7 +129,11 @@ module RecordingStudioUsers
 
       def add_stimulus_loader
         path = destination_path("app/javascript/controllers/index.js")
-        return show_missing_javascript_notice("app/javascript/controllers/index.js", stimulus_loader_block) unless File.exist?(path)
+        unless File.exist?(path)
+          return show_missing_javascript_notice("app/javascript/controllers/index.js",
+                                                stimulus_loader_block)
+        end
+
         content = File.read(path)
         return if content.match?(recording_studio_users_loader_pattern)
 
@@ -157,7 +161,11 @@ module RecordingStudioUsers
       end
 
       def recording_studio_users_loader_pattern
-        /^\s*(?:eagerLoadControllersFrom|eagerLoadRecordingStudioUsersControllersFrom)\(\s*["']controllers\/recording_studio_users["']/
+        %r{
+          ^\s*
+          (?:eagerLoadControllersFrom|eagerLoadRecordingStudioUsersControllersFrom)
+          \(\s*["']controllers/recording_studio_users["']
+        }x
       end
 
       def recording_studio_users_import_pattern

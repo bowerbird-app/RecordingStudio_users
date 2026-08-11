@@ -4,11 +4,11 @@ require "test_helper"
 
 class ProfilePreferencesTest < Minitest::Test
   def test_locale_options_use_all_host_locales_as_sorted_bcp_47_tags
-    I18n.stub(:available_locales, [:fr, :en_GB, :"en-GB", :en, :fr]) do
+    I18n.stub(:available_locales, %i[fr en_GB en-GB en fr]) do
       assert_equal [
-        ["en", "en"],
-        ["en-GB", "en-GB"],
-        ["fr", "fr"]
+        %w[en en],
+        %w[en-GB en-GB],
+        %w[fr fr]
       ], RecordingStudioUsers::ProfilePreferences.locale_options
     end
   end
@@ -35,7 +35,7 @@ class ProfilePreferencesTest < Minitest::Test
   end
 
   def test_with_legacy_value_preserves_unknown_values_without_duplicates
-    options = [["en-US", "en-US"]]
+    options = [%w[en-US en-US]]
 
     assert_equal options, RecordingStudioUsers::ProfilePreferences.with_legacy_value(options, "en-US")
     assert_equal ["en AU (saved value)", "en_AU"],
