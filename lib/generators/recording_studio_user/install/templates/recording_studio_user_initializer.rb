@@ -4,6 +4,9 @@ RecordingStudioUser.configure do |config|
   # The default model is owned by the gem and uses the host application's users table.
   config.user_model = "RecordingStudioUser::User"
 
+  # Change the URL without changing the public profile_path/edit_profile_path helpers.
+  config.profile_path = "<%= options[:profile_path] %>"
+
   # Authentication and profile pages use the host application's normal layout.
   config.default_layout = "application"
 

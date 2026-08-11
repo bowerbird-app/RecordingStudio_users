@@ -78,12 +78,12 @@ module RecordingStudioUser
       end
 
       def profile_route
-        %(  resource :profile, path: "#{options[:profile_path]}", only: %i[show edit update], controller: "recording_studio_user/profiles")
+        %(  resource :profile, path: RecordingStudioUser.configuration.profile_path, only: %i[show edit update], controller: "recording_studio_user/profiles")
       end
 
       def tailwind_source_lines
         [
-          '@source "../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";',
+          '@source "../../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_user-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flat_pack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";'

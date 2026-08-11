@@ -2,13 +2,12 @@
 
 module RecordingStudioUser
   class Configuration
-    attr_accessor :user_model, :profile_path, :profile_scope, :default_layout,
+    attr_accessor :user_model, :profile_path, :default_layout,
                   :additional_permitted_profile_attributes, :admin_registration_hook
 
     def initialize
       @user_model = "RecordingStudioUser::User"
       @profile_path = "profile"
-      @profile_scope = nil
       @default_layout = "application"
       @additional_permitted_profile_attributes = []
       @admin_registration_hook = -> { RecordingStudioUser.register_admin! }
@@ -18,7 +17,6 @@ module RecordingStudioUser
       {
         user_model: user_model,
         profile_path: profile_path,
-        profile_scope: profile_scope,
         default_layout: default_layout,
         additional_permitted_profile_attributes: additional_permitted_profile_attributes
       }

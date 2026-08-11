@@ -1,139 +1,184 @@
 # RecordingStudioUser
 
-Internal template for building Rails engine addons on top of RecordingStudio.
+`RecordingStudioUser` is a reusable Rails engine for site-level user identity in
+Recording Studio applications. It provides a UUID-backed Devise model, FlatPack
+authentication and profile pages, and a reusable `RecordingStudioAdmin` users
+report.
 
-## What's Included
+Profiles are ordinary global Active Record data. They are not recordings,
+recordables, roots, events, or access resources, and they never depend on a
+selected Recording Studio root.
 
-- **RecordingStudio** gem installed and configured
-- **Devise** authentication with a pre-seeded admin user
-- **Workspace**, **Folder**, and **Page** recordables seeded into the dummy host app
-- **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a FlatPack-based sign-in screen, a simple home page, mounted RecordingStudio routes, and FlatPack's built-in rounded theme enabled by default
+## Dependencies
 
-The dummy app ships with a starter sidebar documentation shell for authenticated pages. The menu entries in `test/dummy/app/views/layouts/flat_pack/_sidebar.html.erb` and the linked docs pages are intended to be rewritten to suit the addon you are building; the template provides the structure and styling, not final product copy. By default, that starter shell uses FlatPack's built-in rounded theme via the root layout attribute rather than custom Tailwind theme recreation.
+- `recording_studio`
+- `flat_pack`
+- `devise`
+- `recording_studio_admin`
 
-## Quick Start
+`recording_studio_accessible` is a host concern for protecting an admin root. The
+profile feature does not use it.
 
-### GitHub Codespaces (Recommended)
-
-1. Click **Code** → **Codespaces** → **Create codespace**
-2. Wait for setup to complete
-3. Run:
-   ```bash
-   cd test/dummy
-   bin/rails db:setup
-   bin/dev
-   ```
-4. Open port 3000 — you'll land on the dummy app home page and can sign in at `/users/sign_in`
-
-The dummy app is intended as a host-app validation surface for authentication, FlatPack rendering, Tailwind source scanning, and RecordingStudio route wiring.
-
-### Login Credentials
-
-| Field    | Value             |
-|----------|-------------------|
-| Email    | admin@admin.com   |
-| Password | Password          |
-
-The login form is prefilled with these credentials for fast access.
-
-### Useful Routes
-
-- `/` — dummy app home page
-- `/users/sign_in` — Devise sign-in page
-- `/recording_studio` — redirect to `/` while the mounted RecordingStudio engine remains data/API-focused
-- `/docs/install` — install guide rendered inside the dummy app
-- `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` — starter sidebar pages to customize for your gem
-
-The home page in `test/dummy/app/views/home/index.html.erb` is also a deliberate starting point. Keep it focused on a minimal demo of the gem's primary behavior; use the sidebar pages for deeper explanations and supporting reference material.
-
-## Architecture
-
-### Root Recording Pattern
-
-This template follows RecordingStudio's root recording pattern:
-
-- **Workspace** is the top-level recordable
-- **Folder** and **Page** demonstrate nested recordables under the workspace root
-- Each configured recordable declares `recording_studio_recordable(...)`; strict declaration validation stays enabled
-- A root `RecordingStudio::Recording` wraps the Workspace
-- `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
-
-### Extending RecordingStudio
-
-To add new recordable types:
-
-1. Create your model (e.g., `Page`, `Comment`)
-2. Register it in `config/initializers/recording_studio.rb`:
-   ```ruby
-   RecordingStudio.configure do |config|
-     config.recordable_types = ["Workspace", "YourNewType"]
-   end
-   ```
-3. Declare whether the model can be a root and which parents may contain it:
-   ```ruby
-   class YourNewType < ApplicationRecord
-     recording_studio_recordable label: "Your new type",
-                                 root: false,
-                                 allowed_parent_types: ["Workspace", "Folder"]
-   end
-   ```
-4. Validate declarations and create recordings under the root:
-   ```ruby
-   RecordingStudio.validate_recordable_declarations!
-   root_recording = RecordingStudio.root_recording_for(workspace)
-   root_recording.record(YourNewType) do |record|
-     record.title = "Example"
-   end
-   ```
-
-### RecordingStudio v3 Declarations
-
-RecordingStudio v3 expects every configured ActiveRecord recordable type to declare its hierarchy rules:
-
-- `Workspace` declares `root: true`
-- `Folder` and `Page` declare `root: false, allowed_parent_types: ["Workspace", "Folder"]`
-- `config.require_recordable_declarations = true` remains enabled in the dummy app initializer
-
-Useful console checks:
+## Install
 
 ```ruby
-RecordingStudio.validate_recordable_declarations!
-RecordingStudio.root_recordable_types
-RecordingStudio.allowed_parent_types_for("Page")
+gem "recording_studio_user"
 ```
 
-### FlatPack UI Components
+```sh
+bundle install
+bin/rails generate recording_studio_user:install
+bin/rails db:migrate
+bin/rails db:seed
+```
 
-All views use FlatPack ViewComponents. Available components include:
+The installer copies the user migration and initializer, adds Devise and singular
+profile routes, registers admin definitions, and adds Tailwind `@source` entries
+when `app/assets/tailwind/application.css` exists. It is idempotent.
 
-- `FlatPack::Button::Component` — Buttons (`:primary`, `:secondary`, `:ghost`)
-- `FlatPack::Card::Component` — Cards (`:default`, `:elevated`, `:outlined`)
-- `FlatPack::Alert::Component` — Alerts (`:success`, `:error`, `:warning`, `:info`)
-- `FlatPack::Badge::Component` — Status badges
-- `FlatPack::Table::Component` — Data tables
-- `FlatPack::TextInput::Component`, `EmailInput`, `PasswordInput` — Form inputs
-- `FlatPack::Breadcrumb::Component` — Navigation breadcrumbs
-- `FlatPack::Navbar::Component` — Navigation sidebar
+It never creates an admin root, mounts an admin route, creates access items, or
+grants access. `recording_studio_user:admin` prints the focused host-registration
+steps and is optional because the main installer enables registration.
 
-Use the live FlatPack demo app at [flatpack-c6p8f.ondigitalocean.app](https://flatpack-c6p8f.ondigitalocean.app/) as the approved UI reference for current shared patterns. Its component table is the fastest way to discover available FlatPack components before introducing new custom UI, and user-provided FlatPack demo URLs should be treated as task context.
+## User and Devise
 
-In GitHub Codespaces or other restricted environments, you may need to enable access to that URL before the agent can inspect the app. If access is unavailable, provide sanitized screenshots, copied markup, or component details so the agent can stay aligned with the shared UI.
+The default model is `RecordingStudioUser::User`, backed by the host `users`
+table. It includes:
 
-See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full documentation.
+- email and Devise database-authentication fields;
+- recoverable and rememberable fields;
+- required first name, last name, and valid Rails time zone;
+- UUID primary key and timestamps.
 
-## Tech Stack
+Enabled Devise modules are `database_authenticatable`, `recoverable`,
+`rememberable`, and `validatable`. The gem owns its sign-in, reset-request,
+reset-password, shared-link, and error views. They use FlatPack and the host
+layout.
 
-| Component       | Version |
-|-----------------|---------|
-| Ruby            | 3.3+    |
-| Rails           | 8.1+    |
-| PostgreSQL      | 16      |
-| TailwindCSS     | 4       |
-| RecordingStudio | v3.0.0 (pinned to `recording_studio/v3.0.0` in `test/dummy/Gemfile`) |
-| FlatPack        | v0.1.129 (pinned in `test/dummy/Gemfile`) |
-| Devise          | latest  |
+The generated route mapping is:
 
-## Documentation
+```ruby
+devise_for :users,
+           class_name: RecordingStudioUser.configuration.user_model,
+           controllers: {
+             sessions: "recording_studio_user/devise/sessions",
+             passwords: "recording_studio_user/devise/passwords"
+           }
+```
 
-The original gem template documentation is preserved in `docs/recording_studio_user/` as architectural reference material. Use it as background on the engine conventions; the README and dummy app are the source of truth for the Recording Studio addon workflow.
+## Profile
+
+The installer adds a singular resource with stable helpers:
+
+- `profile_path`
+- `edit_profile_path`
+
+Every action requires Devise authentication and operates only on `current_user`.
+There is no user ID in the route. The default form permits only `first_name`,
+`last_name`, and `time_zone`; email and password changes are not exposed.
+
+## Configuration
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.user_model = "RecordingStudioUser::User"
+  config.profile_path = "profile"
+  config.default_layout = "application"
+  config.additional_permitted_profile_attributes = []
+  config.admin_registration_hook = -> { RecordingStudioUser.register_admin! }
+end
+```
+
+Changing `profile_path` changes the URL while retaining the singular helper names.
+Additional permitted attributes require a compatible model column and a host view
+override that renders the field.
+
+A custom user class must be Devise-compatible, use the same authentication
+mapping, expose `display_name`, `email`, `time_zone`, and `created_at`, and have a
+schema compatible with the installed `users` table. Applications owning a
+different table must own the corresponding migration. The gem does not claim to
+migrate arbitrary custom models.
+
+## RecordingStudioAdmin users reporting
+
+The gem registers:
+
+- section `users`, with `blast_radius :site`;
+- screen `users`, with name, email, time zone, and created-at columns;
+- a total-user metric linking to the screen;
+- a total-users-over-time chart.
+
+The report is read-only. It has no administrator-status field, editing, deletion,
+or impersonation.
+
+The host chooses placement and authorization. For example:
+
+```ruby
+class SiteAdmin < ApplicationRecord
+  include RecordingStudioAdmin::AllowsAdminSections
+
+  recording_studio_recordable label: "Admin", root: true
+  RecordingStudio.enable_capability(:accessible, on: self)
+
+  recording_studio_admin_sections do
+    section :users
+  end
+end
+```
+
+Mount the surface wherever the host chooses:
+
+```ruby
+recording_studio_admin_for :admin, at: "/admin", root_section: :users
+```
+
+Configure both access and site blast-radius resolution:
+
+```ruby
+RecordingStudioAdmin.configure do |config|
+  config.access_recording_resolver = ->(_context) { host_admin_root_recording }
+  config.site_admin_recording_resolver = config.access_recording_resolver
+end
+```
+
+Install and configure `RecordingStudioAccessible` in the host, enable its
+capability on the chosen admin recordable, and use
+`RecordingStudioAccessible.grant_access` to grant roles. This gem does not decide
+who is an administrator and never adds a user boolean or role column.
+
+## Dummy app
+
+The dummy demonstrates:
+
+- `My workspace`, a normal root;
+- `Admin`, a distinct host-owned root enabling `section :users`;
+- admin access granted with `RecordingStudioAccessible`;
+- `My profile` in the authenticated FlatPack sidebar;
+- a `Users admin` button on the admin root section.
+
+Development credentials default to `admin@example.com` and `user@example.com`.
+Set `DUMMY_ADMIN_PASSWORD` and `DUMMY_USER_PASSWORD` before `db:seed`; the
+development-only fallback is `Password123!`.
+
+```sh
+cd test/dummy
+bin/rails db:setup
+bin/rails tailwindcss:build
+bin/dev
+```
+
+## Upgrades and extension
+
+Re-run the installer after upgrading; marker-based routes and exact Tailwind
+sources are not duplicated. Review newly copied migrations before applying them.
+Override the profile views or registration hook for compatible extensions rather
+than editing gem files. User profiles must remain global and independent of
+Recording Studio roots and access recordings.
+
+## Validation
+
+```sh
+bundle exec rake test
+bundle exec rake test:all
+bundle exec rubocop
+```

@@ -13,3 +13,5 @@
 
 /* Include the engine's views in the Tailwind build */
 @source "../../../../../app/views/**/*.erb";
+@source "../../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";
+@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_user-*/app/views/**/*.erb";

@@ -39,7 +39,10 @@ class InstallGeneratorTest < Minitest::Test
       build_generator(directory, profile_path: "account/profile").install_routes
 
       routes = File.read(File.join(directory, "config/routes.rb"))
-      assert_includes routes, 'resource :profile, path: "account/profile"'
+      assert_includes routes, "resource :profile, path: RecordingStudioUser.configuration.profile_path"
+      generator.copy_initializer
+      initializer = File.read(File.join(directory, "config/initializers/recording_studio_user.rb"))
+      assert_includes initializer, 'config.profile_path = "account/profile"'
     end
   end
 
