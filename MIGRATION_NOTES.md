@@ -3,7 +3,7 @@
 ## Completed Changes
 
 1. Removed repository access entries from `.devcontainer/devcontainer.json`.
-2. Updated `docs/gem_template/CODESPACES.md` and `docs/gem_template/PRIVATE_GEMS.md` for public dependencies.
+2. Updated `docs/recording_studio_user/CODESPACES.md` and `docs/recording_studio_user/PRIVATE_GEMS.md` for public dependencies.
 3. Replaced MakeupArtist with FlatPack in the dummy app dependency, views, layouts, and Tailwind sources.
 4. Pinned the dummy app to FlatPack `v0.1.129` in `test/dummy/Gemfile` and its lockfile.
 5. Regenerated the dummy app bundle and completed the FlatPack installation work.

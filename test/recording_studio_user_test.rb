@@ -2,13 +2,13 @@
 
 require "test_helper"
 
-class GemTemplateTest < Minitest::Test
+class RecordingStudioUserTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.1.2", ::GemTemplate::VERSION
+    assert_equal "0.1.2", ::RecordingStudioUser::VERSION
   end
 
   def test_engine_exists
-    assert_kind_of Class, ::GemTemplate::Engine
+    assert_kind_of Class, ::RecordingStudioUser::Engine
   end
 
   def test_dummy_app_uses_flatpack_sidebar_layout
@@ -143,7 +143,7 @@ class GemTemplateTest < Minitest::Test
   end
 
   def test_engine_does_not_ship_a_home_view
-    view_path = File.expand_path("../app/views/gem_template/home/index.html.erb", __dir__)
+    view_path = File.expand_path("../app/views/recording_studio_user/home/index.html.erb", __dir__)
 
     refute File.exist?(view_path)
   end
