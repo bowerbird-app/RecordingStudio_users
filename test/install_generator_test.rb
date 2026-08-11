@@ -36,7 +36,8 @@ class InstallGeneratorTest < Minitest::Test
 
   def test_profile_url_path_is_configurable_without_changing_helper_name
     with_app do |directory|
-      build_generator(directory, profile_path: "account/profile").install_routes
+      generator = build_generator(directory, profile_path: "account/profile")
+      generator.install_routes
 
       routes = File.read(File.join(directory, "config/routes.rb"))
       assert_includes routes, "resource :profile, path: RecordingStudioUser.configuration.profile_path"
@@ -64,9 +65,9 @@ class InstallGeneratorTest < Minitest::Test
 
   def test_installer_does_not_generate_host_admin_or_access_resources
     source = File.read(File.expand_path(
-      "../lib/generators/recording_studio_user/install/install_generator.rb",
-      __dir__
-    ))
+                         "../lib/generators/recording_studio_user/install/install_generator.rb",
+                         __dir__
+                       ))
 
     refute_includes source, "AdminRoot"
     refute_includes source, "grant_access"

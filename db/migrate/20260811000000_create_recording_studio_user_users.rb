@@ -6,11 +6,8 @@ class CreateRecordingStudioUserUsers < ActiveRecord::Migration[8.1]
       t.string :email, null: false, default: ""
       t.string :encrypted_password, null: false, default: ""
       t.string :reset_password_token
-      t.datetime :reset_password_sent_at
-      t.datetime :remember_created_at
-      t.string :first_name, null: false
-      t.string :last_name, null: false
-      t.string :time_zone, null: false
+      t.datetime :reset_password_sent_at, :remember_created_at
+      t.string :first_name, :last_name, :time_zone, null: false
       t.timestamps null: false
     end
 

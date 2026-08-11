@@ -39,7 +39,9 @@ module RecordingStudioUser
 
       def add_tailwind_sources
         tailwind_path = File.join(destination_root, "app/assets/tailwind/application.css")
-        return say("Tailwind CSS not detected; skipped @source configuration.", :yellow) unless File.exist?(tailwind_path)
+        unless File.exist?(tailwind_path)
+          return say("Tailwind CSS not detected; skipped @source configuration.", :yellow)
+        end
 
         content = File.read(tailwind_path)
         missing = tailwind_source_lines.reject { |line| content.include?(line) }
@@ -78,13 +80,18 @@ module RecordingStudioUser
       end
 
       def profile_route
-        %(  resource :profile, path: RecordingStudioUser.configuration.profile_path, only: %i[show edit update], controller: "recording_studio_user/profiles")
+        <<~RUBY.chomp
+          resource :profile, path: RecordingStudioUser.configuration.profile_path,
+                             only: %i[show edit update],
+                             controller: "recording_studio_user/profiles"
+        RUBY
       end
 
       def tailwind_source_lines
         [
           '@source "../../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_user-*/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+          'recording_studio_user-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flat_pack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";'
         ]

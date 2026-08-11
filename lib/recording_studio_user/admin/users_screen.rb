@@ -24,7 +24,10 @@ module RecordingStudioUser
         series do |context|
           relation = context.query_result.relation.except(:order)
           total = 0
-          points = relation.group(Arel.sql("DATE(created_at)")).order(Arel.sql("DATE(created_at)")).count.map do |date, count|
+          grouped_counts = relation.group(Arel.sql("DATE(created_at)"))
+                                   .order(Arel.sql("DATE(created_at)"))
+                                   .count
+          points = grouped_counts.map do |date, count|
             total += count
             { x: date.to_date.iso8601, y: total }
           end

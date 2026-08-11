@@ -21,12 +21,18 @@ class AdminIntegrationTest < Minitest::Test
     context = RecordingStudioAdmin::Context.new(routes: routes)
     user_class = Class.new
     user_class.define_singleton_method(:count) { 42 }
+    original_user_model = RecordingStudioUser.configuration.user_model
+    RecordingStudioUser.const_set(:WidgetTestUser, user_class)
+    RecordingStudioUser.configuration.user_model = "RecordingStudioUser::WidgetTestUser"
 
-    RecordingStudioUser.stub(:user_class, user_class) do
-      widget = RecordingStudioUser::Admin::TotalUsersWidget.resolve(context)
+    widget = RecordingStudioUser::Admin::TotalUsersWidget.resolve(context)
 
-      assert_equal 42, widget.value
-      assert_equal "/admin/screens/users", widget.link_to
+    assert_equal 42, widget.value
+    assert_equal "/admin/screens/users", widget.link_to
+  ensure
+    RecordingStudioUser.configuration.user_model = original_user_model
+    if RecordingStudioUser.const_defined?(:WidgetTestUser, false)
+      RecordingStudioUser.send(:remove_const, :WidgetTestUser)
     end
   end
 
