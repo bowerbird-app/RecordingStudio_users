@@ -1,0 +1,19 @@
+<div class="flex flex-wrap gap-3">
+  <% unless controller_name == "sessions" %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Sign in",
+      url: new_session_path(resource_name),
+      style: :secondary,
+      size: :sm
+    ) %>
+  <% end %>
+
+  <% if devise_mapping.recoverable? && controller_name != "passwords" %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Forgot your password?",
+      url: new_password_path(resource_name),
+      style: :ghost,
+      size: :sm
+    ) %>
+  <% end %>
+</div>

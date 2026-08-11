@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 RecordingStudioUser.configure do |config|
-  # Set your API key (recommended to use ENV or Rails credentials)
-  # config.api_key = ENV["RECORDING_STUDIO_USER_API_KEY"]
+  # The default model is owned by the gem and uses the host application's users table.
+  config.user_model = "RecordingStudioUser::User"
 
-  # Enable optional feature X
-  # config.enable_feature_x = false
+  # Authentication and profile pages use the host application's normal layout.
+  config.default_layout = "application"
 
-  # Timeout in seconds for external calls
-  # config.timeout = 5
+  # Keep this empty unless the compatible user model and profile UI support extra fields.
+  config.additional_permitted_profile_attributes = []
+
+  # Definitions register automatically without changing RecordingStudioAdmin access settings.
+  config.admin_registration_hook = -> { RecordingStudioUser.register_admin! }
 end

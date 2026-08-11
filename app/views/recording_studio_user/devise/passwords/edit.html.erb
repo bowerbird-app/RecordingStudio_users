@@ -1,0 +1,41 @@
+<div class="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-md flex-col justify-center gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Choose a new password",
+    subtitle: "Enter and confirm your new password"
+  ) %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.body do %>
+      <%= render "recording_studio_user/devise/shared/error_messages", resource: resource %>
+
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, class: "space-y-5" }) do |form| %>
+        <%= form.hidden_field :reset_password_token %>
+
+        <%= render FlatPack::PasswordInput::Component.new(
+          name: "#{resource_name}[password]",
+          label: "New password",
+          required: true,
+          autofocus: true,
+          autocomplete: "new-password",
+          help_text: (@minimum_password_length ? "#{@minimum_password_length} characters minimum" : nil),
+          error: resource.errors.full_messages_for(:password).first
+        ) %>
+
+        <%= render FlatPack::PasswordInput::Component.new(
+          name: "#{resource_name}[password_confirmation]",
+          label: "Confirm new password",
+          required: true,
+          autocomplete: "new-password",
+          error: resource.errors.full_messages_for(:password_confirmation).first
+        ) %>
+
+        <%= render FlatPack::Button::Component.new(
+          text: "Change password",
+          style: :primary,
+          type: "submit",
+          class: "w-full"
+        ) %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

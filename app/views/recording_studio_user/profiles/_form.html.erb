@@ -1,0 +1,56 @@
+<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+  <% card.body do %>
+    <% if user.errors.any? %>
+      <%= render FlatPack::Alert::Component.new(
+        title: "Please correct the highlighted fields",
+        description: user.errors.full_messages.to_sentence,
+        style: :danger,
+        class: "mb-6"
+      ) %>
+    <% end %>
+
+    <%= form_with scope: :user, url: profile_path, method: :patch, class: "space-y-5" do %>
+      <%= render FlatPack::TextInput::Component.new(
+        name: "user[first_name]",
+        label: "First name",
+        value: user.first_name,
+        required: true,
+        autofocus: true,
+        autocomplete: "given-name",
+        error: user.errors.full_messages_for(:first_name).first
+      ) %>
+
+      <%= render FlatPack::TextInput::Component.new(
+        name: "user[last_name]",
+        label: "Last name",
+        value: user.last_name,
+        required: true,
+        autocomplete: "family-name",
+        error: user.errors.full_messages_for(:last_name).first
+      ) %>
+
+      <%= render FlatPack::Select::Component.new(
+        name: "user[time_zone]",
+        label: "Time zone",
+        options: ActiveSupport::TimeZone.all.map { |zone| [zone.to_s, zone.name] },
+        value: user.time_zone,
+        required: true,
+        searchable: true,
+        error: user.errors.full_messages_for(:time_zone).first
+      ) %>
+
+      <div class="flex gap-3">
+        <%= render FlatPack::Button::Component.new(
+          text: "Save profile",
+          style: :primary,
+          type: "submit"
+        ) %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Cancel",
+          style: :secondary,
+          url: profile_path
+        ) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

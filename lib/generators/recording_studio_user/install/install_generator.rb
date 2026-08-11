@@ -7,98 +7,86 @@ module RecordingStudioUser
     class InstallGenerator < Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
 
-      desc "Installs RecordingStudioUser engine into your application"
+      desc "Install RecordingStudioUser authentication, profiles, and admin reporting"
 
-      class_option(
-        :mount_path,
-        type: :string,
-        default: "/recording_studio_user",
-        desc: "Route prefix used when mounting the engine"
-      )
+      class_option :profile_path,
+                   type: :string,
+                   default: "profile",
+                   desc: "URL path for the singular profile resource"
 
-      def mount_engine
-        route %(mount RecordingStudioUser::Engine, at: "#{options[:mount_path]}")
+      def copy_migrations
+        invoke "recording_studio_user:migrations"
       end
 
       def copy_initializer
-        template "recording_studio_user_initializer.rb", "config/initializers/recording_studio_user.rb"
+        destination = "config/initializers/recording_studio_user.rb"
+        return say_status(:skip, destination, :yellow) if File.exist?(File.join(destination_root, destination))
+
+        template "recording_studio_user_initializer.rb", destination
       end
 
-      def add_yaml_config
-        return unless yes?("Would you like to add `config/recording_studio_user.yml` for environment-specific settings? [y/N]")
+      def install_routes
+        routes_path = File.join(destination_root, "config/routes.rb")
+        return unless File.exist?(routes_path)
 
-        template "recording_studio_user.yml", "config/recording_studio_user.yml"
+        content = File.read(routes_path)
+        return say_status(:skip, "RecordingStudioUser routes", :yellow) if content.include?(route_marker)
+
+        sentinel = "Rails.application.routes.draw do\n"
+        route_block = "\n#{route_marker}\n#{devise_route}\n#{profile_route}\n"
+        inject_into_file "config/routes.rb", route_block, after: sentinel
       end
 
-      def add_tailwind_source
-        tailwind_css_path = Rails.root.join("app/assets/tailwind/application.css")
-        return show_missing_tailwind_notice unless File.exist?(tailwind_css_path)
+      def add_tailwind_sources
+        tailwind_path = File.join(destination_root, "app/assets/tailwind/application.css")
+        return say("Tailwind CSS not detected; skipped @source configuration.", :yellow) unless File.exist?(tailwind_path)
 
-        tailwind_content = File.read(tailwind_css_path)
-        missing_lines = missing_tailwind_source_lines(tailwind_content)
+        content = File.read(tailwind_path)
+        missing = tailwind_source_lines.reject { |line| content.include?(line) }
+        return say("Tailwind sources already include RecordingStudioUser and FlatPack.", :green) if missing.empty?
 
-        if missing_lines.empty?
-          say "Tailwind already configured to include RecordingStudioUser and FlatPack sources.", :green
+        unless content.include?('@import "tailwindcss"')
+          say("Add these Tailwind sources manually:", :yellow)
+          missing.each { |line| say("  #{line}", :yellow) }
           return
         end
 
-        if tailwind_content.include?('@import "tailwindcss"')
-          inject_tailwind_sources(tailwind_css_path, missing_lines)
-          return
-        end
-
-        show_manual_tailwind_notice(missing_lines)
+        inject_into_file "app/assets/tailwind/application.css",
+                         "\n#{missing.join("\n")}\n",
+                         after: "@import \"tailwindcss\";\n"
       end
 
-      def show_readme
+      def show_next_steps
         readme "INSTALL.md" if behavior == :invoke
       end
 
       private
 
-      def show_missing_tailwind_notice
-        say "Tailwind CSS not detected. Skipping Tailwind configuration.", :yellow
-        say "If you use Tailwind, add these lines to your Tailwind CSS config:", :yellow
-        tailwind_source_lines.each do |line|
-          say "  #{line}", :yellow
-        end
+      def route_marker
+        "  # RecordingStudioUser routes"
       end
 
-      def missing_tailwind_source_lines(tailwind_content)
-        tailwind_source_lines.reject { |line| tailwind_content.include?(line) }
+      def devise_route
+        <<~RUBY.chomp
+          devise_for :users,
+                     class_name: RecordingStudioUser.configuration.user_model,
+                     controllers: {
+                       sessions: "recording_studio_user/devise/sessions",
+                       passwords: "recording_studio_user/devise/passwords"
+                     }
+        RUBY
       end
 
-      def inject_tailwind_sources(tailwind_css_path, missing_lines)
-        inject_into_file tailwind_css_path, after: "@import \"tailwindcss\";\n" do
-          "#{formatted_tailwind_source_block(missing_lines)}\n"
-        end
-        say "Added RecordingStudioUser and FlatPack sources to Tailwind CSS configuration.", :green
-        say "Run 'bin/rails tailwindcss:build' to rebuild your CSS.", :green
-      end
-
-      def formatted_tailwind_source_block(missing_lines)
-        [
-          "\n/* Include RecordingStudioUser engine views for Tailwind CSS */",
-          missing_lines.first(2),
-          "\n/* Include FlatPack component sources for Tailwind CSS */",
-          missing_lines.drop(2)
-        ].flatten.reject(&:empty?).join("\n")
-      end
-
-      def show_manual_tailwind_notice(missing_lines)
-        say "Could not find @import \"tailwindcss\" in your Tailwind config.", :yellow
-        say "Please manually add these lines to your Tailwind CSS config:", :yellow
-        missing_lines.each do |line|
-          say "  #{line}", :yellow
-        end
+      def profile_route
+        %(  resource :profile, path: "#{options[:profile_path]}", only: %i[show edit update], controller: "recording_studio_user/profiles")
       end
 
       def tailwind_source_lines
         [
           '@source "../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_user-*/app/views/**/*.erb";',
-          '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
+          '@source "../../vendor/bundle/**/flat_pack/app/components/**/*.{rb,erb}";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";'
         ]
       end
     end

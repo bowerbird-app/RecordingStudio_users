@@ -1,25 +1,26 @@
 # frozen_string_literal: true
 
-require_relative "hooks"
-
 module RecordingStudioUser
   class Configuration
-    attr_accessor :api_key, :enable_feature_x, :timeout
-    attr_reader :hooks
+    attr_accessor :user_model, :profile_path, :profile_scope, :default_layout,
+                  :additional_permitted_profile_attributes, :admin_registration_hook
 
     def initialize
-      @api_key = ENV.fetch("RECORDING_STUDIO_USER_API_KEY", nil)
-      @enable_feature_x = false
-      @timeout = 5
-      @hooks = Hooks.new
+      @user_model = "RecordingStudioUser::User"
+      @profile_path = "profile"
+      @profile_scope = nil
+      @default_layout = "application"
+      @additional_permitted_profile_attributes = []
+      @admin_registration_hook = -> { RecordingStudioUser.register_admin! }
     end
 
     def to_h
       {
-        api_key: api_key,
-        enable_feature_x: enable_feature_x,
-        timeout: timeout,
-        hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
+        user_model: user_model,
+        profile_path: profile_path,
+        profile_scope: profile_scope,
+        default_layout: default_layout,
+        additional_permitted_profile_attributes: additional_permitted_profile_attributes
       }
     end
 
@@ -31,6 +32,14 @@ module RecordingStudioUser
         setter = "#{key}="
         public_send(setter, v) if respond_to?(setter)
       end
+    end
+
+    def permitted_profile_attributes
+      %i[first_name last_name time_zone] + Array(additional_permitted_profile_attributes).map(&:to_sym)
+    end
+
+    def register_admin!
+      admin_registration_hook&.call
     end
   end
 end

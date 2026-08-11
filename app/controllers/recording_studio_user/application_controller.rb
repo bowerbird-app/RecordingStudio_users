@@ -3,6 +3,6 @@
 module RecordingStudioUser
   class ApplicationController < ActionController::Base
     protect_from_forgery with: :exception
-    layout "application"
+    layout -> { RecordingStudioUser.configuration.default_layout }
   end
 end

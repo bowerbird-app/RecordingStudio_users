@@ -1,0 +1,8 @@
+<% if resource.errors.any? %>
+  <%= render FlatPack::Alert::Component.new(
+    title: "Please correct the highlighted fields",
+    description: resource.errors.full_messages.to_sentence,
+    style: :danger,
+    class: "mb-6"
+  ) %>
+<% end %>

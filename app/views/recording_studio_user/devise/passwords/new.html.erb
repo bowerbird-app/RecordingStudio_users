@@ -1,0 +1,35 @@
+<div class="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-md flex-col justify-center gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Reset password",
+    subtitle: "Request password reset instructions"
+  ) %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.body do %>
+      <%= render "recording_studio_user/devise/shared/error_messages", resource: resource %>
+
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "space-y-5" }) do %>
+        <%= render FlatPack::EmailInput::Component.new(
+          name: "#{resource_name}[email]",
+          label: "Email address",
+          value: resource.email,
+          required: true,
+          autofocus: true,
+          autocomplete: "email",
+          error: resource.errors.full_messages_for(:email).first
+        ) %>
+
+        <%= render FlatPack::Button::Component.new(
+          text: "Send reset instructions",
+          style: :primary,
+          type: "submit",
+          class: "w-full"
+        ) %>
+      <% end %>
+    <% end %>
+
+    <% card.footer do %>
+      <%= render "recording_studio_user/devise/shared/links" %>
+    <% end %>
+  <% end %>
+</div>

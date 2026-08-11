@@ -6,16 +6,16 @@ Gem::Specification.new do |spec|
   spec.name        = "recording_studio_user"
   spec.version     = RecordingStudioUser::VERSION
   spec.authors     = ["Bowerbird"]
-  spec.homepage    = "https://github.com/bowerbird-app/RecordingStudio_recording_studio_user"
-  spec.summary     = "Recording Studio addon template for Rails engines"
-  spec.description = "An internal template for building Recording Studio addons with Rails 8.1, " \
-                     "UUID-backed PostgreSQL models, TailwindCSS, and GitHub Codespaces support"
+  spec.homepage    = "https://github.com/bowerbird-app/RecordingStudio_users"
+  spec.summary     = "Reusable user authentication and profile support for Recording Studio"
+  spec.description = "A Rails engine providing Devise authentication, global user profiles, " \
+                     "and RecordingStudioAdmin user reporting."
   spec.license     = "MIT"
   spec.required_ruby_version = ">= 3.3.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/bowerbird-app/RecordingStudio_recording_studio_user"
-  spec.metadata["changelog_uri"] = "https://github.com/bowerbird-app/RecordingStudio_recording_studio_user/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/main/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
@@ -23,4 +23,8 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", "~> 8.1.0"
+  spec.add_dependency "devise", "~> 5.0"
+  spec.add_dependency "flat_pack", "~> 0.1.129"
+  spec.add_dependency "recording_studio", "~> 3.0"
+  spec.add_dependency "recording_studio_admin", "~> 1.2"
 end

@@ -1,0 +1,8 @@
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Edit profile",
+    subtitle: "Update your name and time zone"
+  ) %>
+
+  <%= render "form", user: @user %>
+</div>

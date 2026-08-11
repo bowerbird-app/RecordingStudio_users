@@ -1,0 +1,63 @@
+<div class="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-md flex-col justify-center gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Sign in",
+    subtitle: "Sign in to your Recording Studio account"
+  ) %>
+
+  <% if alert.present? %>
+    <%= render FlatPack::Alert::Component.new(
+      title: "Sign in failed",
+      description: alert,
+      style: :danger
+    ) %>
+  <% end %>
+
+  <% if notice.present? %>
+    <%= render FlatPack::Alert::Component.new(
+      title: notice,
+      style: :success
+    ) %>
+  <% end %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.body do %>
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-5" }) do %>
+        <%= render FlatPack::EmailInput::Component.new(
+          name: "#{resource_name}[email]",
+          label: "Email address",
+          value: resource.email,
+          required: true,
+          autofocus: true,
+          autocomplete: "email"
+        ) %>
+
+        <%= render FlatPack::PasswordInput::Component.new(
+          name: "#{resource_name}[password]",
+          label: "Password",
+          required: true,
+          autocomplete: "current-password"
+        ) %>
+
+        <% if devise_mapping.rememberable? %>
+          <%= render FlatPack::Checkbox::Component.new(
+            name: "#{resource_name}[remember_me]",
+            value: "1",
+            label: "Remember me",
+            checked: resource.remember_me == "1"
+          ) %>
+        <% end %>
+
+        <%= render FlatPack::Button::Component.new(
+          text: "Sign in",
+          style: :primary,
+          type: "submit",
+          class: "w-full"
+        ) %>
+      <% end %>
+    <% end %>
+
+    <% card.footer do %>
+      <%= render "recording_studio_user/devise/shared/links" %>
+    <% end %>
+  <% end %>
+</div>
