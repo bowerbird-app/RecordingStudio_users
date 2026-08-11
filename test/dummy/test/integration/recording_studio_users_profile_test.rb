@@ -90,6 +90,8 @@ class RecordingStudioUsersProfileTest < ActionDispatch::IntegrationTest
         assert_includes forms.first["data-action"],
                 "change->recording-studio-attachable--attachment-revision-upload#fileSelected"
         assert_includes forms.first["data-action"],
+          "drop->recording-studio-attachable--attachment-revision-upload#fileSelected"
+        assert_includes forms.first["data-action"],
                 "submit->recording-studio-attachable--attachment-revision-upload#handleSubmit"
         assert_select "input[type='file'][name='avatar_file']" \
                 "[data-recording-studio-attachable--attachment-revision-upload-target='fileInput']" do |inputs|
@@ -155,7 +157,7 @@ class RecordingStudioUsersProfileTest < ActionDispatch::IntegrationTest
     end
 
     sign_in user
-    post recording_studio_users.avatar_profile_path, params: {signed_blob_id: blob.signed_id}
+    post recording_studio_users.avatar_profile_path, params: { signed_blob_id: blob.signed_id }
 
     assert_redirected_to recording_studio_users.profile_path
     assert_equal "Avatar uploaded.", flash[:notice]
