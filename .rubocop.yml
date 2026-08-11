@@ -34,6 +34,7 @@ Metrics/AbcSize:
 # Allow empty blocks in tests (common for stubs/mocks)
 Lint/EmptyBlock:
   Exclude:
+    - 'config/routes.rb'
     - 'test/**/*'
 
 # Allow nested method definitions in tests (common for testing behavior)
