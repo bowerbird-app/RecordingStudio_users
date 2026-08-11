@@ -4,6 +4,12 @@ module RecordingStudioUsers
   class Engine < ::Rails::Engine
     isolate_namespace RecordingStudioUsers
 
+    initializer "recording_studio_users.assets" do |app|
+      next unless app.config.respond_to?(:assets)
+
+      app.config.assets.paths << root.join("app/javascript")
+    end
+
     initializer "recording_studio_users.load_config" do |app|
       config_file = File.join(app.config.paths["config"].first, "recording_studio_users.yml")
       if app.respond_to?(:config_for) && File.exist?(config_file)

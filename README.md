@@ -81,7 +81,7 @@ execution-local bootstrap context with `ensure`.
 RecordingStudioUsers.revise_profile(
   user: user,
   actor: current_user,
-  attributes: { display_name: "Ada", locale: "en" }
+  attributes: { display_name: "Ada", locale: "en-US" }
 )
 
 RecordingStudioUsers.upload_avatar(user:, signed_blob_id:, actor:)
@@ -97,6 +97,28 @@ JavaScript. The controller accepts only the resulting signed blob identifier and
 Avatar previews use Active Storage variants and require a native image processor. The provided dev
 container installs `libvips-tools`; other hosts must provide libvips or configure Active Storage to
 use another installed variant processor.
+
+Locale and time-zone Profile fields render as selects. The bundled form offers supported BCP 47 tags
+and stores time zones as IANA identifiers such as `America/New_York`. The service remains permissive
+for API-provided and legacy values. When a field has no saved value, the bundled Stimulus controller
+selects a browser-derived default without submitting the form. Saved values, including values from
+older versions that are outside the current option catalog, are never overwritten.
+
+The install generator pins and loads the engine's Stimulus controllers in importmap applications.
+For an existing installation, rerun the generator or add the following to `config/importmap.rb`:
+
+```ruby
+pin_all_from RecordingStudioUsers::Engine.root.join("app/javascript/controllers/recording_studio_users"),
+  under: "controllers/recording_studio_users",
+  to: "controllers/recording_studio_users"
+```
+
+Then load the namespace from `app/javascript/controllers/index.js`:
+
+```javascript
+import { eagerLoadControllersFrom as eagerLoadRecordingStudioUsersControllersFrom } from "@hotwired/stimulus-loading"
+eagerLoadRecordingStudioUsersControllersFrom("controllers/recording_studio_users", application)
+```
 
 Profile direct attachments are reserved for the avatar. Zero or one active direct attachment is
 valid; more than one fails topology validation.

@@ -15,3 +15,7 @@ pin_all_from RecordingStudioAttachable::Engine.root.join("app/javascript/control
 	to: "controllers/recording_studio_attachable"
 pin "recording_studio_attachable/tiptap/attachment_image_addon",
 	to: "recording_studio_attachable/tiptap/attachment_image_addon.js"
+
+pin_all_from RecordingStudioUsers::Engine.root.join("app/javascript/controllers/recording_studio_users"),
+	under: "controllers/recording_studio_users",
+	to: "controllers/recording_studio_users"

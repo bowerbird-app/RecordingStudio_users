@@ -169,12 +169,96 @@ class InstallGeneratorTest < Minitest::Test
     assert_equal ["INSTALL.md"], shown_templates
   end
 
+  def test_add_javascript_configures_importmap_and_stimulus_idempotently
+    with_temp_app do |dir|
+      FileUtils.mkdir_p(File.join(dir, "config"))
+      FileUtils.mkdir_p(File.join(dir, "app/javascript/controllers"))
+      File.write(File.join(dir, "config/importmap.rb"), "pin \"application\"\n")
+      File.write(
+        File.join(dir, "app/javascript/controllers/index.js"),
+        "import { application } from \"controllers/application\"\n"
+      )
+      generator = build_generator(dir)
+
+      generator.add_javascript
+      generator.add_javascript
+
+      importmap = File.read(File.join(dir, "config/importmap.rb"))
+      controllers = File.read(File.join(dir, "app/javascript/controllers/index.js"))
+      assert_equal 1, importmap.scan("pin_all_from RecordingStudioUsers::Engine.root").size
+      assert_equal 1, controllers.scan(
+        'eagerLoadRecordingStudioUsersControllersFrom("controllers/recording_studio_users", application)'
+      ).size
+      assert_includes controllers, "@hotwired/stimulus-loading"
+    end
+  end
+
+  def test_add_javascript_reports_manual_setup_when_host_files_are_missing
+    with_temp_app do |dir|
+      messages = []
+      generator = build_generator(dir)
+
+      generator.stub(:say, ->(message, color = nil) { messages << [message, color] }) do
+        generator.add_javascript
+      end
+
+      assert_includes messages,
+                      ["config/importmap.rb was not found. Add this RecordingStudioUsers JavaScript " \
+                       "configuration manually:", :yellow]
+      assert_includes messages,
+                      ["app/javascript/controllers/index.js was not found. Add this RecordingStudioUsers " \
+                       "JavaScript configuration manually:", :yellow]
+    end
+  end
+
+  def test_add_javascript_recognizes_existing_single_quoted_loader
+    with_temp_app do |dir|
+      FileUtils.mkdir_p(File.join(dir, "config"))
+      FileUtils.mkdir_p(File.join(dir, "app/javascript/controllers"))
+      File.write(File.join(dir, "config/importmap.rb"), "pin \"application\"\n")
+      controller_path = File.join(dir, "app/javascript/controllers/index.js")
+      existing = <<~JAVASCRIPT
+        import { eagerLoadControllersFrom } from '@hotwired/stimulus-loading'
+        eagerLoadControllersFrom('controllers/recording_studio_users', application)
+      JAVASCRIPT
+      File.write(controller_path, existing)
+
+      build_generator(dir).add_javascript
+
+      assert_equal existing, File.read(controller_path)
+    end
+  end
+
+  def test_add_javascript_reuses_existing_aliased_import
+    with_temp_app do |dir|
+      FileUtils.mkdir_p(File.join(dir, "config"))
+      FileUtils.mkdir_p(File.join(dir, "app/javascript/controllers"))
+      File.write(File.join(dir, "config/importmap.rb"), "pin \"application\"\n")
+      controller_path = File.join(dir, "app/javascript/controllers/index.js")
+      File.write(
+        controller_path,
+        "import { eagerLoadControllersFrom as eagerLoadRecordingStudioUsersControllersFrom } " \
+        "from \"@hotwired/stimulus-loading\"\n"
+      )
+
+      build_generator(dir).add_javascript
+
+      controllers = File.read(controller_path)
+      assert_equal 1, controllers.scan("eagerLoadControllersFrom as eagerLoadRecordingStudioUsersControllersFrom").size
+      assert_equal 1, controllers.scan(
+        'eagerLoadRecordingStudioUsersControllersFrom("controllers/recording_studio_users", application)'
+      ).size
+    end
+  end
+
   def test_install_guide_includes_migration_and_host_setup_steps
     install_guide = File.read(INSTALL_TEMPLATE_PATH)
 
     assert_includes install_guide, "bin/rails db:migrate"
     assert_includes install_guide, "Current.actor"
     assert_includes install_guide, "recording_studio_users:backfill_profiles"
+    assert_includes install_guide, "config/importmap.rb"
+    assert_includes install_guide, "app/javascript/controllers/index.js"
   end
 
   private

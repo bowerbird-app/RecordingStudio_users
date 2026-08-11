@@ -73,7 +73,12 @@
   <section class="space-y-5" aria-labelledby="profile-fields-heading">
     <h3 id="profile-fields-heading" class="text-lg font-semibold">Profile information</h3>
 
-    <%= form_with scope: :profile, url: profile_path, method: :patch do %>
+    <%= form_with(
+      scope: :profile,
+      url: profile_path,
+      method: :patch,
+      data: {controller: "recording-studio-users--profile-preferences"}
+    ) do %>
       <div class="space-y-4">
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:display_name) %>
           <%= render FlatPack::TextInput::Component.new(
@@ -92,19 +97,34 @@
         <% end %>
 
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:locale) %>
-          <%= render FlatPack::TextInput::Component.new(
+          <%= render FlatPack::Select::Component.new(
             name: "profile[locale]",
             label: "Locale",
-            value: @profile.locale
+            placeholder: "Select a locale",
+            options: RecordingStudioUsers::ProfilePreferences.with_legacy_value(
+              RecordingStudioUsers::ProfilePreferences.locale_options,
+              @profile.locale
+            ),
+            value: @profile.locale,
+            data: {recording_studio_users__profile_preferences_target: "locale"}
           ) %>
         <% end %>
 
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:time_zone) %>
-          <%= render FlatPack::TextInput::Component.new(
-            name: "profile[time_zone]",
-            label: "Time zone",
-            value: @profile.time_zone
-          ) %>
+          <div data-recording-studio-users--profile-preferences-target="timeZone">
+            <%= render FlatPack::Select::Component.new(
+              name: "profile[time_zone]",
+              label: "Time zone",
+              placeholder: "Select a time zone",
+              options: RecordingStudioUsers::ProfilePreferences.with_legacy_value(
+                RecordingStudioUsers::ProfilePreferences.time_zone_options,
+                @profile.time_zone
+              ),
+              value: @profile.time_zone,
+              searchable: true,
+              search_mode: :local
+            ) %>
+          </div>
         <% end %>
 
         <div class="flex gap-2">

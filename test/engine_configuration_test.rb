@@ -40,6 +40,18 @@ class EngineConfigurationTest < Minitest::Test
     end
   end
 
+  def test_registers_engine_javascript_with_the_host_asset_pipeline
+    assets = Struct.new(:paths).new([])
+    app = Struct.new(:config).new(Struct.new(:assets).new(assets))
+    initializer = RecordingStudioUsers::Engine.initializers.find do |candidate|
+      candidate.name == "recording_studio_users.assets"
+    end
+
+    initializer.block.call(app)
+
+    assert_includes assets.paths, RecordingStudioUsers::Engine.root.join("app/javascript")
+  end
+
   private
 
   def application_for(directory, &config_for)

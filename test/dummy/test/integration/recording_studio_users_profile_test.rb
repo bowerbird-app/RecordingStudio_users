@@ -102,11 +102,30 @@ class RecordingStudioUsersProfileTest < ActionDispatch::IntegrationTest
       end
     end
     assert_select "section[aria-labelledby='profile-fields-heading']" do
-      assert_select "form[action='#{recording_studio_users.profile_path}']", count: 1
+      assert_select "form[action='#{recording_studio_users.profile_path}']" \
+                    "[data-controller='recording-studio-users--profile-preferences']", count: 1
       assert_select "input[name='profile[display_name]'][value='#{profile_attributes[:display_name]}']"
       assert_select "textarea[name='profile[biography]']", text: profile_attributes[:biography]
-      assert_select "input[name='profile[locale]'][value='#{profile_attributes[:locale]}']"
-      assert_select "input[name='profile[time_zone]'][value='#{profile_attributes[:time_zone]}']"
+      assert_select "select[name='profile[locale]']" \
+                    "[data-recording-studio-users--profile-preferences-target='locale']" do
+        assert_select "option[value='']", text: "Select a locale"
+        assert_select "option[value='en-US']", text: "English (United States)"
+        assert_select "option[value='en-GB']", text: "English (United Kingdom)"
+        assert_select "option[value='es-ES']", text: "Español (España)"
+        assert_select "option[value='#{profile_attributes[:locale]}'][selected]", text: "en-AU (saved value)"
+      end
+      assert_select "[data-recording-studio-users--profile-preferences-target='timeZone']" do
+        assert_select "[data-controller='flat-pack--select']" \
+                      "[data-flat-pack--select-searchable-value='true']" \
+                      "[data-flat-pack--select-search-mode-value='local']" do
+          assert_select "input[type='hidden'][name='profile[time_zone]']" \
+                        "[value='#{profile_attributes[:time_zone]}']"
+          assert_select "input[type='text'][data-action='input->flat-pack--select#search']"
+          assert_select "[role='option'][data-value='America/New_York']", text: /America\/New York/
+          assert_select "[role='option'][data-value='#{profile_attributes[:time_zone]}']" \
+                        "[aria-selected='true']", text: /Australia\/Melbourne/
+        end
+      end
     end
     assert_operator response.body.index('id="avatar-heading"'), :<,
                     response.body.index('id="profile-fields-heading"')

@@ -108,11 +108,66 @@ module RecordingStudioUsers
         show_manual_tailwind_notice(missing_lines)
       end
 
+      def add_javascript
+        add_importmap_pins
+        add_stimulus_loader
+      end
+
       def show_readme
         readme "INSTALL.md" if behavior == :invoke
       end
 
       private
+
+      def add_importmap_pins
+        path = destination_path("config/importmap.rb")
+        return show_missing_javascript_notice("config/importmap.rb", importmap_pin_block) unless File.exist?(path)
+        return if File.read(path).include?("controllers/recording_studio_users")
+
+        append_to_file path, "\n#{importmap_pin_block}\n"
+      end
+
+      def add_stimulus_loader
+        path = destination_path("app/javascript/controllers/index.js")
+        return show_missing_javascript_notice("app/javascript/controllers/index.js", stimulus_loader_block) unless File.exist?(path)
+        content = File.read(path)
+        return if content.match?(recording_studio_users_loader_pattern)
+
+        block = content.match?(recording_studio_users_import_pattern) ? stimulus_loader_call : stimulus_loader_block
+        append_to_file path, "\n#{block}\n"
+      end
+
+      def importmap_pin_block
+        <<~RUBY.chomp
+          pin_all_from RecordingStudioUsers::Engine.root.join("app/javascript/controllers/recording_studio_users"),
+            under: "controllers/recording_studio_users",
+            to: "controllers/recording_studio_users"
+        RUBY
+      end
+
+      def stimulus_loader_block
+        <<~JAVASCRIPT.chomp
+          import { eagerLoadControllersFrom as eagerLoadRecordingStudioUsersControllersFrom } from "@hotwired/stimulus-loading"
+          #{stimulus_loader_call}
+        JAVASCRIPT
+      end
+
+      def stimulus_loader_call
+        'eagerLoadRecordingStudioUsersControllersFrom("controllers/recording_studio_users", application)'
+      end
+
+      def recording_studio_users_loader_pattern
+        /^\s*(?:eagerLoadControllersFrom|eagerLoadRecordingStudioUsersControllersFrom)\(\s*["']controllers\/recording_studio_users["']/
+      end
+
+      def recording_studio_users_import_pattern
+        /^\s*import\s+\{[^}]*\beagerLoadControllersFrom\s+as\s+eagerLoadRecordingStudioUsersControllersFrom\b/
+      end
+
+      def show_missing_javascript_notice(path, content)
+        say "#{path} was not found. Add this RecordingStudioUsers JavaScript configuration manually:", :yellow
+        content.each_line { |line| say "  #{line.chomp}", :yellow }
+      end
 
       def destination_path(path)
         File.join(destination_root, path)
