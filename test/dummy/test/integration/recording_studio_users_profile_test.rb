@@ -57,7 +57,7 @@ class RecordingStudioUsersProfileTest < ActionDispatch::IntegrationTest
     profile_attributes = {
       display_name: "Studio Administrator",
       biography: "Keeps the recording workflow moving.",
-      locale: "en-AU",
+      locale: "x-legacy",
       time_zone: "Australia/Melbourne"
     }
     result = RecordingStudioUsers.revise_profile(
@@ -103,16 +103,24 @@ class RecordingStudioUsersProfileTest < ActionDispatch::IntegrationTest
     end
     assert_select "section[aria-labelledby='profile-fields-heading']" do
       assert_select "form[action='#{recording_studio_users.profile_path}']" \
-                    "[data-controller='recording-studio-users--profile-preferences']", count: 1
+                    "[data-controller='recording-studio-users--profile-preferences']" \
+                    "[data-recording-studio-users--profile-preferences-default-locale-value='en']", count: 1
       assert_select "input[name='profile[display_name]'][value='#{profile_attributes[:display_name]}']"
       assert_select "textarea[name='profile[biography]']", text: profile_attributes[:biography]
-      assert_select "select[name='profile[locale]']" \
-                    "[data-recording-studio-users--profile-preferences-target='locale']" do
-        assert_select "option[value='']", text: "Select a locale"
-        assert_select "option[value='en-US']", text: "English (United States)"
-        assert_select "option[value='en-GB']", text: "English (United Kingdom)"
-        assert_select "option[value='es-ES']", text: "Español (España)"
-        assert_select "option[value='#{profile_attributes[:locale]}'][selected]", text: "en-AU (saved value)"
+      assert_select "[data-recording-studio-users--profile-preferences-target='locale']" do
+        assert_select "[data-controller='flat-pack--select']" \
+                      "[data-flat-pack--select-searchable-value='true']" \
+                      "[data-flat-pack--select-search-mode-value='local']" do
+          assert_select "input[type='hidden'][name='profile[locale]']" \
+                        "[value='#{profile_attributes[:locale]}']"
+          assert_select "input[type='text'][data-action='input->flat-pack--select#search']"
+          assert_select "[role='option']",
+                        count: RecordingStudioUsers::ProfilePreferences.locale_options.length + 1
+          assert_select "[role='option'][data-value='en']", text: "en"
+          assert_select "[role='option'][data-value='en-AU']", text: "en-AU"
+          assert_select "[role='option'][data-value='#{profile_attributes[:locale]}']" \
+                        "[aria-selected='true']", text: "x-legacy (saved value)"
+        end
       end
       assert_select "[data-recording-studio-users--profile-preferences-target='timeZone']" do
         assert_select "[data-controller='flat-pack--select']" \

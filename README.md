@@ -98,9 +98,12 @@ Avatar previews use Active Storage variants and require a native image processor
 container installs `libvips-tools`; other hosts must provide libvips or configure Active Storage to
 use another installed variant processor.
 
-Locale and time-zone Profile fields render as selects. The bundled form offers supported BCP 47 tags
-and stores time zones as IANA identifiers such as `America/New_York`. The service remains permissive
-for API-provided and legacy values. When a field has no saved value, the bundled Stimulus controller
+Locale and time-zone Profile fields render as searchable selects. Locale options come from the host
+application's `I18n.available_locales`; hosts must load every locale they want users to choose. The
+optional `rails-i18n` gem provides a broad catalog. Browsers enhance locale codes with readable names
+through `Intl.DisplayNames`, while codes remain the fallback when that API is unavailable. Time zones
+are stored as IANA identifiers such as `America/New_York`. The service remains permissive for
+API-provided and legacy values. When a field has no saved value, the bundled Stimulus controller
 selects a browser-derived default without submitting the form. Saved values, including values from
 older versions that are outside the current option catalog, are never overwritten.
 

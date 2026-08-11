@@ -2,16 +2,14 @@
 
 module RecordingStudioUsers
   module ProfilePreferences
-    LOCALE_OPTIONS = [
-      ["English (United States)", "en-US"],
-      ["English (United Kingdom)", "en-GB"],
-      ["Español (España)", "es-ES"]
-    ].freeze
-
     module_function
 
     def locale_options
-      LOCALE_OPTIONS
+      I18n.available_locales
+        .map { |locale| locale.to_s.tr("_", "-") }
+        .uniq
+        .sort
+        .map { |locale| [locale, locale] }
     end
 
     def time_zone_options(at: Time.current)

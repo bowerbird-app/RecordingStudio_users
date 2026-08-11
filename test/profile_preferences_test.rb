@@ -3,12 +3,14 @@
 require "test_helper"
 
 class ProfilePreferencesTest < Minitest::Test
-  def test_locale_options_use_supported_bcp_47_tags
-    assert_equal [
-      ["English (United States)", "en-US"],
-      ["English (United Kingdom)", "en-GB"],
-      ["Español (España)", "es-ES"]
-    ], RecordingStudioUsers::ProfilePreferences.locale_options
+  def test_locale_options_use_all_host_locales_as_sorted_bcp_47_tags
+    I18n.stub(:available_locales, [:fr, :en_GB, :"en-GB", :en, :fr]) do
+      assert_equal [
+        ["en", "en"],
+        ["en-GB", "en-GB"],
+        ["fr", "fr"]
+      ], RecordingStudioUsers::ProfilePreferences.locale_options
+    end
   end
 
   def test_time_zone_options_store_iana_identifiers_and_show_current_offsets
@@ -33,7 +35,7 @@ class ProfilePreferencesTest < Minitest::Test
   end
 
   def test_with_legacy_value_preserves_unknown_values_without_duplicates
-    options = RecordingStudioUsers::ProfilePreferences.locale_options
+    options = [["en-US", "en-US"]]
 
     assert_equal options, RecordingStudioUsers::ProfilePreferences.with_legacy_value(options, "en-US")
     assert_equal ["en AU (saved value)", "en_AU"],

@@ -77,7 +77,11 @@
       scope: :profile,
       url: profile_path,
       method: :patch,
-      data: {controller: "recording-studio-users--profile-preferences"}
+      data: {
+        controller: "recording-studio-users--profile-preferences",
+        recording_studio_users__profile_preferences_default_locale_value:
+          I18n.default_locale.to_s.tr("_", "-")
+      }
     ) do %>
       <div class="space-y-4">
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:display_name) %>
@@ -97,17 +101,20 @@
         <% end %>
 
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:locale) %>
-          <%= render FlatPack::Select::Component.new(
-            name: "profile[locale]",
-            label: "Locale",
-            placeholder: "Select a locale",
-            options: RecordingStudioUsers::ProfilePreferences.with_legacy_value(
-              RecordingStudioUsers::ProfilePreferences.locale_options,
-              @profile.locale
-            ),
-            value: @profile.locale,
-            data: {recording_studio_users__profile_preferences_target: "locale"}
-          ) %>
+          <div data-recording-studio-users--profile-preferences-target="locale">
+            <%= render FlatPack::Select::Component.new(
+              name: "profile[locale]",
+              label: "Locale",
+              placeholder: "Select a locale",
+              options: RecordingStudioUsers::ProfilePreferences.with_legacy_value(
+                RecordingStudioUsers::ProfilePreferences.locale_options,
+                @profile.locale
+              ),
+              value: @profile.locale,
+              searchable: true,
+              search_mode: :local
+            ) %>
+          </div>
         <% end %>
 
         <% if RecordingStudioUsers.configuration.profile_fields.include?(:time_zone) %>
