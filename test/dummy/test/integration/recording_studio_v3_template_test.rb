@@ -24,6 +24,15 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
     refute connection.table_exists?(:recording_studio_device_sessions)
   end
 
+  test "dummy app configures RecordingStudioAccessible actor scope for users" do
+    configuration = RecordingStudioAccessible.configuration
+
+    assert_respond_to configuration, :access_management_actor_scope=
+    actors = configuration.grantable_actors_for(controller: nil)
+    assert_kind_of Array, actors
+    assert actors.all? { |actor| actor.is_a?(User) }
+  end
+
   test "dummy seeds use v3 hierarchy idempotently and restore current actor" do
     Current.actor = nil
 

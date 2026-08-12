@@ -34,7 +34,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
       user: {
         first_name: "Updated",
         last_name: "User",
-        time_zone: "America/New_York",
+        time_zone: "Eastern Time (US & Canada)",
         email: "ignored@example.com",
         id: SecureRandom.uuid
       }
@@ -43,7 +43,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to recording_studio_users.profile_path
     @user.reload
     assert_equal "Updated", @user.first_name
-    assert_equal "America/New_York", @user.time_zone
+    assert_equal "Eastern Time (US & Canada)", @user.time_zone
     refute_equal "ignored@example.com", @user.email
   end
 

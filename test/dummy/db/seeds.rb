@@ -23,7 +23,7 @@ user.password = user.password_confirmation = "Password" if user.new_record?
 user.save! if user.changed?
 
 member = User.find_or_initialize_by(email: "member@admin.com")
-member.assign_attributes(first_name: "Morgan", last_name: "Member", time_zone: "America/New_York")
+member.assign_attributes(first_name: "Morgan", last_name: "Member", time_zone: "Eastern Time (US & Canada)")
 member.password = member.password_confirmation = "Password" if member.new_record?
 member.save! if member.changed?
 
