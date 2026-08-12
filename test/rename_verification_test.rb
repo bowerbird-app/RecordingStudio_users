@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "yaml"
+require "open3"
 require_relative "simplecov_helper"
 require "minitest/autorun"
 
@@ -226,7 +227,7 @@ class RenameVerificationTest < Minitest::Test
     # Skip if current name IS gem_template (nothing to check - hasn't been renamed yet)
     skip if @gem_name == "gem_template"
 
-    ruby_files = Dir.glob(File.join(@root, "**", "*.rb"))
+    ruby_files = tracked_ruby_files
     # Exclude test files and this verification test itself
     ruby_files.reject! { |f| f.include?("test/dummy") || f.include?("rename_verification_test.rb") }
 
@@ -239,6 +240,12 @@ class RenameVerificationTest < Minitest::Test
 
     assert files_with_old_refs.empty?,
            "Found old 'gem_template' references in:\n#{files_with_old_refs.join("\n")}"
+  end
+
+  def test_orphan_scan_excludes_untracked_vendored_dependencies
+    vendored_dependency = File.join(@root, "vendor", "bundle", "dependency.rb")
+
+    refute_includes tracked_ruby_files, vendored_dependency
   end
 
   def test_no_old_gem_template_directories
@@ -350,6 +357,13 @@ class RenameVerificationTest < Minitest::Test
   # ============================================================
 
   private
+
+  def tracked_ruby_files
+    output, status = Open3.capture2("git", "-C", @root, "ls-files", "-z", "--", "*.rb")
+    raise "Unable to list tracked Ruby files" unless status.success?
+
+    output.split("\0").map { |path| File.join(@root, path) }
+  end
 
   def detect_gem_name
     # Priority 1: Read from .gem_identity.yml if it exists
