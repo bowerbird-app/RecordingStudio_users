@@ -32,6 +32,17 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Role"
   end
 
+  test "builds user creation series from an ordered relation" do
+    create_user("series-a-#{SecureRandom.hex(4)}@example.com")
+    create_user("series-b-#{SecureRandom.hex(4)}@example.com")
+
+    series = RecordingStudioUser::Admin.user_creation_series(User.order(created_at: :desc))
+
+    assert series.all? { |point| point.key?(:x) && point.key?(:y) }
+    assert series.all? { |point| point[:x].is_a?(String) }
+    assert series.all? { |point| point[:y].is_a?(Integer) }
+  end
+
   private
 
   def create_user(email)
