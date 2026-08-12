@@ -30,7 +30,7 @@ class InstallGeneratorTest < Minitest::Test
       assert_includes routes, "devise_for :users"
       assert_includes routes, 'sessions: "recording_studio_user/devise/sessions"'
       assert_includes routes, "resource :profile"
-      refute_includes routes, "mount RecordingStudioUser::Engine"
+      assert(!routes.include?("mount RecordingStudioUser::Engine"))
     end
   end
 
@@ -63,15 +63,37 @@ class InstallGeneratorTest < Minitest::Test
     end
   end
 
+  def test_copy_migrations_installs_recording_studio_user_migration
+    with_app do |directory|
+      generator = build_generator(directory)
+      generator.copy_migrations
+
+      copied_migrations = Dir.glob(File.join(directory, "db/migrate/*create_recording_studio_user_users*.rb"))
+      assert_equal 1, copied_migrations.size
+    end
+  end
+
+  def test_add_tailwind_sources_skips_when_tailwind_is_not_installed
+    with_app do |directory|
+      generator = build_generator(directory)
+      tailwind_path = File.join(directory, "app/assets/tailwind/application.css")
+      FileUtils.rm(tailwind_path)
+
+      generator.add_tailwind_sources
+
+      assert(!File.exist?(tailwind_path))
+    end
+  end
+
   def test_installer_does_not_generate_host_admin_or_access_resources
     source = File.read(File.expand_path(
                          "../lib/generators/recording_studio_user/install/install_generator.rb",
                          __dir__
                        ))
 
-    refute_includes source, "AdminRoot"
-    refute_includes source, "grant_access"
-    refute_includes source, "recording_studio_admin_for"
-    refute_includes source, "RecordingStudioAccessible"
+    assert(!source.include?("AdminRoot"))
+    assert(!source.include?("grant_access"))
+    assert(!source.include?("recording_studio_admin_for"))
+    assert(!source.include?("RecordingStudioAccessible"))
   end
 end

@@ -4,21 +4,24 @@ require "test_helper"
 
 class AdminUsersTest < ActionDispatch::IntegrationTest
   setup do
-    @admin = User.create!(
+    @admin = User.find_or_initialize_by(email: "admin@example.com")
+    @admin.assign_attributes(
       first_name: "Avery",
       last_name: "Admin",
-      email: "admin@example.com",
       time_zone: "UTC",
       password: "Password123!"
     )
-    @member = User.create!(
+    @admin.save!
+
+    @member = User.find_or_initialize_by(email: "member@example.com")
+    @member.assign_attributes(
       first_name: "Morgan",
       last_name: "Member",
-      email: "member@example.com",
       time_zone: "UTC",
       password: "Password123!"
     )
-    @admin_root = AdminRoot.create!(name: "Admin")
+    @member.save!
+    @admin_root = AdminRoot.find_or_create_by!(name: "Admin")
     @admin_recording = RecordingStudio.root_recording_for(@admin_root)
     grant_admin_access
   end
