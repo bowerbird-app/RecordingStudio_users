@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module GemTemplate
+module RecordingStudioUser
   class ApplicationController < ActionController::Base
     protect_from_forgery with: :exception
-    layout "application"
+    layout -> { RecordingStudioUser.config.layout }
   end
 end

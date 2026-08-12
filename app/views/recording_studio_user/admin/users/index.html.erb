@@ -1,0 +1,35 @@
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Users",
+  subtitle: "Sitewide user reporting.",
+  variant: :h1
+) %>
+
+<div class="mt-6 space-y-8">
+  <dl>
+    <dt class="text-sm text-[var(--surface-muted-content-color)]">Total users</dt>
+    <dd class="mt-1 text-3xl font-semibold"><%= @total_users %></dd>
+  </dl>
+
+  <section aria-labelledby="users-over-time-heading">
+    <%= render FlatPack::SectionTitle::Component.new(
+      title: "Users over time",
+      subtitle: "Accounts created by day."
+    ) %>
+    <%= render FlatPack::Chart::Component.new(
+      title: "Users over time",
+      series: [{ name: "Users", data: @user_creation_series }],
+      type: :line,
+      card: false
+    ) %>
+  </section>
+
+  <section aria-labelledby="users-table-heading">
+    <%= render FlatPack::SectionTitle::Component.new(title: "All users") %>
+    <%= render FlatPack::Table::Component.new(data: @users, class: "text-sm") do |table| %>
+      <% table.column(title: "Name") { |user| profile_display_name(user) } %>
+      <% table.column(title: "Email") { |user| user.email } %>
+      <% table.column(title: "Time zone") { |user| user.time_zone } %>
+      <% table.column(title: "Created at") { |user| l(user.created_at, format: :long) } %>
+    <% end %>
+  </section>
+</div>

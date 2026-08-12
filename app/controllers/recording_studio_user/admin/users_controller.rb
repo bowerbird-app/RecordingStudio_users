@@ -1,0 +1,35 @@
+# frozen_string_literal: true
+
+module RecordingStudioUser
+  module Admin
+    class UsersController < ApplicationController
+      before_action :authenticate_user!
+      before_action :authorize_users_admin!
+
+      def index
+        @users = RecordingStudioUser.config.user_class.order(created_at: :desc)
+        @total_users = @users.count
+        @user_creation_series = RecordingStudioUser::Admin.user_creation_series(@users)
+      end
+
+      private
+
+      def authorize_users_admin!
+        context = RecordingStudioAdmin::Context.new(
+          params: params.to_unsafe_h,
+          current_actor: current_user,
+          controller: self,
+          routes: main_app,
+          view_context: view_context
+        )
+
+        RecordingStudioAdmin::Authorization.authorize!(context)
+        RecordingStudioAdmin::BlastRadius.authorize!(
+          RecordingStudioUser::Admin::UsersSection,
+          context: context,
+          label: "Users administration"
+        )
+      end
+    end
+  end
+end
