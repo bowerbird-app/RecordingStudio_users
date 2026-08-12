@@ -1,4 +1,4 @@
-class CreateRecordingStudioAccesses < ActiveRecord::Migration[8.1]
+class CreateRecordingStudioAccessibleAccesses < ActiveRecord::Migration[8.1]
   def change
     create_table :recording_studio_accesses, id: :uuid do |t|
       t.string :actor_type, null: false
