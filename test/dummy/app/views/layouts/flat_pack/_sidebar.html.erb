@@ -16,11 +16,12 @@
       ) %>
 
       <% if user_signed_in? %>
+        <% profile_path = recording_studio_users.profile_path %>
         <%= render FlatPack::Sidebar::Item::Component.new(
           label: "My profile",
-          href: main_app.recording_studio_users.profile_path,
+          href: profile_path,
           icon: :user_circle,
-          active: request.path.start_with?(main_app.recording_studio_users.profile_path)
+          active: request.path.start_with?(profile_path)
         ) %>
       <% end %>
 
