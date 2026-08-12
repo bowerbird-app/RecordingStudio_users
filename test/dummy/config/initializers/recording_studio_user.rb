@@ -2,5 +2,5 @@
 
 RecordingStudioUser.configure do |config|
   config.user_class_name = "User"
-  config.layout = "flat_pack_sidebar"
+  config.layout = "application"
 end

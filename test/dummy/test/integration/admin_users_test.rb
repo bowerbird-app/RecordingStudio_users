@@ -29,6 +29,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Total users"
     assert_includes response.body, "Users over time"
+    assert_select %(a[aria-label="Home"][href="/"]), count: 1
+    refute_includes response.body, "flat-pack-sidebar"
     refute_includes response.body, "Role"
   end
 
