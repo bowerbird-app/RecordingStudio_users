@@ -66,7 +66,11 @@ module RecordingStudioUser
       end
 
       def user_creation_series(users)
-        users.group("DATE(created_at)").count.map { |date, count| { x: date.to_s, y: count } }
+        users.reorder(nil)
+             .group("DATE(created_at)")
+             .order(Arel.sql("DATE(created_at)"))
+             .count
+             .map { |date, count| { x: date.to_s, y: count } }
       end
     end
   end
