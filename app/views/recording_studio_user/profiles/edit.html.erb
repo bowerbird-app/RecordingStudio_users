@@ -1,0 +1,52 @@
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Edit profile",
+  subtitle: "Update your sitewide account details.",
+  variant: :h1
+) %>
+
+<%= form_with model: @user, url: profile_path, method: :patch, class: "mt-6" do %>
+  <% if @user.errors.any? %>
+    <%= render FlatPack::Alert::Component.new(
+      title: "#{pluralize(@user.errors.count, "error")} prevented your profile from being saved",
+      description: @user.errors.full_messages.join(", "),
+      style: :danger
+    ) %>
+  <% end %>
+
+  <div class="space-y-4">
+    <%= render FlatPack::TextInput::Component.new(
+      name: "user[first_name]",
+      id: "user_first_name",
+      label: "First name",
+      value: @user.first_name,
+      required: true,
+      autocomplete: "given-name",
+      error: @user.errors[:first_name].first
+    ) %>
+
+    <%= render FlatPack::TextInput::Component.new(
+      name: "user[last_name]",
+      id: "user_last_name",
+      label: "Last name",
+      value: @user.last_name,
+      required: true,
+      autocomplete: "family-name",
+      error: @user.errors[:last_name].first
+    ) %>
+
+    <%= render FlatPack::Select::Component.new(
+      name: "user[time_zone]",
+      id: "user_time_zone",
+      label: "Time zone",
+      value: @user.time_zone,
+      options: ActiveSupport::TimeZone.all.map { |zone| [zone.to_s, zone.name] },
+      required: true,
+      error: @user.errors[:time_zone].first
+    ) %>
+
+    <div class="flex gap-2">
+      <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
+      <%= render FlatPack::Button::Component.new(text: "Cancel", url: profile_path, style: :secondary) %>
+    </div>
+  </div>
+<% end %>

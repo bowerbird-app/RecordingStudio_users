@@ -15,6 +15,15 @@
         icon: :home
       ) %>
 
+      <% if user_signed_in? %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          label: "My profile",
+          href: main_app.recording_studio_users.profile_path,
+          icon: :user_circle,
+          active: request.path.start_with?(main_app.recording_studio_users.profile_path)
+        ) %>
+      <% end %>
+
       <%= render FlatPack::Sidebar::Item::Component.new(
         label: "Install",
         href: main_app.docs_install_path,
