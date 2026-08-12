@@ -89,11 +89,13 @@ module RecordingStudioUser
 
       def tailwind_source_lines
         [
-          '@source "../../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";',
+          '@source "../../../vendor/bundle/**/recording_studio_user-*/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/gems/recording_studio_user-*/app/views/**/*.erb";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
           'recording_studio_user-*/app/views/**/*.erb";',
-          '@source "../../vendor/bundle/**/flat_pack/app/components/**/*.{rb,erb}";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";'
+          '@source "../../../vendor/bundle/**/flat_pack-*/app/components/**/*.{rb,erb}";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/gems/flat_pack-*/app/components/**/*.{rb,erb}";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]
       end
     end

@@ -34,7 +34,9 @@ bin/rails db:seed
 
 The installer copies the user migration and initializer, adds Devise and singular
 profile routes, registers admin definitions, and adds Tailwind `@source` entries
-when `app/assets/tailwind/application.css` exists. It is idempotent.
+when `app/assets/tailwind/application.css` exists. The generated sources cover
+host-vendored gems, standard RubyGems installs, and Bundler Git checkouts. The
+installer is idempotent.
 
 It never creates an admin root, mounts an admin route, creates access items, or
 grants access. `recording_studio_user:admin` prints the focused host-registration
@@ -157,8 +159,9 @@ The dummy demonstrates:
 - a `Users admin` button on the admin root section.
 
 Development credentials default to `admin@example.com` and `user@example.com`.
-Set `DUMMY_ADMIN_PASSWORD` and `DUMMY_USER_PASSWORD` before `db:seed`; the
-development-only fallback is `Password123!`.
+In development, the password defaults to `Password123!`. Set
+`DUMMY_ADMIN_PASSWORD` and `DUMMY_USER_PASSWORD` before `db:seed` to override it.
+Both password variables are required when seeding in any other environment.
 
 ```sh
 cd test/dummy

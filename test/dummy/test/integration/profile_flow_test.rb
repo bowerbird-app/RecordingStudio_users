@@ -36,6 +36,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, @user.email
     refute_includes response.body, @other_user.email
+    assert_select "a[href=?][aria-current='page']", profile_path, minimum: 1
+    assert_includes response.body, "My profile"
   end
 
   test "updates only permitted fields on current user" do

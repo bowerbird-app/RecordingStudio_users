@@ -22,6 +22,9 @@ class DeviseUiTest < ActionDispatch::IntegrationTest
     assert_select "input[name='user[password]'][autocomplete='current-password']"
     assert_select ".flat-pack-input", minimum: 2
     assert_includes response.body, "Forgot your password?"
+    assert_select "a", text: "My profile", count: 0
+    assert_select "a", text: "Admin", count: 0
+    assert_select "a", text: "Sign out", count: 0
   end
 
   test "password reset request renders and submits" do
@@ -29,6 +32,9 @@ class DeviseUiTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='user[email]']"
+    assert_select "a", text: "My profile", count: 0
+    assert_select "a", text: "Admin", count: 0
+    assert_select "a", text: "Sign out", count: 0
 
     assert_difference -> { ActionMailer::Base.deliveries.size }, 1 do
       post user_password_path, params: { user: { email: @user.email } }

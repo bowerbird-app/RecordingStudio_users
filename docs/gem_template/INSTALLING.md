@@ -87,11 +87,13 @@ See [CONFIGURATION.md](CONFIGURATION.md) for all options.
 If your app uses Tailwind, the generator adds `@source` directives to include engine views and FlatPack components:
 
 ```css
-@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
-@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
+@source "../../../vendor/bundle/**/gem_template-*/app/views/**/*.erb";
+@source "../../../vendor/bundle/**/flat_pack-*/app/components/**/*.{rb,erb}";
 ```
 
-This ensures Tailwind scans the engine's templates for class names during CSS compilation.
+The generator also adds equivalent sources for standard RubyGems installs and
+Bundler Git checkouts. This ensures Tailwind scans the engine's templates for
+class names during CSS compilation.
 
 ---
 

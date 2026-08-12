@@ -16,31 +16,35 @@
         active: current_page?(main_app.root_path)
       ) %>
 
-      <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "My profile",
-        href: main_app.profile_path,
-        icon: :user,
-        active: request.path.start_with?(main_app.profile_path)
-      ) %>
+      <% if user_signed_in? %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          label: "My profile",
+          href: main_app.profile_path,
+          icon: :user,
+          active: request.path.start_with?(main_app.profile_path)
+        ) %>
 
-      <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Admin",
-        href: recording_studio_admin_admin.root_path,
-        icon: :settings,
-        active: request.path.start_with?("/admin")
-      ) %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          label: "Admin",
+          href: recording_studio_admin_admin.root_path,
+          icon: :settings,
+          active: request.path.start_with?("/admin")
+        ) %>
+      <% end %>
     </nav>
   <% end %>
 
-  <% sidebar.footer do %>
-    <%= render FlatPack::Sidebar::Footer::Component.new(class: "text-sm text-[var(--surface-muted-content-color)]") do %>
-      <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Sign out",
-        href: main_app.destroy_user_session_path,
-        icon: :lock,
-        class: "mx-0",
-        data: { turbo_method: :delete }
-      ) %>
+  <% if user_signed_in? %>
+    <% sidebar.footer do %>
+      <%= render FlatPack::Sidebar::Footer::Component.new(class: "text-sm text-[var(--surface-muted-content-color)]") do %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          label: "Sign out",
+          href: main_app.destroy_user_session_path,
+          icon: :lock,
+          class: "mx-0",
+          data: { turbo_method: :delete }
+        ) %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

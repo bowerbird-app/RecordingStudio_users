@@ -8,7 +8,6 @@ DUMMY_APP_ROOT = File.expand_path("test/dummy", __dir__)
 TEST_ROOT = File.expand_path("test", __dir__)
 ROOT_TEST_EXCLUSIONS = %w[
   test/dummy/**/*_test.rb
-  test/rename_verification_test.rb
 ].freeze
 DUMMY_BUNDLE_CLEARED_ENV = {
   "BUNDLE_APP_CONFIG" => nil,

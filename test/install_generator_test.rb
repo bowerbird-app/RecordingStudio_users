@@ -49,6 +49,8 @@ class InstallGeneratorTest < Minitest::Test
 
   def test_initializer_and_tailwind_sources_are_idempotent
     with_app do |directory|
+      engine_view, flat_pack_component = create_tailwind_fixtures(directory)
+
       generator = build_generator(directory)
       2.times do
         generator.copy_initializer
@@ -58,8 +60,15 @@ class InstallGeneratorTest < Minitest::Test
       initializer = File.read(File.join(directory, "config/initializers/recording_studio_user.rb"))
       css = File.read(File.join(directory, "app/assets/tailwind/application.css"))
       assert_includes initializer, "config.admin_registration_hook"
-      assert_equal 2, css.scan("recording_studio_user").size
-      assert_equal 2, css.scan("flat_pack").size
+      assert_equal 3, css.scan("recording_studio_user").size
+      assert_equal 3, css.scan(/flat_pack|flatpack/).size
+
+      source_patterns = css.scan(/@source "([^"]+)";/).flatten
+      assert_supported_source_patterns(source_patterns)
+      resolved_sources = resolve_tailwind_sources(directory, source_patterns)
+
+      assert_includes resolved_sources, engine_view
+      assert_includes resolved_sources, flat_pack_component
     end
   end
 
@@ -95,5 +104,41 @@ class InstallGeneratorTest < Minitest::Test
     assert(!source.include?("grant_access"))
     assert(!source.include?("recording_studio_admin_for"))
     assert(!source.include?("RecordingStudioAccessible"))
+  end
+
+  private
+
+  def create_tailwind_fixtures(directory)
+    paths = [
+      "vendor/bundle/ruby/3.3.0/gems/recording_studio_user-0.1.0/app/views/profiles/show.html.erb",
+      "vendor/bundle/ruby/3.3.0/gems/flat_pack-0.1.129/app/components/button/component.html.erb"
+    ].map { |path| File.join(directory, path) }
+
+    paths.each do |path|
+      FileUtils.mkdir_p(File.dirname(path))
+      FileUtils.touch(path)
+    end
+
+    paths
+  end
+
+  def assert_supported_source_patterns(source_patterns)
+    assert_includes source_patterns,
+                    "../../../../../../usr/local/bundle/ruby/**/gems/recording_studio_user-*/app/views/**/*.erb"
+    assert_includes source_patterns,
+                    "../../../../../../usr/local/bundle/ruby/**/bundler/gems/" \
+                    "recording_studio_user-*/app/views/**/*.erb"
+    assert_includes source_patterns,
+                    "../../../../../../usr/local/bundle/ruby/**/gems/flat_pack-*/app/components/**/*.{rb,erb}"
+    assert_includes source_patterns,
+                    "../../../../../../usr/local/bundle/ruby/**/bundler/gems/" \
+                    "flatpack-*/app/components/**/*.{rb,erb}"
+  end
+
+  def resolve_tailwind_sources(directory, source_patterns)
+    stylesheet_directory = File.join(directory, "app/assets/tailwind")
+    source_patterns.flat_map do |pattern|
+      Dir.glob(File.expand_path(pattern, stylesheet_directory))
+    end
   end
 end

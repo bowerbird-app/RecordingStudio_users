@@ -14,10 +14,11 @@ Defaults:
 
 - admin: `admin@example.com`
 - normal user: `user@example.com`
-- development-only password: `Password123!`
+- development-only password default: `Password123!`
 
 Set `DUMMY_ADMIN_EMAIL`, `DUMMY_ADMIN_PASSWORD`, `DUMMY_USER_EMAIL`, and
-`DUMMY_USER_PASSWORD` before seeding to override them.
+`DUMMY_USER_PASSWORD` before seeding to override them. Both password variables
+are required when seeding outside development.
 
 Visit `/users/sign_in`, `/profile`, and `/admin`. Only the admin seed receives a
 RecordingStudioAccessible grant to the Admin root.

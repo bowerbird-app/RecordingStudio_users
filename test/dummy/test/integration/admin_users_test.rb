@@ -31,7 +31,17 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
     get "/admin/screens/users"
 
-    refute_equal 200, response.status
+    assert_response :forbidden
+  end
+
+  test "admin home links to the users screen" do
+    sign_in @admin
+
+    get "/admin"
+
+    assert_response :success
+    assert_select "a[href='/admin/screens/users']", minimum: 1
+    assert_includes response.body, "Users admin"
   end
 
   test "actor with admin-root access sees users table and chart" do
