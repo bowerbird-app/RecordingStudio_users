@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** May 5, 2026
+> *   **Last Updated:** Aug 12, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -32,18 +32,22 @@ The `postCreateCommand` in `.devcontainer/devcontainer.json` executes:
 
 ```bash
 git lfs install && \
-bundle config set --local path '/usr/local/bundle' && \
-bundle install && \
+npm install -g playwright && \
+playwright install --with-deps && \
 cd test/dummy && \
+bundle install && \
 bundle exec rails db:prepare && \
 bundle exec rails tailwindcss:build
 ```
 
 This:
 - Installs Git LFS (if needed)
-- Installs gem dependencies
+- Installs Playwright and browser/system dependencies used by UI/system tests
+- Installs dummy app gem dependencies
 - Prepares the PostgreSQL database (creates, migrates, seeds)
 - Builds TailwindCSS assets
+
+`bundle exec rails db:prepare` boots Rails and loads initializers, so incompatible initializer config can fail postCreate.
 
 ---
 
