@@ -16,6 +16,9 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     @user = User.find_or_create_by!(email: "docs-test@example.com") do |user|
       user.password = TEST_PASSWORD
       user.password_confirmation = TEST_PASSWORD
+      user.first_name = "Docs"
+      user.last_name = "Tester"
+      user.time_zone = "UTC"
     end
 
     sign_in @user
@@ -99,7 +102,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Gem Views"
     assert_select "table", minimum: 1
-    refute_includes response.body, "app/views/gem_template/home/index.html.erb"
+    assert_includes response.body, "app/views/recording_studio_user/profiles/show.html.erb"
   end
 
   test "methods page renders successfully" do

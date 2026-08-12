@@ -44,6 +44,18 @@
       error: @user.errors[:time_zone].first
     ) %>
 
+    <% RecordingStudioUser.config.additional_profile_attributes.each do |attribute| %>
+      <% next unless @user.respond_to?(attribute) %>
+
+      <%= render FlatPack::TextInput::Component.new(
+        name: "user[#{attribute}]",
+        id: "user_#{attribute}",
+        label: attribute.to_s.humanize,
+        value: @user.public_send(attribute),
+        error: @user.errors[attribute].first
+      ) %>
+    <% end %>
+
     <div class="flex gap-2">
       <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
       <%= render FlatPack::Button::Component.new(text: "Cancel", url: profile_path, style: :secondary) %>

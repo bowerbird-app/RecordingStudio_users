@@ -10,12 +10,15 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     user = User.find_or_create_by!(email: "root-switch-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
+      record.first_name = "Root"
+      record.last_name = "Switch"
+      record.time_zone = "UTC"
     end
 
     sign_in user
 
     workspace = Workspace.create!(name: "Dropdown Workspace")
-    RecordingStudio.root_recording_for(workspace)
+    grant_view_access(user, RecordingStudio.root_recording_for(workspace))
 
     get root_path
 
@@ -27,6 +30,9 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     user = User.find_or_create_by!(email: "root-switch-page-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
+      record.first_name = "Root"
+      record.last_name = "Switch"
+      record.time_zone = "UTC"
     end
 
     sign_in user
@@ -34,7 +40,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     workspace = Workspace.create!(name: "Switch Page Workspace")
     RecordingStudio.root_recording_for(workspace)
 
-    get "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces"
+    get "/recording_studio_root_switchable/v1/root_switch?scope=roots"
 
     assert_response :success
     assert_includes response.body, "Install"
@@ -44,6 +50,9 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     user = User.find_or_create_by!(email: "root-switch-redirect-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
+      record.first_name = "Root"
+      record.last_name = "Switch"
+      record.time_zone = "UTC"
     end
 
     sign_in user
@@ -54,7 +63,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     RecordingStudio.root_recording_for(source_workspace)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
-      scope: "all_workspaces",
+      scope: "roots",
       root_switch: {
         root_recording_id: target_root_recording.id,
         return_to: "/docs/install"
@@ -68,6 +77,9 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     user = User.find_or_create_by!(email: "root-switch-fallback-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
+      record.first_name = "Root"
+      record.last_name = "Switch"
+      record.time_zone = "UTC"
     end
 
     sign_in user
@@ -78,7 +90,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     RecordingStudio.root_recording_for(source_workspace)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
-      scope: "all_workspaces",
+      scope: "roots",
       root_switch: {
         root_recording_id: target_root_recording.id,
         return_to: "/not-a-real-route"
@@ -86,5 +98,16 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to "/"
+  end
+
+  private
+
+  def grant_view_access(user, recording)
+    RecordingStudioAccessible::AccessCreationContext.allow do
+      recording.record(RecordingStudio::Access, parent_recording: recording) do |access|
+        access.actor = user
+        access.role = :view
+      end
+    end
   end
 end

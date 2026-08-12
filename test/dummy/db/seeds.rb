@@ -16,11 +16,16 @@ find_or_record_child = lambda do |recordable, root_recording, parent_recording|
   ).recording
 end
 
-# Create the admin user
-user = User.find_or_create_by!(email: "admin@admin.com") do |u|
-  u.password = "Password"
-  u.password_confirmation = "Password"
-end
+# Create normal users with the profile fields required by the host contract.
+user = User.find_or_initialize_by(email: "admin@admin.com")
+user.assign_attributes(first_name: "Avery", last_name: "Admin", time_zone: "UTC")
+user.password = user.password_confirmation = "Password" if user.new_record?
+user.save! if user.changed?
+
+member = User.find_or_initialize_by(email: "member@admin.com")
+member.assign_attributes(first_name: "Morgan", last_name: "Member", time_zone: "America/New_York")
+member.password = member.password_confirmation = "Password" if member.new_record?
+member.save! if member.changed?
 
 # Create the workspace recordables
 workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
@@ -45,8 +50,22 @@ ensure
   Current.actor = previous_actor
 end
 
+admin_root = AdminRoot.find_or_create_by!(name: "Admin")
+admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+
+unless RecordingStudioAccessible.authorized?(actor: user, recording: admin_root_recording, role: :admin)
+  RecordingStudioAccessible::AccessCreationContext.allow do
+    admin_root_recording.record(RecordingStudio::Access, parent_recording: admin_root_recording) do |access|
+      access.actor = user
+      access.role = :admin
+    end
+  end
+end
+
 puts "Seeded: admin@admin.com / Password"
+puts "Seeded: member@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
+puts "Seeded: Admin root with access-controlled users reporting"
 puts "Seeded: Workspace '#{accessible_workspace.name}' with root recording ##{accessible_root_recording.id}"
 puts "Seeded: Workspace '#{private_workspace.name}' with root recording ##{private_root_recording.id}"
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
