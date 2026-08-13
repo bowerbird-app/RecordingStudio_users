@@ -27,6 +27,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
     get recording_studio_users.admin_path
     assert_response :success
+    assert_select "title", text: "User Management | Recording Studio User"
     assert_includes response.body, "User Management"
     assert_includes response.body, "Track account growth, view system metrics, and manage user details."
     assert_includes response.body, "Total users"
