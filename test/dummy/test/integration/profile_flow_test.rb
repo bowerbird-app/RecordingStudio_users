@@ -28,10 +28,16 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
 
     get recording_studio_users.profile_path
     assert_response :success
+    assert_select "title", text: "My Profile | Recording Studio User"
     assert_includes response.body, "Manage your personal details and account settings."
     assert_includes response.body, "Profile User"
     assert_select %(a[aria-label="Home"][href="/"]), count: 1
     refute_includes response.body, "flat-pack-sidebar"
+
+    get recording_studio_users.edit_profile_path
+    assert_response :success
+    assert_select "title", text: "Edit Profile | Recording Studio User"
+    assert_includes response.body, "Update your personal information and contact details."
 
     patch recording_studio_users.profile_path, params: {
       user: {
