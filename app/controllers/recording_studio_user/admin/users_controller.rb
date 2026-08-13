@@ -1,15 +1,21 @@
 # frozen_string_literal: true
 
+require "pagy"
+
 module RecordingStudioUser
   module Admin
     class UsersController < ApplicationController
+      include Pagy::Backend
+      helper Pagy::Frontend
+
       before_action :authenticate_user!
       before_action :authorize_users_admin!
 
       def index
-        @users = RecordingStudioUser.config.user_class.order(created_at: :desc)
-        @total_users = @users.count
-        @user_creation_series = RecordingStudioUser::Admin.user_creation_series(@users)
+        users = RecordingStudioUser.config.user_class.order(created_at: :desc)
+        @total_users = users.count
+        @user_creation_series = RecordingStudioUser::Admin.user_creation_series(users)
+        @pagy, @users = pagy(users, limit: 50)
       end
 
       private

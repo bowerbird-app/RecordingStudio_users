@@ -50,6 +50,28 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert series.all? { |point| point[:y].is_a?(Integer) }
   end
 
+  test "paginates the users table" do
+    51.times { |index| create_user("pagination-#{index}-#{SecureRandom.hex(4)}@example.com") }
+    sign_in @admin
+    grant_admin_access(@admin, @admin_recording)
+
+    get recording_studio_users.admin_path
+
+    assert_response :success
+    assert_select "nav[aria-label='Pagination']", count: 1
+    assert_select "table tbody tr", count: 50
+    assert_select "dd", text: User.count.to_s
+    assert_select "nav[aria-label='Pagination'] a[href*='page=2']"
+
+    get recording_studio_users.admin_path, params: { page: 2 }
+
+    assert_response :success
+    page_two_rows = css_select("table tbody tr").count
+    assert_operator page_two_rows, :>, 0
+    assert_operator page_two_rows, :<=, 50
+    assert_select "nav[aria-label='Pagination'] a[href*='page=1']"
+  end
+
   private
 
   def create_user(email)
