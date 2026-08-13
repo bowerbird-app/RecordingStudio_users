@@ -62,7 +62,8 @@ module RecordingStudioUser
       def display_name(user)
         value = user.full_name if user.respond_to?(:full_name)
         value = [user.try(:first_name), user.try(:last_name)].compact_blank.join(" ") if value.blank?
-        value.presence || user.try(:email).presence || I18n.t("recording_studio_user.profile.unnamed_user", default: "User")
+        value.presence || user.try(:email).presence || I18n.t("recording_studio_user.profile.unnamed_user",
+                                                              default: "User")
       end
 
       def user_creation_series(users)

@@ -30,11 +30,11 @@ class ConfigurationTest < Minitest::Test
     assert_raises(ArgumentError) { @configuration.mount_path = "" }
     assert_raises(ArgumentError) { @configuration.profile_route_path = "../profile" }
     assert_raises(ArgumentError) { @configuration.admin_route_path = "admin//users" }
-    assert_raises(ArgumentError) { @configuration.additional_profile_attributes = [ :email ] }
+    assert_raises(ArgumentError) { @configuration.additional_profile_attributes = [:email] }
   end
 
   def test_allows_safe_additional_attributes
-    @configuration.additional_profile_attributes = [ "locale", :locale, "preferred_name" ]
+    @configuration.additional_profile_attributes = ["locale", :locale, "preferred_name"]
 
     assert_equal %i[locale preferred_name], @configuration.additional_profile_attributes
   end

@@ -8,7 +8,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_engine_defines_only_profile_and_admin_routes
-    routes = RecordingStudioUser::Engine.routes.routes.map { |route| route.name }.compact
+    routes = RecordingStudioUser::Engine.routes.routes.map(&:name).compact
 
     assert_includes routes, "profile"
     assert_includes routes, "edit_profile"

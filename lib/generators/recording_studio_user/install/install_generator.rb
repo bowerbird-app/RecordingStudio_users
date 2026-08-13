@@ -20,18 +20,30 @@ module RecordingStudioUser
       end
 
       def copy_initializer
-        copy_file "recording_studio_user_initializer.rb", "config/initializers/recording_studio_user.rb" unless File.exist?(
+        unless File.exist?(
           Rails.root.join("config/initializers/recording_studio_user.rb")
         )
+          copy_file "recording_studio_user_initializer.rb",
+                    "config/initializers/recording_studio_user.rb"
+        end
       end
 
       def add_tailwind_sources
         tailwind_path = Rails.root.join("app/assets/tailwind/application.css")
-        return say "Tailwind CSS not detected. Add RecordingStudioUser sources manually if needed.", :yellow unless tailwind_path.exist?
+        unless tailwind_path.exist?
+          return say "Tailwind CSS not detected. Add RecordingStudioUser sources manually if needed.",
+                     :yellow
+        end
 
         content = tailwind_path.read
-        return say "Tailwind sources already include RecordingStudioUser.", :green if tailwind_sources.all? { |line| content.include?(line) }
-        return say "Could not find @import \"tailwindcss\"; add RecordingStudioUser sources manually.", :yellow unless content.include?('@import "tailwindcss"')
+        return say "Tailwind sources already include RecordingStudioUser.", :green if tailwind_sources.all? do |line|
+          content.include?(line)
+        end
+
+        unless content.include?('@import "tailwindcss"')
+          return say "Could not find @import \"tailwindcss\"; add RecordingStudioUser sources manually.",
+                     :yellow
+        end
 
         missing_sources = tailwind_sources.reject { |line| content.include?(line) }
         inject_into_file tailwind_path, after: "@import \"tailwindcss\";\n" do
@@ -41,10 +53,14 @@ module RecordingStudioUser
 
       def print_next_steps
         say "Profile: #{RecordingStudioUser.config.mount_path}/#{RecordingStudioUser.config.profile_route_path}", :green
-        say "Users admin: #{RecordingStudioUser.config.mount_path}/#{RecordingStudioUser.config.admin_route_path}", :green
-        say "Configure routes before they are drawn, then configure RecordingStudioAdmin access and site-admin recording resolvers.", :yellow
-        say "Enable section :users on the host-owned admin recordable and grant access with RecordingStudioAccessible.", :yellow
-        say "RecordingStudioUser does not create User, Devise, migrations, admin roots, roles, or access grants.", :yellow
+        say "Users admin: #{RecordingStudioUser.config.mount_path}/#{RecordingStudioUser.config.admin_route_path}",
+            :green
+        say "Configure routes before they are drawn, then configure RecordingStudioAdmin access and site-admin recording resolvers.",
+            :yellow
+        say "Enable section :users on the host-owned admin recordable and grant access with RecordingStudioAccessible.",
+            :yellow
+        say "RecordingStudioUser does not create User, Devise, migrations, admin roots, roles, or access grants.",
+            :yellow
       end
 
       private
