@@ -39,5 +39,6 @@
       <% table.column(title: "Time zone") { |user| user.time_zone } %>
       <% table.column(title: "Created at") { |user| l(user.created_at, format: :long) } %>
     <% end %>
+    <%= render FlatPack::Pagination::Component.new(pagy: @pagy, anchor: "users-table-heading") %>
   </section>
 </div>

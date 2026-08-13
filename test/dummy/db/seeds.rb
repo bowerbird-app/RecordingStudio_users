@@ -27,6 +27,31 @@ member.assign_attributes(first_name: "Morgan", last_name: "Member", time_zone: "
 member.password = member.password_confirmation = "Password" if member.new_record?
 member.save! if member.changed?
 
+seed_start = Date.current - 89.days
+
+200.times do |index|
+  dummy_user = User.find_or_initialize_by(email: "dummy_user_#{index + 1}@example.com")
+  day_offset = case index
+  when 0...100
+    index % 10
+  when 100...150
+    20 + ((index - 100) % 20)
+  else
+    60 + ((index - 150) % 10)
+  end
+  created_at = (seed_start + day_offset.days).beginning_of_day + (index % 3600).seconds
+
+  dummy_user.assign_attributes(
+    first_name: "Dummy",
+    last_name: "User #{index + 1}",
+    time_zone: "UTC",
+    created_at: created_at,
+    updated_at: created_at
+  )
+  dummy_user.password = dummy_user.password_confirmation = "Password" if dummy_user.new_record?
+  dummy_user.save! if dummy_user.changed?
+end
+
 # Create the workspace recordables
 workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
 accessible_workspace = Workspace.find_or_create_by!(name: "Client Workspace")
