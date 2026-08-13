@@ -1,9 +1,13 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Recordable types",
-    subtitle: "The list below comes from RecordingStudio.recordable_declarations and v3 parent/root introspection.",
+    subtitle: "Diagnostic data from RecordingStudio.recordable_declarations and v3 parent/root introspection.",
     variant: :h1
   ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    This diagnostic does not make profiles recording-backed, recordable-backed, or dependent on the selected root.
+  </p>
 
   <% if @recordable_types.any? %>
     <%= render FlatPack::List::Component.new(divider: true) do %>

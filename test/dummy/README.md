@@ -1,15 +1,9 @@
-# Dummy App
+# RecordingStudioUser Reference App
 
-This Rails app exists to validate the Recording Studio addon template in a real host application.
+This Rails application demonstrates RecordingStudioUser in a host application. It provides two capabilities:
 
-## What It Covers
-
-- Devise authentication with a seeded admin user
-- `Current.actor` wiring for Recording Studio events
-- Root workspace plus seeded folder and page recordables
-- FlatPack layout integration and Tailwind source scanning
-- Mounted `RecordingStudio::Engine` route behavior inside a host app
-- A starter sidebar menu and companion docs pages for gem-specific onboarding
+- Global, authenticated editing of the signed-in user's profile.
+- Access-controlled, read-only reporting on sitewide users.
 
 ## Quick Start
 
@@ -20,25 +14,23 @@ bin/rails db:setup
 bin/dev
 ```
 
-Run the commands above from the dummy app directory, not the repository root.
+Run these commands from the dummy app directory. Sign in through Devise at `/users/sign_in` with one of the seeded accounts:
 
-Then open the app and sign in with:
+- `admin@admin.com` / `Password`: has RecordingStudioAccessible `:admin` access to the host-owned Admin root and can view the users report.
+- `member@admin.com` / `Password`: can use the profile pages but cannot access the Admin root or users report.
 
-- Email: `admin@admin.com`
-- Password: `Password`
+## RecordingStudioUser Routes
 
-## Useful Routes
+- `/recording_studio_users/profile`: the signed-in user's global profile.
+- `/recording_studio_users/profile/edit`: profile editing for the signed-in user.
+- `/recording_studio_users/admin`: the access-controlled, read-only users report.
 
-- `/` - dummy app home page and template guidance
-- `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
-- `/users/sign_in` - Devise sign-in page
-- `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - starter sidebar pages to adapt for the gem
-- `/up` - Rails health check
+Profile data is global to the current user. It is not recording-backed, recordable-backed, or root-scoped.
 
-## Why This App Exists
+## Roots And Access
 
-Use this app to verify the generated addon experience before renaming the gem or copying patterns into another host app. If a layout, route, asset source, or Recording Studio initializer change breaks here, the template likely needs adjustment before reuse.
+The dummy app has workspace roots and a separate host-owned Admin root. The Admin root controls access to sitewide users reporting; selecting a workspace neither grants Admin-root access nor changes profile data. Recording Studio root switching remains supported by the host application.
 
-The authenticated layout in `app/views/layouts/flat_pack_sidebar.html.erb` and sidebar menu in `app/views/layouts/flat_pack/_sidebar.html.erb` are a styled skeleton, not the final information architecture for every addon. Replace the sidebar items and docs page content so they match the gem's actual concepts and workflows.
+## Diagnostics
 
-Likewise, the home page in `app/views/home/index.html.erb` should stay a minimal demo surface for the gem's core feature. Do not turn it into a wall of documentation; the dedicated sidebar pages exist so deeper explanations can live in focused sections.
+The `Recordable types`, `Recordings tree`, and `Gem Views` pages are dummy/developer diagnostics. They help inspect Recording Studio declarations, recording data, and shipped templates, but they are not core profile feature documentation.

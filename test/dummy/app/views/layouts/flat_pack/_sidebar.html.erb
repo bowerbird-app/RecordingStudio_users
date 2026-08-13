@@ -2,8 +2,8 @@
   <% sidebar.header do %>
     <%= render FlatPack::Sidebar::Header::Component.new(
       brand_abbr: "RS",
-      title: "Addon Template",
-      subtitle: "Recording Studio"
+      title: "RecordingStudioUser",
+      subtitle: "Profiles and users"
     ) %>
   <% end %>
 
@@ -28,25 +28,25 @@
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Methods",
+        label: "Routes and integrations",
         href: main_app.docs_methods_path,
         icon: :code_bracket
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Recordable types",
+        label: "Diagnostics: Recordable types",
         href: main_app.docs_recordable_types_path,
         icon: :queue_list
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Recordings tree",
+        label: "Diagnostics: Recordings tree",
         href: main_app.docs_recordings_tree_path,
         icon: :folder
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Gem Views",
+        label: "Diagnostics: Gem Views",
         href: main_app.docs_gem_views_path,
         icon: :eye
       ) %>

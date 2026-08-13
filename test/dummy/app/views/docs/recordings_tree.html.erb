@@ -1,9 +1,14 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Recordings tree",
-    subtitle: "Active dummy-app recordings shown as a nested parent/child outline.",
+    subtitle: "Diagnostic view of dummy-app recordings as a nested parent/child outline.",
     variant: :h1
   ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    This unfiltered diagnostic includes recordings regardless of trash state. It does not make profiles
+    recording-backed, recordable-backed, or scoped to the selected root.
+  </p>
 
   <% if @recording_tree.any? %>
     <%= render FlatPack::Tree::Component.new(compact: true) do |tree| %>
@@ -12,6 +17,6 @@
       <% end %>
     <% end %>
   <% else %>
-    <p class="text-sm text-(--surface-muted-content-color)">No active recordings found.</p>
+    <p class="text-sm text-(--surface-muted-content-color)">No recordings found.</p>
   <% end %>
 </div>

@@ -1,14 +1,63 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Config",
-    subtitle: "Replace this placeholder with the configuration settings your generated gem exposes.",
+    subtitle: "Configure the host-owned user contract, layout, mounted paths, and editable profile fields.",
     variant: :h1
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Pre-route configuration",
+    subtitle: "Set route values before the host draws the mount and engine routes.",
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~'CODE'
-      # Add the config settings for the gem here.
+      # config/routes.rb, before the mount declaration
+      RecordingStudioUser.configure do |config|
+        config.mount_path = "/account"
+        config.profile_route_path = "settings/profile"
+        config.admin_route_path = "reporting/users"
+      end
+
+      mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path,
+            as: :recording_studio_users
     CODE
   ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Normal initializer configuration",
+    subtitle: "These settings do not change routes that the host has already drawn.",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~'CODE'
+      # config/initializers/recording_studio_user.rb
+      RecordingStudioUser.configure do |config|
+        config.user_class_name = "User"
+        config.layout = "application"
+        config.additional_profile_attributes = %i[display_name]
+      end
+    CODE
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    Defaults are <code>User</code>, <code>application</code>, <code>/recording_studio_users</code>,
+    <code>profile</code>, and <code>admin</code>. A conventional initializer runs too late to change an already
+    mounted engine path or its already-drawn profile and admin routes.
+  </p>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    Mount paths gain one leading slash and omit a trailing slash. Profile and admin paths omit both leading and
+    trailing slashes. Paths must be non-empty, contain only letters, numbers, underscores, slashes, and hyphens,
+    and cannot contain a double slash.
+  </p>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    The configured user class must be available and support the profile fields <code>first_name</code>,
+    <code>last_name</code>, and <code>time_zone</code>. Additional profile attributes are allowlisted explicitly;
+    identity, credential, authorization, membership, root, recording, and recordable fields are protected and
+    cannot be configured for profile updates.
+  </p>
 </div>

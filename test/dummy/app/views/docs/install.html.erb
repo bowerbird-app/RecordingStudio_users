@@ -1,19 +1,49 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Install",
-    subtitle: "Host-app setup for the mounted GemTemplate engine and its sample migrations.",
+    subtitle: "Install the mounted profile and users-reporting addon into a host application.",
     variant: :h1
   ) %>
 
   <%= render FlatPack::SectionTitle::Component.new(
-    title: "Step 1",
-    subtitle: "Provide one section title for each step",
+    title: "Host application setup",
+    subtitle: "The installer mounts RecordingStudioUser and creates its initializer when they are not already present.",
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :bash,
     code: <<~CODE
-      # Put the step instruction here.
+      # Gemfile
+      gem "recording_studio_user"
+
+      bundle install
+      bin/rails generate recording_studio_user:install
     CODE
   ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    Rerunning the installer is idempotent while the generated mount declaration remains intact. It mounts the engine
+    with the <code>recording_studio_users</code> proxy and does not overwrite an existing initializer. When Tailwind
+    is detected and its <code>@import "tailwindcss"</code> directive is present, it adds missing RecordingStudioUser
+    and FlatPack source directives; otherwise it reports the source configuration to add manually.
+  </p>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Default URLs",
+    subtitle: "The mounted proxy follows the configured mount and route paths.",
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :text,
+    code: <<~CODE
+      My profile: /recording_studio_users/profile
+      Users admin: /recording_studio_users/admin
+    CODE
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    The host owns the <code>User</code> model, Devise authentication, admin root, and RecordingStudioAccessible
+    grants. Configure routes before they are drawn, then configure RecordingStudioAdmin access and its site-admin
+    recording resolver. RecordingStudioUser does not create users, roles, access grants, admin roots, or migrations.
+  </p>
 </div>
