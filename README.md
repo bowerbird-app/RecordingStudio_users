@@ -15,7 +15,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio`, `flat_pack`, `devise`, and `recording_studio_admin` are required host/runtime prerequisites and are resolved through this gem's gemspec. The host remains responsible for configuring those frameworks and for its existing User and Devise setup.
+`recording_studio`, `flat_pack`, `pagy`, `devise`, and `recording_studio_admin` are required runtime dependencies and are resolved through this gem's gemspec. The host remains responsible for configuring its existing User and Devise setup.
 
 Then run:
 
@@ -23,7 +23,7 @@ Then run:
 bin/rails generate recording_studio_user:install
 ```
 
-The installer is idempotent. It mounts the engine only once with the `recording_studio_users` alias, creates `config/initializers/recording_studio_user.rb` only when that file does not already exist, and conditionally adds missing RecordingStudioUser and FlatPack Tailwind source directives when the host has a Tailwind entrypoint containing `@import "tailwindcss";`. It does not generate or copy migrations, or generate a user model, users table, Devise routes, admin root, access item, role, or grant.
+Rerunning the installer is idempotent while the generated mount declaration remains intact. It mounts the engine with the `recording_studio_users` alias, creates `config/initializers/recording_studio_user.rb` only when that file does not already exist, and conditionally adds missing RecordingStudioUser and FlatPack Tailwind source directives when the host has a Tailwind entrypoint containing `@import "tailwindcss";`. It does not generate or copy migrations, or generate a user model, users table, Devise routes, admin root, access item, role, or grant.
 
 Route configuration values for `mount_path`, `profile_route_path`, and `admin_route_path` must be available **before the host evaluates the engine mount and Rails draws routes**. An ordinary initializer that runs after routes have been drawn cannot change the mounted path or engine route paths:
 
