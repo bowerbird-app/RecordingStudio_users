@@ -48,6 +48,11 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "too late to change an already mounted engine path"
     assert_includes response.body, 'config.mount_path = "/account"'
     assert_includes response.body, "config.additional_profile_attributes"
+    assert_includes response.body, "current_user"
+    assert_includes response.body, "Devise-compatible Active Record model"
+    assert_includes response.body, "UUID primary key"
+    assert_includes response.body, "email"
+    assert_includes response.body, "timestamps"
     assert_includes response.body, "protected"
     refute_includes response.body, "Replace this placeholder"
   end
