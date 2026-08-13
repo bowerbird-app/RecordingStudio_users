@@ -38,6 +38,10 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "title", text: "Edit Profile | Recording Studio User"
     assert_includes response.body, "Update your personal information and contact details."
+    assert_select "div[data-controller='flat-pack--select'][data-flat-pack--select-searchable-value='true']", count: 1
+    assert_select "input[type='hidden'][name='user[time_zone]'][id='user_time_zone'][value='UTC'][required]", count: 1
+    assert_select "div[role='option'][data-value='UTC']", count: 1
+    assert_select "div[role='option'][data-value='Eastern Time (US & Canada)']", count: 1
 
     patch recording_studio_users.profile_path, params: {
       user: {
