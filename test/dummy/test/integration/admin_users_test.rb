@@ -27,6 +27,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
     get recording_studio_users.admin_path
     assert_response :success
+    assert_includes response.body, "User Management"
+    assert_includes response.body, "Track account growth, view system metrics, and manage user details."
     assert_includes response.body, "Total users"
     assert_includes response.body, "Users over time"
     assert_select %(main.container.mx-auto.my-28.px-5.flex.flex-col.gap-6), count: 1

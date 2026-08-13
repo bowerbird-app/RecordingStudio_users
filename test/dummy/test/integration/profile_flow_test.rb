@@ -28,6 +28,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
 
     get recording_studio_users.profile_path
     assert_response :success
+    assert_includes response.body, "Manage your personal details and account settings."
     assert_includes response.body, "Profile User"
     assert_select %(a[aria-label="Home"][href="/"]), count: 1
     refute_includes response.body, "flat-pack-sidebar"
