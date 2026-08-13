@@ -26,19 +26,23 @@ module RecordingStudioUser
       end
 
       def authorize_users_admin!
-        context = RecordingStudioAdmin::Context.new(
-          params: params.to_unsafe_h,
-          current_actor: current_user,
-          controller: self,
-          routes: main_app,
-          view_context: view_context
-        )
+        context = authorization_context
 
         RecordingStudioAdmin::Authorization.authorize!(context)
         RecordingStudioAdmin::BlastRadius.authorize!(
           RecordingStudioUser::Admin::UsersSection,
           context: context,
           label: "Users administration"
+        )
+      end
+
+      def authorization_context
+        RecordingStudioAdmin::Context.new(
+          params: params.to_unsafe_h,
+          current_actor: current_user,
+          controller: self,
+          routes: main_app,
+          view_context: view_context
         )
       end
     end
