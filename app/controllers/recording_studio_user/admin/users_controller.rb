@@ -14,11 +14,15 @@ module RecordingStudioUser
       def index
         users = RecordingStudioUser.config.user_class.order(created_at: :desc)
         @total_users = users.count
-        @user_creation_series = RecordingStudioUser::Admin.user_creation_series(users)
+        @user_creation_series = RecordingStudioUser::Admin.user_creation_series(chart_users(users))
         @pagy, @users = pagy(users, limit: 50)
       end
 
       private
+
+      def chart_users(users)
+        users.where(created_at: 90.days.ago..Time.current)
+      end
 
       def authorize_users_admin!
         context = RecordingStudioAdmin::Context.new(
