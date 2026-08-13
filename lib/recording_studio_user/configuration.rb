@@ -78,9 +78,9 @@ module RecordingStudioUser
     end
 
     def validate_path!(path)
-      unless path.match?(%r{\A[a-zA-Z0-9][a-zA-Z0-9_/-]*\z}) && !path.include?("//")
-        raise ArgumentError, "Route path must be a non-empty relative path"
-      end
+      return if path.match?(%r{\A[a-zA-Z0-9][a-zA-Z0-9_/-]*\z}) && !path.include?("//")
+
+      raise ArgumentError, "Route path must be a non-empty relative path"
     end
   end
 end

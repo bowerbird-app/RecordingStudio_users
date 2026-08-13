@@ -10,13 +10,15 @@ class InstallGeneratorTest < Minitest::Test
     generator = RecordingStudioUser::Generators::InstallGenerator.new
     sources = generator.send(:tailwind_sources)
 
-    assert sources.any? { |line| line.include?("recording_studio_user") }
-    assert sources.any? { |line| line.include?("flatpack") }
+    assert(sources.any? { |line| line.include?("recording_studio_user") })
+    assert(sources.any? { |line| line.include?("flatpack") })
   end
 
   def test_initializer_documents_route_load_timing
     initializer = File.read(
-      File.expand_path("../lib/generators/recording_studio_user/install/templates/recording_studio_user_initializer.rb", __dir__)
+      File.expand_path(
+        "../lib/generators/recording_studio_user/install/templates/recording_studio_user_initializer.rb", __dir__
+      )
     )
 
     assert_includes initializer, "Route configuration must load before Rails draws routes."

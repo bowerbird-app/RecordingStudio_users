@@ -32,7 +32,8 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "bin/rails generate recording_studio_user:install"
     assert_includes response.body, "recording_studio_users"
     assert_includes response.body, "RecordingStudioAccessible"
-    assert_includes response.body, "Rerunning the installer is idempotent while the generated mount declaration remains intact."
+    assert_includes response.body,
+                    "Rerunning the installer is idempotent while the generated mount declaration remains intact."
     refute_includes response.body, "GemTemplate"
     refute_includes response.body, "Put the step instruction here"
   end

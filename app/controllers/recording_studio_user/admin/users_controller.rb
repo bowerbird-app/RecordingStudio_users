@@ -6,6 +6,7 @@ module RecordingStudioUser
   module Admin
     class UsersController < ApplicationController
       include Pagy::Backend
+
       helper Pagy::Frontend
 
       before_action :authenticate_user!
