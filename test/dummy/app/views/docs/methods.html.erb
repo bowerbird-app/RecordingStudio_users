@@ -1,30 +1,43 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
-    title: "Methods",
-    subtitle: "Document the public methods your addon exposes.",
+    title: "Routes and integrations",
+    subtitle: "Use the mounted proxy for profile and users-reporting URLs, with host-owned access control.",
     variant: :h1
   ) %>
 
   <%= render FlatPack::SectionTitle::Component.new(
-    title: "Example method",
-    subtitle: "recordingstudio_addon.example_method",
+    title: "Mount and configure",
+    subtitle: "The engine reads its configuration when the host draws routes.",
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~'CODE'
-      # Explain what this method does before the example.
-      result = RecordingstudioAddon.example_method(
-        # Replace with the real arguments this method accepts.
-        input: "demo value"
-      )
+      RecordingStudioUser.configure do |config|
+        config.mount_path = "/recording_studio_users"
+      end
 
-      # Show what the method returns or what side effect it creates.
-      puts result
+      mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path,
+            as: :recording_studio_users
+
+      recording_studio_users.profile_path
+      recording_studio_users.admin_path
     CODE
   ) %>
 
   <p class="text-sm text-(--body-muted-content-color)">
-    Provide one section title and codeblock for each method
+    Profile routes always read and update the signed-in current user; they are not selected-root or recording-backed.
+    Devise remains responsible for authentication.
+  </p>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Users reporting",
+    subtitle: "A read-only, site-level RecordingStudioAdmin integration.",
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    Registration identifiers are <code>users</code> for the section, <code>recording_studio_users</code> for the
+    screen, and <code>widgets.users.total</code> for the total-users widget. The reporting screen is read-only and
+    gated by RecordingStudioAccessible through the host's configured admin access recording.
   </p>
 </div>

@@ -28,19 +28,28 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     get docs_install_path
     assert_response :success
     assert_select "h1", text: "Install"
-    assert_includes response.body, "Step 1"
-    assert_includes response.body, "Provide one section title for each step"
-    assert_includes response.body, "# Put the step instruction here."
+    assert_includes response.body, 'gem "recording_studio_user"'
+    assert_includes response.body, "bin/rails generate recording_studio_user:install"
+    assert_includes response.body, "recording_studio_users"
+    assert_includes response.body, "RecordingStudioAccessible"
+    assert_includes response.body, "Rerunning the installer is idempotent while the generated mount declaration remains intact."
+    refute_includes response.body, "GemTemplate"
+    refute_includes response.body, "Put the step instruction here"
   end
 
   test "config page renders successfully" do
     get docs_config_path
     assert_response :success
     assert_select "h1", text: "Config"
-    expected_placeholder = "Replace this placeholder with the configuration settings your generated gem exposes."
-
-    assert_includes response.body, expected_placeholder
-    assert_includes response.body, "# Add the config settings for the gem here."
+    assert_includes response.body, "RecordingStudioUser.configure"
+    assert_includes response.body, "Pre-route configuration"
+    assert_includes response.body, "before the mount declaration"
+    assert_includes response.body, "Normal initializer configuration"
+    assert_includes response.body, "too late to change an already mounted engine path"
+    assert_includes response.body, 'config.mount_path = "/account"'
+    assert_includes response.body, "config.additional_profile_attributes"
+    assert_includes response.body, "protected"
+    refute_includes response.body, "Replace this placeholder"
   end
 
   test "recordable types page renders configured recordables dynamically" do
@@ -53,8 +62,9 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Recordable types"
     assert_includes(
       response.body,
-      "The list below comes from RecordingStudio.recordable_declarations and v3 parent/root introspection."
+      "Diagnostic data from RecordingStudio.recordable_declarations and v3 parent/root introspection."
     )
+    assert_includes response.body, "does not make profiles recording-backed"
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
     assert_includes response.body, "Page"
@@ -89,8 +99,9 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Workspace: Tree Workspace"
     assert_includes response.body, "Folder: Reference"
     assert_includes response.body, "Page: API"
-    refute_includes response.body, "Access boundary"
-    refute_includes response.body, "Access: Admin"
+    assert_includes response.body, "does not make profiles recording-backed"
+    assert_includes response.body, "includes recordings regardless of trash state"
+    refute_includes response.body, "active dummy-app recordings"
     assert_select "div[role='tree']", count: 1
     assert_select "[role='treeitem']", minimum: 3
     refute_includes response.body, "Current structure"
@@ -103,28 +114,45 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Gem Views"
     assert_select "table", minimum: 1
     assert_includes response.body, "app/views/recording_studio_user/profiles/show.html.erb"
+    assert_includes response.body, "does not make profiles recording-backed"
   end
 
   test "methods page renders successfully" do
     get docs_methods_path
     assert_response :success
-    assert_select "h1", text: "Methods"
-    assert_includes response.body, "Document the public methods your addon exposes."
-    assert_includes response.body, "Example method"
-    assert_includes response.body, "recordingstudio_addon.example_method"
-    assert_includes response.body, "# Explain what this method does before the example."
-    assert_includes response.body, "Provide one section title and codeblock for each method"
+    assert_select "h1", text: "Routes and integrations"
+    assert_includes response.body, "RecordingStudioUser.configure"
+    assert_includes response.body, "recording_studio_users.profile_path"
+    assert_includes response.body, "widgets.users.total"
+    assert_includes response.body, "RecordingStudioAccessible"
+    refute_includes response.body, "recordingstudio_addon.example_method"
   end
 
   test "sidebar includes documentation links" do
     get docs_install_path
 
+    assert_includes response.body, "RecordingStudioUser"
     assert_select %(a[href="#{docs_install_path}"]), text: /Install/
     assert_select %(a[href="#{docs_config_path}"]), text: /Config/
-    assert_select %(a[href="#{docs_recordable_types_path}"]), text: /Recordable types/
-    assert_select %(a[href="#{docs_recordings_tree_path}"]), text: /Recordings tree/
-    assert_select %(a[href="#{docs_gem_views_path}"]), text: /Gem Views/
-    assert_select %(a[href="#{docs_methods_path}"]), text: /Methods/
+    assert_select %(a[href="#{docs_recordable_types_path}"]), text: /Diagnostics: Recordable types/
+    assert_select %(a[href="#{docs_recordings_tree_path}"]), text: /Diagnostics: Recordings tree/
+    assert_select %(a[href="#{docs_gem_views_path}"]), text: /Diagnostics: Gem Views/
+    assert_select %(a[href="#{docs_methods_path}"]), text: /Routes and integrations/
+    assert_select %(a[href="#{recording_studio_users.profile_path}"]), text: /My profile/
+    assert_select %(a[href="#{recording_studio_users.admin_path}"]), text: /Admin/
+  end
+
+  test "home page describes RecordingStudioUser workflows" do
+    get root_path
+
+    assert_response :success
+    assert_select "h1", text: "RecordingStudioUser"
+    assert_includes response.body, "Each signed-in user manages only their own global profile."
+    assert_includes response.body, "access-controlled users reporting"
+    assert_includes response.body, "Workspace roots and the Admin root are separate"
+    assert_includes response.body, "Diagnostics do not make profiles recording-backed"
+    refute_includes response.body, "Template Demo"
+    refute_includes response.body, "rename_gem"
   end
 
   private

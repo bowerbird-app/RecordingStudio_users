@@ -1,7 +1,7 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
-    title: "Template Demo",
-    subtitle: "This dummy app is the browser-facing demo surface for the template.",
+    title: "RecordingStudioUser",
+    subtitle: "Profile editing and access-controlled users reporting for a Recording Studio host application.",
     variant: :h1
   ) %>
 
@@ -9,8 +9,8 @@
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "What's working",
-          subtitle: "Core template capabilities already wired into the dummy app.",
+          title: "Profile workflow",
+          subtitle: "Each signed-in user manages only their own global profile.",
           variant: :h3,
           class: "mb-0 pb-0"
         ) %>
@@ -18,10 +18,10 @@
 
       <% card.body do %>
         <ul class="space-y-3 text-sm leading-6">
-          <li>Rails engine routes are mounted and responding.</li>
-          <li>PostgreSQL UUID-oriented migrations are included in the engine.</li>
-          <li>Tailwind sources can be wired into a host app through the install generator.</li>
-          <li>The dummy app exercises authentication, FlatPack layouts, and Recording Studio setup.</li>
+          <li><code>My profile</code> opens the mounted profile at <code>/recording_studio_users/profile</code>.</li>
+          <li>Profile edits are global to the signed-in user and do not depend on the selected workspace root.</li>
+          <li>Devise sign-in and the Recording Studio root switcher remain host application behavior.</li>
+          <li>Use <code>admin@admin.com</code> / <code>Password</code> or <code>member@admin.com</code> / <code>Password</code>.</li>
         </ul>
       <% end %>
     <% end %>
@@ -29,8 +29,8 @@
     <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "Next steps",
-          subtitle: "The usual first moves when turning the template into a real addon.",
+          title: "Users reporting",
+          subtitle: "The users report is a site-level Admin-root workflow.",
           variant: :h3,
           class: "mb-0 pb-0"
         ) %>
@@ -38,10 +38,10 @@
 
       <% card.body do %>
         <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
-          <li>Run <code>bin/rename_gem your_addon_name</code> when you are ready to rename the engine.</li>
-          <li>Replace the sample migration with your addon tables and install them into the host app.</li>
-          <li>Configure Recording Studio recordable types and capabilities in the host app initializer.</li>
-          <li>Use the dummy app to validate layout, asset scanning, and authentication flows.</li>
+          <li>Open <code>Admin</code> at <code>/recording_studio_users/admin</code>.</li>
+          <li>The seeded <code>admin@admin.com</code> has Admin-root access and can open the read-only users report.</li>
+          <li>The seeded <code>member@admin.com</code> can edit a profile but cannot open the Admin-root report.</li>
+          <li>Workspace roots and the Admin root are separate: selecting a workspace does not grant reporting access.</li>
         </ol>
       <% end %>
     <% end %>
@@ -49,8 +49,8 @@
     <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "FlatPack usage",
-          subtitle: "This page uses FlatPack components for its primary UI structure.",
+          title: "Host responsibilities",
+          subtitle: "RecordingStudioUser integrates with services the host owns.",
           variant: :h3,
           class: "mb-0 pb-0"
         ) %>
@@ -58,7 +58,7 @@
 
       <% card.body do %>
         <p class="text-sm leading-6 text-(--surface-content-color)">
-          Use FlatPack cards, buttons, badges, inputs, and layout primitives as the default path for addon UI. Keep raw HTML for simple semantic content only.
+          The host provides <code>User</code>, Devise, the Admin root, RecordingStudioAccessible grants, and root-switcher configuration. RecordingStudioUser supplies mounted profile and reporting interfaces without changing those responsibilities.
         </p>
       <% end %>
 
@@ -79,8 +79,8 @@
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "Install flow",
-          subtitle: "What the host app generator path covers.",
+          title: "Documentation and diagnostics",
+          subtitle: "Inspect the integration without changing product behavior.",
           variant: :h3,
           class: "mb-0 pb-0"
         ) %>
@@ -88,10 +88,10 @@
 
       <% card.body do %>
         <ul class="space-y-3 text-sm leading-6">
-          <li>Add the gem to your host app and run <code>bundle install</code>.</li>
-          <li>Run <code>rails generate gem_template:install</code> to mount the engine and add configuration.</li>
-          <li>Run <code>rails generate gem_template:migrations</code> to copy engine migrations into the host app.</li>
-          <li>Rebuild Tailwind if needed with <code>bin/rails tailwindcss:build</code>.</li>
+          <li>Install with <code>bin/rails generate recording_studio_user:install</code>.</li>
+          <li>Read <code>Install</code>, <code>Config</code>, and <code>Routes and integrations</code> for host setup.</li>
+          <li><code>Recordable types</code>, <code>Recordings tree</code>, and <code>Gem Views</code> are diagnostics.</li>
+          <li>Diagnostics do not make profiles recording-backed, recordable-backed, or root-scoped.</li>
         </ul>
       <% end %>
     <% end %>

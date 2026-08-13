@@ -1,9 +1,13 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Gem Views",
-    subtitle: "These are the view templates currently shipped by the gem.",
+    subtitle: "Diagnostic list of view templates currently shipped by RecordingStudioUser.",
     variant: :h1
   ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    This diagnostic does not make profiles recording-backed, recordable-backed, or root-scoped.
+  </p>
 
   <% view_rows = Array(@engine_views).map { |view_path| { path: view_path, source: "Gem engine" } } %>
 
