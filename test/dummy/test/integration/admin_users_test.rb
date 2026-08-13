@@ -31,7 +31,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "User Management"
     assert_includes response.body, "Track account growth, view system metrics, and manage user details."
     assert_includes response.body, "Total users"
-    assert_includes response.body, "Users over time"
+    assert_includes response.body, "Users over past 90 days"
+    refute_includes response.body, "Users over time"
     assert_select %(main.container.mx-auto.my-28.px-5.flex.flex-col.gap-6), count: 1
     assert_select %(main > div.space-y-8:not(.mt-6)), count: 1
     assert_select %(a[aria-label="Home"][href="/"]), count: 1
@@ -48,6 +49,16 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert series.all? { |point| point.key?(:x) && point.key?(:y) }
     assert series.all? { |point| point[:x].is_a?(String) }
     assert series.all? { |point| point[:y].is_a?(Integer) }
+  end
+
+  test "limits the chart users to the past 90 days" do
+    old_user = create_user("old-chart-#{SecureRandom.hex(4)}@example.com", created_at: 91.days.ago)
+    recent_user = create_user("recent-chart-#{SecureRandom.hex(4)}@example.com", created_at: 89.days.ago)
+    users = User.where(id: [old_user.id, recent_user.id])
+
+    chart_users = RecordingStudioUser::Admin::UsersController.new.send(:chart_users, users)
+
+    assert_equal [recent_user.id], chart_users.pluck(:id)
   end
 
   test "paginates the users table" do
@@ -74,14 +85,16 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
   private
 
-  def create_user(email)
+  def create_user(email, created_at: nil)
     User.create!(
       email: email,
       password: "Password123!",
       password_confirmation: "Password123!",
       first_name: "Admin",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      created_at: created_at,
+      updated_at: created_at
     )
   end
 
