@@ -9,15 +9,13 @@ The template already owns `User`, the users table, Devise, and the login page. T
 
 ## Installation
 
-Add the required dependencies:
+Add the engine to the host application's Gemfile:
 
 ```ruby
 gem "recording_studio_user"
-gem "recording_studio"
-gem "flat_pack"
-gem "devise"
-gem "recording_studio_admin"
 ```
+
+`recording_studio`, `flat_pack`, `devise`, and `recording_studio_admin` are required host/runtime prerequisites and are resolved through this gem's gemspec. The host remains responsible for configuring those frameworks and for its existing User and Devise setup.
 
 Then run:
 
@@ -25,9 +23,9 @@ Then run:
 bin/rails generate recording_studio_user:install
 ```
 
-The installer is idempotent. It copies a non-overwriting initializer, mounts the engine once as `recording_studio_users`, and adds missing Tailwind source directives when the host uses Tailwind. It does not generate a user model, users table, Devise routes, migrations, admin root, access item, role, or grant.
+The installer is idempotent. It mounts the engine only once with the `recording_studio_users` alias, creates `config/initializers/recording_studio_user.rb` only when that file does not already exist, and conditionally adds missing RecordingStudioUser and FlatPack Tailwind source directives when the host has a Tailwind entrypoint containing `@import "tailwindcss";`. It does not generate or copy migrations, or generate a user model, users table, Devise routes, admin root, access item, role, or grant.
 
-Route configuration must load **before Rails draws routes**:
+Route configuration values for `mount_path`, `profile_route_path`, and `admin_route_path` must be available **before the host evaluates the engine mount and Rails draws routes**. An ordinary initializer that runs after routes have been drawn cannot change the mounted path or engine route paths:
 
 ```ruby
 RecordingStudioUser.configure do |config|
@@ -78,6 +76,20 @@ The host owns administration and must:
 4. enable the reusable section on its chosen recordable;
 5. grant access through Recording Studio access items and roles.
 
+Configure the admin authorization resolvers in the host application. This example follows the dummy app and resolves the host-owned `AdminRoot` recordable:
+
+```ruby
+RecordingStudioAdmin.configure do |config|
+  config.authentication_method = :authenticate_user!
+  config.current_actor_method = :current_user
+  config.access_recording_resolver = lambda do |_context|
+    admin_root = AdminRoot.find_by(name: "Admin")
+    RecordingStudio.root_recording_for(admin_root) if admin_root
+  end
+  config.site_admin_recording_resolver = config.access_recording_resolver
+end
+```
+
 For example, using the actual section API:
 
 ```ruby
@@ -93,7 +105,7 @@ class AdminRoot < ApplicationRecord
 end
 ```
 
-The page calls RecordingStudioAdmin's configured authorization and site blast-radius checks. Unauthorized actors are rejected regardless of this engine's mount path. The profile capability remains independent of Accessible.
+The page calls RecordingStudioAdmin's configured authorization and site blast-radius checks. Unauthorized actors are rejected regardless of this engine's mount path. Admin roots, resolver targets, access items, roles, and grants are all host-owned. The profile capability remains independent of Accessible.
 
 ## UI
 
@@ -124,6 +136,13 @@ Run the standard validation from the repository root:
 ```bash
 bundle exec rake test
 bundle exec rake test:all
+```
+
+The dummy app's CI entrypoint is its lint and security workflow, rather than the engine test suite:
+
+```bash
+cd test/dummy
+bin/ci
 ```
 
 When upgrading, preserve the host-owned User/Devise contract and rerun the installer safely. Add extension fields only through the documented configuration and keep any admin-root, resolver, and grant changes in the host application.
