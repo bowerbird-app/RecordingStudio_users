@@ -11,7 +11,8 @@ module RecordingStudioUser
 
       def mount_engine
         routes_path = Rails.root.join("config/routes.rb")
-        mount = "mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users"
+        mount = "mount RecordingStudioUser::Engine => " \
+                "RecordingStudioUser.config.mount_path, as: :recording_studio_users"
         return say "RecordingStudioUser is already mounted.", :green if routes_path.read.include?(mount)
 
         inject_into_file routes_path, before: /^end\s*\z/ do
@@ -52,10 +53,13 @@ module RecordingStudioUser
       end
 
       def print_next_steps
-        say "Profile: #{RecordingStudioUser.config.mount_path}/#{RecordingStudioUser.config.profile_route_path}", :green
+        profile_path = "#{RecordingStudioUser.config.mount_path}/" \
+                       "#{RecordingStudioUser.config.profile_route_path}"
+        say "Profile: #{profile_path}", :green
         say "Users admin: #{RecordingStudioUser.config.mount_path}/#{RecordingStudioUser.config.admin_route_path}",
             :green
-        say "Configure routes before they are drawn, then configure RecordingStudioAdmin access and site-admin recording resolvers.",
+        say "Configure routes before they are drawn, then configure RecordingStudioAdmin access " \
+            "and site-admin recording resolvers.",
             :yellow
         say "Enable section :users on the host-owned admin recordable and grant access with RecordingStudioAccessible.",
             :yellow
@@ -68,7 +72,8 @@ module RecordingStudioUser
       def tailwind_sources
         [
           '@source "../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_user-*/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+          'recording_studio_user-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]
