@@ -17,16 +17,14 @@ module RecordingStudioUser
         redirect_to RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users")
       end
 
-      def show
-      end
+      def show; end
 
-      def edit
-      end
+      def edit; end
 
       def update
-        if perform_recording_studio_admin_action!("recording_studio_users", :edit, @user, audit_action: :update) {
+        if perform_recording_studio_admin_action!("recording_studio_users", :edit, @user, audit_action: :update) do
           @user.update(admin_user_params)
-        }
+        end
           redirect_to admin_user_path(@user), notice: "User updated."
         else
           render :edit, status: :unprocessable_entity
