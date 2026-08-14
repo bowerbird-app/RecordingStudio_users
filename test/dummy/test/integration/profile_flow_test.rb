@@ -32,6 +32,10 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Manage your personal details and account settings."
     assert_includes response.body, "Profile User"
     assert_select %(a[aria-label="Home"][href="/"]), count: 1
+    assert_select %(a[href="#{recording_studio_users.edit_profile_path}"]), text: "Edit", count: 1
+    assert_select "dl.space-y-4", count: 1
+    refute_includes response.body, "sm:grid-cols-2"
+    assert_operator response.body.index(">Edit<"), :<, response.body.index(">Name<")
     refute_includes response.body, "flat-pack-sidebar"
 
     get recording_studio_users.edit_profile_path

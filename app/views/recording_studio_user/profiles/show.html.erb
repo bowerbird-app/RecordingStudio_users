@@ -17,7 +17,13 @@
 <% end %>
 
 <div class="mt-6 space-y-4">
-  <dl class="grid gap-4 sm:grid-cols-2">
+  <%= render FlatPack::Button::Component.new(
+    text: "Edit",
+    url: edit_profile_path,
+    style: :secondary
+  ) %>
+
+  <dl class="space-y-4">
     <div>
       <dt class="text-sm text-[var(--surface-muted-content-color)]">Name</dt>
       <dd class="mt-1 font-medium"><%= profile_display_name(@user) %></dd>
@@ -31,11 +37,4 @@
       <dd class="mt-1 font-medium"><%= @user.time_zone %></dd>
     </div>
   </dl>
-
-  <%= render FlatPack::Button::Component.new(
-    text: "Edit profile",
-    url: edit_profile_path,
-    style: :primary,
-    icon: :pencil_square
-  ) %>
 </div>
