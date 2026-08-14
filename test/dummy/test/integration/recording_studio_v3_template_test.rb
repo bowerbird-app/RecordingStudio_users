@@ -57,6 +57,9 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
     assert_equal root_recording, folder_recording.root_recording
     assert_equal folder_recording, page_recording.parent_recording
     assert_equal root_recording, page_recording.root_recording
+    assert RecordingStudioAccessible.authorized?(actor: User.find_by!(email: "admin@admin.com"), recording: root_recording, role: :admin)
+    assert RecordingStudioAccessible.authorized?(actor: User.find_by!(email: "admin@admin.com"), recording: accessible_root_recording, role: :view)
+    refute RecordingStudioAccessible.authorized?(actor: User.find_by!(email: "admin@admin.com"), recording: private_root_recording, role: :view)
     assert_equal 3, Workspace.count
     assert_equal 200, User.where("email LIKE 'dummy_user_%@example.com'").count
     creation_counts = User.where("email LIKE 'dummy_user_%@example.com'").pluck(:created_at).group_by(&:to_date).transform_values(&:count)
@@ -64,9 +67,11 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
     assert_equal 2, creation_counts.values.min
     assert_equal 10, creation_counts.values.max
 
-    assert_no_difference -> { User.count } do
-      assert_no_difference -> { RecordingStudio::Recording.count } do
-        load Rails.root.join("db/seeds.rb").to_s
+    assert_no_difference -> { RecordingStudio::Access.count } do
+      assert_no_difference -> { User.count } do
+        assert_no_difference -> { RecordingStudio::Recording.count } do
+          load Rails.root.join("db/seeds.rb").to_s
+        end
       end
     end
     assert_equal 200, User.where("email LIKE 'dummy_user_%@example.com'").count
