@@ -56,6 +56,35 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       get path
       assert_response :forbidden, path
     end
+
+    get recording_studio_users.edit_admin_user_path(user)
+    assert_response :forbidden
+
+    patch recording_studio_users.admin_user_path(user), params: { user: { first_name: "Denied" } }
+    assert_response :forbidden
+  end
+
+  test "permits viewers to view users but not edit them" do
+    user = create_user("viewer-target-#{SecureRandom.hex(4)}@example.com")
+    viewer = create_user("viewer-#{SecureRandom.hex(4)}@example.com")
+    sign_in viewer
+    grant_admin_access(viewer, @admin_recording, role: :view)
+
+    get "/admin/screens/recording_studio_users/table"
+
+    assert_response :success
+    assert_includes response.body, "View user"
+    refute_includes response.body, "Edit user"
+
+    get recording_studio_users.admin_user_path(user)
+    assert_response :success
+
+    get recording_studio_users.edit_admin_user_path(user)
+    assert_response :forbidden
+
+    patch recording_studio_users.admin_user_path(user), params: { user: { first_name: "Denied" } }
+    assert_response :forbidden
+    assert_equal "Admin", user.reload.first_name
   end
 
   test "renders mounted user links from the shared admin sidebar layout" do
@@ -95,12 +124,44 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select %(button[aria-label="Actions for #{user.email}"]), count: 1
     assert_includes response.body, "View user"
+    assert_includes response.body, "Edit user"
 
     get recording_studio_users.admin_user_path(user)
 
     assert_response :success
     assert_includes response.body, user.email
     assert_includes response.body, "User account details"
+
+    get recording_studio_users.edit_admin_user_path(user)
+
+    assert_response :success
+    assert_includes response.body, "Update user"
+
+    patch recording_studio_users.admin_user_path(user), params: {
+      user: { first_name: "Updated", last_name: "User", time_zone: "Eastern Time (US & Canada)", email: "ignored@example.com" }
+    }
+
+    assert_redirected_to recording_studio_users.admin_user_path(user)
+    user.reload
+    assert_equal "Updated", user.first_name
+    assert_equal "User", user.last_name
+    assert_equal "Eastern Time (US & Canada)", user.time_zone
+    refute_equal "ignored@example.com", user.email
+  end
+
+  test "re-renders the edit form when an admin submits invalid profile details" do
+    user = create_user("invalid-edit-#{SecureRandom.hex(4)}@example.com")
+    sign_in @admin
+    grant_admin_access(@admin, @admin_recording)
+
+    patch recording_studio_users.admin_user_path(user), params: {
+      user: { first_name: "Updated", last_name: "User", time_zone: "Invalid/Zone" }
+    }
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "prevented this user from being saved"
+    assert_equal "Admin", user.reload.first_name
+    assert_equal "UTC", user.time_zone
   end
 
   test "paginates the users table" do
@@ -136,11 +197,11 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     )
   end
 
-  def grant_admin_access(user, recording)
+  def grant_admin_access(user, recording, role: :admin)
     RecordingStudioAccessible::AccessCreationContext.allow do
       recording.record(RecordingStudio::Access, parent_recording: recording) do |access|
         access.actor = user
-        access.role = :admin
+        access.role = role
       end
     end
   end
