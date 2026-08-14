@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-# Use the gem_template engine
+# Use the RecordingStudioUser engine
 gem "recording_studio_user", path: "../.."
 
 # RecordingStudio engine

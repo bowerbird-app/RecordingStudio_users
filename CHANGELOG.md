@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-14
+
+### Added
+- Added a shared RecordingStudioAdmin users screen with sitewide totals, creation-over-time reporting, filtering, user details, and protected table actions.
+- Added dummy-app workspace and Admin-root fixtures demonstrating RecordingStudioAccessible access filtering.
+
+### Changed
+- Updated the profile page layout and added root-aware profile and users-administration navigation to the dummy app.
+- Restricted user profile edits to actors with `:admin` access while retaining report and detail access for actors with `:view` access.
+- Moved users administration rendering and navigation to the configured RecordingStudioAdmin surface.
+
+### Security
+- Added authorization and site blast-radius checks around users reporting and user-table actions.
+
 ## [0.1.3] - 2026-08-14
 
 ### Changed
@@ -35,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.4
 [0.1.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.3
 [0.1.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.2
 [0.1.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.1

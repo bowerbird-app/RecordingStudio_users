@@ -16,8 +16,28 @@ permissions:
   contents: read
 
 jobs:
-  bundler-audit:
-    name: Bundler Audit
+  bundler-audit-root:
+    name: Bundler Audit (root)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+        env:
+          BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
+
+      - name: Scan gems for known vulnerabilities
+        run: bundle exec bundler-audit check
+
+  bundler-audit-dummy:
+    name: Bundler Audit (dummy)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 

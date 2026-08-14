@@ -139,7 +139,7 @@ The dummy keeps the existing Devise login at `/users/sign_in`, root-switcher int
 | `admin@admin.com` | `Password` |
 | `member@admin.com` | `Password` |
 
-The dummy demonstrates separate **My workspace** and access-controlled **Admin** roots. Its sidebar includes **My profile**. Admin access is granted with `RecordingStudioAccessible`, never a user role field.
+The dummy demonstrates separate **My workspace** and access-controlled **Admin** roots. Its sidebar includes **My profile**, and selecting the Admin root exposes the shared users-administration action. The seeded admin can switch among accessible workspaces and edit user profile fields; the seeded member can use profile pages but cannot access users administration. Admin access is granted with `RecordingStudioAccessible`, never a user role field.
 
 ## Development
 
