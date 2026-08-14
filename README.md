@@ -66,7 +66,7 @@ Email and password changes remain in the host's existing Devise flows.
 
 ## Users administration
 
-The engine registers a `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The screen is read-only and contains name, email, time zone, created-at, total-user, and creation-over-time reporting. The engine does not render its own admin layout or report page.
+The engine registers a `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The screen contains name, email, time zone, created-at, total-user, and creation-over-time reporting. Actors with `RecordingStudioAccessible` `:view` access can view the report and user details; only `:admin` actors can update a user's first name, last name, and time zone through the screen's **Edit user** action. The engine does not render its own admin layout or report page.
 
 The host owns administration and must:
 
@@ -85,6 +85,8 @@ mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: 
 ```
 
 The engine's `/recording_studio_users/admin` URL is retained for existing links and redirects authorized users to that shared screen. New host navigation should link to the shared `RecordingStudioAdmin` screen.
+
+Admin editing never changes email, passwords, roles, access grants, memberships, roots, or Recording Studio records. Email and password changes remain in host Devise/account-management flows.
 
 Configure the admin authorization resolvers in the host application. This example follows the dummy app and resolves the host-owned `AdminRoot` recordable:
 

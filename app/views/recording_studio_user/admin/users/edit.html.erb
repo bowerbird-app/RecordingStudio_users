@@ -1,0 +1,61 @@
+<% content_for :title, "Edit #{RecordingStudioUser::Admin.display_name(@user)} | Users" %>
+
+<%= render FlatPack::PageNav::Component.new(
+  anchor_url: admin_user_path(@user),
+  anchor_icon: "arrow_left",
+  anchor_tooltip: "User details"
+) %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Edit #{RecordingStudioUser::Admin.display_name(@user)}",
+  subtitle: "Update user profile details",
+  variant: :h1
+) %>
+
+<%= form_with model: @user, url: admin_user_path(@user), method: :patch, class: "mt-6" do %>
+  <% if @user.errors.any? %>
+    <%= render FlatPack::Alert::Component.new(
+      title: "#{pluralize(@user.errors.count, "error")} prevented this user from being saved",
+      description: @user.errors.full_messages.join(", "),
+      style: :danger
+    ) %>
+  <% end %>
+
+  <div class="space-y-4">
+    <%= render FlatPack::TextInput::Component.new(
+      name: "user[first_name]",
+      id: "user_first_name",
+      label: "First name",
+      value: @user.first_name,
+      required: true,
+      autocomplete: "given-name",
+      error: @user.errors[:first_name].first
+    ) %>
+
+    <%= render FlatPack::TextInput::Component.new(
+      name: "user[last_name]",
+      id: "user_last_name",
+      label: "Last name",
+      value: @user.last_name,
+      required: true,
+      autocomplete: "family-name",
+      error: @user.errors[:last_name].first
+    ) %>
+
+    <%= render FlatPack::Select::Component.new(
+      name: "user[time_zone]",
+      id: "user_time_zone",
+      label: "Time zone",
+      value: @user.time_zone,
+      options: ActiveSupport::TimeZone.all.map { |zone| [zone.to_s, zone.name] },
+      searchable: true,
+      required: true,
+      error: @user.errors[:time_zone].first
+    ) %>
+
+    <div class="flex gap-2">
+      <%= render FlatPack::Button::Component.new(text: "Update user", type: "submit", style: :primary) %>
+      <%= render FlatPack::Button::Component.new(text: "Cancel", url: admin_user_path(@user), style: :secondary) %>
+    </div>
+  </div>
+<% end %>

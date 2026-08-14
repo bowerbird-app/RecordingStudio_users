@@ -18,6 +18,26 @@ module RecordingStudioUser
       widget "widgets.users.total", view_variant: :compact
     end
 
+    class UsersResource < RecordingStudioAdmin::Resource
+      key "recording_studio_users"
+      section "users"
+      icon :user_group
+      title "Manage users"
+      subtitle "View and update user profile details"
+      blast_radius :site
+
+      action :show,
+             text: "View user",
+             icon: "eye",
+             url: ->(user, _context) { RecordingStudioUser::Engine.routes.url_helpers.admin_user_path(user) }
+
+      action :edit,
+             text: "Edit user",
+             icon: "pencil-square",
+             required_role: :admin,
+             url: ->(user, _context) { RecordingStudioUser::Engine.routes.url_helpers.edit_admin_user_path(user) }
+    end
+
     class UsersScreen < RecordingStudioAdmin::Screen
       key "recording_studio_users"
       icon :user_group
@@ -42,10 +62,8 @@ module RecordingStudioUser
         column :email, title: "Email"
         column :time_zone, title: "Time zone"
         column :created_at, title: "Created at"
-         action :view_user,
-           text: "View user",
-           icon: "eye",
-           url: ->(user, _context) { RecordingStudioUser::Engine.routes.url_helpers.admin_user_path(user) }
+        admin_action "recording_studio_users.show", as: :view_user
+        admin_action "recording_studio_users.edit", as: :edit_user
       end
       widget "widgets.users.total"
     end
@@ -62,6 +80,7 @@ module RecordingStudioUser
     class << self
       def register!
         RecordingStudioAdmin.register_section(UsersSection)
+        RecordingStudioAdmin.register_resource(UsersResource)
         RecordingStudioAdmin.register_screen(UsersScreen)
         RecordingStudioAdmin.register_widget(TotalUsersWidget)
       end
