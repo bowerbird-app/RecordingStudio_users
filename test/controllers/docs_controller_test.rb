@@ -155,17 +155,19 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select %(a[href="#{recording_studio_users.admin_path}"]), text: /Admin/
   end
 
-  test "home page describes RecordingStudioUser workflows" do
+  test "home page renders only the profile action without an admin root" do
     get root_path
 
     assert_response :success
-    assert_select "h1", text: "RecordingStudioUser"
-    assert_includes response.body, "Each signed-in user manages only their own global profile."
-    assert_includes response.body, "access-controlled users reporting"
-    assert_includes response.body, "Workspace roots and the Admin root are separate"
-    assert_includes response.body, "Diagnostics do not make profiles recording-backed"
-    refute_includes response.body, "Template Demo"
-    refute_includes response.body, "rename_gem"
+    assert_select "h1", text: "Workspace", count: 1
+    assert_select "#home-actions" do
+      assert_select %(a[href="#{recording_studio_users.profile_path}"][class*="--button-secondary-background-color"]),
+                    text: "My Profile", count: 1
+      assert_select %(a[href="#{recording_studio_users.admin_path}"]), text: "Users Admin", count: 0
+    end
+    refute_includes response.body, "Profile workflow"
+    refute_includes response.body, "Users reporting"
+    refute_includes response.body, "Documentation and diagnostics"
   end
 
   private
