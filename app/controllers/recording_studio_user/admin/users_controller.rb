@@ -1,34 +1,21 @@
 # frozen_string_literal: true
 
-require "pagy"
-
 module RecordingStudioUser
   module Admin
     class UsersController < ApplicationController
-      include Pagy::Backend
-
-      helper Pagy::Frontend
-
       rescue_from RecordingStudioAdmin::AuthorizationFailed, with: :render_forbidden
 
       before_action :authenticate_user!
       before_action :authorize_users_admin!
 
       def index
-        users = RecordingStudioUser.config.user_class.order(created_at: :desc)
-        @total_users = users.count
-        @user_creation_series = RecordingStudioUser::Admin.user_creation_series(chart_users(users))
-        @pagy, @users = pagy(users, limit: 50)
+        redirect_to RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users")
       end
 
       private
 
       def render_forbidden
         head :forbidden
-      end
-
-      def chart_users(users)
-        users.where(created_at: 90.days.ago..Time.current)
       end
 
       def authorize_users_admin!

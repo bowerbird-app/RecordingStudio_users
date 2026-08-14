@@ -42,7 +42,7 @@ The default URLs are:
 
 - `/recording_studio_users/profile`
 - `/recording_studio_users/profile/edit`
-- `/recording_studio_users/admin`
+- `/recording_studio_users/admin` (compatibility redirect to the shared admin screen)
 
 Host code uses the mounted-engine proxy:
 
@@ -66,15 +66,25 @@ Email and password changes remain in the host's existing Devise flows.
 
 ## Users administration
 
-The engine registers a `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The screen is read-only and contains name, email, time zone, created-at, total-user, and creation-over-time reporting.
+The engine registers a `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The screen is read-only and contains name, email, time zone, created-at, total-user, and creation-over-time reporting. The engine does not render its own admin layout or report page.
 
 The host owns administration and must:
 
 1. create its own admin recordable/root;
 2. install and configure `RecordingStudioAccessible`;
-3. configure `RecordingStudioAdmin` access-recording and site-admin-recording resolvers;
-4. enable the reusable section on its chosen recordable;
-5. grant access through Recording Studio access items and roles.
+3. mount the `RecordingStudioAdmin` engine;
+4. configure `RecordingStudioAdmin` access-recording and site-admin-recording resolvers;
+5. enable the reusable section on its chosen recordable;
+6. grant access through Recording Studio access items and roles.
+
+Mount the shared admin surface in the host routes. The registered users screen then renders at `/admin/screens/recording_studio_users` using `RecordingStudioAdmin`'s configured layout:
+
+```ruby
+recording_studio_admin_for :admin, at: "/admin", root_section: :root
+mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users
+```
+
+The engine's `/recording_studio_users/admin` URL is retained for existing links and redirects authorized users to that shared screen. New host navigation should link to the shared `RecordingStudioAdmin` screen.
 
 Configure the admin authorization resolvers in the host application. This example follows the dummy app and resolves the host-owned `AdminRoot` recordable:
 
@@ -109,14 +119,14 @@ The page calls RecordingStudioAdmin's configured authorization and site blast-ra
 
 ## UI
 
-Gem-owned full pages use:
+Gem-owned profile pages use:
 
 ```text
 [FlatPack page title]
 [content]
 ```
 
-They use the configured host layout and contain no outer card around the profile form/display or users report. `RecordingStudioAdmin` may render its own supported widgets internally.
+They use the configured host layout and contain no outer card around the profile form/display. Users administration is rendered by `RecordingStudioAdmin` and uses that gem's configured layout and supported components.
 
 ## Dummy app
 

@@ -5,6 +5,7 @@ class AdminRoot < ApplicationRecord
   RecordingStudio.enable_capability(:accessible, on: self)
 
   recording_studio_admin_sections do
+    section :root
     section :users
   end
 end
