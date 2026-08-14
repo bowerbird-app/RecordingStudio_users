@@ -16,7 +16,7 @@ bin/dev
 
 Run these commands from the dummy app directory. Sign in through Devise at `/users/sign_in` with one of the seeded accounts:
 
-- `admin@admin.com` / `Password`: has RecordingStudioAccessible `:admin` access to the host-owned Admin root and can view the users report.
+- `admin@admin.com` / `Password`: has `:admin` access to the Admin root and Studio Workspace, plus `:view` access to Client Workspace. Use this account to test workspace switching and the users report.
 - `member@admin.com` / `Password`: can use the profile pages but cannot access the Admin root or users report.
 
 ## RecordingStudioUser Routes
@@ -29,7 +29,7 @@ Profile data is global to the current user. It is not recording-backed, recordab
 
 ## Roots And Access
 
-The dummy app has workspace roots and a separate host-owned Admin root. The Admin root controls access to sitewide users reporting; selecting a workspace neither grants Admin-root access nor changes profile data. Recording Studio root switching remains supported by the host application.
+The dummy app has workspace roots and a separate host-owned Admin root. The seeded admin can switch between Studio Workspace and Client Workspace; Private Workspace remains inaccessible to demonstrate access filtering. The Admin root controls access to sitewide users reporting, and selecting a workspace neither grants Admin-root access nor changes profile data.
 
 ## Diagnostics
 
