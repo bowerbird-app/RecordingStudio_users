@@ -60,7 +60,9 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     source_workspace = Workspace.create!(name: "Source Workspace")
     target_workspace = Workspace.create!(name: "Target Workspace")
     target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    RecordingStudio.root_recording_for(source_workspace)
+    source_root_recording = RecordingStudio.root_recording_for(source_workspace)
+    grant_view_access(user, source_root_recording)
+    grant_view_access(user, target_root_recording)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "roots",
@@ -87,7 +89,9 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     source_workspace = Workspace.create!(name: "Fallback Source Workspace")
     target_workspace = Workspace.create!(name: "Fallback Target Workspace")
     target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    RecordingStudio.root_recording_for(source_workspace)
+    source_root_recording = RecordingStudio.root_recording_for(source_workspace)
+    grant_view_access(user, source_root_recording)
+    grant_view_access(user, target_root_recording)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "roots",
