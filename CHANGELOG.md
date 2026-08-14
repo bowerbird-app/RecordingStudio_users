@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-14
+
+### Changed
+- Released RecordingStudioUser version `0.1.3`.
+
 ## [0.1.2] - 2026-07-21
 
 ### Changed
@@ -30,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/gem_template/compare/v0.1.2...HEAD
-[0.1.2]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.2
-[0.1.1]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.1
-[0.1.0]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.0
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.3
+[0.1.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.2
+[0.1.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.1
+[0.1.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.0

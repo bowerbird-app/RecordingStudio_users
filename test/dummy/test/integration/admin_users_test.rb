@@ -54,11 +54,11 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   test "limits the chart users to the past 90 days" do
     old_user = create_user("old-chart-#{SecureRandom.hex(4)}@example.com", created_at: 91.days.ago)
     recent_user = create_user("recent-chart-#{SecureRandom.hex(4)}@example.com", created_at: 89.days.ago)
-    users = User.where(id: [old_user.id, recent_user.id])
+    users = User.where(id: [ old_user.id, recent_user.id ])
 
     chart_users = RecordingStudioUser::Admin::UsersController.new.send(:chart_users, users)
 
-    assert_equal [recent_user.id], chart_users.pluck(:id)
+    assert_equal [ recent_user.id ], chart_users.pluck(:id)
   end
 
   test "paginates the users table" do
