@@ -9,6 +9,8 @@ module RecordingStudioUser
 
       helper Pagy::Frontend
 
+      rescue_from RecordingStudioAdmin::AuthorizationFailed, with: :render_forbidden
+
       before_action :authenticate_user!
       before_action :authorize_users_admin!
 
@@ -20,6 +22,10 @@ module RecordingStudioUser
       end
 
       private
+
+      def render_forbidden
+        head :forbidden
+      end
 
       def chart_users(users)
         users.where(created_at: 90.days.ago..Time.current)

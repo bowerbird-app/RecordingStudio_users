@@ -26,9 +26,11 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   test "install page renders successfully" do
     get docs_install_path
+    response_text = Nokogiri::HTML(response.body).text.gsub(/\s+/, " ").strip
+
     assert_response :success
     assert_select "h1", text: "Install"
-    assert_includes response.body, 'gem "recording_studio_user"'
+    assert_includes response_text, 'gem "recording_studio_user"'
     assert_includes response.body, "bin/rails generate recording_studio_user:install"
     assert_includes response.body, "recording_studio_users"
     assert_includes response.body, "RecordingStudioAccessible"
@@ -40,14 +42,16 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   test "config page renders successfully" do
     get docs_config_path
+    response_text = Nokogiri::HTML(response.body).text.gsub(/\s+/, " ").strip
+
     assert_response :success
     assert_select "h1", text: "Config"
     assert_includes response.body, "RecordingStudioUser.configure"
     assert_includes response.body, "Pre-route configuration"
     assert_includes response.body, "before the mount declaration"
     assert_includes response.body, "Normal initializer configuration"
-    assert_includes response.body, "too late to change an already mounted engine path"
-    assert_includes response.body, 'config.mount_path = "/account"'
+    assert_includes response_text, "too late to change an already mounted engine path"
+    assert_includes response_text, 'config.mount_path = "/account"'
     assert_includes response.body, "config.additional_profile_attributes"
     assert_includes response.body, "current_user"
     assert_includes response.body, "Devise-compatible Active Record model"
@@ -70,7 +74,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
       response.body,
       "Diagnostic data from RecordingStudio.recordable_declarations and v3 parent/root introspection."
     )
-    assert_includes response.body, "does not make profiles recording-backed"
+    assert_includes response_text, "does not make profiles recording-backed"
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
     assert_includes response.body, "Page"
@@ -99,14 +103,15 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     record_child(page, root_recording, folder_recording)
 
     get docs_recordings_tree_path
+    response_text = response.body.gsub(/\s+/, " ").strip
 
     assert_response :success
     assert_select "h1", text: "Recordings tree"
     assert_includes response.body, "Workspace: Tree Workspace"
     assert_includes response.body, "Folder: Reference"
     assert_includes response.body, "Page: API"
-    assert_includes response.body, "does not make profiles recording-backed"
-    assert_includes response.body, "includes recordings regardless of trash state"
+    assert_includes response_text, "does not make profiles recording-backed"
+    assert_includes response_text, "includes recordings regardless of trash state"
     refute_includes response.body, "active dummy-app recordings"
     assert_select "div[role='tree']", count: 1
     assert_select "[role='treeitem']", minimum: 3
@@ -116,11 +121,13 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   test "gem_views page renders successfully" do
     get docs_gem_views_path
+    response_text = response.body.gsub(/\s+/, " ").strip
+
     assert_response :success
     assert_select "h1", text: "Gem Views"
     assert_select "table", minimum: 1
     assert_includes response.body, "app/views/recording_studio_user/profiles/show.html.erb"
-    assert_includes response.body, "does not make profiles recording-backed"
+    assert_includes response_text, "does not make profiles recording-backed"
   end
 
   test "methods page renders successfully" do
