@@ -12,6 +12,10 @@ module RecordingStudioUser
         redirect_to RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users")
       end
 
+      def show
+        @user = RecordingStudioUser.config.user_class.find(params[:id])
+      end
+
       private
 
       def render_forbidden

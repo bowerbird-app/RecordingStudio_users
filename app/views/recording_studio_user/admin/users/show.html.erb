@@ -1,0 +1,28 @@
+<% content_for :title, "#{RecordingStudioUser::Admin.display_name(@user)} | Users" %>
+
+<%= render FlatPack::PageNav::Component.new(
+  anchor_url: RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users"),
+  anchor_icon: "arrow_left",
+  anchor_tooltip: "Users"
+) %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: RecordingStudioUser::Admin.display_name(@user),
+  subtitle: "User account details",
+  variant: :h1
+) %>
+
+<dl class="mt-6 space-y-4">
+  <div>
+    <dt class="text-sm text-(--surface-muted-content-color)">Email</dt>
+    <dd class="mt-1 font-medium"><%= @user.email %></dd>
+  </div>
+  <div>
+    <dt class="text-sm text-(--surface-muted-content-color)">Time zone</dt>
+    <dd class="mt-1 font-medium"><%= @user.time_zone %></dd>
+  </div>
+  <div>
+    <dt class="text-sm text-(--surface-muted-content-color)">Created at</dt>
+    <dd class="mt-1 font-medium"><%= l(@user.created_at, format: :long) %></dd>
+  </div>
+</dl>
