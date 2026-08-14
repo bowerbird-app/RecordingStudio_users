@@ -42,6 +42,10 @@ module RecordingStudioUser
         column :email, title: "Email"
         column :time_zone, title: "Time zone"
         column :created_at, title: "Created at"
+         action :view_user,
+           text: "View user",
+           icon: "eye",
+           url: ->(user, _context) { RecordingStudioUser::Engine.routes.url_helpers.admin_user_path(user) }
       end
       widget "widgets.users.total"
     end

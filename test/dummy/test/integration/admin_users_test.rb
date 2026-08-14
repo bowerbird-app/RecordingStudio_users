@@ -41,6 +41,23 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Users over time"
   end
 
+  test "requires RecordingStudioAccessible permission for screen data and user details" do
+    user = create_user("protected-user-#{SecureRandom.hex(4)}@example.com")
+    sign_in @admin
+
+    [
+      "/admin/screens/recording_studio_users",
+      "/admin/screens/recording_studio_users/chart",
+      "/admin/screens/recording_studio_users/table",
+      "/admin/screens/recording_studio_users/table_count",
+      "/admin/screens/recording_studio_users/widgets/widgets.users.total",
+      recording_studio_users.admin_user_path(user)
+    ].each do |path|
+      get path
+      assert_response :forbidden, path
+    end
+  end
+
   test "renders mounted user links from the shared admin sidebar layout" do
     admin_surface = RecordingStudioAdmin.configuration.surface(:admin)
     original_layout = admin_surface.engine_layout
@@ -66,6 +83,24 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert series.all? { |point| point.key?(:x) && point.key?(:y) }
     assert series.all? { |point| point[:x].is_a?(String) }
     assert series.all? { |point| point[:y].is_a?(Integer) }
+  end
+
+  test "renders a view action and user details for the site admin" do
+    user = create_user("view-user-#{SecureRandom.hex(4)}@example.com")
+    sign_in @admin
+    grant_admin_access(@admin, @admin_recording)
+
+    get "/admin/screens/recording_studio_users/table"
+
+    assert_response :success
+    assert_select %(button[aria-label="Actions for #{user.email}"]), count: 1
+    assert_includes response.body, "View user"
+
+    get recording_studio_users.admin_user_path(user)
+
+    assert_response :success
+    assert_includes response.body, user.email
+    assert_includes response.body, "User account details"
   end
 
   test "paginates the users table" do
