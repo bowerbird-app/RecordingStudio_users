@@ -13,7 +13,7 @@ module RecordingStudioUser
 
       link :users,
            text: "Users admin",
-           url: ->(context) { context.controller.main_app.recording_studio_users.admin_path },
+         url: ->(_context) { RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users") },
            style: :secondary
       widget "widgets.users.total", view_variant: :compact
     end
@@ -35,7 +35,10 @@ module RecordingStudioUser
       end
 
       table do
-        column :display_name, title: "Name", value: ->(user, _context) { RecordingStudioUser::Admin.display_name(user) }
+        column :display_name,
+               title: "Name",
+               sortable: false,
+               value: ->(user, _context) { RecordingStudioUser::Admin.display_name(user) }
         column :email, title: "Email"
         column :time_zone, title: "Time zone"
         column :created_at, title: "Created at"
@@ -47,7 +50,7 @@ module RecordingStudioUser
       type :number
       title "Total users"
       value { |_context| RecordingStudioUser.config.user_class.count }
-      link_to { |context| context.controller.main_app.recording_studio_users.admin_path }
+      link_to { |_context| RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users") }
       hide_change
       hide_period
     end

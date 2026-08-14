@@ -26,18 +26,35 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     grant_admin_access(@admin, @admin_recording)
 
     get recording_studio_users.admin_path
+    assert_redirected_to "/admin/screens/recording_studio_users"
+
+    follow_redirect!
     assert_response :success
-    assert_select "title", text: "User Management | Recording Studio User"
-    assert_includes response.body, "User Management"
-    assert_includes response.body, "Track account growth, view system metrics, and manage user details."
+    assert_includes response.body, "Users"
     assert_includes response.body, "Total users"
-    assert_includes response.body, "Users over past 90 days"
-    refute_includes response.body, "Users over time"
-    assert_select %(main.container.mx-auto.my-28.px-5.flex.flex-col.gap-6), count: 1
-    assert_select %(main > div.space-y-8:not(.mt-6)), count: 1
-    assert_select %(a[aria-label="Home"][href="/"]), count: 1
-    refute_includes response.body, "flat-pack-sidebar"
-    refute_includes response.body, "Role"
+    assert_select "turbo-frame#screen-chart[src*='/admin/screens/recording_studio_users/chart']", count: 1
+    assert_select "turbo-frame#screen-table[src*='/admin/screens/recording_studio_users/table']", count: 1
+
+    get "/admin/screens/recording_studio_users/chart"
+
+    assert_response :success
+    assert_includes response.body, "Users over time"
+  end
+
+  test "renders mounted user links from the shared admin sidebar layout" do
+    admin_surface = RecordingStudioAdmin.configuration.surface(:admin)
+    original_layout = admin_surface.engine_layout
+    admin_surface.engine_layout = "flat_pack_sidebar"
+    sign_in @admin
+    grant_admin_access(@admin, @admin_recording)
+
+    get "/admin/screens/recording_studio_users"
+
+    assert_response :success
+    assert_select %(a[href="/recording_studio_users/profile"]), count: 1
+    assert_select %(a[href="/recording_studio_users/admin"]), count: 1
+  ensure
+    admin_surface.engine_layout = original_layout
   end
 
   test "builds user creation series from an ordered relation" do
@@ -51,36 +68,22 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert series.all? { |point| point[:y].is_a?(Integer) }
   end
 
-  test "limits the chart users to the past 90 days" do
-    old_user = create_user("old-chart-#{SecureRandom.hex(4)}@example.com", created_at: 91.days.ago)
-    recent_user = create_user("recent-chart-#{SecureRandom.hex(4)}@example.com", created_at: 89.days.ago)
-    users = User.where(id: [ old_user.id, recent_user.id ])
-
-    chart_users = RecordingStudioUser::Admin::UsersController.new.send(:chart_users, users)
-
-    assert_equal [ recent_user.id ], chart_users.pluck(:id)
-  end
-
   test "paginates the users table" do
     51.times { |index| create_user("pagination-#{index}-#{SecureRandom.hex(4)}@example.com") }
     sign_in @admin
     grant_admin_access(@admin, @admin_recording)
 
-    get recording_studio_users.admin_path
+    get "/admin/screens/recording_studio_users/table"
 
     assert_response :success
-    assert_select "nav[aria-label='Pagination']", count: 1
     assert_select "table tbody tr", count: 50
-    assert_select "dd", text: User.count.to_s
-    assert_select "nav[aria-label='Pagination'] a[href*='page=2']"
 
-    get recording_studio_users.admin_path, params: { page: 2 }
+    get "/admin/screens/recording_studio_users/table", params: { page: 2 }
 
     assert_response :success
     page_two_rows = css_select("table tbody tr").count
     assert_operator page_two_rows, :>, 0
     assert_operator page_two_rows, :<=, 50
-    assert_select "nav[aria-label='Pagination'] a[href*='page=1']"
   end
 
   private
