@@ -38,7 +38,7 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
 
     load Rails.root.join("db/seeds.rb").to_s
 
-    workspace = Workspace.find_by!(name: "Studio Workspace")
+    workspace = Workspace.find_by!(name: "My workspace")
     accessible_workspace = Workspace.find_by!(name: "Client Workspace")
     private_workspace = Workspace.find_by!(name: "Private Workspace")
     folder = Folder.find_by!(name: "Product Docs")

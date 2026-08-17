@@ -18,25 +18,28 @@ class RecordingStudioUserInstallGeneratorTest < Rails::Generators::TestCase
 
   test "installs the mount, initializer, and tailwind sources idempotently" do
     original_root = Rails.root
-    Rails.define_singleton_method(:root) { Pathname.new(destination_root) }
+    generator_root = Pathname.new(destination_root)
+    Rails.define_singleton_method(:root) { generator_root }
 
     run_generator
+
+    first_routes = File.read(File.join(destination_root, "config/routes.rb"))
+    first_initializer = File.read(File.join(destination_root, "config/initializers/recording_studio_user.rb"))
+    first_tailwind = File.read(File.join(destination_root, "app/assets/tailwind/application.css"))
+
     run_generator
 
-    routes = File.read(File.join(destination_root, "config/routes.rb"))
-    assert_equal 1, routes.scan("mount RecordingStudioUser::Engine").size
-    assert_includes routes, "as: :recording_studio_users"
-    assert_includes routes, "RecordingStudioUser.config.mount_path"
+    assert_equal first_routes, File.read(File.join(destination_root, "config/routes.rb"))
+    assert_equal first_initializer, File.read(File.join(destination_root, "config/initializers/recording_studio_user.rb"))
+    assert_equal first_tailwind, File.read(File.join(destination_root, "app/assets/tailwind/application.css"))
 
-    assert File.exist?(File.join(destination_root, "config/initializers/recording_studio_user.rb"))
-    initializer = File.read(File.join(destination_root, "config/initializers/recording_studio_user.rb"))
-    assert_includes initializer, "Route configuration must load before Rails draws routes."
-
-    tailwind = File.read(File.join(destination_root, "app/assets/tailwind/application.css"))
-    assert_equal 1, tailwind.scan("recording_studio_user").size
-    assert_includes tailwind, "flatpack"
-
-    refute_includes routes, "devise_for"
+    assert_equal 1, first_routes.scan("mount RecordingStudioUser::Engine").size
+    assert_includes first_routes, "as: :recording_studio_users"
+    assert_includes first_routes, "RecordingStudioUser.config.mount_path"
+    assert_includes first_initializer, "Route configuration must load before Rails draws routes."
+    assert_operator first_tailwind.scan("recording_studio_user").size, :>=, 1
+    assert_includes first_tailwind, "flatpack"
+    refute_includes first_routes, "devise_for"
     refute File.exist?(File.join(destination_root, "app/models/user.rb"))
   ensure
     Rails.define_singleton_method(:root) { original_root }

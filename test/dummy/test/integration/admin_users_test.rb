@@ -20,8 +20,11 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_equal :site, RecordingStudioUser::Admin::UsersSection.blast_radius
   end
 
-  test "section and widget links use the mounted admin helper" do
+  test "section links to the RecordingStudioAdmin screen and the widget uses the mounted admin path" do
     assert_equal "/recording_studio_users/admin", RecordingStudioUser.mounted_admin_path
+    section_source = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/admin.rb"))
+    assert_includes section_source, 'admin_screen_path("recording_studio_users")'
+    assert_includes section_source, "RecordingStudioUser.mounted_admin_path"
   end
 
   test "rejects an actor without access and permits the site admin" do

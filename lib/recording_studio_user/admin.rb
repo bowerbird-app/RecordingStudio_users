@@ -13,7 +13,7 @@ module RecordingStudioUser
 
       link :users,
            text: "Users admin",
-           url: ->(context) { RecordingStudioUser.mounted_admin_path(context) },
+           url: ->(context) { context.admin_screen_path("recording_studio_users") },
            style: :secondary
       widget "widgets.users.total", view_variant: :compact
     end

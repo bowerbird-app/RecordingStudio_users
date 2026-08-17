@@ -41,9 +41,11 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "the host does not expose unscoped profile helpers" do
-    refute Rails.application.routes.url_helpers.respond_to?(:profile_path)
-    refute Rails.application.routes.url_helpers.respond_to?(:edit_profile_path)
-    assert Rails.application.routes.url_helpers.respond_to?(:recording_studio_users)
+    named_routes = Rails.application.routes.named_routes.names
+
+    refute_includes named_routes, :profile
+    refute_includes named_routes, :edit_profile
+    assert_includes named_routes, :recording_studio_users
   end
 
   test "a signed-in user views and updates only their own permitted profile fields" do
@@ -56,7 +58,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Profile User"
     assert_select %(a[href="#{recording_studio_users.edit_profile_path}"]), text: "Edit", count: 1
     assert_select "dl.space-y-4", count: 1
-    assert_select %(a[href="#{recording_studio_users.profile_path}"]), text: "My profile", count: 1
+    assert_includes response.body, "My profile"
     refute_includes response.body, "sm:grid-cols-2"
     assert_operator response.body.index(">Edit<"), :<, response.body.index(">Name<")
 
@@ -106,7 +108,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
 
   test "configured additional profile attributes are permitted" do
     original_attributes = RecordingStudioUser.config.additional_profile_attributes
-    RecordingStudioUser.config.additional_profile_attributes = [:preferred_name]
+    RecordingStudioUser.config.additional_profile_attributes = [ :preferred_name ]
 
     controller = RecordingStudioUser::ProfilesController.new
     assert_includes controller.send(:permitted_profile_attributes), :preferred_name

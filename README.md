@@ -96,7 +96,7 @@ recording_studio_admin_for :admin, at: "/admin", root_section: :root
 mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users
 ```
 
-The users section links through `recording_studio_users.admin_path`. Changing this engine's mount path does not weaken authorization; the page still authorizes through the host-resolved admin recording.
+The users section links to the shared RecordingStudioAdmin users screen, which is how that engine enables the screen for the host's admin recordable. Host navigation should use `recording_studio_users.admin_path`, which authorizes the actor and then opens that same screen. Changing this engine's mount path does not weaken authorization; the page still authorizes through the host-resolved admin recording.
 
 Configure the admin authorization resolvers in the host application. This example follows the dummy app and resolves the host-owned `AdminRoot` recordable:
 
