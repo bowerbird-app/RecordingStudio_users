@@ -7,11 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-17
+
 ### Changed
-- Restored the users-admin capability to a read-only report: the gem no longer ships user show/edit routes or role-gated profile editing.
-- Pointed the users section and total-users widget at the mounted `recording_studio_users.admin_path` helper.
+- Restored the users-admin capability to a read-only report: the gem no longer ships user show/edit routes or role-gated admin profile editing.
+- Pointed the users section at the RecordingStudioAdmin screen path so the users report is enabled, and kept the total-users widget on the mounted `recording_studio_users.admin_path` helper.
 - Used the dummy host sidebar layout for profile pages and the mounted profile helper for **My profile**.
 - Preserved the original Devise users migration and kept profile columns in a host-owned additive migration.
+- Installer now also injects resolved relative Tailwind `@source` paths for this engine and FlatPack when those locations can be determined.
+- Dummy app pins FlatPack Stimulus controllers under `controllers/flat_pack`, generates gem Tailwind sources before each CSS build, and watches CSS without requiring watchman.
+
+### Upgrade notes
+- Remove any host links or tests that called gem-owned admin user show/edit/update routes. Users administration is a read-only report.
+- If the users report screen does not appear, make sure the `:users` section links with `context.admin_screen_path("recording_studio_users")` so RecordingStudioAdmin enables that screen.
+- Rebuild host Tailwind CSS after install (`bin/rails tailwindcss:build`). If FlatPack layout utilities are missing, add an `@source` that points at the installed `flat_pack` `app/components` directory.
+- Pin FlatPack controllers with `under: "controllers/flat_pack"` so Stimulus can load `flat-pack--*` controllers.
 
 ## [0.1.4] - 2026-08-14
 
@@ -55,7 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.5
 [0.1.4]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.4
 [0.1.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.3
 [0.1.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.2
