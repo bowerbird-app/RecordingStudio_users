@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "pathname"
 require "rails/generators"
 
 module RecordingStudioUser
@@ -74,12 +75,36 @@ module RecordingStudioUser
 
       def tailwind_sources
         [
+          *resolved_tailwind_sources,
           '@source "../../vendor/bundle/**/recording_studio_user/app/views/**/*.erb";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
           'recording_studio_user-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
-        ]
+        ].uniq
+      end
+
+      def resolved_tailwind_sources
+        return [] unless defined?(Rails) && Rails.respond_to?(:root) && Rails.root
+
+        tailwind_dir = Rails.root.join("app/assets/tailwind")
+        sources = []
+
+        begin
+          engine_views = RecordingStudioUser::Engine.root.join("app/views")
+          sources << %(@source "#{engine_views.relative_path_from(tailwind_dir)}/**/*.erb";) if engine_views.exist?
+        rescue ArgumentError
+          # Rails.root and the engine do not share a prefix; use the globs below.
+        end
+
+        begin
+          components = Pathname.new(Gem::Specification.find_by_name("flat_pack").gem_dir).join("app/components")
+          sources << %(@source "#{components.relative_path_from(tailwind_dir)}";) if components.exist?
+        rescue Gem::MissingSpecError, ArgumentError
+          # Fall back to the vendored /usr/local/bundle globs above.
+        end
+
+        sources
       end
     end
   end

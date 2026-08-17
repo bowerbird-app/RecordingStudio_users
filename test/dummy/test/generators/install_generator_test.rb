@@ -39,6 +39,7 @@ class RecordingStudioUserInstallGeneratorTest < Rails::Generators::TestCase
     assert_includes first_initializer, "Route configuration must load before Rails draws routes."
     assert_operator first_tailwind.scan("recording_studio_user").size, :>=, 1
     assert_includes first_tailwind, "flatpack"
+    assert(first_tailwind.lines.any? { |line| line.include?("@source") && !line.include?("vendor/bundle") })
     refute_includes first_routes, "devise_for"
     refute File.exist?(File.join(destination_root, "app/models/user.rb"))
   ensure
