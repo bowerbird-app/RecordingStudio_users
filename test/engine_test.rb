@@ -15,6 +15,8 @@ class EngineTest < Minitest::Test
     assert_includes routes, "profile"
     assert_includes routes, "edit_profile"
     assert_includes routes, "admin"
+    refute_includes routes, "admin_user"
+    refute_includes routes, "edit_admin_user"
     refute_includes routes, "root"
   end
 end

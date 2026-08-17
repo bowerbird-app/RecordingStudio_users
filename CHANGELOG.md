@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Restored the users-admin capability to a read-only report: the gem no longer ships user show/edit routes or role-gated profile editing.
+- Pointed the users section and total-users widget at the mounted `recording_studio_users.admin_path` helper.
+- Used the dummy host sidebar layout for profile pages and the mounted profile helper for **My profile**.
+- Preserved the original Devise users migration and kept profile columns in a host-owned additive migration.
+
 ## [0.1.4] - 2026-08-14
 
 ### Added

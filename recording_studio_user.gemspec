@@ -7,9 +7,9 @@ Gem::Specification.new do |spec|
   spec.version     = RecordingStudioUser::VERSION
   spec.authors     = ["Bowerbird"]
   spec.homepage    = "https://github.com/bowerbird-app/RecordingStudio_users"
-  spec.summary     = "Authenticated user profiles and sitewide user reporting for Recording Studio"
+  spec.summary     = "Authenticated user profiles and read-only sitewide user reporting for Recording Studio"
   spec.description = "A mountable Rails engine that adds global user profiles and reusable " \
-                     "RecordingStudioAdmin user reporting."
+                     "read-only RecordingStudioAdmin user reporting."
   spec.license     = "MIT"
   spec.required_ruby_version = ">= 3.3.0"
 

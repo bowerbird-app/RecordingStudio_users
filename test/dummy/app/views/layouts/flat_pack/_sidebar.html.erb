@@ -52,20 +52,12 @@
       ) %>
 
       <% if user_signed_in? %>
-        <% profile_path = RecordingStudioUser::Engine.routes.url_helpers.profile_path %>
+        <% profile_path = recording_studio_users.profile_path %>
         <%= render FlatPack::Sidebar::Item::Component.new(
           label: "My profile",
           href: profile_path,
           icon: :user_circle,
           active: request.path.start_with?(profile_path)
-        ) %>
-
-        <% admin_path = RecordingStudioUser::Engine.routes.url_helpers.admin_path %>
-        <%= render FlatPack::Sidebar::Item::Component.new(
-          label: "Admin",
-          href: admin_path,
-          icon: :shield_check,
-          active: request.path.start_with?(admin_path)
         ) %>
       <% end %>
 

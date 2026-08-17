@@ -5,7 +5,7 @@
 - authenticated, global profiles for the host application's existing user model;
 - a reusable, read-only `RecordingStudioAdmin` users report.
 
-The template already owns `User`, the users table, Devise, and the login page. This gem does not regenerate or replace them. It does not determine administrators, create an admin root, create access grants, or add user roles.
+The template already owns `User`, the users table, Devise, and the login page. This gem does not regenerate or replace them. Profiles are global data, not recordings, recordables, or root-scoped resources. Profile authorization uses `current_user`, not `RecordingStudioAccessible`. The gem does not determine administrators; admin access is host-owned and recording-based. `RecordingStudioRootSwitchable` remains supported, and profile data is unaffected by root switching.
 
 ## Installation
 
@@ -15,7 +15,9 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio`, `flat_pack`, `pagy`, `devise`, and `recording_studio_admin` are required runtime dependencies and are resolved through this gem's gemspec. The host remains responsible for configuring its existing User and Devise setup.
+`recording_studio`, `flat_pack`, `devise`, and `recording_studio_admin` are required runtime dependencies and are resolved through this gem's gemspec. `recording_studio_accessible` is required by a host only when protecting the users admin capability through an access-controlled admin root. The profile feature itself does not require it.
+
+The host remains responsible for configuring its existing User and Devise setup.
 
 Then run:
 
@@ -23,7 +25,7 @@ Then run:
 bin/rails generate recording_studio_user:install
 ```
 
-Rerunning the installer is idempotent while the generated mount declaration remains intact. It mounts the engine with the `recording_studio_users` alias, creates `config/initializers/recording_studio_user.rb` only when that file does not already exist, and conditionally adds missing RecordingStudioUser and FlatPack Tailwind source directives when the host has a Tailwind entrypoint containing `@import "tailwindcss";`. It does not generate or copy migrations, or generate a user model, users table, Devise routes, admin root, access item, role, or grant.
+Rerunning the installer is idempotent while the generated mount declaration remains intact. It mounts the engine with the `recording_studio_users` alias, creates `config/initializers/recording_studio_user.rb` only when that file does not already exist, and conditionally adds missing RecordingStudioUser and FlatPack Tailwind source directives when the host has a Tailwind entrypoint containing `@import "tailwindcss";`. It does not generate or copy migrations, or generate a user model, users table, Devise routes, admin root, access item, role, or grant. The main installer does not invoke a separate admin generator; host apps create the admin root, resolvers, access items, and grants themselves.
 
 Route configuration values for `mount_path`, `profile_route_path`, and `admin_route_path` must be available **before the host evaluates the engine mount and Rails draws routes**. An ordinary initializer that runs after routes have been drawn cannot change the mounted path or engine route paths:
 
@@ -38,11 +40,19 @@ RecordingStudioUser.configure do |config|
 end
 ```
 
+This produces:
+
+- `/account/me`
+- `/account/me/edit`
+- `/account/user-reporting`
+
 The default URLs are:
 
 - `/recording_studio_users/profile`
 - `/recording_studio_users/profile/edit`
-- `/recording_studio_users/admin` (compatibility redirect to the shared admin screen)
+- `/recording_studio_users/admin`
+
+There is no landing page at `/recording_studio_users`.
 
 Host code uses the mounted-engine proxy:
 
@@ -52,13 +62,15 @@ recording_studio_users.edit_profile_path
 recording_studio_users.admin_path
 ```
 
-No unscoped host `profile_path`, `edit_profile_path`, or `admin_path` helper is added.
+No unscoped host `profile_path`, `edit_profile_path`, or `admin_path` helper is added. Route changes do not alter or bypass authentication or admin authorization.
 
 ## User contract and profiles
 
-The configured `user_class_name` must name the existing, Devise-compatible Active Record class returned by `current_user`. It must use the host's UUID primary key and provide `email`, `first_name`, `last_name`, `time_zone`, and timestamps. The engine applies presence and Rails-time-zone validation to the profile fields while preserving Devise email validation.
+The configured `user_class_name` must name the existing, Devise-compatible Active Record class returned by `current_user`. It must use the host's UUID primary key and provide `email`, `first_name`, `last_name`, `time_zone`, and timestamps. The engine applies presence and Rails-time-zone validation to the profile fields while preserving Devise email validation. A custom user class must remain compatible with host authentication. The host owns its model and migrations.
 
-Profiles are global site data, not Recording Studio recordings, recordables, or root-scoped resources. Profile authorization uses `current_user` only; it never accepts a user ID and does not require `RecordingStudioAccessible` or a selected root. Root switching does not alter profile data.
+If the model already has `full_name` or `display_name`, the gem uses it. Otherwise it falls back to the available name, email, or a neutral translated label.
+
+Profiles are global site data, not Recording Studio recordings, recordables, or root-scoped resources. Profile authorization uses `current_user` only; it never accepts a user ID and does not require `RecordingStudioAccessible` or a selected root. Showing or updating a profile does not create recordings, recordables, roots, events, or Accessible access items. Root switching does not alter profile data.
 
 By default, only `first_name`, `last_name`, and `time_zone` are writable. `additional_profile_attributes` may name safe host attributes. Sensitive fields, including identifiers, email, passwords, roles, memberships, roots, recordings, and recordables, are rejected even when configured.
 
@@ -66,7 +78,7 @@ Email and password changes remain in the host's existing Devise flows.
 
 ## Users administration
 
-The engine registers a `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The screen contains name, email, time zone, created-at, total-user, and creation-over-time reporting. Actors with `RecordingStudioAccessible` `:view` access can view the report and user details; only `:admin` actors can update a user's first name, last name, and time zone through the screen's **Edit user** action. The engine does not render its own admin layout or report page.
+The engine registers a reusable `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The read-only screen contains name, email, time zone, created-at, a total-users metric, and a users-over-time chart. The gem does not add user editing, deletion, impersonation, password operations, or admin/role columns.
 
 The host owns administration and must:
 
@@ -77,16 +89,14 @@ The host owns administration and must:
 5. enable the reusable section on its chosen recordable;
 6. grant access through Recording Studio access items and roles.
 
-Mount the shared admin surface in the host routes. The registered users screen then renders at `/admin/screens/recording_studio_users` using `RecordingStudioAdmin`'s configured layout:
+Mount the shared admin surface in the host routes. The engine's `/recording_studio_users/admin` URL authorizes the actor and then renders the shared `RecordingStudioAdmin` users screen:
 
 ```ruby
 recording_studio_admin_for :admin, at: "/admin", root_section: :root
 mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users
 ```
 
-The engine's `/recording_studio_users/admin` URL is retained for existing links and redirects authorized users to that shared screen. New host navigation should link to the shared `RecordingStudioAdmin` screen.
-
-Admin editing never changes email, passwords, roles, access grants, memberships, roots, or Recording Studio records. Email and password changes remain in host Devise/account-management flows.
+The users section links through `recording_studio_users.admin_path`. Changing this engine's mount path does not weaken authorization; the page still authorizes through the host-resolved admin recording.
 
 Configure the admin authorization resolvers in the host application. This example follows the dummy app and resolves the host-owned `AdminRoot` recordable:
 
@@ -102,7 +112,7 @@ RecordingStudioAdmin.configure do |config|
 end
 ```
 
-For example, using the actual section API:
+Enable the reusable section on the host's chosen admin recordable using the real `RecordingStudioAdmin` section API:
 
 ```ruby
 class AdminRoot < ApplicationRecord
@@ -121,14 +131,14 @@ The page calls RecordingStudioAdmin's configured authorization and site blast-ra
 
 ## UI
 
-Gem-owned profile pages use:
+Gem-owned pages use:
 
 ```text
 [FlatPack page title]
 [content]
 ```
 
-They use the configured host layout and contain no outer card around the profile form/display. Users administration is rendered by `RecordingStudioAdmin` and uses that gem's configured layout and supported components.
+They use the configured host layout and contain no outer card around the profile display, profile form, or a gem-owned admin wrapper. Users administration is rendered by `RecordingStudioAdmin` and uses that gem's configured layout and supported components. If RecordingStudioAdmin internally renders a widget with a card-like component, this gem does not add another outer card around the screen.
 
 ## Dummy app
 
@@ -139,7 +149,7 @@ The dummy keeps the existing Devise login at `/users/sign_in`, root-switcher int
 | `admin@admin.com` | `Password` |
 | `member@admin.com` | `Password` |
 
-The dummy demonstrates separate **My workspace** and access-controlled **Admin** roots. Its sidebar includes **My profile**, and selecting the Admin root exposes the shared users-administration action. The seeded admin can switch among accessible workspaces and edit user profile fields; the seeded member can use profile pages but cannot access users administration. Admin access is granted with `RecordingStudioAccessible`, never a user role field.
+The dummy demonstrates separate **My workspace** and access-controlled **Admin** roots. Its sidebar includes **My profile**, and selecting the Admin root exposes the Users admin action through `recording_studio_users.admin_path`. The seeded admin can switch among accessible workspaces and open the users report; the seeded member can use profile pages but cannot see or reach the Admin root. Admin access is granted with `RecordingStudioAccessible`, never a user role field. Switching roots does not change profile data.
 
 ## Development
 

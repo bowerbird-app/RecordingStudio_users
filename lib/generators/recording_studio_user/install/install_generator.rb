@@ -63,6 +63,9 @@ module RecordingStudioUser
             :yellow
         say "Enable section :users on the host-owned admin recordable and grant access with RecordingStudioAccessible.",
             :yellow
+        say "The installer does not invoke recording_studio_user:admin. Host apps create the admin root, " \
+            "resolvers, access items, and grants themselves.",
+            :yellow
         say "RecordingStudioUser does not create User, Devise, migrations, admin roots, roles, or access grants.",
             :yellow
       end

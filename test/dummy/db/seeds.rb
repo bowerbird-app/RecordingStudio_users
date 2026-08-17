@@ -64,7 +64,7 @@ seed_start = Date.current - 89.days
 end
 
 # Create the workspace recordables
-workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
+workspace = Workspace.find_or_create_by!(name: "My workspace")
 accessible_workspace = Workspace.find_or_create_by!(name: "Client Workspace")
 private_workspace = Workspace.find_or_create_by!(name: "Private Workspace")
 folder = Folder.find_or_create_by!(name: "Product Docs")

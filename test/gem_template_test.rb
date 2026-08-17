@@ -23,7 +23,8 @@ class RecordingStudioUserTest < Minitest::Test
     sidebar = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
 
     assert_includes sidebar, 'label: "My profile"'
-    assert_includes sidebar, "RecordingStudioUser::Engine.routes.url_helpers.profile_path"
+    assert_includes sidebar, "recording_studio_users.profile_path"
+    refute_includes sidebar, "recording_studio_users.admin_path"
   end
 
   def test_dummy_importmap_pins_recording_studio_admin_controllers

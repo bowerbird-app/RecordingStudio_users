@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require "fileutils"
-require "tmpdir"
 require "generators/recording_studio_user/install/install_generator"
 
 class InstallGeneratorTest < Minitest::Test
@@ -23,5 +21,20 @@ class InstallGeneratorTest < Minitest::Test
 
     assert_includes initializer, "Route configuration must load before Rails draws routes."
     assert_includes initializer, "additional_profile_attributes"
+    assert_includes initializer, 'config.mount_path = "/recording_studio_users"'
+    assert_includes initializer, 'config.profile_route_path = "profile"'
+    assert_includes initializer, 'config.admin_route_path = "admin"'
+  end
+
+  def test_generator_source_does_not_create_users_or_devise
+    generator = File.read(
+      File.expand_path("../lib/generators/recording_studio_user/install/install_generator.rb", __dir__)
+    )
+
+    refute_includes generator, "rails generate devise"
+    refute_includes generator, "create_table :users"
+    refute_includes generator, "generate :model"
+    refute_includes generator, "invoke \"recording_studio_user:admin\""
+    assert_includes generator, "as: :recording_studio_users"
   end
 end
