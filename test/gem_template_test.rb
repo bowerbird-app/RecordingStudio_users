@@ -57,6 +57,6 @@ class RecordingStudioUserTest < Minitest::Test
     procfile = File.read(File.expand_path("dummy/Procfile.dev", __dir__))
 
     assert_includes css, '@import "./gem_sources.css"'
-    assert_includes procfile, 'tailwindcss:watch[always]'
+    assert_includes procfile, "tailwindcss:watch[always]"
   end
 end

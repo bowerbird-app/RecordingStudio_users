@@ -88,23 +88,24 @@ module RecordingStudioUser
         return [] unless defined?(Rails) && Rails.respond_to?(:root) && Rails.root
 
         tailwind_dir = Rails.root.join("app/assets/tailwind")
-        sources = []
+        [
+          relative_source(RecordingStudioUser::Engine.root.join("app/views"), tailwind_dir, "/**/*.erb"),
+          relative_source(flat_pack_components_path, tailwind_dir)
+        ].compact
+      end
 
-        begin
-          engine_views = RecordingStudioUser::Engine.root.join("app/views")
-          sources << %(@source "#{engine_views.relative_path_from(tailwind_dir)}/**/*.erb";) if engine_views.exist?
-        rescue ArgumentError
-          # Rails.root and the engine do not share a prefix; use the globs below.
-        end
+      def flat_pack_components_path
+        Pathname.new(Gem::Specification.find_by_name("flat_pack").gem_dir).join("app/components")
+      rescue Gem::MissingSpecError
+        nil
+      end
 
-        begin
-          components = Pathname.new(Gem::Specification.find_by_name("flat_pack").gem_dir).join("app/components")
-          sources << %(@source "#{components.relative_path_from(tailwind_dir)}";) if components.exist?
-        rescue Gem::MissingSpecError, ArgumentError
-          # Fall back to the vendored /usr/local/bundle globs above.
-        end
+      def relative_source(path, from_dir, glob = "")
+        return unless path&.exist?
 
-        sources
+        %(@source "#{path.relative_path_from(from_dir)}#{glob}";)
+      rescue ArgumentError
+        nil
       end
     end
   end
