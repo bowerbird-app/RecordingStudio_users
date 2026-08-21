@@ -128,5 +128,10 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
     assert_equal "Up", profile.last_name
     assert_equal user.id, profile.user_id
     assert_equal RecordingStudioUser.people_root, RecordingStudioUser.profile_recording_for(user).parent_recording
+    assert RecordingStudioAccessible.authorized?(
+      actor: user,
+      recording: RecordingStudioUser.profile_recording_for(user),
+      role: :admin
+    )
   end
 end

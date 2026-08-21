@@ -26,8 +26,9 @@
   ) %>
 
   <p class="text-sm text-(--body-muted-content-color)">
-    Profile snapshots live under the shared People root. Profile routes still identify the signed-in Devise user;
-    they are not selected-root scoped. Devise remains responsible for authentication.
+    Profile snapshots live under the shared People root. Profile routes still identify the signed-in Devise user,
+    then authorize with RecordingStudioAccessible on that Profile recording. They are not selected-root scoped.
+    Devise remains responsible for authentication.
   </p>
 
   <%= render FlatPack::SectionTitle::Component.new(

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-21
+
+### Added
+- Enabled Recording Studio Accessible on **Profile** with `RecordingStudio.enable_capability(:accessible, on: self)`. People stays a shared root without Accessible.
+- `create_user!` and `record_profile!` grant the user `:admin` on their Profile recording through `RecordingStudioAccessible.grant_access`.
+- Profile show, edit, and update authorize with `RecordingStudioAccessible.authorized?` on that Profile recording. The leftover 0.1.5 screens now read and revise Profile snapshot fields so those requests do not 500 on missing User columns.
+
+### Changed
+- Removed the Devise `current_user`-only profile ACL. Authentication is still Devise; authorization is Accessible.
+- Users administration is unchanged: Admin root + Accessible, not `user.admin?`.
+- Updated the development and dummy app RecordingStudioAdmin pin to 2.0.1. Direct browser visits to admin frame endpoints now redirect to their styled parent screen while Turbo Frame requests still return fragments.
+
+### Upgrade notes
+- Register `RecordingStudioUser::Profile` (and People) in `config.recordable_types`. Keep `access_actor_types` configured so User can receive grants.
+- Create or backfill profiles with `create_user!` / `record_profile!` so each user receives an Accessible grant on their Profile recording. A Profile row without a grant is forbidden on the mounted profile routes.
+- Do not enable Accessible on People. Do not grant on the shared People root.
+- Existing hosts that created Profile recordings in 0.2.0 without grants should call `record_profile!` (or `ProfileAccess.ensure_owner_access!`) once per user.
+- Upgrade RecordingStudioAdmin to 2.0.1 or newer so opening `/screens/:key/chart`, `/table`, `/table_count`, and widget frame URLs as pages returns the styled parent screen.
+
 ## [0.2.0] - 2026-08-21
 
 ### Breaking
@@ -94,7 +113,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.2.0
 [0.1.5]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.5
 [0.1.4]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.4

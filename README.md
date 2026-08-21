@@ -6,7 +6,7 @@
 - **People** is this gem's shared root (`label: "People"`, `root: true`, `shared: true`), the same idea as core's `MessagesRoot`. Workspace remains the host's owned bucket.
 - **Profile** is the only child under People. One current profile per user, with `user_id` on the snapshot. User is not in the tree.
 
-Accessible grants, Attachable avatars, and a redesigned profile/admin UI are later slices. This gem still ships the 0.1.x mounted profile routes and the read-only RecordingStudioAdmin users report.
+Accessible grants live on **Profile** recordings. Attachable avatars and a redesigned profile UI are later slices. This gem still ships the 0.1.x mounted profile routes and the read-only RecordingStudioAdmin users report.
 
 ## Installation
 
@@ -16,7 +16,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible`, `recording_studio_attachable`, `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This slice does not enable Accessible or Attachable on People or Profile.
+`recording_studio` (~> 4.2), `recording_studio_accessible`, `recording_studio_attachable`, `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible on Profile only. It does not enable Accessible on People, and it does not enable Attachable.
 
 The host remains responsible for its existing User and Devise setup.
 
@@ -70,7 +70,7 @@ The configured `user_class_name` must name the existing, Devise-compatible Activ
 
 ## People and Profile
 
-People is a shared root. Nobody owns the forest through that root node; Accessible grants belong on later slices and on owned roots such as Workspace.
+People is a shared root. Nobody owns the forest through that root node. Accessible is enabled on Profile, the domain child, not on People.
 
 ```ruby
 class RecordingStudioUser::People < ApplicationRecord
@@ -83,6 +83,7 @@ class RecordingStudioUser::Profile < ApplicationRecord
   recording_studio_recordable label: "Profile",
                               root: false,
                               allowed_parent_types: ALLOWED_PARENT_TYPES
+  RecordingStudio.enable_capability(:accessible, on: self)
 end
 ```
 
@@ -108,11 +109,11 @@ RecordingStudioUser.record_profile!(
 )
 ```
 
-`create_user!` creates the Devise user, then `people_root.record(Profile)`. Later changes `revise` the existing profile recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
+`create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.grant_access` on that Profile recording. Later changes `revise` the existing profile recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
 
-Granting access with `RecordingStudioAccessible.grant_access` waits for the Accessible slice. Do not invent a custom ACL.
+Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 
 ## Users administration
 
@@ -129,7 +130,7 @@ The dummy keeps the existing Devise login at `/users/sign_in`, root-switcher int
 | `admin@admin.com` | `Password` |
 | `member@admin.com` | `Password` |
 
-Seeded users get Profile snapshots under the shared People root. Workspace remains the host-owned bucket.
+Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Workspace remains the host-owned bucket.
 
 ## Development
 

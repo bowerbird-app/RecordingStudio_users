@@ -83,6 +83,52 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Role"
   end
 
+  test "page visits to frame endpoints land on a styled page instead of a bare partial" do
+    sign_in @admin
+    bootstrap_owner_access!(@admin, @admin_recording)
+
+    {
+      "/admin/screens/recording_studio_users/chart" => "/admin/screens/recording_studio_users",
+      "/admin/screens/recording_studio_users/table" => "/admin/screens/recording_studio_users",
+      "/admin/screens/recording_studio_users/table_count" => "/admin/screens/recording_studio_users",
+      "/admin/screens/recording_studio_users/widgets/widgets.users.total" =>
+        "/admin/screens/recording_studio_users",
+      "/admin/sections/users/widgets/widgets.users.total" => "/admin/sections/users"
+    }.each do |frame_path, owning_page|
+      get frame_path, headers: { "Sec-Fetch-Dest" => "document" }
+
+      assert_redirected_to owning_page, frame_path
+      follow_redirect!
+
+      assert_response :success, frame_path
+      assert_select "html", { count: 1 }, frame_path
+      assert_select %(link[rel="stylesheet"][href*="flat_pack/variables"]), { count: 1 }, frame_path
+      assert_select %(link[rel="stylesheet"][href*="tailwind"]), { count: 1 }, frame_path
+    end
+  end
+
+  test "a frame page visit keeps the query string so filters and sorting survive" do
+    sign_in @admin
+    bootstrap_owner_access!(@admin, @admin_recording)
+
+    get "/admin/screens/recording_studio_users/table",
+        params: { sort: "email", direction: "asc" },
+        headers: { "Sec-Fetch-Dest" => "document" }
+
+    assert_redirected_to "/admin/screens/recording_studio_users?direction=asc&sort=email"
+  end
+
+  test "turbo frame fetches still receive the bare fragment" do
+    sign_in @admin
+    bootstrap_owner_access!(@admin, @admin_recording)
+
+    get "/admin/screens/recording_studio_users/table", headers: { "Turbo-Frame" => "screen-table" }
+
+    assert_response :success
+    assert_includes response.body, "<turbo-frame"
+    refute_includes response.body, "<html"
+  end
+
   test "renders mounted profile links from the shared admin sidebar layout" do
     admin_surface = RecordingStudioAdmin.configuration.surface(:admin)
     original_layout = admin_surface.engine_layout
@@ -126,6 +172,19 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     page_two_rows = css_select("table tbody tr").count
     assert_operator page_two_rows, :>, 0
     assert_operator page_two_rows, :<=, 50
+  end
+
+  test "users administration goes through the Admin root and Accessible, not user.admin?" do
+    admin_controller = File.read(
+      RecordingStudioUser::Engine.root.join("app/controllers/recording_studio_user/admin/users_controller.rb")
+    )
+    admin_definitions = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/admin.rb"))
+
+    assert_includes admin_controller, "RecordingStudioAdmin::Authorization.authorize!"
+    refute_includes admin_controller, "user.admin?"
+    refute_includes admin_controller, "current_user.admin"
+    refute_includes admin_definitions, "user.admin?"
+    refute_includes admin_definitions, "can_access?"
   end
 
   test "the gem does not add an outer card around the admin screen" do
