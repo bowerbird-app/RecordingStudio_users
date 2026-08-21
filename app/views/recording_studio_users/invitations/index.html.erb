@@ -1,0 +1,85 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "People",
+    subtitle: "Invite your team and choose what they can do.",
+    variant: :h1
+  ) %>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(title: "Invite someone", variant: :h3) %>
+      <% end %>
+      <% card.body do %>
+        <%= form_with url: invitations_path, scope: :invitation do %>
+          <%= hidden_field_tag :root_recording_id, current_root_recording.id %>
+          <div class="space-y-4">
+            <%= render FlatPack::EmailInput::Component.new(
+              name: "invitation[email]",
+              value: @selected_email,
+              label: "Email",
+              required: true
+            ) %>
+            <%= render FlatPack::Select::Component.new(
+              name: "invitation[role]",
+              value: @selected_role,
+              options: Authorization::ROLES.map { |role| [role.titleize, role] },
+              label: "Role",
+              required: true
+            ) %>
+            <%= render FlatPack::Button::Component.new(
+              text: "Invite",
+              style: :primary,
+              type: :submit
+            ) %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Working role",
+          subtitle: "Try a lower role without changing your real access.",
+          variant: :h3
+        ) %>
+      <% end %>
+      <% card.body do %>
+        <%= form_with url: operating_role_path, method: :patch do %>
+          <%= hidden_field_tag :root_recording_id, current_root_recording.id %>
+          <div class="space-y-4">
+            <%= render FlatPack::Select::Component.new(
+              name: "role",
+              value: current_operating_role,
+              options: Authorization::ROLES
+                .select { |role| RecordingStudio::AccessRoles.satisfies?(role: RecordingStudioAccessible.role_for(actor: current_actor, recording: current_root_recording), minimum_role: role) }
+                .map { |role| [role.titleize, role] },
+              label: "Operate as",
+              required: true
+            ) %>
+            <%= render FlatPack::Button::Component.new(
+              text: "Switch role",
+              style: :secondary,
+              type: :submit
+            ) %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= render FlatPack::Table::Component.new(data: @memberships) do |table| %>
+    <% table.column(title: "Person", html: ->(membership) { membership_email(membership) }) %>
+    <% table.column(title: "Role", html: ->(membership) { membership_role_form(membership, current_root_recording) }) %>
+    <% table.column(title: "Action", html: ->(membership) { membership_revoke_form(membership, current_root_recording) }) %>
+  <% end %>
+
+  <% if @invitations.any? %>
+    <%= render FlatPack::Table::Component.new(data: @invitations) do |table| %>
+      <% table.column(title: "Invited", html: ->(invitation) { invitation.email }) %>
+      <% table.column(title: "Role", html: ->(invitation) { invitation.role.titleize }) %>
+      <% table.column(title: "Status", html: ->(invitation) { render FlatPack::Badge::Component.new(text: invitation.status.titleize, size: :sm) }) %>
+    <% end %>
+  <% end %>
+</div>

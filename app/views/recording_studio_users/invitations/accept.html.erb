@@ -1,0 +1,19 @@
+<div class="mx-auto w-full max-w-xl">
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Join the workspace",
+        subtitle: "Your invitation includes #{@invitation.role} access.",
+        variant: :h1
+      ) %>
+    <% end %>
+    <% card.footer do %>
+      <%= button_to redeem_invitation_path(token: params[:token]), method: :post do %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Accept invitation",
+          style: :primary
+        ) %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

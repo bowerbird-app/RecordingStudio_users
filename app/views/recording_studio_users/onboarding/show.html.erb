@@ -1,0 +1,29 @@
+<div class="mx-auto w-full max-w-xl">
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Set up your workspace",
+        subtitle: "One name and you’re ready to invite your people.",
+        variant: :h1
+      ) %>
+    <% end %>
+
+    <% card.body do %>
+      <%= form_with url: onboarding_path, scope: :workspace do %>
+        <div class="space-y-4">
+          <%= render FlatPack::TextInput::Component.new(
+            name: "workspace[name]",
+            label: "Workspace name",
+            required: true,
+            autofocus: true
+          ) %>
+          <%= render FlatPack::Button::Component.new(
+            text: "Create workspace",
+            style: :primary,
+            type: :submit
+          ) %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

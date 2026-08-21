@@ -2,8 +2,12 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in gem_template.gemspec
-gem "devise"
+# Use the supported sibling releases while developing this addon.
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.129"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.1.0"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", branch: "main"
+gem "recording_studio_root_switchable", github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.0"
+
 gemspec
 
 gem "puma"

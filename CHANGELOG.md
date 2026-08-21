@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-21
+
+### Added
+- Added Devise host installation and `Current.actor` wiring.
+- Added Accessible-backed invitations, membership management, and acceptance.
+- Added zero-root onboarding and first-owner bootstrap for owned roots.
+- Added session-backed, demotion-only operating roles with dual authorization checks.
+- Added Root Switchable selection after root creation and invitation acceptance.
+
+### Changed
+- Productized and renamed the template as `recording_studio_users`.
+- Updated the dummy app to prove the complete users flow with Flatpack UI.
+- Requires Recording Studio 4.1+, Accessible 0.6.1+, and Root Switchable 0.5+.
+
 ## [0.1.2] - 2026-07-21
 
 ### Changed
@@ -30,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/gem_template/compare/v0.1.2...HEAD
-[0.1.2]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.2
-[0.1.1]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.1
-[0.1.0]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.0
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.2
+[0.1.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.1
+[0.1.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.0

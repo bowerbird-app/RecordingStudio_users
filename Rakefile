@@ -3,17 +3,10 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
 
-DUMMY_TEST_FILES = [
-  File.expand_path("test/controllers/docs_controller_test.rb", __dir__),
-  File.expand_path("test/recording_studio_v3_test.rb", __dir__)
-].freeze
 DUMMY_GEMFILE = File.expand_path("test/dummy/Gemfile", __dir__)
 DUMMY_APP_ROOT = File.expand_path("test/dummy", __dir__)
-TEST_ROOT = File.expand_path("test", __dir__)
 ROOT_TEST_EXCLUSIONS = %w[
-  test/controllers/docs_controller_test.rb
   test/dummy/**/*_test.rb
-  test/recording_studio_v3_test.rb
   test/rename_verification_test.rb
 ].freeze
 DUMMY_BUNDLE_CLEARED_ENV = {
@@ -70,9 +63,6 @@ namespace :test do
 
       run_command!(env, "bundle", "exec", "bin/rails", "db:prepare")
       run_command!(env, "bundle", "exec", "bin/rails", "test")
-      DUMMY_TEST_FILES.each do |test_file|
-        run_command!(env, "bundle", "exec", "ruby", "-I#{TEST_ROOT}", test_file)
-      end
     end
   end
 

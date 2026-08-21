@@ -4,70 +4,42 @@ require "test_helper"
 
 class ConfigurationTest < Minitest::Test
   def setup
-    @configuration = GemTemplate::Configuration.new
+    RecordingStudioUsers.reset_configuration!
   end
 
-  def test_merge_updates_known_attributes
-    @configuration.merge!(api_key: "abc123", timeout: 9, enable_feature_x: true)
-
-    assert_equal "abc123", @configuration.api_key
-    assert_equal 9, @configuration.timeout
-    assert_equal true, @configuration.enable_feature_x
+  def teardown
+    RecordingStudioUsers.reset_configuration!
   end
 
-  def test_merge_ignores_unknown_keys
-    @configuration.merge!(unknown_key: "ignored", timeout: 7)
+  def test_root_creator_is_required
+    error = assert_raises(RecordingStudioUsers::ConfigurationError) do
+      RecordingStudioUsers.configuration.create_root(name: "Studio", actor: Object.new)
+    end
 
-    refute_respond_to @configuration, :unknown_key
-    assert_equal 7, @configuration.timeout
+    assert_equal "Configure root_creator before creating a workspace", error.message
   end
 
-  def test_merge_with_non_enumerable_is_noop
-    original = @configuration.to_h
+  def test_root_creator_receives_only_supported_keywords
+    received_name = nil
+    RecordingStudioUsers.configuration.root_creator = lambda do |name:|
+      received_name = name
+      :workspace
+    end
 
-    @configuration.merge!(nil)
+    result = RecordingStudioUsers.configuration.create_root(name: "Studio", actor: Object.new)
 
-    assert_nil @configuration.api_key if original[:api_key].nil?
-    assert_equal original[:api_key], @configuration.api_key unless original[:api_key].nil?
-    assert_equal original[:timeout], @configuration.timeout
-    assert_equal original[:enable_feature_x], @configuration.enable_feature_x
+    assert_equal :workspace, result
+    assert_equal "Studio", received_name
   end
 
-  def test_initialize_uses_environment_api_key_and_defaults
-    previous_value = ENV.fetch("GEM_TEMPLATE_API_KEY", nil)
-    ENV["GEM_TEMPLATE_API_KEY"] = "env-token"
+  def test_user_finder_normalizes_email
+    received_email = nil
+    RecordingStudioUsers.configuration.user_finder = lambda do |email:|
+      received_email = email
+      :user
+    end
 
-    configuration = GemTemplate::Configuration.new
-
-    assert_equal "env-token", configuration.api_key
-    assert_equal false, configuration.enable_feature_x
-    assert_equal 5, configuration.timeout
-    assert_instance_of GemTemplate::Hooks, configuration.hooks
-  ensure
-    ENV["GEM_TEMPLATE_API_KEY"] = previous_value
-  end
-
-  def test_merge_accepts_string_keys
-    @configuration.merge!("api_key" => "string-key", "timeout" => 12)
-
-    assert_equal "string-key", @configuration.api_key
-    assert_equal 12, @configuration.timeout
-  end
-
-  def test_to_h_reports_registered_hook_counts
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.after_service { nil }
-
-    result = @configuration.to_h
-
-    assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
-    assert_equal 1, result.fetch(:hooks_registered).fetch(:after_service)
-  end
-
-  def test_configure_without_block_is_safe
-    GemTemplate.configure
-
-    assert_kind_of GemTemplate::Configuration, GemTemplate.configuration
+    assert_equal :user, RecordingStudioUsers.configuration.find_user(email: "PERSON@EXAMPLE.COM")
+    assert_equal "PERSON@EXAMPLE.COM", received_email
   end
 end

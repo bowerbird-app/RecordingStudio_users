@@ -1,5 +1,8 @@
 class ApplicationController < ActionController::Base
   include RecordingStudio::RootSwitchable::ControllerSupport
+  include RecordingStudioUsers::CurrentContext
+
+  skip_recording_studio_root_resolution if: :devise_controller?
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
@@ -10,7 +13,6 @@ class ApplicationController < ActionController::Base
   layout :application_layout
 
   before_action :authenticate_user!
-  before_action :set_current_actor
 
   private
 
@@ -18,7 +20,4 @@ class ApplicationController < ActionController::Base
     devise_controller? ? "application" : "flat_pack_sidebar"
   end
 
-  def set_current_actor
-    Current.actor = current_user
-  end
 end

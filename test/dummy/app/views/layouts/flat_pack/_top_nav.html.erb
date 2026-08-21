@@ -22,7 +22,17 @@
   <% nav.right do %>
     <% if user_signed_in? %>
       <div class="flex items-center gap-3">
-        <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
+        <% if RecordingStudioAccessible.root_recordings_for(actor: current_user).any? %>
+          <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
+        <% else %>
+          <%= link_to recording_studio_users.onboarding_path do %>
+            <%= render FlatPack::Button::Component.new(
+              text: "Set up workspace",
+              style: :primary,
+              size: :sm
+            ) %>
+          <% end %>
+        <% end %>
 
         <%= render FlatPack::Avatar::Component.new(
           name: current_user.try(:name).presence || current_user.email,

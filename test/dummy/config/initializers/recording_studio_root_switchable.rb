@@ -19,19 +19,19 @@ RecordingStudioRootSwitchable.configure do |config|
     end
   end
 
-  config.scope :all_workspaces do |scope|
-    scope.label = "All workspaces"
-    scope.description = "Every workspace root in the dummy app."
-    scope.available_roots = lambda do |**|
-      Workspace.order(:name).filter_map do |workspace|
-        RecordingStudio.root_recording_for(workspace)
-      end
-    end
-    scope.access_check = ->(**) { true }
+  config.page_copy = {
+    empty_state_title: "Set up your workspace",
+    empty_state_body: "Create your first workspace, then you can switch between them here."
+  }
 
-    scope.default_root = lambda do |roots:, **|
-      roots.first
+  config.scope :workspaces do |scope|
+    scope.label = "Workspaces"
+    scope.description = "Workspaces you can open."
+    scope.switchable_root_types = ["Workspace"]
+    scope.available_roots = lambda do |actor:, **|
+      RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end
+    scope.default_root = ->(roots:, **) { roots.first }
   end
 end
 
