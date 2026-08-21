@@ -83,6 +83,22 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Role"
   end
 
+  test "redirects a direct table page visit to the styled users screen" do
+    sign_in @admin
+    bootstrap_owner_access!(@admin, @admin_recording)
+
+    get "/admin/screens/recording_studio_users/table",
+        params: { sort: "email", direction: "asc" },
+        headers: { "Sec-Fetch-Dest" => "document" }
+
+    assert_redirected_to "/admin/screens/recording_studio_users?direction=asc&sort=email"
+    follow_redirect!
+    assert_response :success
+    assert_select "html"
+    assert_select %(link[rel="stylesheet"][href*="flat_pack/variables"])
+    assert_select %(link[rel="stylesheet"][href*="tailwind"])
+  end
+
   test "renders mounted profile links from the shared admin sidebar layout" do
     admin_surface = RecordingStudioAdmin.configuration.surface(:admin)
     original_layout = admin_surface.engine_layout

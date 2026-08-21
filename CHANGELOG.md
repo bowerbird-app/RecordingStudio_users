@@ -17,12 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Removed the Devise `current_user`-only profile ACL. Authentication is still Devise; authorization is Accessible.
 - Users administration is unchanged: Admin root + Accessible, not `user.admin?`.
+- Updated the development and dummy app RecordingStudioAdmin pin to 2.0.1. Direct browser visits to admin frame endpoints now redirect to their styled parent screen while Turbo Frame requests still return fragments.
 
 ### Upgrade notes
 - Register `RecordingStudioUser::Profile` (and People) in `config.recordable_types`. Keep `access_actor_types` configured so User can receive grants.
 - Create or backfill profiles with `create_user!` / `record_profile!` so each user receives an Accessible grant on their Profile recording. A Profile row without a grant is forbidden on the mounted profile routes.
 - Do not enable Accessible on People. Do not grant on the shared People root.
 - Existing hosts that created Profile recordings in 0.2.0 without grants should call `record_profile!` (or `ProfileAccess.ensure_owner_access!`) once per user.
+- Upgrade RecordingStudioAdmin to 2.0.1 or newer so opening `/screens/:key/chart`, `/table`, `/table_count`, and widget frame URLs as pages returns the styled parent screen.
 
 ## [0.2.0] - 2026-08-21
 

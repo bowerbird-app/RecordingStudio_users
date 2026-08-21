@@ -17,10 +17,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_admin.git
-  revision: f946dd42abd9c21eef4a055ac9260c9019f71f6b
-  tag: 2.0.0
+  revision: d68f0e41e48a3266c77dd544acf6d0fc97d2b0cf
+  ref: d68f0e41e48a3266c77dd544acf6d0fc97d2b0cf
   specs:
-    recording_studio_admin (2.0.0)
+    recording_studio_admin (2.0.1)
       flat_pack (~> 0.1.129)
       rails (~> 8.1.0)
       recording_studio_accessible (~> 0.6)
@@ -448,7 +448,7 @@ CHECKSUMS
   rdoc (8.0.0) sha256=03bf8c08a9639658855a0cfd77c0abca8325c227693f7f33f82957811348c469
   recording_studio (4.2.0)
   recording_studio_accessible (0.6.1)
-  recording_studio_admin (2.0.0)
+  recording_studio_admin (2.0.1)
   recording_studio_attachable (0.4.0)
   recording_studio_user (0.3.0)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
