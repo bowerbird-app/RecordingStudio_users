@@ -63,13 +63,15 @@ module RecordingStudioUsers
       end
 
       def switch_root(root_recording)
-        RecordingStudio::RootSwitchable.switch_root(
-          root_recording_id: root_recording.id,
-          scope_key: RecordingStudioUsers.configuration.root_scope_key,
-          controller: @controller,
-          actor: @actor,
-          device_key: @device_key
-        )
+        ActiveRecord::Base.uncached do
+          RecordingStudio::RootSwitchable.switch_root(
+            root_recording_id: root_recording.id,
+            scope_key: RecordingStudioUsers.configuration.root_scope_key,
+            controller: @controller,
+            actor: @actor,
+            device_key: @device_key
+          )
+        end
       end
 
       def select_root(root_recording)

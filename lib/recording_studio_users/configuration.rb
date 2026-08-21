@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "uri"
+
 module RecordingStudioUsers
   class Configuration
     attr_accessor :after_role_switch_redirect,
@@ -29,7 +31,15 @@ module RecordingStudioUsers
         url_options = Rails.application.config.action_mailer.default_url_options
         mount_url = Rails.application.routes.url_helpers.recording_studio_users_url(**url_options)
         accept_path = RecordingStudioUsers::Engine.routes.url_helpers.accept_invitation_path(token: token)
-        "#{mount_url.chomp('/')}#{accept_path}"
+        mount_uri = URI.parse(mount_url)
+        mount_path = mount_uri.path.chomp("/")
+
+        if accept_path.start_with?("#{mount_path}/")
+          mount_uri.path = accept_path
+          mount_uri.to_s
+        else
+          "#{mount_url.chomp('/')}#{accept_path}"
+        end
       end
       @layout = "application"
       @mailer_sender = "no-reply@example.com"
