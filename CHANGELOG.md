@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-21
+
+### Changed
+- First-owner access on a new Profile recording uses `RecordingStudioAccessible.bootstrap_owner_access!` (role `:admin`). Later membership still uses `grant_access`.
+- Removed the Users paper-over that swapped `access_management_authorizer` / retried `grant_first_owner` when the Profile had no admin yet.
+- Pinned `recording_studio_accessible` to `~> 0.7` (tag `v0.7.0`). Accessible 0.7.0 allows bootstrap on an accessible child under a shared root (Profile under People).
+
+### Upgrade notes
+- Upgrade RecordingStudioAccessible to `0.7.0` before installing this gem. 0.6.1 still rejects Profile bootstrap with `Recording must be a root recording`.
+- Call `create_user!` / `record_profile!` for signup and backfill. Those helpers bootstrap the Profile recording only — never People.
+- Replace any host use of `ProfileAccess.ensure_owner_access!` or an `access_management_authorizer` mutex with `bootstrap_owner_access!` on the Profile recording, then `grant_access` for later members.
+- Do not bootstrap People. Do not bootstrap owned-root children. Do not enable Accessible on People.
+
 ## [0.3.0] - 2026-08-21
 
 ### Added
@@ -113,7 +126,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.4.0
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.2.0
 [0.1.5]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.5

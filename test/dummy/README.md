@@ -26,7 +26,7 @@ Run these commands from the dummy app directory. Sign in through Devise at `/use
 - `/recording_studio_users/profile/edit`: profile editing route. Writes go through `record_profile!`.
 - `/recording_studio_users/admin`: authorizes the actor against the Admin root, then opens the shared read-only users report.
 
-Seeded users get Profile snapshots under People, with Accessible `:admin` on each Profile recording. User is not a recordable.
+Seeded users get Profile snapshots under People. `record_profile!` bootstraps first-owner `:admin` on each Profile recording with `bootstrap_owner_access!`. People itself is not bootstrapped. User is not a recordable.
 
 ## Roots And Access
 

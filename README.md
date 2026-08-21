@@ -16,7 +16,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible`, `recording_studio_attachable`, `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible on Profile only. It does not enable Accessible on People, and it does not enable Attachable.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable`, `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible on Profile only. It does not enable Accessible on People, and it does not enable Attachable.
 
 The host remains responsible for its existing User and Devise setup.
 
@@ -109,7 +109,7 @@ RecordingStudioUser.record_profile!(
 )
 ```
 
-`create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.grant_access` on that Profile recording. Later changes `revise` the existing profile recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
+`create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.bootstrap_owner_access!` on that Profile recording (role `:admin`). Do not bootstrap People — Accessible rejects the shared root on purpose. Later membership uses `grant_access`. Later profile changes `revise` the existing recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
 
