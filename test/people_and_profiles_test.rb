@@ -22,6 +22,11 @@ class PeopleAndProfilesEngineTest < ActiveSupport::TestCase
     refute_includes RecordingStudio.root_recordable_types, "User"
   end
 
+  test "Accessible is enabled on Profile and not on People" do
+    assert RecordingStudio.capability_enabled?(:accessible, for: RecordingStudioUser::Profile)
+    refute RecordingStudio.capability_enabled?(:accessible, for: RecordingStudioUser::People)
+  end
+
   test "people_root.record creates Profile snapshots without raw recording inserts" do
     user = User.create!(
       email: "engine-profile-#{SecureRandom.hex(4)}@example.com",

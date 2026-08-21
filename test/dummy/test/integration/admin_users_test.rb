@@ -128,6 +128,19 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_operator page_two_rows, :<=, 50
   end
 
+  test "users administration goes through the Admin root and Accessible, not user.admin?" do
+    admin_controller = File.read(
+      RecordingStudioUser::Engine.root.join("app/controllers/recording_studio_user/admin/users_controller.rb")
+    )
+    admin_definitions = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/admin.rb"))
+
+    assert_includes admin_controller, "RecordingStudioAdmin::Authorization.authorize!"
+    refute_includes admin_controller, "user.admin?"
+    refute_includes admin_controller, "current_user.admin"
+    refute_includes admin_definitions, "user.admin?"
+    refute_includes admin_definitions, "can_access?"
+  end
+
   test "the gem does not add an outer card around the admin screen" do
     sign_in @admin
     bootstrap_owner_access!(@admin, @admin_recording)

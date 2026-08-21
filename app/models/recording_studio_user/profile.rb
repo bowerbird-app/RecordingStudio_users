@@ -9,6 +9,7 @@ module RecordingStudioUser
     recording_studio_recordable label: "Profile",
                                 root: false,
                                 allowed_parent_types: ALLOWED_PARENT_TYPES
+    RecordingStudio.enable_capability(:accessible, on: self)
 
     belongs_to :user, class_name: "User", inverse_of: false
 

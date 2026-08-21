@@ -70,7 +70,8 @@ module RecordingStudioUser
             :yellow
         say "People + Profile tables: bin/rails generate recording_studio_user:migrations", :green
         say "Register RecordingStudioUser::People and RecordingStudioUser::Profile in " \
-            "config.recordable_types, then run db:migrate.",
+            "config.recordable_types, then run db:migrate. The gem enables Accessible on Profile " \
+            "(not People). create_user! / record_profile! grant the user on that Profile recording.",
             :yellow
       end
 

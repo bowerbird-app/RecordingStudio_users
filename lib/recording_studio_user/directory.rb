@@ -31,32 +31,50 @@ module RecordingStudioUser
 
     def create_user!(email:, password:, password_confirmation: nil, actor: nil, **attributes)
       profile_attrs = attributes.extract!(*PROFILE_ATTRIBUTE_KEYS)
-      user = RecordingStudioUser.config.user_class.create!(
-        email: email,
-        password: password,
-        password_confirmation: password_confirmation.presence || password,
-        **attributes
-      )
-      record_profile!(user, actor: actor, **profile_attrs)
+      confirmation = password_confirmation.presence || password
+      user = nil
+      ActiveRecord::Base.transaction do
+        user = create_devise_user!(email, password, confirmation, attributes)
+        record_profile!(user, actor: actor, **profile_attrs)
+      end
       user
     end
 
     def record_profile!(user, actor: nil, **profile_attrs)
       extras = filtered_additional_profile_attributes(profile_attrs[:additional_profile_attributes])
       assignment = profile_assignment(user, profile_attrs.merge(additional_profile_attributes: extras))
-      recording = profile_recording_for(user)
+      recording = nil
 
-      if recording
-        people_root.revise(recording, actor: actor, &assignment)
-      else
-        people_root.record(Profile, actor: actor, &assignment)
+      ActiveRecord::Base.transaction do
+        recording = write_profile_recording(user, actor, assignment)
+        ProfileAccess.ensure_owner_access!(user, recording, manager_actor: actor)
       end
+
+      recording
     end
 
     def filtered_additional_profile_attributes(value)
       extras = (value.presence || {}).stringify_keys
       extras = extras.except(*Configuration::PROTECTED_PROFILE_ATTRIBUTES)
       extras.slice(*RecordingStudioUser.config.additional_profile_attributes.map(&:to_s))
+    end
+
+    def create_devise_user!(email, password, password_confirmation, attributes)
+      RecordingStudioUser.config.user_class.create!(
+        email: email,
+        password: password,
+        password_confirmation: password_confirmation,
+        **attributes
+      )
+    end
+
+    def write_profile_recording(user, actor, assignment)
+      recording = profile_recording_for(user)
+      if recording
+        people_root.revise(recording, actor: actor, &assignment)
+      else
+        people_root.record(Profile, actor: actor, &assignment)
+      end
     end
 
     def profile_assignment(user, attrs)

@@ -22,12 +22,12 @@ Run these commands from the dummy app directory. Sign in through Devise at `/use
 
 ## RecordingStudioUser Routes
 
-- `/recording_studio_users/profile`: the signed-in user's profile route (UI rewrite is a later slice).
-- `/recording_studio_users/profile/edit`: profile editing route.
-- `/recording_studio_users/admin`: authorizes the actor, then opens the shared read-only users report.
+- `/recording_studio_users/profile`: the signed-in user's profile. Accessible must grant them a role on that Profile recording.
+- `/recording_studio_users/profile/edit`: profile editing route. Writes go through `record_profile!`.
+- `/recording_studio_users/admin`: authorizes the actor against the Admin root, then opens the shared read-only users report.
 
-Seeded users get Profile snapshots under People. User is not a recordable.
+Seeded users get Profile snapshots under People, with Accessible `:admin` on each Profile recording. User is not a recordable.
 
 ## Roots And Access
 
-The dummy app has workspace roots and a separate host-owned Admin root. People is a shared root, not an owned workspace. Accessible is not enabled on People or Profile in this slice.
+The dummy app has workspace roots and a separate host-owned Admin root. People is a shared root, not an owned workspace. Accessible is enabled on Profile and on host Workspace / AdminRoot. It is not enabled on People.

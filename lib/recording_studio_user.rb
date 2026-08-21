@@ -5,6 +5,7 @@ require "recording_studio_user/configuration"
 require "recording_studio_user/engine"
 require "recording_studio_user/admin"
 require "recording_studio_user/directory"
+require "recording_studio_user/profile_access"
 
 module RecordingStudioUser
   class << self
