@@ -45,8 +45,8 @@ module RecordingStudioUsers
 
     def set_access_recording
       @access_recording = RecordingStudioAccessible
-                            .access_recordings_for(current_root_recording)
-                            .find { |recording| recording.id.to_s == params[:id].to_s }
+                          .access_recordings_for(current_root_recording)
+                          .find { |recording| recording.id.to_s == params[:id].to_s }
       head :not_found unless @access_recording
     end
 

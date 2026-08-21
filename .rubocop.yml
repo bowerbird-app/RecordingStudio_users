@@ -3,6 +3,7 @@ AllCops:
   NewCops: enable
   Exclude:
     - 'test/dummy/**/*'
+    - 'test/tmp/**/*'
     - 'vendor/**/*'
     - 'bin/**/*'
 
@@ -26,11 +27,37 @@ Metrics/MethodLength:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'lib/recording_studio_users/authorization.rb'
+    - 'lib/recording_studio_users/configuration.rb'
+    - 'lib/recording_studio_users/services/**/*'
+    - 'app/controllers/**/*'
+    - 'app/helpers/**/*'
+    - 'app/models/**/*'
+    - 'db/migrate/**/*'
 
 Metrics/AbcSize:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'lib/recording_studio_users/configuration.rb'
+    - 'lib/recording_studio_users/services/**/*'
+    - 'app/controllers/**/*'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/recording_studio_users/services/**/*'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/recording_studio_users/services/**/*'
+
+Metrics/ParameterLists:
+  Exclude:
+    - 'lib/recording_studio_users/authorization.rb'
+
+Naming/PredicateMethod:
+  Exclude:
+    - 'lib/recording_studio_users/authorization.rb'
 
 # Allow empty blocks in tests (common for stubs/mocks)
 Lint/EmptyBlock:

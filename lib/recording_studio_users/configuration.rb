@@ -13,9 +13,15 @@ module RecordingStudioUsers
                   :user_finder
 
     def initialize
-      @after_role_switch_redirect = ->(controller:) { controller.respond_to?(:main_app) ? controller.main_app.root_path : "/" }
-      @authentication_redirect = ->(controller:) { controller.respond_to?(:main_app) ? controller.main_app.root_path : "/" }
-      @current_actor_resolver = ->(controller:) { controller.respond_to?(:current_user, true) ? controller.send(:current_user) : nil }
+      @after_role_switch_redirect = lambda { |controller:|
+        controller.respond_to?(:main_app) ? controller.main_app.root_path : "/"
+      }
+      @authentication_redirect = lambda { |controller:|
+        controller.respond_to?(:main_app) ? controller.main_app.root_path : "/"
+      }
+      @current_actor_resolver = lambda { |controller:|
+        controller.respond_to?(:current_user, true) ? controller.send(:current_user) : nil
+      }
       @invitation_url_resolver = lambda do |token:, **|
         RecordingStudioUsers::Engine.routes.url_helpers.accept_invitation_path(token: token)
       end

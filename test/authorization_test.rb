@@ -84,14 +84,14 @@ class AuthorizationTest < Minitest::Test
 
   private
 
-  def with_ceiling(role)
+  def with_ceiling(role, &block)
     role_for = ->(**) { role }
     authorized = lambda do |role: nil, **|
       RecordingStudio::AccessRoles.satisfies?(role: role_for.call, minimum_role: role)
     end
 
     RecordingStudioAccessible.stub(:role_for, role_for) do
-      RecordingStudioAccessible.stub(:authorized?, authorized) { yield }
+      RecordingStudioAccessible.stub(:authorized?, authorized, &block)
     end
   end
 end

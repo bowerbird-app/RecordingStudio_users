@@ -13,7 +13,7 @@ module RecordingStudioUsers
     belongs_to :inviter, polymorphic: true
 
     validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
-    validates :role, inclusion: { in: Authorization::ROLES }
+    validates :role, inclusion: { in: RecordingStudioUsers::Authorization::ROLES }
     validates :status, inclusion: { in: %w[pending accepted revoked expired] }
     validates :token_digest, presence: true, uniqueness: true
     validate :root_recording_must_be_owned_root

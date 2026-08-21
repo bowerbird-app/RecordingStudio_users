@@ -14,7 +14,7 @@ module RecordingStudioUsers
 
       redirect_to RecordingStudioUsers.configuration.after_role_switch_path_for(controller: self),
                   notice: "Now working as #{role}."
-    rescue Authorization::NotAuthorized => e
+    rescue RecordingStudioUsers::Authorization::NotAuthorized => e
       redirect_to RecordingStudioUsers.configuration.after_role_switch_path_for(controller: self),
                   alert: e.message
     end

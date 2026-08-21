@@ -18,13 +18,13 @@ module RecordingStudioUsers
         class: "flex items-end gap-2"
       ) do
         safe_join([
-          render(FlatPack::Select::Component.new(
-            name: "membership[role]",
-            options: Authorization::ROLES.map { |role| [role.titleize, role] },
-            value: access_recording.recordable.role
-          )),
-          render(FlatPack::Button::Component.new(text: "Save", style: :secondary, size: :sm, type: :submit))
-        ])
+                    render(FlatPack::Select::Component.new(
+                             name: "membership[role]",
+                             options: RecordingStudioUsers::Authorization::ROLES.map { |role| [role.titleize, role] },
+                             value: access_recording.recordable.role
+                           )),
+                    render(FlatPack::Button::Component.new(text: "Save", style: :secondary, size: :sm, type: :submit))
+                  ])
       end
     end
 

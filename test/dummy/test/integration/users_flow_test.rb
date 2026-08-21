@@ -13,7 +13,10 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
 
     get "/"
 
-    assert_redirected_to "/people"
+    assert_redirected_to "/people/onboarding"
+    follow_redirect!
+    assert_response :success
+    assert_includes response.body, "Set up your workspace"
   end
 
   test "creating the first workspace bootstraps admin access and selects it" do
@@ -64,6 +67,18 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal :admin, RecordingStudioAccessible.role_for(actor: owner, recording: root)
+  end
+
+  test "admin can render the Flatpack people screen" do
+    owner = create_user("owner@example.com")
+    root = create_owned_root(owner)
+    sign_in_as(owner)
+
+    get "/people/invitations", params: { root_recording_id: root.id }
+
+    assert_response :success
+    assert_includes response.body, "Invite someone"
+    assert_includes response.body, "Working role"
   end
 
   private

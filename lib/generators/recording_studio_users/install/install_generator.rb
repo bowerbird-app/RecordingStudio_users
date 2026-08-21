@@ -17,12 +17,14 @@ module RecordingStudioUsers
       )
       class_option :skip_devise, type: :boolean, default: false,
                                  desc: "Skip Devise installation and User generation"
+      class_option :skip_migrations, type: :boolean, default: false,
+                                     desc: "Skip copying Users migrations"
 
       def install_devise_user
         return if options[:skip_devise]
 
-        generate "devise:install" unless File.exist?(Rails.root.join("config/initializers/devise.rb"))
-        generate "devise", "User" unless File.exist?(Rails.root.join("app/models/user.rb"))
+        generate "devise:install" unless File.exist?(File.join(destination_root, "config/initializers/devise.rb"))
+        generate "devise", "User" unless File.exist?(File.join(destination_root, "app/models/user.rb"))
       end
 
       def mount_engine
@@ -34,7 +36,7 @@ module RecordingStudioUsers
       end
 
       def wire_application_controller
-        application_controller = Rails.root.join("app/controllers/application_controller.rb")
+        application_controller = File.join(destination_root, "app/controllers/application_controller.rb")
         return unless File.exist?(application_controller)
 
         inject_into_class application_controller, "ApplicationController", <<~RUBY
@@ -44,11 +46,13 @@ module RecordingStudioUsers
       end
 
       def copy_migrations
+        return if options[:skip_migrations]
+
         generate "recording_studio_users:migrations"
       end
 
       def add_tailwind_source
-        tailwind_css_path = Rails.root.join("app/assets/tailwind/application.css")
+        tailwind_css_path = File.join(destination_root, "app/assets/tailwind/application.css")
         return show_missing_tailwind_notice unless File.exist?(tailwind_css_path)
 
         tailwind_content = File.read(tailwind_css_path)
@@ -113,7 +117,8 @@ module RecordingStudioUsers
       def tailwind_source_lines
         [
           '@source "../../vendor/bundle/**/recording_studio_users/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_users-*/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+          'recording_studio_users-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]

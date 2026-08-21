@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 RecordingStudioUsers::Engine.routes.draw do
-  root to: "onboarding#show", as: :onboarding
+  root to: "onboarding#show"
+  get "onboarding", to: "onboarding#show", as: :onboarding
   post "onboarding", to: "onboarding#create"
 
   resources :invitations, only: %i[index create]

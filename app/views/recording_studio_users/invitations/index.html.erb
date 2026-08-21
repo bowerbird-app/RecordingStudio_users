@@ -23,7 +23,7 @@
             <%= render FlatPack::Select::Component.new(
               name: "invitation[role]",
               value: @selected_role,
-              options: Authorization::ROLES.map { |role| [role.titleize, role] },
+              options: RecordingStudioUsers::Authorization::ROLES.map { |role| [role.titleize, role] },
               label: "Role",
               required: true
             ) %>
@@ -52,7 +52,7 @@
             <%= render FlatPack::Select::Component.new(
               name: "role",
               value: current_operating_role,
-              options: Authorization::ROLES
+              options: RecordingStudioUsers::Authorization::ROLES
                 .select { |role| RecordingStudio::AccessRoles.satisfies?(role: RecordingStudioAccessible.role_for(actor: current_actor, recording: current_root_recording), minimum_role: role) }
                 .map { |role| [role.titleize, role] },
               label: "Operate as",

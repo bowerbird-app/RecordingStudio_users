@@ -32,7 +32,7 @@ module RecordingStudioUsers
 
     def accept
       @invitation = Invitation.pending_for_token(params[:token])
-      return render :invalid, status: :not_found unless @invitation
+      render :invalid, status: :not_found unless @invitation
     end
 
     def redeem

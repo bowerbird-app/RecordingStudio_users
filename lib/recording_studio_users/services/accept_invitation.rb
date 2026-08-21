@@ -17,7 +17,9 @@ module RecordingStudioUsers
       def call
         invitation = Invitation.pending_for_token(@token)
         return Result.failure("That invitation is invalid or has expired") unless invitation
-        return Result.failure("Sign in with #{invitation.email} to accept this invitation") unless matching_email?(invitation)
+        unless matching_email?(invitation)
+          return Result.failure("Sign in with #{invitation.email} to accept this invitation")
+        end
 
         grant_result = RecordingStudioAccessible.grant_access(
           recording: invitation.root_recording,

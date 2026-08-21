@@ -36,10 +36,14 @@ module RecordingStudioUsers
         end
 
         return Result.failure("That root cannot be bootstrapped") unless owned_root?(root_recording)
-        return Result.failure(bootstrap_result&.error || "Could not create your workspace") unless bootstrap_result&.success?
+        unless bootstrap_result&.success?
+          return Result.failure(bootstrap_result&.error || "Could not create your workspace")
+        end
 
         switch_result = switch_root(root_recording)
-        return Result.failure(Array(switch_result.errors).to_sentence) if switch_result.respond_to?(:success?) && !switch_result.success?
+        if switch_result.respond_to?(:success?) && !switch_result.success?
+          return Result.failure(Array(switch_result.errors).to_sentence)
+        end
 
         Result.success(root_recording)
       rescue ActiveRecord::RecordInvalid => e

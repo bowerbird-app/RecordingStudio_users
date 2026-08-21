@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_21_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -25,6 +25,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
     t.datetime "created_at", null: false
     t.string "title"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "recording_studio_accesses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "actor_id", null: false
+    t.string "actor_type", null: false
+    t.datetime "created_at", null: false
+    t.integer "role", default: 0, null: false
+    t.index ["actor_type", "actor_id", "role"], name: "index_recording_studio_accesses_on_actor_and_role"
+    t.index ["actor_type", "actor_id"], name: "index_recording_studio_accesses_on_actor"
   end
 
   create_table "recording_studio_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -79,6 +88,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
     t.index ["root_recording_id"], name: "idx_rs_root_switchable_root_recording"
   end
 
+  create_table "recording_studio_users_invitations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.datetime "expires_at", null: false
+    t.string "inviter_id", null: false
+    t.string "inviter_type", null: false
+    t.string "role", null: false
+    t.uuid "root_recording_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.index ["root_recording_id", "email", "status"], name: "idx_rs_users_invitations_root_email_status"
+    t.index ["token_digest"], name: "index_recording_studio_users_invitations_on_token_digest", unique: true
+  end
+
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -100,4 +125,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
+  add_foreign_key "recording_studio_users_invitations", "recording_studio_recordings", column: "root_recording_id", on_delete: :cascade
 end
