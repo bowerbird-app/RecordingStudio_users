@@ -7,14 +7,14 @@
   <div id="home-actions" class="flex flex-wrap items-center gap-3">
     <%= render FlatPack::Button::Component.new(
       text: "My Profile",
-      url: recording_studio_users.profile_path,
+      href: recording_studio_users.profile_path,
       style: :secondary
     ) %>
 
     <% if current_root_recordable.is_a?(AdminRoot) %>
       <%= render FlatPack::Button::Component.new(
         text: "Users Admin",
-        url: recording_studio_users.admin_path,
+        href: recording_studio_users.admin_path,
         style: :secondary
       ) %>
     <% end %>

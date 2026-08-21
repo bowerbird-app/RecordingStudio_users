@@ -16,15 +16,9 @@ find_or_record_child = lambda do |recordable, root_recording, parent_recording|
   ).recording
 end
 
-grant_access = lambda do |actor, recording, role|
-  next if RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: role)
-
-  RecordingStudioAccessible::AccessCreationContext.allow do
-    recording.record(RecordingStudio::Access, parent_recording: recording) do |access|
-      access.actor = actor
-      access.role = role
-    end
-  end
+bootstrap_owner_access = lambda do |actor, recording|
+  result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: actor)
+  raise result.error if result.failure?
 end
 
 # Create normal users with the profile fields required by the host contract.
@@ -64,7 +58,7 @@ seed_start = Date.current - 89.days
 end
 
 # Create the workspace recordables
-workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
+workspace = Workspace.find_or_create_by!(name: "My workspace")
 accessible_workspace = Workspace.find_or_create_by!(name: "Client Workspace")
 private_workspace = Workspace.find_or_create_by!(name: "Private Workspace")
 folder = Folder.find_or_create_by!(name: "Product Docs")
@@ -89,14 +83,14 @@ end
 admin_root = AdminRoot.find_or_create_by!(name: "Admin")
 admin_root_recording = RecordingStudio.root_recording_for(admin_root)
 
-grant_access.call(user, admin_root_recording, :admin)
-grant_access.call(user, root_recording, :admin)
-grant_access.call(user, accessible_root_recording, :view)
+bootstrap_owner_access.call(user, admin_root_recording)
+bootstrap_owner_access.call(user, root_recording)
+bootstrap_owner_access.call(user, accessible_root_recording)
 
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: member@admin.com / Password"
-puts "Seeded: Workspace '#{workspace.name}' with admin access and root recording ##{root_recording.id}"
-puts "Seeded: Admin root with access-controlled users reporting"
-puts "Seeded: Workspace '#{accessible_workspace.name}' with view access and root recording ##{accessible_root_recording.id}"
+puts "Seeded: Workspace '#{workspace.name}' with first-owner admin access and root recording ##{root_recording.id}"
+puts "Seeded: Admin root with first-owner admin access for users reporting"
+puts "Seeded: Workspace '#{accessible_workspace.name}' with first-owner admin access and root recording ##{accessible_root_recording.id}"
 puts "Seeded: Workspace '#{private_workspace.name}' without admin access and root recording ##{private_root_recording.id}"
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"

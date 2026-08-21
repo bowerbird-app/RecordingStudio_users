@@ -1,11 +1,5 @@
 <% content_for :title, "Edit Profile | Recording Studio User" %>
 
-<%= render FlatPack::PageNav::Component.new(
-  anchor_url: main_app.root_path,
-  anchor_icon: "home",
-  anchor_tooltip: "Home"
-) %>
-
 <%= render FlatPack::PageTitle::Component.new(
   title: "Edit Profile",
   subtitle: "Update your personal information and contact details.",
@@ -67,7 +61,7 @@
 
     <div class="flex gap-2">
       <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
-      <%= render FlatPack::Button::Component.new(text: "Cancel", url: profile_path, style: :secondary) %>
+      <%= render FlatPack::Button::Component.new(text: "Cancel", href: profile_path, style: :secondary) %>
     </div>
   </div>
 <% end %>

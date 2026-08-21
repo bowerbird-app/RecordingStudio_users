@@ -15,5 +15,40 @@ module RecordingStudioUser
     def configure
       yield(config) if block_given?
     end
+
+    def display_name_for(user)
+      named_value(user) || composed_name(user) || email_or_fallback(user)
+    end
+
+    def mounted_admin_path(context = nil)
+      routes = context&.routes
+      if routes.respond_to?(:recording_studio_users)
+        routes.recording_studio_users.admin_path
+      else
+        "#{config.mount_path}/#{config.admin_route_path}"
+      end
+    end
+
+    private
+
+    def named_value(user)
+      if user.respond_to?(:display_name) && user.method(:display_name).owner.name != "RecordingStudioUser::ProfiledUser"
+        user.display_name.presence
+      else
+        %i[full_name name].filter_map do |method_name|
+          user.public_send(method_name) if user.respond_to?(method_name)
+        end.find(&:present?)
+      end
+    end
+
+    def composed_name(user)
+      [user.try(:first_name), user.try(:last_name)].compact_blank.join(" ").presence
+    end
+
+    def email_or_fallback(user)
+      return user.email if user.respond_to?(:email) && user.email.present?
+
+      I18n.t("recording_studio_user.profile.unnamed_user", default: "User")
+    end
   end
 end

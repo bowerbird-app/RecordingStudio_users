@@ -13,29 +13,9 @@ module RecordingStudioUser
 
       link :users,
            text: "Users admin",
-           url: ->(_context) { RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users") },
+           url: ->(context) { context.admin_screen_path("recording_studio_users") },
            style: :secondary
       widget "widgets.users.total", view_variant: :compact
-    end
-
-    class UsersResource < RecordingStudioAdmin::Resource
-      key "recording_studio_users"
-      section "users"
-      icon :user_group
-      title "Manage users"
-      subtitle "View and update user profile details"
-      blast_radius :site
-
-      action :show,
-             text: "View user",
-             icon: "eye",
-             url: ->(user, _context) { RecordingStudioUser::Engine.routes.url_helpers.admin_user_path(user) }
-
-      action :edit,
-             text: "Edit user",
-             icon: "pencil-square",
-             required_role: :admin,
-             url: ->(user, _context) { RecordingStudioUser::Engine.routes.url_helpers.edit_admin_user_path(user) }
     end
 
     class UsersScreen < RecordingStudioAdmin::Screen
@@ -58,12 +38,10 @@ module RecordingStudioUser
         column :display_name,
                title: "Name",
                sortable: false,
-               value: ->(user, _context) { RecordingStudioUser::Admin.display_name(user) }
+               value: ->(user, _context) { RecordingStudioUser.display_name_for(user) }
         column :email, title: "Email"
         column :time_zone, title: "Time zone"
         column :created_at, title: "Created at"
-        admin_action "recording_studio_users.show", as: :view_user
-        admin_action "recording_studio_users.edit", as: :edit_user
       end
       widget "widgets.users.total"
     end
@@ -72,7 +50,7 @@ module RecordingStudioUser
       type :number
       title "Total users"
       value { |_context| RecordingStudioUser.config.user_class.count }
-      link_to { |_context| RecordingStudioAdmin::Engine.routes.url_helpers.screen_path("recording_studio_users") }
+      link_to { |context| RecordingStudioUser.mounted_admin_path(context) }
       hide_change
       hide_period
     end
@@ -80,16 +58,8 @@ module RecordingStudioUser
     class << self
       def register!
         RecordingStudioAdmin.register_section(UsersSection)
-        RecordingStudioAdmin.register_resource(UsersResource)
         RecordingStudioAdmin.register_screen(UsersScreen)
         RecordingStudioAdmin.register_widget(TotalUsersWidget)
-      end
-
-      def display_name(user)
-        value = user.full_name if user.respond_to?(:full_name)
-        value = [user.try(:first_name), user.try(:last_name)].compact_blank.join(" ") if value.blank?
-        value.presence || user.try(:email).presence || I18n.t("recording_studio_user.profile.unnamed_user",
-                                                              default: "User")
       end
 
       def user_creation_series(users)

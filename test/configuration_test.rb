@@ -38,4 +38,15 @@ class ConfigurationTest < Minitest::Test
 
     assert_equal %i[locale preferred_name], @configuration.additional_profile_attributes
   end
+
+  def test_mounted_admin_path_uses_configured_paths
+    original_config = RecordingStudioUser.config
+    RecordingStudioUser.instance_variable_set(:@config, @configuration)
+    @configuration.mount_path = "/account"
+    @configuration.admin_route_path = "user-reporting"
+
+    assert_equal "/account/user-reporting", RecordingStudioUser.mounted_admin_path
+  ensure
+    RecordingStudioUser.instance_variable_set(:@config, original_config)
+  end
 end
