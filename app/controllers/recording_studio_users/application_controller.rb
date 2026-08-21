@@ -2,8 +2,6 @@
 
 module RecordingStudioUsers
   class ApplicationController < ActionController::Base
-    include RecordingStudio::RootSwitchable::ControllerSupport
-
     protect_from_forgery with: :exception
     layout -> { RecordingStudioUsers.configuration.layout }
 
@@ -53,6 +51,10 @@ module RecordingStudioUsers
       return if current_root_recording
 
       redirect_to onboarding_path
+    end
+
+    def require_explicit_root!
+      head :bad_request if params[:root_recording_id].blank?
     end
 
     def store_authentication_location
