@@ -43,7 +43,8 @@
 
   <p class="text-sm leading-6 text-(--surface-content-color)">
     The host owns the <code>User</code> model, Devise authentication, admin root, and RecordingStudioAccessible
-    grants. Configure routes before they are drawn, then configure RecordingStudioAdmin access and its site-admin
-    recording resolver. RecordingStudioUser does not create users, roles, access grants, admin roots, or migrations.
+    grants. Configure routes before they are drawn, register <code>RecordingStudioUser::People</code> and
+    <code>RecordingStudioUser::Profile</code>, then run <code>recording_studio_user:migrations</code>.
+    RecordingStudioUser does not create users, roles, access grants, or admin roots.
   </p>
 </div>
