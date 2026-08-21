@@ -29,12 +29,12 @@ module RecordingStudioUsers
     end
 
     def membership_revoke_form(access_recording, root_recording)
-      button_to(
-        membership_path(access_recording, root_recording_id: root_recording.id),
+      form_with(
+        url: membership_path(access_recording, root_recording_id: root_recording.id),
         method: :delete,
-        form: { data: { turbo_confirm: "Remove this person’s access?" } }
+        data: { turbo_confirm: "Remove this person’s access?" }
       ) do
-        render FlatPack::Button::Component.new(text: "Remove", style: :ghost, size: :sm)
+        render FlatPack::Button::Component.new(text: "Remove", style: :ghost, size: :sm, type: :submit)
       end
     end
   end

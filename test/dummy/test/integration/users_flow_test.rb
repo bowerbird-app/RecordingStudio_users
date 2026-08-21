@@ -221,6 +221,49 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Working role"
   end
 
+  test "accept screen posts from a form the browser can submit" do
+    owner = create_user("owner@example.com")
+    invitee = create_user("invitee@example.com")
+    root = create_owned_root(owner)
+    _invitation, token = RecordingStudioUsers::Invitation.issue!(
+      email: invitee.email,
+      root_recording: root,
+      role: :view,
+      inviter: owner
+    )
+    sign_in_as(invitee)
+
+    get "/people/invitations/accept/#{token}"
+
+    assert_response :success
+    assert_select "form[action=?][method=?]", "/people/invitations/accept/#{token}", "post" do
+      assert_select "button[type=submit]", count: 1
+    end
+    assert_select "button button", false, "a button nested in a button cannot be clicked"
+  end
+
+  test "people screen membership controls are submittable" do
+    owner = create_user("owner@example.com")
+    member = create_user("member@example.com")
+    root = create_owned_root(owner)
+    grant = RecordingStudioAccessible.grant_access(
+      recording: root,
+      actor: member,
+      role: :edit,
+      manager_actor: owner
+    )
+    assert grant.success?, grant.error
+    sign_in_as(owner)
+
+    get "/people/invitations", params: { root_recording_id: root.id }
+
+    assert_response :success
+    membership_action = "/people/memberships/#{grant.value.id}?root_recording_id=#{root.id}"
+    assert_select "form[action=?]", membership_action, count: 2
+    assert_select "form[action=?] button[type=submit]", membership_action, count: 2
+    assert_select "button button", false, "a button nested in a button cannot be clicked"
+  end
+
   test "invitation mail contains an absolute mounted URL" do
     owner = create_user("owner@example.com")
     root = create_owned_root(owner)

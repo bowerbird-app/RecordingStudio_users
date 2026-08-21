@@ -8,10 +8,11 @@
       ) %>
     <% end %>
     <% card.footer do %>
-      <%= button_to redeem_invitation_path(token: params[:token]), method: :post do %>
+      <%= form_with url: redeem_invitation_path(token: params[:token]), method: :post do %>
         <%= render FlatPack::Button::Component.new(
           text: "Accept invitation",
-          style: :primary
+          style: :primary,
+          type: :submit
         ) %>
       <% end %>
     <% end %>
