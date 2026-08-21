@@ -12,6 +12,8 @@ module RecordingStudioUsers
     private
 
     def recording_studio_users_set_current_actor
+      return if respond_to?(:devise_controller?) && devise_controller?
+
       actor = RecordingStudioUsers.configuration.current_actor_for(controller: self)
       Current.actor = actor if defined?(Current) && Current.respond_to?(:actor=)
     end
