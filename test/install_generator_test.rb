@@ -36,5 +36,6 @@ class InstallGeneratorTest < Minitest::Test
     refute_includes generator, "generate :model"
     refute_includes generator, "invoke \"recording_studio_user:admin\""
     assert_includes generator, "as: :recording_studio_users"
+    assert_includes generator, "recording_studio_user:migrations"
   end
 end

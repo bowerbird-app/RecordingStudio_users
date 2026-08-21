@@ -76,8 +76,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_includes response.body, user.email
     assert_includes response.body, "Name"
     assert_includes response.body, "Email"
-    assert_includes response.body, "Time zone"
     assert_includes response.body, "Created at"
+    refute_includes response.body, "Time zone"
     refute_includes response.body, "Edit user"
     refute_includes response.body, "Admin status"
     refute_includes response.body, "Role"
@@ -148,9 +148,6 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       email: email,
       password: "Password123!",
       password_confirmation: "Password123!",
-      first_name: "Admin",
-      last_name: "User",
-      time_zone: "UTC",
       created_at: created_at,
       updated_at: created_at
     )

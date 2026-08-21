@@ -40,7 +40,6 @@ module RecordingStudioUser
                sortable: false,
                value: ->(user, _context) { RecordingStudioUser.display_name_for(user) }
         column :email, title: "Email"
-        column :time_zone, title: "Time zone"
         column :created_at, title: "Created at"
       end
       widget "widgets.users.total"

@@ -4,6 +4,7 @@ require "recording_studio_user/version"
 require "recording_studio_user/configuration"
 require "recording_studio_user/engine"
 require "recording_studio_user/admin"
+require "recording_studio_user/directory"
 
 module RecordingStudioUser
   class << self
@@ -29,6 +30,30 @@ module RecordingStudioUser
       end
     end
 
+    def people_recordable
+      Directory.people_recordable
+    end
+
+    def people_root
+      Directory.people_root
+    end
+
+    def profile_for(user)
+      Directory.profile_for(user)
+    end
+
+    def profile_recording_for(user)
+      Directory.profile_recording_for(user)
+    end
+
+    def create_user!(...)
+      Directory.create_user!(...)
+    end
+
+    def record_profile!(...)
+      Directory.record_profile!(...)
+    end
+
     private
 
     def named_value(user)
@@ -42,7 +67,10 @@ module RecordingStudioUser
     end
 
     def composed_name(user)
-      [user.try(:first_name), user.try(:last_name)].compact_blank.join(" ").presence
+      profile = profile_for(user)
+      return unless profile
+
+      [profile.first_name, profile.last_name].compact_blank.join(" ").presence
     end
 
     def email_or_fallback(user)

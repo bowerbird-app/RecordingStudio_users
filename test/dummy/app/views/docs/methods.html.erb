@@ -26,8 +26,8 @@
   ) %>
 
   <p class="text-sm text-(--body-muted-content-color)">
-    Profile routes always read and update the signed-in current user; they are not selected-root or recording-backed.
-    Devise remains responsible for authentication.
+    Profile snapshots live under the shared People root. Profile routes still identify the signed-in Devise user;
+    they are not selected-root scoped. Devise remains responsible for authentication.
   </p>
 
   <%= render FlatPack::SectionTitle::Component.new(

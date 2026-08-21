@@ -9,3 +9,8 @@ RecordingStudioUser.configure do |config|
   config.layout = "application"
   config.additional_profile_attributes = []
 end
+
+# Register RecordingStudioUser::People and RecordingStudioUser::Profile in
+# RecordingStudio.configure { |c| c.recordable_types = [...] }, then run:
+#   bin/rails generate recording_studio_user:migrations
+#   bin/rails db:migrate

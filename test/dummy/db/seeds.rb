@@ -21,53 +21,75 @@ bootstrap_owner_access = lambda do |actor, recording|
   raise result.error if result.failure?
 end
 
-# Create normal users with the profile fields required by the host contract.
-user = User.find_or_initialize_by(email: "admin@admin.com")
-user.assign_attributes(first_name: "Avery", last_name: "Admin", time_zone: "UTC")
-user.password = user.password_confirmation = "Password" if user.new_record?
-user.save! if user.changed?
-
-member = User.find_or_initialize_by(email: "member@admin.com")
-member.assign_attributes(first_name: "Morgan", last_name: "Member", time_zone: "Eastern Time (US & Canada)")
-member.password = member.password_confirmation = "Password" if member.new_record?
-member.save! if member.changed?
-
-seed_start = Date.current - 89.days
-
-200.times do |index|
-  dummy_user = User.find_or_initialize_by(email: "dummy_user_#{index + 1}@example.com")
-  day_offset = case index
-  when 0...100
-    index % 10
-  when 100...150
-    20 + ((index - 100) % 20)
-  else
-    60 + ((index - 150) % 10)
+seed_user = lambda do |email:, first_name:, last_name:, time_zone:, created_at: nil|
+  user = User.find_or_initialize_by(email: email)
+  user.password = user.password_confirmation = "Password" if user.new_record?
+  if created_at && user.new_record?
+    user.created_at = created_at
+    user.updated_at = created_at
   end
-  created_at = (seed_start + day_offset.days).beginning_of_day + (index % 3600).seconds
+  user.save! if user.new_record? || user.changed?
 
-  dummy_user.assign_attributes(
-    first_name: "Dummy",
-    last_name: "User #{index + 1}",
-    time_zone: "UTC",
-    created_at: created_at,
-    updated_at: created_at
-  )
-  dummy_user.password = dummy_user.password_confirmation = "Password" if dummy_user.new_record?
-  dummy_user.save! if dummy_user.changed?
+  if RecordingStudioUser.profile_for(user).nil?
+    RecordingStudioUser.record_profile!(
+      user,
+      first_name: first_name,
+      last_name: last_name,
+      time_zone: time_zone,
+      actor: user
+    )
+  end
+
+  user
 end
 
-# Create the workspace recordables
-workspace = Workspace.find_or_create_by!(name: "My workspace")
-accessible_workspace = Workspace.find_or_create_by!(name: "Client Workspace")
-private_workspace = Workspace.find_or_create_by!(name: "Private Workspace")
-folder = Folder.find_or_create_by!(name: "Product Docs")
-page = Page.find_or_create_by!(title: "Getting Started")
-
 previous_actor = Current.actor
-Current.actor = user
 
 begin
+  user = seed_user.call(
+    email: "admin@admin.com",
+    first_name: "Avery",
+    last_name: "Admin",
+    time_zone: "UTC"
+  )
+  Current.actor = user
+
+  seed_user.call(
+    email: "member@admin.com",
+    first_name: "Morgan",
+    last_name: "Member",
+    time_zone: "Eastern Time (US & Canada)"
+  )
+
+  seed_start = Date.current - 89.days
+
+  200.times do |index|
+    day_offset = case index
+    when 0...100
+      index % 10
+    when 100...150
+      20 + ((index - 100) % 20)
+    else
+      60 + ((index - 150) % 10)
+    end
+    created_at = (seed_start + day_offset.days).beginning_of_day + (index % 3600).seconds
+
+    seed_user.call(
+      email: "dummy_user_#{index + 1}@example.com",
+      first_name: "Dummy",
+      last_name: "User #{index + 1}",
+      time_zone: "UTC",
+      created_at: created_at
+    )
+  end
+
+  # Create the workspace recordables
+  workspace = Workspace.find_or_create_by!(name: "My workspace")
+  accessible_workspace = Workspace.find_or_create_by!(name: "Client Workspace")
+  private_workspace = Workspace.find_or_create_by!(name: "Private Workspace")
+  folder = Folder.find_or_create_by!(name: "Product Docs")
+  page = Page.find_or_create_by!(title: "Getting Started")
+
   # Create the root recording
   root_recording = RecordingStudio.root_recording_for(workspace)
   accessible_root_recording = RecordingStudio.root_recording_for(accessible_workspace)
@@ -76,16 +98,16 @@ begin
   folder_recording = find_or_record_child.call(folder, root_recording, root_recording)
 
   find_or_record_child.call(page, root_recording, folder_recording)
+
+  admin_root = AdminRoot.find_or_create_by!(name: "Admin")
+  admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+
+  bootstrap_owner_access.call(user, admin_root_recording)
+  bootstrap_owner_access.call(user, root_recording)
+  bootstrap_owner_access.call(user, accessible_root_recording)
 ensure
   Current.actor = previous_actor
 end
-
-admin_root = AdminRoot.find_or_create_by!(name: "Admin")
-admin_root_recording = RecordingStudio.root_recording_for(admin_root)
-
-bootstrap_owner_access.call(user, admin_root_recording)
-bootstrap_owner_access.call(user, root_recording)
-bootstrap_owner_access.call(user, accessible_root_recording)
 
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: member@admin.com / Password"
@@ -94,3 +116,4 @@ puts "Seeded: Admin root with first-owner admin access for users reporting"
 puts "Seeded: Workspace '#{accessible_workspace.name}' with first-owner admin access and root recording ##{accessible_root_recording.id}"
 puts "Seeded: Workspace '#{private_workspace.name}' without admin access and root recording ##{private_root_recording.id}"
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
+puts "Seeded: shared People root with Profile snapshots for seeded users"

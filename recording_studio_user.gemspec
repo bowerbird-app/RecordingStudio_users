@@ -7,9 +7,9 @@ Gem::Specification.new do |spec|
   spec.version     = RecordingStudioUser::VERSION
   spec.authors     = ["Bowerbird"]
   spec.homepage    = "https://github.com/bowerbird-app/RecordingStudio_users"
-  spec.summary     = "Authenticated user profiles and read-only sitewide user reporting for Recording Studio"
-  spec.description = "A mountable Rails engine that adds global user profiles and reusable " \
-                     "read-only RecordingStudioAdmin user reporting."
+  spec.summary     = "Devise actors, shared People, and Profile recordings for Recording Studio"
+  spec.description = "A mountable Rails engine that keeps host Users as Devise actors and owns " \
+                     "the shared People root plus Profile snapshots for Recording Studio."
   spec.license     = "MIT"
   spec.required_ruby_version = ">= 3.3.0"
 
@@ -24,8 +24,9 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "devise", "~> 5.0"
   spec.add_dependency "flat_pack", "~> 0.1"
-  spec.add_dependency "pagy", "~> 9.0"
   spec.add_dependency "rails", "~> 8.1.0"
-  spec.add_dependency "recording_studio", "~> 4.1"
+  spec.add_dependency "recording_studio", "~> 4.2"
+  spec.add_dependency "recording_studio_accessible", "~> 0.6"
   spec.add_dependency "recording_studio_admin", "~> 2.0"
+  spec.add_dependency "recording_studio_attachable", "~> 0.4"
 end

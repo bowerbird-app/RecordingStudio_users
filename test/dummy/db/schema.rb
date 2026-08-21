@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_21_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -100,16 +100,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_120000) do
     t.index ["root_recording_id"], name: "idx_rs_root_switchable_root_recording"
   end
 
+  create_table "recording_studio_user_people", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+  end
+
+  create_table "recording_studio_user_profiles", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.jsonb "additional_profile_attributes", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.string "first_name", null: false
+    t.string "last_name", null: false
+    t.string "time_zone", default: "UTC", null: false
+    t.uuid "user_id", null: false
+    t.index ["user_id"], name: "index_recording_studio_user_profiles_on_user_id"
+  end
+
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
-    t.string "first_name", default: "", null: false
-    t.string "last_name", default: "", null: false
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
-    t.string "time_zone", default: "UTC", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -124,4 +135,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_120000) do
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
+  add_foreign_key "recording_studio_user_profiles", "users"
 end

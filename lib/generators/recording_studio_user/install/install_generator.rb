@@ -68,7 +68,9 @@ module RecordingStudioUser
         say "The installer does not invoke recording_studio_user:admin. Host apps create the admin root, " \
             "resolvers, access items, and grants themselves.",
             :yellow
-        say "RecordingStudioUser does not create User, Devise, migrations, admin roots, roles, or access grants.",
+        say "People + Profile tables: bin/rails generate recording_studio_user:migrations", :green
+        say "Register RecordingStudioUser::People and RecordingStudioUser::Profile in " \
+            "config.recordable_types, then run db:migrate.",
             :yellow
       end
 

@@ -56,9 +56,9 @@
 
   <p class="text-sm leading-6 text-(--surface-content-color)">
     The configured <code>user_class_name</code> must name the host's existing Devise-compatible Active Record model
-    returned by <code>current_user</code>. It must use the host UUID primary key and expose <code>email</code>,
-    <code>first_name</code>, <code>last_name</code>, <code>time_zone</code>, and timestamps. Additional profile
-    attributes are allowlisted explicitly; identity, credential, authorization, membership, root, recording, and
-    recordable fields are protected and cannot be configured for profile updates.
+    returned by <code>current_user</code>. It must use the host UUID primary key and expose <code>email</code>
+    and timestamps. Name, time zone, and extra profile fields live on Profile under the shared People root.
+    Additional profile attributes are allowlisted explicitly; identity, credential, authorization, membership, root,
+    recording, and recordable fields are protected and cannot be configured for profile updates.
   </p>
 </div>

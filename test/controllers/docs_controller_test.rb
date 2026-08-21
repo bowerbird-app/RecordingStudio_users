@@ -16,9 +16,6 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     @user = User.find_or_create_by!(email: "docs-test@example.com") do |user|
       user.password = TEST_PASSWORD
       user.password_confirmation = TEST_PASSWORD
-      user.first_name = "Docs"
-      user.last_name = "Tester"
-      user.time_zone = "UTC"
     end
 
     sign_in @user
@@ -74,7 +71,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
       response.body,
       "Diagnostic data from RecordingStudio.recordable_declarations and v3 parent/root introspection."
     )
-    assert_includes response_text, "does not make profiles recording-backed"
+    assert_includes response_text, "People is the shared root"
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
     assert_includes response.body, "Page"
@@ -110,7 +107,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Workspace: Tree Workspace"
     assert_includes response.body, "Folder: Reference"
     assert_includes response.body, "Page: API"
-    assert_includes response_text, "does not make profiles recording-backed"
+    assert_includes response_text, "People is the shared root"
     assert_includes response_text, "includes recordings regardless of trash state"
     refute_includes response.body, "active dummy-app recordings"
     assert_select "div[role='tree']", count: 1
@@ -127,7 +124,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Gem Views"
     assert_select "table", minimum: 1
     assert_includes response.body, "app/views/recording_studio_user/profiles/show.html.erb"
-    assert_includes response_text, "does not make profiles recording-backed"
+    assert_includes response_text, "People is the shared root"
   end
 
   test "methods page renders successfully" do

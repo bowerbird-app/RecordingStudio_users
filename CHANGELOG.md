@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-21
+
+### Breaking
+- User is now the Devise actor only. Host User no longer stores `first_name`, `last_name`, `time_zone`, or `additional_profile_attributes`.
+- This gem now owns **People** (`root: true`, `shared: true`, label `"People"`) and **Profile** as a child under People, with `user_id` on the Profile snapshot.
+- `display_name_for` reads the current Profile snapshot, not User name columns.
+- Signup-shaped writes go through `RecordingStudioUser.create_user!` / `record_profile!`, which call `people_root.record(Profile)` and `revise`. Do not insert `Recording` or `Event` rows directly.
+
+### Added
+- People and Profile recordable models, engine migrations, and `recording_studio_user:migrations`.
+- Dummy pins for RecordingStudio `v4.2.0`, Accessible `v0.6.1`, Attachable `0.4.0`, and FlatPack `v0.1.133`. Accessible and Attachable are bundled but not enabled on People or Profile. Dummy registers `RecordingStudioAttachable::Attachment` so declaration validation can boot.
+
+### Changed
+- Gemspec now requires `recording_studio ~> 4.2` plus `recording_studio_accessible` and `recording_studio_attachable`. Dropped unused `pagy`.
+- Users admin table no longer reads a User time zone column.
+
+### Upgrade notes
+- Remove `first_name`, `last_name`, `time_zone`, and `additional_profile_attributes` from the host User table and model. Those fields live on Profile.
+- Register `RecordingStudioUser::People` and `RecordingStudioUser::Profile` in `config.recordable_types`.
+- Run `bin/rails generate recording_studio_user:migrations` and `db:migrate`.
+- Create users with `RecordingStudioUser.create_user!(email:, password:, first_name:, last_name:, time_zone:)` or `User.create!` then `people_root.record(Profile)`.
+- Accessible grants and Attachable avatars are not enabled in 0.2.0. Do not add a custom ACL while waiting for those slices.
+
 ## [0.1.5] - 2026-08-21
 
 ### Changed
@@ -71,7 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.2.0
 [0.1.5]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.5
 [0.1.4]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.4
 [0.1.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.1.3
