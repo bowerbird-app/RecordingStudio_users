@@ -136,8 +136,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     other_workspace = Workspace.create!(name: "Other Profile Workspace")
     source = RecordingStudio.root_recording_for(workspace)
     target = RecordingStudio.root_recording_for(other_workspace)
-    grant_access(@user, source)
-    grant_access(@user, target)
+    bootstrap_owner_access!(@user, source)
+    bootstrap_owner_access!(@user, target)
 
     patch recording_studio_users.profile_path, params: {
       user: { first_name: "Rootless", last_name: "Profile", time_zone: "UTC" }
@@ -155,15 +155,6 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
   end
 
   private
-
-  def grant_access(user, recording, role: :view)
-    RecordingStudioAccessible::AccessCreationContext.allow do
-      recording.record(RecordingStudio::Access, parent_recording: recording) do |access|
-        access.actor = user
-        access.role = role
-      end
-    end
-  end
 
   def switch_to(root_recording)
     patch "/recording_studio_root_switchable/v1/root_switch", params: {

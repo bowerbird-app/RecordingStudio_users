@@ -32,7 +32,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     get recording_studio_users.admin_path
     assert_response :forbidden
 
-    grant_admin_access(@admin, @admin_recording)
+    bootstrap_owner_access!(@admin, @admin_recording)
 
     get recording_studio_users.admin_path
     assert_redirected_to "/admin/screens/recording_studio_users"
@@ -68,7 +68,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   test "renders the read-only users table for an authorized actor" do
     user = create_user("view-user-#{SecureRandom.hex(4)}@example.com")
     sign_in @admin
-    grant_admin_access(@admin, @admin_recording)
+    bootstrap_owner_access!(@admin, @admin_recording)
 
     get "/admin/screens/recording_studio_users/table"
 
@@ -88,7 +88,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     original_layout = admin_surface.engine_layout
     admin_surface.engine_layout = "flat_pack_sidebar"
     sign_in @admin
-    grant_admin_access(@admin, @admin_recording)
+    bootstrap_owner_access!(@admin, @admin_recording)
 
     get "/admin/screens/recording_studio_users"
 
@@ -113,7 +113,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   test "paginates the users table" do
     51.times { |index| create_user("pagination-#{index}-#{SecureRandom.hex(4)}@example.com") }
     sign_in @admin
-    grant_admin_access(@admin, @admin_recording)
+    bootstrap_owner_access!(@admin, @admin_recording)
 
     get "/admin/screens/recording_studio_users/table"
 
@@ -130,7 +130,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
   test "the gem does not add an outer card around the admin screen" do
     sign_in @admin
-    grant_admin_access(@admin, @admin_recording)
+    bootstrap_owner_access!(@admin, @admin_recording)
 
     get recording_studio_users.admin_path
     follow_redirect!
@@ -154,14 +154,5 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       created_at: created_at,
       updated_at: created_at
     )
-  end
-
-  def grant_admin_access(user, recording, role: :admin)
-    RecordingStudioAccessible::AccessCreationContext.allow do
-      recording.record(RecordingStudio::Access, parent_recording: recording) do |access|
-        access.actor = user
-        access.role = role
-      end
-    end
   end
 end

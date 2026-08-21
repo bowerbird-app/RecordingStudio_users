@@ -19,7 +19,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     workspace = Workspace.create!(name: "Dropdown Workspace")
     root_recording = RecordingStudio.root_recording_for(workspace)
-    grant_access(user, root_recording)
+    bootstrap_owner_access!(user, root_recording)
 
     switch_to(root_recording)
 
@@ -46,7 +46,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     admin_root = AdminRoot.create!(name: "Switch Admin")
     root_recording = RecordingStudio.root_recording_for(admin_root)
-    grant_access(user, root_recording)
+    bootstrap_owner_access!(user, root_recording)
 
     switch_to(root_recording)
 
@@ -95,8 +95,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     target_workspace = Workspace.create!(name: "Target Workspace")
     target_root_recording = RecordingStudio.root_recording_for(target_workspace)
     source_root_recording = RecordingStudio.root_recording_for(source_workspace)
-    grant_access(user, source_root_recording)
-    grant_access(user, target_root_recording)
+    bootstrap_owner_access!(user, source_root_recording)
+    bootstrap_owner_access!(user, target_root_recording)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "roots",
@@ -124,8 +124,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     target_workspace = Workspace.create!(name: "Fallback Target Workspace")
     target_root_recording = RecordingStudio.root_recording_for(target_workspace)
     source_root_recording = RecordingStudio.root_recording_for(source_workspace)
-    grant_access(user, source_root_recording)
-    grant_access(user, target_root_recording)
+    bootstrap_owner_access!(user, source_root_recording)
+    bootstrap_owner_access!(user, target_root_recording)
 
     patch "/recording_studio_root_switchable/v1/root_switch", params: {
       scope: "roots",
@@ -139,15 +139,6 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
   end
 
   private
-
-  def grant_access(user, recording, role: :view)
-    RecordingStudioAccessible::AccessCreationContext.allow do
-      recording.record(RecordingStudio::Access, parent_recording: recording) do |access|
-        access.actor = user
-        access.role = role
-      end
-    end
-  end
 
   def switch_to(root_recording)
     patch "/recording_studio_root_switchable/v1/root_switch", params: {

@@ -87,7 +87,7 @@ The host owns administration and must:
 3. mount the `RecordingStudioAdmin` engine;
 4. configure `RecordingStudioAdmin` access-recording and site-admin-recording resolvers;
 5. enable the reusable section on its chosen recordable;
-6. grant access through Recording Studio access items and roles.
+6. grant first-owner `:admin` access on the empty owned admin root with `RecordingStudioAccessible.bootstrap_owner_access!`, then use `grant_access` for later invites.
 
 Mount the shared admin surface in the host routes. The engine's `/recording_studio_users/admin` URL authorizes the actor and then renders the shared `RecordingStudioAdmin` users screen:
 

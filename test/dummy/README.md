@@ -16,7 +16,7 @@ bin/dev
 
 Run these commands from the dummy app directory. Sign in through Devise at `/users/sign_in` with one of the seeded accounts:
 
-- `admin@admin.com` / `Password`: has `:admin` access to the Admin root and My workspace, plus `:view` access to Client Workspace. Use this account to test workspace switching and the users report.
+- `admin@admin.com` / `Password`: first-owner `:admin` on the Admin root, My workspace, and Client Workspace via `bootstrap_owner_access!`. Use this account to test workspace switching and the users report.
 - `member@admin.com` / `Password`: can view and edit their own profile but cannot access the Admin root or users report.
 
 ## RecordingStudioUser Routes

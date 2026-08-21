@@ -8,17 +8,17 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_accessible.git
-  revision: 435876939d9be5b32730b9389dcc3b8e56ad6220
-  tag: v0.6.0
+  revision: eb898857241bc2211803e39086a11fab63ce2f76
+  tag: v0.6.1
   specs:
-    recording_studio_accessible (0.6.0)
+    recording_studio_accessible (0.6.1)
       rails (~> 8.1.0)
       recording_studio (~> 4.1)
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_admin.git
-  revision: 1360579afbad0505b39a7a245dacf5877f820f8b
-  branch: cursor/rs41-accessible-06-upgrade-eb59
+  revision: f946dd42abd9c21eef4a055ac9260c9019f71f6b
+  tag: 2.0.0
   specs:
     recording_studio_admin (2.0.0)
       flat_pack (~> 0.1.129)
@@ -436,7 +436,7 @@ CHECKSUMS
   rbs (4.1.3) sha256=0c4474a9751cdc14364bfad0b3e53678323bbdc2c31683b0445932867dbab8c4
   rdoc (8.0.0) sha256=03bf8c08a9639658855a0cfd77c0abca8325c227693f7f33f82957811348c469
   recording_studio (4.2.0)
-  recording_studio_accessible (0.6.0)
+  recording_studio_accessible (0.6.1)
   recording_studio_admin (2.0.0)
   recording_studio_user (0.1.5)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4

@@ -58,7 +58,7 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
     assert_equal folder_recording, page_recording.parent_recording
     assert_equal root_recording, page_recording.root_recording
     assert RecordingStudioAccessible.authorized?(actor: User.find_by!(email: "admin@admin.com"), recording: root_recording, role: :admin)
-    assert RecordingStudioAccessible.authorized?(actor: User.find_by!(email: "admin@admin.com"), recording: accessible_root_recording, role: :view)
+    assert RecordingStudioAccessible.authorized?(actor: User.find_by!(email: "admin@admin.com"), recording: accessible_root_recording, role: :admin)
     refute RecordingStudioAccessible.authorized?(actor: User.find_by!(email: "admin@admin.com"), recording: private_root_recording, role: :view)
     assert_equal 3, Workspace.count
     assert_equal 200, User.where("email LIKE 'dummy_user_%@example.com'").count

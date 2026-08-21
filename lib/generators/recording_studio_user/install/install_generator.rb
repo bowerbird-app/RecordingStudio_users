@@ -62,7 +62,8 @@ module RecordingStudioUser
         say "Configure routes before they are drawn, then configure RecordingStudioAdmin access " \
             "and site-admin recording resolvers.",
             :yellow
-        say "Enable section :users on the host-owned admin recordable and grant access with RecordingStudioAccessible.",
+        say "Enable section :users on the host-owned admin recordable. First staff: " \
+            "RecordingStudioAccessible.bootstrap_owner_access!; later invites: grant_access.",
             :yellow
         say "The installer does not invoke recording_studio_user:admin. Host apps create the admin root, " \
             "resolvers, access items, and grants themselves.",
