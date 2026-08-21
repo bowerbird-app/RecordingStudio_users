@@ -2,6 +2,7 @@
 
 require "devise"
 require "flat_pack"
+require "active_record"
 require "recording_studio"
 require "recording_studio_accessible"
 require "recording_studio_root_switchable"
