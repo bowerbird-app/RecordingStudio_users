@@ -1,11 +1,5 @@
 <% content_for :title, "My Profile | Recording Studio User" %>
 
-<%= render FlatPack::PageNav::Component.new(
-  anchor_url: main_app.root_path,
-  anchor_icon: "home",
-  anchor_tooltip: "Home"
-) %>
-
 <%= render FlatPack::PageTitle::Component.new(
   title: "My Profile",
   subtitle: "Manage your personal details and account settings.",
@@ -19,7 +13,7 @@
 <div class="mt-6 space-y-4">
   <%= render FlatPack::Button::Component.new(
     text: "Edit",
-    url: edit_profile_path,
+    href: edit_profile_path,
     style: :secondary
   ) %>
 

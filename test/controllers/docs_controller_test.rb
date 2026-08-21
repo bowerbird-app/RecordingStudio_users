@@ -152,7 +152,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select %(a[href="#{docs_gem_views_path}"]), text: /Diagnostics: Gem Views/
     assert_select %(a[href="#{docs_methods_path}"]), text: /Routes and integrations/
     assert_select %(a[href="#{recording_studio_users.profile_path}"]), text: /My profile/
-    assert_select %(a[href="#{recording_studio_users.admin_path}"]), text: /Admin/
+    assert_select %(a[href="#{recording_studio_users.admin_path}"]), count: 0
   end
 
   test "home page renders only the profile action without an admin root" do

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Resolved engine/gem paths written before each Tailwind build/watch. */
+@import "./gem_sources.css";
+
 /* Include dummy app views for Tailwind CSS */
 @source "../../views/**/*.erb";
 
@@ -9,7 +12,13 @@
 
 /* Scan FlatPack components for classes used by the bundled ViewComponents */
 @source "../../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
+@source "../../../vendor/bundle/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
 @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
+@source "../../../../../../home/*/.local/share/mise/installs/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
+
+/* Include RecordingStudioAdmin views when those gems are vendored */
+@source "../../../vendor/bundle/**/recording_studio_admin/app/views/**/*.erb";
+@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/RecordingStudio_admin-*/app/views/**/*.erb";
 
 /* Include the engine's views in the Tailwind build */
 @source "../../../../../app/views/**/*.erb";
