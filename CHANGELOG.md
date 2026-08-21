@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Productized and renamed the template as `recording_studio_users`.
 - Updated the dummy app to prove the complete users flow with Flatpack UI.
 - Requires Recording Studio 4.1+, Accessible 0.6.1+, and Root Switchable 0.5+.
+- Tailwind now reads gem template paths from a list written before every build,
+  replacing the guessed `vendor/bundle` globs that skipped FlatPack components.
+- Styled the dummy app sign in and sign up screens with Flatpack and dropped the
+  template's prefilled demo credentials.
+
+### Fixed
+- Accepting an invitation and removing a member now submit real forms. Both
+  rendered a FlatPack button inside `button_to`'s own button, and browsers
+  ignore clicks on a button nested in a button.
 
 ## [0.1.2] - 2026-07-21
 

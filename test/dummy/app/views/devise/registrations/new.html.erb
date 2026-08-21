@@ -4,17 +4,26 @@
       <% card.body do %>
         <div class="space-y-6">
           <%= render FlatPack::PageTitle::Component.new(
-            title: "Sign in",
-            subtitle: "Users knows who you are. Accessible decides what you can do.",
+            title: "Create your account",
+            subtitle: "Then name your workspace. You will be its first admin.",
             variant: :h2,
             class: "mb-0 pb-0"
           ) %>
 
-          <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+          <% if resource.errors.any? %>
+            <%= render FlatPack::Alert::Component.new(
+              title: "That did not work",
+              description: resource.errors.full_messages.to_sentence,
+              style: :warning
+            ) %>
+          <% end %>
+
+          <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
             <div class="space-y-4">
               <%= render FlatPack::EmailInput::Component.new(
                 name: "user[email]",
                 label: "Email",
+                value: resource.email,
                 placeholder: "you@example.com",
                 required: true
               ) %>
@@ -25,15 +34,14 @@
                 required: true
               ) %>
 
-              <% if devise_mapping.rememberable? %>
-                <%= render FlatPack::Checkbox::Component.new(
-                  name: "#{resource_name}[remember_me]",
-                  label: "Remember me"
-                ) %>
-              <% end %>
+              <%= render FlatPack::PasswordInput::Component.new(
+                name: "user[password_confirmation]",
+                label: "Password again",
+                required: true
+              ) %>
 
               <%= render FlatPack::Button::Component.new(
-                text: "Sign in",
+                text: "Create account",
                 style: :primary,
                 size: :md,
                 type: "submit"
@@ -44,8 +52,8 @@
       <% end %>
 
       <% card.footer do %>
-        <%= render FlatPack::Link::Component.new(href: new_registration_path(resource_name)) do %>
-          New here? Create an account
+        <%= render FlatPack::Link::Component.new(href: new_session_path(resource_name)) do %>
+          Already have an account? Sign in
         <% end %>
       <% end %>
     <% end %>
