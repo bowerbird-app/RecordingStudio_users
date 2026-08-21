@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and an admin who put on a lower working role was locked out of the only screen
   that could give it back.
 - Denied actions render an explanation instead of the bare text "Forbidden".
+- Removing a member now reads as a destructive button rather than plain text.
+- The dummy app renders engine screens inside its sidebar chrome, so a member
+  who has just accepted an invitation can navigate, and its seeds are idempotent
+  so `rake test:all` can run twice.
 
 ## [0.1.2] - 2026-07-21
 

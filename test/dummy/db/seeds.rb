@@ -39,6 +39,8 @@ begin
   private_root_recording = RecordingStudio.root_recording_for(private_workspace)
 
   [root_recording, accessible_root_recording, private_root_recording].each do |root|
+    next if RecordingStudioAccessible.role_for(actor: user, recording: root)
+
     result = RecordingStudioAccessible.bootstrap_owner_access!(recording: root, actor: user)
     raise result.error if result.failure?
   end

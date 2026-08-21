@@ -43,7 +43,7 @@ module RecordingStudioUsers
         method: :delete,
         data: { turbo_confirm: "Remove this person’s access?" }
       ) do
-        render FlatPack::Button::Component.new(text: "Remove", style: :ghost, size: :sm, type: :submit)
+        render FlatPack::Button::Component.new(text: "Remove", style: :danger, size: :sm, type: :submit)
       end
     end
   end
