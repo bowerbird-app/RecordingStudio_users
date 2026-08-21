@@ -26,6 +26,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "flat_pack", "~> 0.1"
   spec.add_dependency "pagy", "~> 9.0"
   spec.add_dependency "rails", "~> 8.1.0"
-  spec.add_dependency "recording_studio", "~> 3.0"
-  spec.add_dependency "recording_studio_admin", "~> 1.2"
+  spec.add_dependency "recording_studio", "~> 4.1"
+  spec.add_dependency "recording_studio_admin", "~> 2.0"
 end

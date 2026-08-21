@@ -16,12 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserved the original Devise users migration and kept profile columns in a host-owned additive migration.
 - Installer now also injects resolved relative Tailwind `@source` paths for this engine and FlatPack when those locations can be determined.
 - Dummy app pins FlatPack Stimulus controllers under `controllers/flat_pack`, generates gem Tailwind sources before each CSS build, and watches CSS without requiring watchman.
+- Bumped development and dummy pins to RecordingStudio `4.2.0`, Accessible `0.6.0`, Root Switchable `0.5.0`, FlatPack `0.1.133`, and RecordingStudioAdmin `2.0.0` (Admin is pinned to the 2.0 upgrade branch until that version is tagged).
+- Dummy sidebar items and buttons use FlatPack 0.1.133's `text:` / `href:` arguments.
 
 ### Upgrade notes
 - Remove any host links or tests that called gem-owned admin user show/edit/update routes. Users administration is a read-only report.
 - If the users report screen does not appear, make sure the `:users` section links with `context.admin_screen_path("recording_studio_users")` so RecordingStudioAdmin enables that screen.
 - Rebuild host Tailwind CSS after install (`bin/rails tailwindcss:build`). If FlatPack layout utilities are missing, add an `@source` that points at the installed `flat_pack` `app/components` directory.
 - Pin FlatPack controllers with `under: "controllers/flat_pack"` so Stimulus can load `flat-pack--*` controllers.
+- Upgrade RecordingStudio to `~> 4.1`, Accessible to `~> 0.6`, and RecordingStudioAdmin to `~> 2.0` before installing this gem. Run the RecordingStudio harden-indexes migration (`rails g recording_studio:migrations` or the equivalent host migration) and `db:migrate`.
+- FlatPack `0.1.133` buttons take `href:` (not `url:`) and sidebar items take `text:` (not `label:`).
 
 ## [0.1.4] - 2026-08-14
 

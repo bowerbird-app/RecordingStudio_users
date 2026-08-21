@@ -61,7 +61,7 @@
 
     <div class="flex gap-2">
       <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
-      <%= render FlatPack::Button::Component.new(text: "Cancel", url: profile_path, style: :secondary) %>
+      <%= render FlatPack::Button::Component.new(text: "Cancel", href: profile_path, style: :secondary) %>
     </div>
   </div>
 <% end %>

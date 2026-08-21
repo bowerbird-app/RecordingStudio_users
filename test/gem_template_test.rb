@@ -22,7 +22,7 @@ class RecordingStudioUserTest < Minitest::Test
   def test_dummy_sidebar_links_the_mounted_profile_helper
     sidebar = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
 
-    assert_includes sidebar, 'label: "My profile"'
+    assert_includes sidebar, 'text: "My profile"'
     assert_includes sidebar, "recording_studio_users.profile_path"
     refute_includes sidebar, "recording_studio_users.admin_path"
   end
