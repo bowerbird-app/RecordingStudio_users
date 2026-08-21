@@ -83,7 +83,31 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Role"
   end
 
-  test "redirects a direct table page visit to the styled users screen" do
+  test "page visits to frame endpoints land on a styled page instead of a bare partial" do
+    sign_in @admin
+    bootstrap_owner_access!(@admin, @admin_recording)
+
+    {
+      "/admin/screens/recording_studio_users/chart" => "/admin/screens/recording_studio_users",
+      "/admin/screens/recording_studio_users/table" => "/admin/screens/recording_studio_users",
+      "/admin/screens/recording_studio_users/table_count" => "/admin/screens/recording_studio_users",
+      "/admin/screens/recording_studio_users/widgets/widgets.users.total" =>
+        "/admin/screens/recording_studio_users",
+      "/admin/sections/users/widgets/widgets.users.total" => "/admin/sections/users"
+    }.each do |frame_path, owning_page|
+      get frame_path, headers: { "Sec-Fetch-Dest" => "document" }
+
+      assert_redirected_to owning_page, frame_path
+      follow_redirect!
+
+      assert_response :success, frame_path
+      assert_select "html", { count: 1 }, frame_path
+      assert_select %(link[rel="stylesheet"][href*="flat_pack/variables"]), { count: 1 }, frame_path
+      assert_select %(link[rel="stylesheet"][href*="tailwind"]), { count: 1 }, frame_path
+    end
+  end
+
+  test "a frame page visit keeps the query string so filters and sorting survive" do
     sign_in @admin
     bootstrap_owner_access!(@admin, @admin_recording)
 
@@ -92,11 +116,17 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
         headers: { "Sec-Fetch-Dest" => "document" }
 
     assert_redirected_to "/admin/screens/recording_studio_users?direction=asc&sort=email"
-    follow_redirect!
+  end
+
+  test "turbo frame fetches still receive the bare fragment" do
+    sign_in @admin
+    bootstrap_owner_access!(@admin, @admin_recording)
+
+    get "/admin/screens/recording_studio_users/table", headers: { "Turbo-Frame" => "screen-table" }
+
     assert_response :success
-    assert_select "html"
-    assert_select %(link[rel="stylesheet"][href*="flat_pack/variables"])
-    assert_select %(link[rel="stylesheet"][href*="tailwind"])
+    assert_includes response.body, "<turbo-frame"
+    refute_includes response.body, "<html"
   end
 
   test "renders mounted profile links from the shared admin sidebar layout" do
