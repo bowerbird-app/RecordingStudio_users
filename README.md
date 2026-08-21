@@ -44,8 +44,11 @@ Review the generated initializer. Its `root_creator` is deliberately a host call
 ```ruby
 RecordingStudioUsers.configure do |config|
   config.root_creator = ->(name:, **) { Workspace.create!(name: name) }
+  config.mailer_sender = "people@example.com"
 end
 ```
+
+Invitation emails use `config.action_mailer.default_url_options` to generate an absolute acceptance URL. Set a real host in every deployed environment.
 
 Declare and enable access on the host root:
 
@@ -92,7 +95,7 @@ Mount the people screen wherever it fits your product:
   recording_studio_users.invitations_path(root_recording_id: current_root_recording.id) %>
 ```
 
-Invitations store a digest of the emailed token. Acceptance requires a signed-in actor with the invited email, grants through `RecordingStudioAccessible.grant_access`, and selects the accepted root through Root Switchable.
+Invitations store a digest of the emailed token. A signed-out recipient is sent through Devise and returned to the same invitation. Acceptance requires the invited email, grants through `RecordingStudioAccessible.grant_access`, and selects the accepted root through Root Switchable. If the inviter no longer has admin access, Accessible fails the grant closed; send a new invitation from a current admin.
 
 Role changes and revocation use Accessible’s update and revoke services. No membership ACL is stored by Users.
 

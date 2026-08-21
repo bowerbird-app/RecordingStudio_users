@@ -5,7 +5,7 @@ module RecordingStudioUsers
     extend ActiveSupport::Concern
 
     included do
-      prepend_before_action :recording_studio_users_set_current_actor
+      before_action :recording_studio_users_set_current_actor
       before_action :recording_studio_users_require_current_root
     end
 

@@ -4,9 +4,11 @@ module RecordingStudioUsers
   class Configuration
     attr_accessor :after_role_switch_redirect,
                   :authentication_redirect,
+                  :authentication_scope,
                   :current_actor_resolver,
                   :invitation_url_resolver,
                   :layout,
+                  :mailer_sender,
                   :root_creator,
                   :root_scope_key,
                   :user_email_resolver,
@@ -19,13 +21,18 @@ module RecordingStudioUsers
       @authentication_redirect = lambda { |controller:|
         controller.respond_to?(:main_app) ? controller.main_app.root_path : "/"
       }
+      @authentication_scope = :user
       @current_actor_resolver = lambda { |controller:|
         controller.respond_to?(:current_user, true) ? controller.send(:current_user) : nil
       }
       @invitation_url_resolver = lambda do |token:, **|
-        RecordingStudioUsers::Engine.routes.url_helpers.accept_invitation_path(token: token)
+        url_options = Rails.application.config.action_mailer.default_url_options
+        mount_url = Rails.application.routes.url_helpers.recording_studio_users_url(**url_options)
+        accept_path = RecordingStudioUsers::Engine.routes.url_helpers.accept_invitation_path(token: token)
+        "#{mount_url.chomp('/')}#{accept_path}"
       end
       @layout = "application"
+      @mailer_sender = "no-reply@example.com"
       @root_creator = nil
       @root_scope_key = "workspaces"
       @user_email_resolver = ->(actor:) { actor.respond_to?(:email) ? actor.email : nil }

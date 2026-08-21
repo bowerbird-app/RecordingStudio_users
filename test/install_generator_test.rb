@@ -26,11 +26,25 @@ class InstallGeneratorTest < Rails::Generators::TestCase
     assert_file "config/routes.rb", /mount RecordingStudioUsers::Engine/
   end
 
+  def test_wires_root_switching_and_current_context
+    run_generator %w[--skip-devise --skip-migrations]
+
+    assert_file "app/controllers/application_controller.rb" do |content|
+      assert_includes content, "include RecordingStudio::RootSwitchable::ControllerSupport"
+      assert_includes content, "include RecordingStudioUsers::CurrentContext"
+    end
+  end
+
   private
 
   def prepare_host_application
     prepare_destination
     FileUtils.mkdir_p File.join(destination_root, "config")
     File.write File.join(destination_root, "config/routes.rb"), "Rails.application.routes.draw do\nend\n"
+    FileUtils.mkdir_p File.join(destination_root, "app/controllers")
+    File.write(
+      File.join(destination_root, "app/controllers/application_controller.rb"),
+      "class ApplicationController < ActionController::Base\nend\n"
+    )
   end
 end

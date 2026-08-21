@@ -17,13 +17,13 @@ module RecordingStudioUsers
       def call
         return Result.failure("Give your workspace a name") if @name.blank?
         return Result.failure("Sign in before creating a workspace") unless @actor&.persisted?
-        return Result.failure("You already have a workspace") if accessible_roots.any?
 
-        root_recordable = nil
         root_recording = nil
         bootstrap_result = nil
 
-        ActiveRecord::Base.transaction do
+        @actor.with_lock do
+          return Result.failure("You already have a workspace") if accessible_roots.any?
+
           root_recordable = RecordingStudioUsers.configuration.create_root(name: @name, actor: @actor)
           root_recording = RecordingStudio.root_recording_for(root_recordable)
           raise ActiveRecord::Rollback unless owned_root?(root_recording)
@@ -40,16 +40,14 @@ module RecordingStudioUsers
           return Result.failure(bootstrap_result&.error || "Could not create your workspace")
         end
 
-        switch_result = switch_root(root_recording)
-        if switch_result.respond_to?(:success?) && !switch_result.success?
-          return Result.failure(Array(switch_result.errors).to_sentence)
-        end
+        select_root(root_recording)
 
         Result.success(root_recording)
       rescue ActiveRecord::RecordInvalid => e
         Result.failure(e.record.errors.full_messages.to_sentence)
       rescue StandardError => e
-        Result.failure(e.message)
+        Rails.logger.error("RecordingStudioUsers could not create first root: #{e.class}")
+        Result.failure("Could not create your workspace")
       end
 
       private
@@ -72,6 +70,15 @@ module RecordingStudioUsers
           actor: @actor,
           device_key: @device_key
         )
+      end
+
+      def select_root(root_recording)
+        result = switch_root(root_recording)
+        return if result.success?
+
+        Rails.logger.warn("RecordingStudioUsers could not select new root: #{result.errors.to_sentence}")
+      rescue StandardError => e
+        Rails.logger.warn("RecordingStudioUsers could not select new root: #{e.class}")
       end
     end
   end

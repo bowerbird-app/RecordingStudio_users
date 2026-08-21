@@ -5,6 +5,7 @@ RecordingStudioUsers.configure do |config|
   config.authentication_redirect = ->(controller:) { controller.main_app.new_user_session_path }
   config.after_role_switch_redirect = ->(controller:) { controller.main_app.root_path }
   config.layout = "application"
+  config.mailer_sender = "no-reply@example.com"
   config.root_scope_key = "workspaces"
 
   # Replace Workspace with your declared, owned root recordable.

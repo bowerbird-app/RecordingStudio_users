@@ -21,18 +21,10 @@ module RecordingStudioUsers
           return Result.failure("Sign in with #{invitation.email} to accept this invitation")
         end
 
-        grant_result = RecordingStudioAccessible.grant_access(
-          recording: invitation.root_recording,
-          actor: @actor,
-          role: invitation.role,
-          manager_actor: invitation.inviter
-        )
-        return Result.failure(grant_result.error) if grant_result.failure?
+        grant_result = grant_and_accept(invitation)
+        return grant_result if grant_result.failure?
 
-        invitation.accept!
-        switch_result = switch_root(invitation.root_recording)
-        return Result.failure(Array(switch_result.errors).to_sentence) unless switch_result.success?
-
+        select_root(invitation.root_recording)
         Result.success(invitation.root_recording)
       rescue ActiveRecord::RecordInvalid => e
         Result.failure(e.record.errors.full_messages.to_sentence)
@@ -44,6 +36,22 @@ module RecordingStudioUsers
         RecordingStudioUsers.configuration.email_for(actor: @actor) == invitation.email
       end
 
+      def grant_and_accept(invitation)
+        result = nil
+        ActiveRecord::Base.transaction do
+          result = RecordingStudioAccessible.grant_access(
+            recording: invitation.root_recording,
+            actor: @actor,
+            role: invitation.role,
+            manager_actor: invitation.inviter
+          )
+          raise ActiveRecord::Rollback if result.failure?
+
+          invitation.accept!
+        end
+        result.success? ? Result.success(invitation) : Result.failure(result.error)
+      end
+
       def switch_root(root_recording)
         RecordingStudio::RootSwitchable.switch_root(
           root_recording_id: root_recording.id,
@@ -52,6 +60,15 @@ module RecordingStudioUsers
           actor: @actor,
           device_key: @device_key
         )
+      end
+
+      def select_root(root_recording)
+        result = switch_root(root_recording)
+        return if result.success?
+
+        Rails.logger.warn("RecordingStudioUsers could not select accepted root: #{result.errors.to_sentence}")
+      rescue StandardError => e
+        Rails.logger.warn("RecordingStudioUsers could not select accepted root: #{e.class}")
       end
     end
   end

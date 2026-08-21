@@ -53,6 +53,77 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
     assert_equal root.id, RecordingStudio::RootSwitchable::Selection.order(:created_at).last.root_recording_id
   end
 
+  test "admin invitation creates pending invitation and queues absolute email" do
+    owner = create_user("owner@example.com")
+    root = create_owned_root(owner)
+    sign_in_as(owner)
+
+    assert_enqueued_emails 1 do
+      assert_difference("RecordingStudioUsers::Invitation.count", 1) do
+        post "/people/invitations", params: {
+          root_recording_id: root.id,
+          invitation: { email: "new-person@example.com", role: "edit" }
+        }
+      end
+    end
+
+    invitation = RecordingStudioUsers::Invitation.order(:created_at).last
+    assert_equal "pending", invitation.status
+    assert_equal "edit", invitation.role
+    assert_redirected_to "/people/invitations?root_recording_id=#{root.id}"
+  end
+
+  test "wrong email and expired invitations do not grant access" do
+    owner = create_user("owner@example.com")
+    invitee = create_user("invitee@example.com")
+    wrong_user = create_user("wrong@example.com")
+    root = create_owned_root(owner)
+    _invitation, token = RecordingStudioUsers::Invitation.issue!(
+      email: invitee.email,
+      root_recording: root,
+      role: :view,
+      inviter: owner
+    )
+
+    result = RecordingStudioUsers::Services::AcceptInvitation.call(token: token, actor: wrong_user)
+    assert result.failure?
+    assert_nil RecordingStudioAccessible.role_for(actor: wrong_user, recording: root)
+
+    _expired, expired_token = RecordingStudioUsers::Invitation.issue!(
+      email: invitee.email,
+      root_recording: root,
+      role: :view,
+      inviter: owner,
+      expires_at: 1.minute.ago
+    )
+    result = RecordingStudioUsers::Services::AcceptInvitation.call(token: expired_token, actor: invitee)
+    assert result.failure?
+    assert_nil RecordingStudioAccessible.role_for(actor: invitee, recording: root)
+  end
+
+  test "admin changes and revokes membership through Accessible" do
+    owner = create_user("owner@example.com")
+    member = create_user("member@example.com")
+    root = create_owned_root(owner)
+    grant = RecordingStudioAccessible.grant_access(
+      recording: root,
+      actor: member,
+      role: :edit,
+      manager_actor: owner
+    )
+    assert grant.success?, grant.error
+    sign_in_as(owner)
+
+    patch "/people/memberships/#{grant.value.id}", params: {
+      root_recording_id: root.id,
+      membership: { role: "view" }
+    }
+    assert_equal :view, RecordingStudioAccessible.role_for(actor: member, recording: root)
+
+    delete "/people/memberships/#{grant.value.id}", params: { root_recording_id: root.id }
+    assert_nil RecordingStudioAccessible.role_for(actor: member, recording: root)
+  end
+
   test "demoted admin cannot invite while accessible ceiling remains admin" do
     owner = create_user("owner@example.com")
     root = create_owned_root(owner)
@@ -79,6 +150,22 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Invite someone"
     assert_includes response.body, "Working role"
+  end
+
+  test "invitation mail contains an absolute mounted URL" do
+    owner = create_user("owner@example.com")
+    root = create_owned_root(owner)
+    invitation, token = RecordingStudioUsers::Invitation.issue!(
+      email: "mail@example.com",
+      root_recording: root,
+      role: :view,
+      inviter: owner
+    )
+
+    mail = RecordingStudioUsers::InvitationMailer.with(invitation: invitation, token: token).invite
+
+    assert_includes mail.body.encoded, "http://example.com/people/invitations/accept/#{token}"
+    assert_equal ["users@example.com"], mail.from
   end
 
   private

@@ -54,6 +54,18 @@ class AuthorizationTest < Minitest::Test
     end
   end
 
+  def test_invalid_stored_role_clamps_to_accessible_ceiling
+    @session[RecordingStudioUsers::Authorization::SESSION_KEY] = { @recording.id => "owner" }
+
+    with_ceiling(:edit) do
+      assert_equal :edit, RecordingStudioUsers.current_operating_role(
+        actor: @actor,
+        recording: @recording,
+        session: @session
+      )
+    end
+  end
+
   def test_both_mode_blocks_demoted_admin
     with_ceiling(:admin) do
       RecordingStudioUsers.set_operating_role!(
