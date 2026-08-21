@@ -1,38 +1,40 @@
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "People",
-    subtitle: "Invite your team and choose what they can do.",
+    subtitle: can_manage_people? ? "Invite your team and choose what they can do." : "Who is in this workspace.",
     variant: :h1
   ) %>
 
   <div class="grid gap-6 lg:grid-cols-2">
-    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-      <% card.header do %>
-        <%= render FlatPack::PageTitle::Component.new(title: "Invite someone", variant: :h3) %>
-      <% end %>
-      <% card.body do %>
-        <%= form_with url: invitations_path, scope: :invitation do %>
-          <%= hidden_field_tag :root_recording_id, current_root_recording.id %>
-          <div class="space-y-4">
-            <%= render FlatPack::EmailInput::Component.new(
-              name: "invitation[email]",
-              value: @selected_email,
-              label: "Email",
-              required: true
-            ) %>
-            <%= render FlatPack::Select::Component.new(
-              name: "invitation[role]",
-              value: @selected_role,
-              options: RecordingStudioUsers::Authorization::ROLES.map { |role| [role.titleize, role] },
-              label: "Role",
-              required: true
-            ) %>
-            <%= render FlatPack::Button::Component.new(
-              text: "Invite",
-              style: :primary,
-              type: :submit
-            ) %>
-          </div>
+    <% if can_manage_people? %>
+      <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+        <% card.header do %>
+          <%= render FlatPack::PageTitle::Component.new(title: "Invite someone", variant: :h3) %>
+        <% end %>
+        <% card.body do %>
+          <%= form_with url: invitations_path, scope: :invitation do %>
+            <%= hidden_field_tag :root_recording_id, current_root_recording.id %>
+            <div class="space-y-4">
+              <%= render FlatPack::EmailInput::Component.new(
+                name: "invitation[email]",
+                value: @selected_email,
+                label: "Email",
+                required: true
+              ) %>
+              <%= render FlatPack::Select::Component.new(
+                name: "invitation[role]",
+                value: @selected_role,
+                options: RecordingStudioUsers::Authorization::ROLES.map { |role| [role.titleize, role] },
+                label: "Role",
+                required: true
+              ) %>
+              <%= render FlatPack::Button::Component.new(
+                text: "Invite",
+                style: :primary,
+                type: :submit
+              ) %>
+            </div>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
@@ -52,9 +54,7 @@
             <%= render FlatPack::Select::Component.new(
               name: "role",
               value: current_operating_role,
-              options: RecordingStudioUsers::Authorization::ROLES
-                .select { |role| RecordingStudio::AccessRoles.satisfies?(role: RecordingStudioAccessible.role_for(actor: current_actor, recording: current_root_recording), minimum_role: role) }
-                .map { |role| [role.titleize, role] },
+              options: available_operating_roles(current_root_recording).map { |role| [role.titleize, role] },
               label: "Operate as",
               required: true
             ) %>
@@ -71,11 +71,15 @@
 
   <%= render FlatPack::Table::Component.new(data: @memberships) do |table| %>
     <% table.column(title: "Person", html: ->(membership) { membership_email(membership) }) %>
-    <% table.column(title: "Role", html: ->(membership) { membership_role_form(membership, current_root_recording) }) %>
-    <% table.column(title: "Action", html: ->(membership) { membership_revoke_form(membership, current_root_recording) }) %>
+    <% if can_manage_people? %>
+      <% table.column(title: "Role", html: ->(membership) { membership_role_form(membership, current_root_recording) }) %>
+      <% table.column(title: "Action", html: ->(membership) { membership_revoke_form(membership, current_root_recording) }) %>
+    <% else %>
+      <% table.column(title: "Role", html: ->(membership) { membership.recordable.role.to_s.titleize }) %>
+    <% end %>
   <% end %>
 
-  <% if @invitations.any? %>
+  <% if can_manage_people? && @invitations.any? %>
     <%= render FlatPack::Table::Component.new(data: @invitations) do |table| %>
       <% table.column(title: "Invited", html: ->(invitation) { invitation.email }) %>
       <% table.column(title: "Role", html: ->(invitation) { invitation.role.titleize }) %>

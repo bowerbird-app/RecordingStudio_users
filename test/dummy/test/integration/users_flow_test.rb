@@ -221,6 +221,66 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Working role"
   end
 
+  test "invited member lands on a readable people screen without admin controls" do
+    owner = create_user("owner@example.com")
+    invitee = create_user("invitee@example.com")
+    root = create_owned_root(owner)
+    _invitation, token = RecordingStudioUsers::Invitation.issue!(
+      email: invitee.email,
+      root_recording: root,
+      role: :edit,
+      inviter: owner
+    )
+    sign_in_as(invitee)
+
+    post "/people/invitations/accept/#{token}"
+    follow_redirect!
+
+    assert_response :success
+    assert_includes response.body, "Who is in this workspace."
+    refute_includes response.body, "Invite someone"
+    assert_select "form[action=?]", "/people/operating_role"
+  end
+
+  test "demoted admin can still reach people and switch back up" do
+    owner = create_user("owner@example.com")
+    root = create_owned_root(owner)
+    sign_in_as(owner)
+
+    patch "/people/operating_role", params: { root_recording_id: root.id, role: "view" }
+    get "/people/invitations", params: { root_recording_id: root.id }
+
+    assert_response :success
+    refute_includes response.body, "Invite someone"
+    assert_select "form[action=?] option[value=?]", "/people/operating_role", "admin"
+
+    patch "/people/operating_role", params: { root_recording_id: root.id, role: "admin" }
+    get "/people/invitations", params: { root_recording_id: root.id }
+
+    assert_response :success
+    assert_includes response.body, "Invite someone"
+  end
+
+  test "denied actions explain themselves instead of rendering bare text" do
+    owner = create_user("owner@example.com")
+    member = create_user("member@example.com")
+    root = create_owned_root(owner)
+    grant = RecordingStudioAccessible.grant_access(
+      recording: root,
+      actor: member,
+      role: :view,
+      manager_actor: owner
+    )
+    assert grant.success?, grant.error
+    sign_in_as(member)
+
+    delete "/people/memberships/#{grant.value.id}", params: { root_recording_id: root.id }
+
+    assert_response :forbidden
+    assert_includes response.body, "Not with the role you are wearing"
+    refute_equal "Forbidden", response.body.strip
+  end
+
   test "accept screen posts from a form the browser can submit" do
     owner = create_user("owner@example.com")
     invitee = create_user("invitee@example.com")

@@ -7,10 +7,11 @@ module RecordingStudioUsers
 
     before_action :require_actor!
 
-    helper_method :current_actor, :current_operating_role, :current_root_recording
+    helper_method :current_actor, :current_operating_role, :current_root_recording, :can_manage_people?
 
-    rescue_from RecordingStudioUsers::Authorization::NotAuthorized do
-      render plain: "Forbidden", status: :forbidden
+    rescue_from RecordingStudioUsers::Authorization::NotAuthorized do |error|
+      @denial = error.message
+      render template: "recording_studio_users/shared/forbidden", status: :forbidden
     end
 
     private
@@ -32,6 +33,24 @@ module RecordingStudioUsers
       RecordingStudioUsers.current_operating_role(
         actor: current_actor,
         recording: current_root_recording,
+        session: session
+      )
+    end
+
+    # Managing people needs both the real access ceiling and the role the person
+    # is currently operating in, so someone wearing a lower hat sees the screen
+    # without its controls instead of a locked door.
+    def can_manage_people?
+      return false unless current_root_recording
+
+      RecordingStudioAccessible.authorized?(
+        actor: current_actor,
+        recording: current_root_recording,
+        role: :admin
+      ) && RecordingStudioUsers.authorized_operating?(
+        actor: current_actor,
+        recording: current_root_recording,
+        role: :admin,
         session: session
       )
     end

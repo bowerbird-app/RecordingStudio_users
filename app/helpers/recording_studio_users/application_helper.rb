@@ -10,6 +10,15 @@ module RecordingStudioUsers
       RecordingStudioUsers.configuration.email_for(actor: membership_actor(access_recording))
     end
 
+    # The switcher offers every role up to the real Accessible ceiling, so a
+    # demoted admin can always climb back to their own access.
+    def available_operating_roles(root_recording)
+      ceiling = RecordingStudioAccessible.role_for(actor: current_actor, recording: root_recording)
+      RecordingStudioUsers::Authorization::ROLES.select do |role|
+        RecordingStudio::AccessRoles.satisfies?(role: ceiling, minimum_role: role)
+      end
+    end
+
     def membership_role_form(access_recording, root_recording)
       form_with(
         url: membership_path(access_recording, root_recording_id: root_recording.id),

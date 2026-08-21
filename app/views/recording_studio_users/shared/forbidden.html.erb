@@ -1,0 +1,7 @@
+<div class="mx-auto w-full max-w-xl">
+  <%= render FlatPack::Alert::Component.new(
+    title: "Not with the role you are wearing",
+    description: @denial || "Your current role cannot do that.",
+    style: :warning
+  ) %>
+</div>

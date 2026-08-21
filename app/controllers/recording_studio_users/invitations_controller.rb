@@ -6,7 +6,7 @@ module RecordingStudioUsers
     before_action :require_root!, except: %i[accept redeem]
 
     def index
-      authorize_admin!
+      authorize_member!
       @memberships = RecordingStudioAccessible.access_recordings_for(current_root_recording)
       @invitations = Invitation.where(root_recording: current_root_recording).order(created_at: :desc)
       @selected_email = params[:email].to_s
@@ -58,11 +58,11 @@ module RecordingStudioUsers
       params.require(:invitation).permit(:email, :role)
     end
 
-    def authorize_admin!
+    def authorize_member!
       RecordingStudioUsers.authorize!(
         actor: current_actor,
         recording: current_root_recording,
-        role: :admin,
+        role: :view,
         mode: :both,
         session: session
       )

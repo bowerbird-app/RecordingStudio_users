@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accepting an invitation and removing a member now submit real forms. Both
   rendered a FlatPack button inside `button_to`'s own button, and browsers
   ignore clicks on a button nested in a button.
+- The people screen is readable by any member of the root. It previously
+  required admin, so a freshly invited member landed on a bare "Forbidden" page
+  and an admin who put on a lower working role was locked out of the only screen
+  that could give it back.
+- Denied actions render an explanation instead of the bare text "Forbidden".
 
 ## [0.1.2] - 2026-07-21
 
