@@ -2,8 +2,8 @@
 
 module RecordingStudioUsers
   class InvitationsController < ApplicationController
-    before_action :require_root!, except: %i[accept redeem]
     before_action :require_explicit_root!, only: %i[index create]
+    before_action :require_root!, except: %i[accept redeem]
 
     def index
       authorize_admin!

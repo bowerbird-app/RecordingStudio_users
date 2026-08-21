@@ -2,8 +2,8 @@
 
 module RecordingStudioUsers
   class MembershipsController < ApplicationController
-    before_action :require_root!
     before_action :require_explicit_root!
+    before_action :require_root!
     before_action :authorize_admin!
     before_action :set_access_recording
 

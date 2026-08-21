@@ -2,8 +2,8 @@
 
 module RecordingStudioUsers
   class OperatingRolesController < ApplicationController
-    before_action :require_root!
     before_action :require_explicit_root!
+    before_action :require_root!
 
     def update
       role = RecordingStudioUsers.set_operating_role!(

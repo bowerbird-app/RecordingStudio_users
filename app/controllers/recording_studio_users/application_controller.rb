@@ -41,9 +41,11 @@ module RecordingStudioUsers
         requested_id = params[:root_recording_id].presence
         roots = RecordingStudioAccessible.root_recordings_for(actor: current_actor)
         selected = RecordingStudio::RootSwitchable.current_root_recording
-        roots.find { |root| root.id.to_s == requested_id.to_s } ||
-          roots.find { |root| root.id == selected&.id } ||
-          roots.first
+        if requested_id
+          roots.find { |root| root.id.to_s == requested_id.to_s }
+        else
+          roots.find { |root| root.id == selected&.id } || roots.first
+        end
       end
     end
 
@@ -54,7 +56,9 @@ module RecordingStudioUsers
     end
 
     def require_explicit_root!
-      head :bad_request if params[:root_recording_id].blank?
+      return head :bad_request if params[:root_recording_id].blank?
+
+      head :not_found unless current_root_recording
     end
 
     def store_authentication_location

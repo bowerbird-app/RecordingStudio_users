@@ -73,6 +73,21 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/people/invitations?root_recording_id=#{root.id}"
   end
 
+  test "write with an inaccessible root id does not fall back to another workspace" do
+    owner = create_user("owner@example.com")
+    create_owned_root(owner)
+    sign_in_as(owner)
+
+    assert_no_difference("RecordingStudioUsers::Invitation.count") do
+      post "/people/invitations", params: {
+        root_recording_id: SecureRandom.uuid,
+        invitation: { email: "blocked@example.com", role: "view" }
+      }
+    end
+
+    assert_response :not_found
+  end
+
   test "wrong email and expired invitations do not grant access" do
     owner = create_user("owner@example.com")
     invitee = create_user("invitee@example.com")
