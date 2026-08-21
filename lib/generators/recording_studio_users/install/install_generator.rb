@@ -9,6 +9,8 @@ module RecordingStudioUsers
 
       desc "Installs RecordingStudioUsers engine into your application"
 
+      GENERATED_SOURCES_PATH = "app/assets/tailwind/recording_studio_users_sources.css"
+
       class_option(
         :mount_path,
         type: :string,
@@ -55,20 +57,18 @@ module RecordingStudioUsers
         tailwind_css_path = File.join(destination_root, "app/assets/tailwind/application.css")
         return show_missing_tailwind_notice unless File.exist?(tailwind_css_path)
 
+        copy_file "recording_studio_users_tailwind.rake", "lib/tasks/recording_studio_users_tailwind.rake"
+        ignore_generated_sources
         tailwind_content = File.read(tailwind_css_path)
-        missing_lines = missing_tailwind_source_lines(tailwind_content)
 
-        if missing_lines.empty?
-          say "Tailwind already configured to include RecordingStudioUsers and FlatPack sources.", :green
+        if tailwind_content.include?(tailwind_import_line)
+          say "Tailwind already imports the RecordingStudioUsers source list.", :green
           return
         end
 
-        if tailwind_content.include?('@import "tailwindcss"')
-          inject_tailwind_sources(tailwind_css_path, missing_lines)
-          return
-        end
+        return show_manual_tailwind_notice unless tailwind_content.include?('@import "tailwindcss"')
 
-        show_manual_tailwind_notice(missing_lines)
+        inject_tailwind_sources(tailwind_css_path)
       end
 
       def show_readme
@@ -77,51 +77,36 @@ module RecordingStudioUsers
 
       private
 
+      def ignore_generated_sources
+        return unless File.exist?(File.join(destination_root, ".gitignore"))
+
+        append_to_file ".gitignore", "\n#{GENERATED_SOURCES_PATH}\n"
+      end
+
       def show_missing_tailwind_notice
         say "Tailwind CSS not detected. Skipping Tailwind configuration.", :yellow
-        say "If you use Tailwind, add these lines to your Tailwind CSS config:", :yellow
-        tailwind_source_lines.each do |line|
-          say "  #{line}", :yellow
-        end
+        say "If you use Tailwind, add this line to your Tailwind CSS config:", :yellow
+        say "  #{tailwind_import_line}", :yellow
       end
 
-      def missing_tailwind_source_lines(tailwind_content)
-        tailwind_source_lines.reject { |line| tailwind_content.include?(line) }
-      end
-
-      def inject_tailwind_sources(tailwind_css_path, missing_lines)
+      def inject_tailwind_sources(tailwind_css_path)
         inject_into_file tailwind_css_path, after: "@import \"tailwindcss\";\n" do
-          "#{formatted_tailwind_source_block(missing_lines)}\n"
+          "\n/* Gem-provided views and components, written by " \
+            "rails tailwindcss:recording_studio_users_sources */\n" \
+            "#{tailwind_import_line}\n"
         end
-        say "Added RecordingStudioUsers and FlatPack sources to Tailwind CSS configuration.", :green
+        say "Tailwind now imports the RecordingStudioUsers source list.", :green
         say "Run 'bin/rails tailwindcss:build' to rebuild your CSS.", :green
       end
 
-      def formatted_tailwind_source_block(missing_lines)
-        [
-          "\n/* Include RecordingStudioUsers engine views for Tailwind CSS */",
-          missing_lines.first(2),
-          "\n/* Include FlatPack component sources for Tailwind CSS */",
-          missing_lines.drop(2)
-        ].flatten.reject(&:empty?).join("\n")
-      end
-
-      def show_manual_tailwind_notice(missing_lines)
+      def show_manual_tailwind_notice
         say "Could not find @import \"tailwindcss\" in your Tailwind config.", :yellow
-        say "Please manually add these lines to your Tailwind CSS config:", :yellow
-        missing_lines.each do |line|
-          say "  #{line}", :yellow
-        end
+        say "Please manually add this line to your Tailwind CSS config:", :yellow
+        say "  #{tailwind_import_line}", :yellow
       end
 
-      def tailwind_source_lines
-        [
-          '@source "../../vendor/bundle/**/recording_studio_users/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
-          'recording_studio_users-*/app/views/**/*.erb";',
-          '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
-        ]
+      def tailwind_import_line
+        '@import "./recording_studio_users_sources.css";'
       end
     end
   end

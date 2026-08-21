@@ -35,6 +35,28 @@ class InstallGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  def test_wires_tailwind_to_a_generated_source_list
+    prepare_tailwind_host_files
+    run_generator %w[--skip-devise --skip-migrations]
+
+    assert_file "app/assets/tailwind/application.css" do |content|
+      assert_includes content, '@import "./recording_studio_users_sources.css";'
+      refute_includes content, "vendor/bundle"
+    end
+    assert_file "lib/tasks/recording_studio_users_tailwind.rake" do |content|
+      assert_includes content, "tailwindcss:recording_studio_users_sources"
+      assert_includes content, "flat_pack"
+    end
+    assert_file ".gitignore", %r{app/assets/tailwind/recording_studio_users_sources\.css}
+  end
+
+  def test_reports_tailwind_line_when_no_tailwind_stylesheet_exists
+    output = run_generator %w[--skip-devise --skip-migrations]
+
+    assert_includes output, '@import "./recording_studio_users_sources.css";'
+    assert_no_file "lib/tasks/recording_studio_users_tailwind.rake"
+  end
+
   private
 
   def prepare_host_application
@@ -46,5 +68,14 @@ class InstallGeneratorTest < Rails::Generators::TestCase
       File.join(destination_root, "app/controllers/application_controller.rb"),
       "class ApplicationController < ActionController::Base\nend\n"
     )
+  end
+
+  def prepare_tailwind_host_files
+    FileUtils.mkdir_p File.join(destination_root, "app/assets/tailwind")
+    File.write(
+      File.join(destination_root, "app/assets/tailwind/application.css"),
+      %(@import "tailwindcss";\n)
+    )
+    File.write File.join(destination_root, ".gitignore"), "/log\n"
   end
 end
