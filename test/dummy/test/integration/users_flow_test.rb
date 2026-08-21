@@ -101,6 +101,60 @@ class UsersFlowTest < ActionDispatch::IntegrationTest
     assert_nil RecordingStudioAccessible.role_for(actor: invitee, recording: root)
   end
 
+  test "signed-out recipient returns to the invitation after login" do
+    owner = create_user("owner@example.com")
+    invitee = create_user("invitee@example.com")
+    root = create_owned_root(owner)
+    _invitation, token = RecordingStudioUsers::Invitation.issue!(
+      email: invitee.email,
+      root_recording: root,
+      role: :view,
+      inviter: owner
+    )
+
+    get "/people/invitations/accept/#{token}"
+    assert_redirected_to "/users/sign_in"
+
+    post "/users/sign_in", params: { user: { email: invitee.email, password: @password } }
+    assert_redirected_to "/people/invitations/accept/#{token}"
+    follow_redirect!
+    assert_response :success
+    assert_includes response.body, "Join the workspace"
+  end
+
+  test "invitation fails closed when inviter is no longer an admin" do
+    owner = create_user("owner@example.com")
+    replacement_admin = create_user("replacement@example.com")
+    invitee = create_user("invitee@example.com")
+    root = create_owned_root(owner)
+    replacement_grant = RecordingStudioAccessible.grant_access(
+      recording: root,
+      actor: replacement_admin,
+      role: :admin,
+      manager_actor: owner
+    )
+    invitation, token = RecordingStudioUsers::Invitation.issue!(
+      email: invitee.email,
+      root_recording: root,
+      role: :view,
+      inviter: owner
+    )
+    owner_access = RecordingStudioAccessible.access_recordings_for_actor(recording: root, actor: owner).first
+    revoke = RecordingStudioAccessible::Services::RevokeRecordingAccess.call(
+      recording: root,
+      access_recording: owner_access,
+      manager_actor: replacement_admin
+    )
+    assert replacement_grant.success?
+    assert revoke.success?
+
+    result = RecordingStudioUsers::Services::AcceptInvitation.call(token: token, actor: invitee)
+
+    assert result.failure?
+    assert_equal "pending", invitation.reload.status
+    assert_nil RecordingStudioAccessible.role_for(actor: invitee, recording: root)
+  end
+
   test "admin changes and revokes membership through Accessible" do
     owner = create_user("owner@example.com")
     member = create_user("member@example.com")
