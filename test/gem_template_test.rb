@@ -16,7 +16,15 @@ class RecordingStudioUserTest < Minitest::Test
     profile_views.each do |view|
       assert_includes view, "FlatPack::PageTitle::Component"
       refute_includes view, "FlatPack::Card::Component"
+      assert_includes view, "recording_studio_page_nav"
+      assert_includes view, "recording_access_management_link"
     end
+
+    show = profile_views.first
+    refute_includes show, "notice"
+    refute_includes show, "flash["
+    refute_includes show, "if notice"
+    refute_includes show, "FlatPack::Alert::Component"
   end
 
   def test_dummy_sidebar_links_the_mounted_profile_helper

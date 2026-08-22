@@ -10,11 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.0] - 2026-08-21
 
 ### Changed
+- Profile show no longer renders `notice` itself. Core `recording_studio/default_layout` already shows `flash[:notice]` as a FlatPack alert, so Devise sign-in no longer flashes twice.
+- Dummy host chrome uses `RecordingStudio::UsesDefaultLayout` (Devise keeps `application`). Profile show/edit are PageNav back/close only — no sidebar, Sign out, or Root Switchable. `RecordingStudioUser.config.layout` is `recording_studio/default_layout`. Dummy does not fork that layout; rounded comes from core's `body data-theme` (default `"rounded"`) and `html data-theme="rounded"` on Devise `application.html.erb`.
+- Profile PageNav right slot uses Accessible's public `recording_access_management_link`. Dummy mounts `RecordingStudioAccessible::Engine` and ships the `--link-helper` helper.
 - First-owner access on a new Profile recording uses `RecordingStudioAccessible.bootstrap_owner_access!` (role `:admin`). Later membership still uses `grant_access`.
 - Removed the Users paper-over that swapped `access_management_authorizer` / retried `grant_first_owner` when the Profile had no admin yet.
 - Pinned `recording_studio_accessible` to `~> 0.7` (tag `v0.7.0`). Accessible 0.7.0 allows bootstrap on an accessible child under a shared root (Profile under People).
 
 ### Upgrade notes
+- If a host profile view still renders `notice` / `flash[:notice]`, remove that alert so only the layout flash remains.
+- For UsesDefaultLayout chrome, include `RecordingStudio::UsesDefaultLayout` on the host controller (Devise can keep `application`) and set `RecordingStudioUser.config.layout = "recording_studio/default_layout"`. Do not copy core's default layout into the host.
+- Mount Accessible and run `bin/rails generate recording_studio_accessible:access_management --link-helper` so profile screens can call `recording_access_management_link`.
 - Upgrade RecordingStudioAccessible to `0.7.0` before installing this gem. 0.6.1 still rejects Profile bootstrap with `Recording must be a root recording`.
 - Call `create_user!` / `record_profile!` for signup and backfill. Those helpers bootstrap the Profile recording only — never People.
 - Replace any host use of `ProfileAccess.ensure_owner_access!` or an `access_management_authorizer` mutex with `bootstrap_owner_access!` on the Profile recording, then `grant_access` for later members.

@@ -107,6 +107,57 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "profile show does not render notice or flash itself" do
+    show = File.read(RecordingStudioUser::Engine.root.join("app/views/recording_studio_user/profiles/show.html.erb"))
+
+    refute_includes show, "notice"
+    refute_includes show, "flash"
+    refute_includes show, "FlatPack::Alert::Component"
+  end
+
+  test "profile show uses default layout chrome with one flash and access in the slot" do
+    recording = RecordingStudioUser.profile_recording_for(@user)
+
+    get recording_studio_users.profile_path
+    assert_redirected_to new_user_session_path
+
+    post user_session_path, params: {
+      user: { email: @user.email, password: "Password123!" }
+    }
+    follow_redirect!
+
+    assert_response :success
+    assert_equal recording_studio_users.profile_path, path
+    assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
+    assert_select %(body[data-theme="rounded"]), count: 1
+    assert_select "html[data-theme]", count: 0
+    assert_equal 1, response.body.scan("Signed in successfully.").size
+    assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]),
+                  text: "Manage access",
+                  count: 1
+    refute_includes response.body, "Sign out"
+    refute_includes response.body, "Root Switchable"
+    refute_includes response.body, "flat-pack-sidebar-layout"
+    refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
+  end
+
+  test "profile edit uses the same default layout chrome" do
+    sign_in @user
+    recording = RecordingStudioUser.profile_recording_for(@user)
+
+    get recording_studio_users.edit_profile_path
+
+    assert_response :success
+    assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
+    assert_select %(body[data-theme="rounded"]), count: 1
+    assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]),
+                  text: "Manage access",
+                  count: 1
+    refute_includes response.body, "Sign out"
+    refute_includes response.body, "Root Switchable"
+    refute_includes response.body, "flat-pack-sidebar-layout"
+  end
+
   test "a current_user-only ACL is not used for profile authorization" do
     controller = File.read(RecordingStudioUser::Engine.root.join("app/controllers/recording_studio_user/profiles_controller.rb"))
 

@@ -20,6 +20,16 @@ class EngineTest < Minitest::Test
     refute_includes routes, "root"
   end
 
+  def test_profile_show_does_not_render_notice_or_flash
+    show = File.read(File.expand_path("../app/views/recording_studio_user/profiles/show.html.erb", __dir__))
+
+    refute_includes show, "notice"
+    refute_includes show, "flash"
+    refute_includes show, "FlatPack::Alert::Component"
+    assert_includes show, "recording_studio_page_nav_right"
+    assert_includes show, "recording_access_management_link"
+  end
+
   def test_profile_authorization_uses_accessible_not_current_user_acl
     controller = File.read(File.expand_path("../app/controllers/recording_studio_user/profiles_controller.rb", __dir__))
     profile = File.read(File.expand_path("../app/models/recording_studio_user/profile.rb", __dir__))

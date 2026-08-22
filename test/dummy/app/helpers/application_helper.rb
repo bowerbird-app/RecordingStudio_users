@@ -1,2 +1,3 @@
 module ApplicationHelper
+  include RecordingStudioAccessible::AccessManagementHelper
 end
