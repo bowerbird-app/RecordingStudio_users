@@ -61,8 +61,7 @@ begin
       io: io,
       filename: "avery-admin.png",
       content_type: "image/png",
-      actor: user,
-      name: "Avery"
+      actor: user
     )
   end
 

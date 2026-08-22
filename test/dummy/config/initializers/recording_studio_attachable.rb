@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RecordingStudioAttachable.configure do |config|
-  config.allowed_content_types = ["image/*"]
+  config.allowed_content_types = [ "image/*" ]
   config.max_file_size = 25.megabytes
   # Maximum number of files accepted in a single upload or import request.
   config.max_file_count = 1

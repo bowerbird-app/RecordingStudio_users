@@ -10,7 +10,7 @@ class ProfileAttachableTest < ActiveSupport::TestCase
 
     assert RecordingStudio.capability_enabled?(:attachable, for: "RecordingStudioUser::Profile")
     refute RecordingStudio.capability_enabled?(:attachable, for: "RecordingStudioUser::People")
-    assert_equal ["image/*"], options[:allowed_content_types]
+    assert_equal [ "image/*" ], options[:allowed_content_types]
     assert_equal %i[image], options[:enabled_attachment_kinds]
     assert_equal 1, options[:max_file_count]
     refute_includes RecordingStudio.capability_allowed_parent_types_for("RecordingStudioAttachable::Attachment"),

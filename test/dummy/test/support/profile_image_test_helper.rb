@@ -12,8 +12,7 @@ module ProfileImageTestHelper
         io: io,
         filename: filename,
         content_type: "image/png",
-        actor: user,
-        name: "Profile"
+        actor: user
       )
     end
   end
