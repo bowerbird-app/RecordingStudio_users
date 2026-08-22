@@ -41,6 +41,13 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "FlatPack::Select::Component"
   end
 
+  def test_dummy_default_layout_head_sets_rounded_on_html
+    head = File.read(File.expand_path("dummy/app/views/recording_studio/_default_layout_head.html.erb", __dir__))
+
+    assert_includes head, 'document.documentElement.setAttribute("data-theme", "rounded")'
+    refute_includes head, "recording_studio/default_layout"
+  end
+
   def test_dummy_overrides_attachable_show_without_an_in_view_page_nav
     override = File.read(
       File.expand_path("dummy/app/views/recording_studio_attachable/attachments/show.html.erb", __dir__)

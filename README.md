@@ -149,7 +149,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps Devise login at `/users/sign_in`. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Rounded on profile pages is core's `body data-theme` (default `"rounded"`).
+The dummy keeps Devise login at `/users/sign_in`. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
 
 Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Attachable is mounted at `/recording_studio_attachable` with the same default layout so upload and replace stay rounded. Dummy overrides Attachable's attachment show to omit the gem's in-view PageNav so core owns the single back/close set. Seeded accounts include:
 

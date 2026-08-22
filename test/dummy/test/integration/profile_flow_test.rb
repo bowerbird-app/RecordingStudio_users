@@ -131,7 +131,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_equal recording_studio_users.profile_path, path
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
     assert_select %(body[data-theme="rounded"]), count: 1
-    assert_select "html[data-theme]", count: 0
+    assert_includes response.body, 'document.documentElement.setAttribute("data-theme", "rounded")'
     assert_equal 1, response.body.scan("Signed in successfully.").size
     assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
     refute_includes response.body, "Manage access"
@@ -155,6 +155,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
     assert_select %(body[data-theme="rounded"]), count: 1
+    assert_includes response.body, 'document.documentElement.setAttribute("data-theme", "rounded")'
     assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
     refute_includes response.body, "Manage access"
     refute_includes response.body, "Sign out"
@@ -216,7 +217,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
     assert_select %(body[data-theme="rounded"]), count: 1
-    assert_select "html[data-theme]", count: 0
+    assert_includes response.body, 'document.documentElement.setAttribute("data-theme", "rounded")'
     assert_select "nav.flat-pack-page-nav", count: 1
     assert_match(/flat-pack--page-nav#back/, response.body)
     assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0

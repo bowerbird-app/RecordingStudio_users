@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Profile PageNav right slot is empty. Profile is owner-only: Accessible still records the first owner with `bootstrap_owner_access!`, but show/edit no longer render `recording_access_management_link` or any grant/invite control.
 - Dummy overrides Attachable's attachment show so only core `recording_studio/default_layout` PageNav renders. Attachable 0.4.0 has no config to hide its in-view PageNav; the host template keeps the replace UI and leaves the right slot empty.
+- Dummy `recording_studio/_default_layout_head` sets `html data-theme="rounded"` so Flatpack `--button-primary-*` aliases inherit charcoal. Core's body attribute alone leaves `:root` primary blue.
 - Profile show puts **Edit** in the PageTitle actions slot. Edit stacks First name, Last name, and Time zone as full-width rows, and groups Update profile / Cancel in a ButtonGroup. Subtitles drop the cute lines: "Your name, email, and photo." and "Change your name, time zone, or photo."
 
 ### Upgrade notes
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `recording_access_management_link` (and any Access control) from Profile PageNav. First-owner bootstrap stays; do not add invite/grant UI on Profile.
 - Use `attach_profile_image!` or `recording.import_attachment` to place one image under the Profile recording. Use the Attachable revision screen / `replace_attachment_file` to swap it. Do not ship a library as the profile page.
 - If Attachable uses core `recording_studio/default_layout`, override the attachment show view so it does not render a second PageNav. Attachable 0.4.0 has no hide-chrome setting.
+- Hosts that use core `recording_studio/default_layout` should add `app/views/recording_studio/_default_layout_head.html.erb` that sets `document.documentElement.setAttribute("data-theme", "rounded")`. Core puts the named theme on `body`; Flatpack `--button-primary-*` aliases live on `:root` and otherwise stay the default blue. Do not copy the layout or invent a host theme.
 
 ## [0.4.0] - 2026-08-21
 
