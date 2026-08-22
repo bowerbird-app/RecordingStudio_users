@@ -6,7 +6,7 @@ This Rails application demonstrates RecordingStudioUser in a host application.
 - This gem owns the shared **People** root and **Profile** snapshots (`user_id` on Profile).
 - One profile image is an Attachable child of the Profile recording. Dummy mounts Attachable and Active Storage.
 - Workspace remains the host-owned bucket. Access-controlled, read-only reporting on sitewide users is still mounted.
-- Signed-in pages use Recording Studio's default layout (`RecordingStudio::UsesDefaultLayout`). Devise keeps `layouts/application`. Dummy does not own `recording_studio/default_layout`. A `recording_studio/_default_layout_head` hook sets `html data-theme="rounded"` so Flatpack primary tokens resolve on `:root`.
+- Signed-in pages use Recording Studio's default layout (`RecordingStudio::UsesDefaultLayout`). Devise keeps `layouts/application` with `html data-theme="rounded"`. Dummy does not own `recording_studio/default_layout`. A `recording_studio/_default_layout_head` hook sets the same theme on signed-in pages so Flatpack primary tokens resolve on `:root`. Login and sign up are Devise views that use Flatpack inputs and a primary button. They are not a Users product registration flow.
 - Profile show/edit are PageNav back/close only. The right slot stays empty. There is no Access control, sidebar Sign out, or Root Switchable on those screens. Show puts Edit in the page title. Edit puts the form in one cell of a two-column Flatpack Grid (the other cell stays empty) so fields do not stretch full-bleed on a wide screen. Each field is still its own full-width row. Update profile and Cancel are separate Flatpack buttons, not a ButtonGroup.
 - The photo replace screen uses the same core layout. Dummy overrides Attachable's attachment show so that gem's in-view PageNav is not stacked on top of core's.
 
@@ -19,7 +19,7 @@ bin/rails db:setup
 bin/dev
 ```
 
-Run these commands from the dummy app directory. Sign in through Devise at `/users/sign_in` with one of the seeded accounts:
+Run these commands from the dummy app directory. Sign in through Devise at `/users/sign_in` with one of the seeded accounts, or create one at `/users/sign_up`:
 
 - `admin@admin.com` / `Password`: first-owner `:admin` on the Admin root, My workspace, and Client Workspace via `bootstrap_owner_access!`. Avery Admin also has a seeded profile photo. Use this account to test workspace switching and the users report.
 - `member@admin.com` / `Password`: can sign in but cannot access the Admin root or users report.
