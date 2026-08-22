@@ -31,7 +31,9 @@ class RecordingStudioUserTest < Minitest::Test
   end
 
   def test_dummy_overrides_attachable_show_without_an_in_view_page_nav
-    override = File.read(File.expand_path("dummy/app/views/recording_studio_attachable/attachments/show.html.erb", __dir__))
+    override = File.read(
+      File.expand_path("dummy/app/views/recording_studio_attachable/attachments/show.html.erb", __dir__)
+    )
 
     assert_includes override, "recording_studio_page_nav"
     refute_includes override, "recording_studio_page_nav_right"
