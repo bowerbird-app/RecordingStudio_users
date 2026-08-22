@@ -68,10 +68,10 @@
         ) %>
       <% end %>
 
-      <%= render FlatPack::ButtonGroup::Component.new do |group| %>
-        <% group.button(render(FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary))) %>
-        <% group.button(render(FlatPack::Button::Component.new(text: "Cancel", href: profile_path, style: :secondary))) %>
-      <% end %>
+      <div class="flex flex-wrap items-center gap-3">
+        <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
+        <%= render FlatPack::Button::Component.new(text: "Cancel", href: profile_path, style: :secondary) %>
+      </div>
     </div>
   <% end %>
 </div>

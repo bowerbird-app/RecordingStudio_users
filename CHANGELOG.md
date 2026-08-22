@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Profile PageNav right slot is empty. Profile is owner-only: Accessible still records the first owner with `bootstrap_owner_access!`, but show/edit no longer render `recording_access_management_link` or any grant/invite control.
 - Dummy overrides Attachable's attachment show so only core `recording_studio/default_layout` PageNav renders. Attachable 0.4.0 has no config to hide its in-view PageNav; the host template keeps the replace UI and leaves the right slot empty.
 - Dummy `recording_studio/_default_layout_head` sets `html data-theme="rounded"` so Flatpack `--button-primary-*` aliases inherit charcoal. Core's body attribute alone leaves `:root` primary blue.
-- Profile show puts **Edit** in the PageTitle actions slot. Edit stacks First name, Last name, and Time zone as full-width rows, and groups Update profile / Cancel in a ButtonGroup. Subtitles drop the cute lines: "Your name, email, and photo." and "Change your name, time zone, or photo."
+- Profile show puts **Edit** in the PageTitle actions slot. Edit stacks First name, Last name, and Time zone as full-width rows. Update profile and Cancel are two separate Flatpack buttons, not a ButtonGroup. Subtitles drop the cute lines: "Your name, email, and photo." and "Change your name, time zone, or photo."
 
 ### Upgrade notes
 - Enable Attachable on Profile only, using the `.to` mixin and the image-only options above. Do not enable it on People.
