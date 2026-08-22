@@ -27,27 +27,25 @@
     <% end %>
 
     <div class="space-y-4">
-      <%= render FlatPack::Grid::Component.new(cols: 2, gap: :md, align: :start) do %>
-        <%= render FlatPack::TextInput::Component.new(
-          name: "user[first_name]",
-          id: "user_first_name",
-          label: "First name",
-          value: @profile.first_name,
-          required: true,
-          autocomplete: "given-name",
-          error: @profile.errors[:first_name].first
-        ) %>
+      <%= render FlatPack::TextInput::Component.new(
+        name: "user[first_name]",
+        id: "user_first_name",
+        label: "First name",
+        value: @profile.first_name,
+        required: true,
+        autocomplete: "given-name",
+        error: @profile.errors[:first_name].first
+      ) %>
 
-        <%= render FlatPack::TextInput::Component.new(
-          name: "user[last_name]",
-          id: "user_last_name",
-          label: "Last name",
-          value: @profile.last_name,
-          required: true,
-          autocomplete: "family-name",
-          error: @profile.errors[:last_name].first
-        ) %>
-      <% end %>
+      <%= render FlatPack::TextInput::Component.new(
+        name: "user[last_name]",
+        id: "user_last_name",
+        label: "Last name",
+        value: @profile.last_name,
+        required: true,
+        autocomplete: "family-name",
+        error: @profile.errors[:last_name].first
+      ) %>
 
       <%= render FlatPack::Select::Component.new(
         name: "user[time_zone]",

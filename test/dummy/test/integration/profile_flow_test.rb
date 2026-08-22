@@ -164,7 +164,9 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Change your name, time zone, or photo."
     refute_includes response.body, "Tidy up"
     refute_includes response.body, "The photo lives here too."
-    assert_includes response.body, "md:grid-cols-2"
+    refute_includes response.body, "md:grid-cols-2"
+    assert_includes response.body, "user_first_name"
+    assert_includes response.body, "user_last_name"
     assert_includes response.body, "Update profile"
     assert_includes response.body, "Cancel"
     assert_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
