@@ -187,6 +187,37 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Manage access"
   end
 
+  test "profile photo replace uses one core PageNav and rounded default layout" do
+    sign_in @user
+    recording = RecordingStudioUser.profile_recording_for(@user)
+    image = attach_profile_photo!(@user)
+    override = Rails.root.join("app/views/recording_studio_attachable/attachments/show.html.erb")
+
+    get recording_studio_attachable.attachment_path(
+      image,
+      redirect_mode: "return_to",
+      return_to: recording_studio_users.profile_path
+    )
+
+    assert_response :success
+    assert File.exist?(override)
+    refute_includes File.read(override), "FlatPack::PageNav"
+    refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
+    assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
+    assert_select %(body[data-theme="rounded"]), count: 1
+    assert_select "html[data-theme]", count: 0
+    assert_select "nav.flat-pack-page-nav", count: 1
+    assert_match(/flat-pack--page-nav#back/, response.body)
+    assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
+    refute_includes response.body, "Manage access"
+    refute_includes response.body, "Sign out"
+    refute_includes response.body, "Root Switchable"
+    refute_includes response.body, "flat-pack-sidebar-layout"
+    assert_includes response.body, "Save"
+    assert_includes response.body, "Name"
+    assert_includes response.body, image.recordable.original_filename
+  end
+
   test "a current_user-only ACL is not used for profile authorization" do
     controller = File.read(RecordingStudioUser::Engine.root.join("app/controllers/recording_studio_user/profiles_controller.rb"))
 

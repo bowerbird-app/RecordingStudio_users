@@ -17,12 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Profile PageNav right slot is empty. Profile is owner-only: Accessible still records the first owner with `bootstrap_owner_access!`, but show/edit no longer render `recording_access_management_link` or any grant/invite control.
+- Dummy overrides Attachable's attachment show so only core `recording_studio/default_layout` PageNav renders. Attachable 0.4.0 has no config to hide its in-view PageNav; the host template keeps the replace UI and leaves the right slot empty.
 
 ### Upgrade notes
 - Enable Attachable on Profile only, using the `.to` mixin and the image-only options above. Do not enable it on People.
 - Run `bin/rails generate recording_studio_attachable:install`, `bin/rails generate recording_studio_attachable:migrations`, and `bin/rails active_storage:install` if those are missing. Mount the engine and keep `@rails/activestorage` plus `ActiveStorage.start()` as the Attachable README describes.
 - Remove `recording_access_management_link` (and any Access control) from Profile PageNav. First-owner bootstrap stays; do not add invite/grant UI on Profile.
 - Use `attach_profile_image!` or `recording.import_attachment` to place one image under the Profile recording. Use the Attachable revision screen / `replace_attachment_file` to swap it. Do not ship a library as the profile page.
+- If Attachable uses core `recording_studio/default_layout`, override the attachment show view so it does not render a second PageNav. Attachable 0.4.0 has no hide-chrome setting.
 
 ## [0.4.0] - 2026-08-21
 

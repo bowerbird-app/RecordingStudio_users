@@ -30,6 +30,18 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "FlatPack::Alert::Component"
   end
 
+  def test_dummy_overrides_attachable_show_without_an_in_view_page_nav
+    override = File.read(File.expand_path("dummy/app/views/recording_studio_attachable/attachments/show.html.erb", __dir__))
+
+    assert_includes override, "recording_studio_page_nav"
+    refute_includes override, "recording_studio_page_nav_right"
+    refute_includes override, "FlatPack::PageNav"
+    refute_includes override, "recording_access_management_link"
+    refute_includes override, "Manage access"
+    assert_includes override, "FlatPack::PageTitle::Component"
+    assert_includes override, "FlatPack::TextInput::Component"
+  end
+
   def test_dummy_sidebar_links_the_mounted_profile_helper
     sidebar = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
 
