@@ -24,10 +24,21 @@ class RecordingStudioUserTest < Minitest::Test
     end
 
     show = profile_views.first
+    edit = profile_views.last
     refute_includes show, "notice"
     refute_includes show, "flash["
     refute_includes show, "if notice"
     refute_includes show, "FlatPack::Alert::Component"
+    refute_includes show, "Just you."
+    assert_includes show, "Your name, email, and photo."
+    assert_includes show, "page_title.slot"
+    refute_includes show, "Tidy up"
+    refute_includes edit, "The photo lives here too."
+    assert_includes edit, "Change your name, time zone, or photo."
+    assert_includes edit, "FlatPack::Grid::Component"
+    assert_includes edit, "FlatPack::ButtonGroup::Component"
+    assert_includes edit, "FlatPack::TextInput::Component"
+    assert_includes edit, "FlatPack::Select::Component"
   end
 
   def test_dummy_overrides_attachable_show_without_an_in_view_page_nav

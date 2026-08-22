@@ -139,6 +139,9 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Root Switchable"
     refute_includes response.body, "flat-pack-sidebar-layout"
     assert_includes response.body, "Add a photo"
+    assert_includes response.body, "Your name, email, and photo."
+    refute_includes response.body, "Just you."
+    assert_includes response.body, "page-title-actions"
     assert_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
     refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
   end
@@ -158,6 +161,12 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Root Switchable"
     refute_includes response.body, "flat-pack-sidebar-layout"
     assert_includes response.body, "Add a photo"
+    assert_includes response.body, "Change your name, time zone, or photo."
+    refute_includes response.body, "Tidy up"
+    refute_includes response.body, "The photo lives here too."
+    assert_includes response.body, "md:grid-cols-2"
+    assert_includes response.body, "Update profile"
+    assert_includes response.body, "Cancel"
     assert_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
   end
 

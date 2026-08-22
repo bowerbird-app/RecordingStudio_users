@@ -2,7 +2,7 @@
 <% preview_path = profile_image_preview_path(image_recording) %>
 <% return_to = local_assigns.fetch(:return_to, profile_path) %>
 
-<div class="space-y-3">
+<div class="flex flex-wrap items-center gap-4">
   <%= render FlatPack::Avatar::Component.new(
     src: preview_path,
     alt: profile_display_name(@user),

@@ -139,6 +139,8 @@ Flash notices come from the host layout. Profile show does not render `notice` a
 
 The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
 
+Show puts **Edit** in the PageTitle actions slot and keeps **Swap this photo** next to the avatar. Edit lays first and last name in a Flatpack Grid and groups Update profile / Cancel in a ButtonGroup. Subtitles stay plain: "Your name, email, and photo." and "Change your name, time zone, or photo."
+
 ## Users administration
 
 The engine still registers a reusable `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The read-only screen lists name, email, and created-at. The gem does not add user editing, deletion, impersonation, password operations, or admin/role columns.

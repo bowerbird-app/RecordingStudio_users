@@ -8,18 +8,20 @@
 
 <%= render FlatPack::PageTitle::Component.new(
   title: "My Profile",
-  subtitle: "Your name, email, and photo. Just you.",
+  subtitle: "Your name, email, and photo.",
   variant: :h1
-) %>
+) do |page_title| %>
+  <% page_title.slot do %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Edit",
+      href: edit_profile_path,
+      style: :primary
+    ) %>
+  <% end %>
+<% end %>
 
-<div class="mt-6 space-y-4">
+<div class="space-y-4">
   <%= render "photo", return_to: profile_path %>
-
-  <%= render FlatPack::Button::Component.new(
-    text: "Edit",
-    href: edit_profile_path,
-    style: :secondary
-  ) %>
 
   <dl class="space-y-4">
     <div>
