@@ -5,11 +5,17 @@ module RecordingStudioUser
     self.table_name = "recording_studio_user_profiles"
 
     ALLOWED_PARENT_TYPES = ["RecordingStudioUser::People"].freeze
+    ATTACHABLE_OPTIONS = {
+      allowed_content_types: ["image/*"],
+      enabled_attachment_kinds: %i[image],
+      max_file_count: 1
+    }.freeze
 
     recording_studio_recordable label: "Profile",
                                 root: false,
                                 allowed_parent_types: ALLOWED_PARENT_TYPES
     RecordingStudio.enable_capability(:accessible, on: self)
+    include RecordingStudio::Capabilities::Attachable.to(**ATTACHABLE_OPTIONS)
 
     belongs_to :user, class_name: "User", inverse_of: false
 

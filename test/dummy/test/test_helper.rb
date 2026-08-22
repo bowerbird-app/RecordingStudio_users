@@ -4,6 +4,7 @@ ENV["RAILS_ENV"] ||= "test"
 
 require_relative "../config/environment"
 require "rails/test_help"
+require_relative "support/profile_image_test_helper"
 
 module AccessGrantTestHelper
   def bootstrap_owner_access!(actor, recording)

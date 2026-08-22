@@ -47,6 +47,14 @@ module RecordingStudioUser
       Directory.profile_recording_for(user)
     end
 
+    def profile_image_recording_for(user)
+      Directory.profile_image_recording_for(user)
+    end
+
+    def attach_profile_image!(...)
+      Directory.attach_profile_image!(...)
+    end
+
     def create_user!(...)
       Directory.create_user!(...)
     end

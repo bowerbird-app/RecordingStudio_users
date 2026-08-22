@@ -1,0 +1,28 @@
+<% image_recording = profile_image_recording(@profile_recording) %>
+<% preview_path = profile_image_preview_path(image_recording) %>
+<% return_to = local_assigns.fetch(:return_to, profile_path) %>
+
+<div class="space-y-3">
+  <%= render FlatPack::Avatar::Component.new(
+    src: preview_path,
+    alt: profile_display_name(@user),
+    name: profile_display_name(@user),
+    size: :xl,
+    shape: :circle,
+    href: image_recording.present? ? profile_image_replace_path(image_recording, return_to: return_to) : nil
+  ) %>
+
+  <% if image_recording.present? %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Swap this photo",
+      href: profile_image_replace_path(image_recording, return_to: return_to),
+      style: :secondary
+    ) %>
+  <% else %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Add a photo",
+      href: profile_image_upload_path(@profile_recording, return_to: return_to),
+      style: :secondary
+    ) %>
+  <% end %>
+</div>

@@ -54,6 +54,18 @@ begin
   )
   Current.actor = user
 
+  avery_photo = Rails.root.join("db/seeds/avery-admin.png")
+  File.open(avery_photo, "rb") do |io|
+    RecordingStudioUser.attach_profile_image!(
+      user,
+      io: io,
+      filename: "avery-admin.png",
+      content_type: "image/png",
+      actor: user,
+      name: "Avery"
+    )
+  end
+
   seed_user.call(
     email: "member@admin.com",
     first_name: "Morgan",
@@ -117,3 +129,4 @@ puts "Seeded: Workspace '#{accessible_workspace.name}' with first-owner admin ac
 puts "Seeded: Workspace '#{private_workspace.name}' without admin access and root recording ##{private_root_recording.id}"
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
 puts "Seeded: shared People root with Profile snapshots for seeded users"
+puts "Seeded: Avery Admin profile photo on their Profile recording"

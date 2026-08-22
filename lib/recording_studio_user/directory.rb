@@ -29,6 +29,33 @@ module RecordingStudioUser
       )
     end
 
+    def profile_image_recording_for(user)
+      recording = profile_recording_for(user)
+      return if recording.blank?
+
+      recording.images(per_page: 1).first
+    end
+
+    def attach_profile_image!(user, io:, filename:, content_type:, actor: nil, name: nil)
+      recording = profile_recording_for(user)
+      raise ArgumentError, "Profile recording is missing" if recording.blank?
+
+      existing = profile_image_recording_for(user)
+      return existing if existing.present?
+
+      result = RecordingStudioAttachable::Services::ImportAttachment.call(
+        parent_recording: recording,
+        io: io,
+        filename: filename,
+        content_type: content_type,
+        actor: actor || user,
+        name: name.presence || File.basename(filename.to_s, File.extname(filename.to_s))
+      )
+      raise result.error if result.failure?
+
+      result.value
+    end
+
     def create_user!(email:, password:, password_confirmation: nil, actor: nil, **attributes)
       profile_attrs = attributes.extract!(*PROFILE_ATTRIBUTE_KEYS)
       confirmation = password_confirmation.presence || password

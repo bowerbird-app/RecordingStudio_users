@@ -6,17 +6,15 @@
   page_nav_anchor_label: "Close"
 ) %>
 
-<% recording_studio_page_nav_right do %>
-  <%= recording_access_management_link(@profile_recording) %>
-<% end %>
-
 <%= render FlatPack::PageTitle::Component.new(
   title: "My Profile",
-  subtitle: "Manage your personal details and account settings.",
+  subtitle: "Your name, email, and photo. Just you.",
   variant: :h1
 ) %>
 
 <div class="mt-6 space-y-4">
+  <%= render "photo", return_to: profile_path %>
+
   <%= render FlatPack::Button::Component.new(
     text: "Edit",
     href: edit_profile_path,

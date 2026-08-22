@@ -70,9 +70,14 @@ module RecordingStudioUser
             :yellow
         say "People + Profile tables: bin/rails generate recording_studio_user:migrations", :green
         say "Register RecordingStudioUser::People and RecordingStudioUser::Profile in " \
-            "config.recordable_types, then run db:migrate. The gem enables Accessible on Profile " \
-            "(not People). create_user! / record_profile! bootstrap the first owner on that " \
-            "Profile recording with RecordingStudioAccessible.bootstrap_owner_access!.",
+            "config.recordable_types, then run db:migrate. The gem enables Accessible and " \
+            "Attachable on Profile (not People). create_user! / record_profile! bootstrap the " \
+            "first owner on that Profile recording with " \
+            "RecordingStudioAccessible.bootstrap_owner_access!. One profile image is an " \
+            "Attachable child of the Profile recording.",
+            :yellow
+        say "Host apps that need uploads: bin/rails generate recording_studio_attachable:install " \
+            "and recording_studio_attachable:migrations, plus Active Storage.",
             :yellow
       end
 

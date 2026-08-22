@@ -19,7 +19,8 @@ module Dummy
         engine_path(RecordingStudioAdmin, "app/components"),
         engine_path(RecordingStudio, "app/views"),
         engine_path(RecordingStudioUser, "app/views"),
-        engine_path(RecordingStudioUser, "app/components")
+        engine_path(RecordingStudioUser, "app/components"),
+        engine_path(RecordingStudioAttachable, "app/views")
       ].compact
     end
 

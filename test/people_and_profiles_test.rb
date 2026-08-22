@@ -27,6 +27,14 @@ class PeopleAndProfilesEngineTest < ActiveSupport::TestCase
     refute RecordingStudio.capability_enabled?(:accessible, for: RecordingStudioUser::People)
   end
 
+  test "Attachable is enabled on Profile and not on People" do
+    assert RecordingStudio.capability_enabled?(:attachable, for: RecordingStudioUser::Profile)
+    refute RecordingStudio.capability_enabled?(:attachable, for: RecordingStudioUser::People)
+    assert_equal ["image/*"], RecordingStudioUser::Profile::ATTACHABLE_OPTIONS[:allowed_content_types]
+    assert_equal %i[image], RecordingStudioUser::Profile::ATTACHABLE_OPTIONS[:enabled_attachment_kinds]
+    assert_equal 1, RecordingStudioUser::Profile::ATTACHABLE_OPTIONS[:max_file_count]
+  end
+
   test "directory bootstraps Profile first-owner and never People" do
     directory = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/directory.rb"))
     access = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/profile_access.rb"))

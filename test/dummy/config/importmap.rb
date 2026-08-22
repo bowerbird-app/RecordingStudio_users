@@ -14,3 +14,10 @@ pin "flat_pack/local_time", to: "flat_pack/local_time.js", preload: false
 
 # Pin RecordingStudioAdmin controllers
 pin_all_from RecordingStudioAdmin::Engine.root.join("app/javascript/recording_studio_admin/controllers"), under: "controllers/recording_studio_admin", to: "recording_studio_admin/controllers", preload: false
+
+pin "@rails/activestorage", to: "activestorage.esm.js"
+pin_all_from RecordingStudioAttachable::Engine.root.join("app/javascript/controllers/recording_studio_attachable"),
+  under: "controllers/recording_studio_attachable",
+  to: "controllers/recording_studio_attachable"
+pin "recording_studio_attachable/tiptap/attachment_image_addon",
+  to: "recording_studio_attachable/tiptap/attachment_image_addon.js"

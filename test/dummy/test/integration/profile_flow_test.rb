@@ -5,6 +5,7 @@ require "devise/test/integration_helpers"
 
 class ProfileFlowTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
+  include ProfileImageTestHelper
 
   setup do
     @user = RecordingStudioUser.create_user!(
@@ -115,7 +116,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes show, "FlatPack::Alert::Component"
   end
 
-  test "profile show uses default layout chrome with one flash and access in the slot" do
+  test "profile show uses default layout chrome with one flash and an empty access slot" do
     recording = RecordingStudioUser.profile_recording_for(@user)
 
     get recording_studio_users.profile_path
@@ -132,12 +133,13 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_select %(body[data-theme="rounded"]), count: 1
     assert_select "html[data-theme]", count: 0
     assert_equal 1, response.body.scan("Signed in successfully.").size
-    assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]),
-                  text: "Manage access",
-                  count: 1
+    assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
+    refute_includes response.body, "Manage access"
     refute_includes response.body, "Sign out"
     refute_includes response.body, "Root Switchable"
     refute_includes response.body, "flat-pack-sidebar-layout"
+    assert_includes response.body, "Add a photo"
+    assert_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
     refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
   end
 
@@ -150,12 +152,39 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
     assert_select %(body[data-theme="rounded"]), count: 1
-    assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]),
-                  text: "Manage access",
-                  count: 1
+    assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
+    refute_includes response.body, "Manage access"
     refute_includes response.body, "Sign out"
     refute_includes response.body, "Root Switchable"
     refute_includes response.body, "flat-pack-sidebar-layout"
+    assert_includes response.body, "Add a photo"
+    assert_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
+  end
+
+  test "profile show and edit display one attached image and a replace path" do
+    sign_in @user
+    recording = RecordingStudioUser.profile_recording_for(@user)
+    image = attach_profile_photo!(@user)
+
+    get recording_studio_users.profile_path
+
+    assert_response :success
+    assert_includes response.body, "Swap this photo"
+    refute_includes response.body, "Add a photo"
+    assert_includes response.body, recording_studio_attachable.attachment_path(image)
+    assert(
+      response.body.include?(recording_studio_attachable.attachment_preview_file_path(image, variant_name: :square_med)) ||
+        response.body.include?(recording_studio_attachable.attachment_file_path(image))
+    )
+    refute_includes response.body, recording_studio_attachable.recording_attachments_path(recording)
+    refute_includes response.body, "Manage access"
+
+    get recording_studio_users.edit_profile_path
+
+    assert_response :success
+    assert_includes response.body, "Swap this photo"
+    assert_includes response.body, recording_studio_attachable.attachment_path(image)
+    refute_includes response.body, "Manage access"
   end
 
   test "a current_user-only ACL is not used for profile authorization" do

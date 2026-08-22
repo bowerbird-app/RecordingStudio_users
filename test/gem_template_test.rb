@@ -17,7 +17,10 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes view, "FlatPack::PageTitle::Component"
       refute_includes view, "FlatPack::Card::Component"
       assert_includes view, "recording_studio_page_nav"
-      assert_includes view, "recording_access_management_link"
+      refute_includes view, "recording_studio_page_nav_right"
+      refute_includes view, "recording_access_management_link"
+      refute_includes view, "Manage access"
+      assert_includes view, 'render "photo"'
     end
 
     show = profile_views.first
@@ -41,6 +44,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes importmap, "RecordingStudioAdmin::Engine.root.join"
     assert_includes importmap, 'under: "controllers/recording_studio_admin"'
     assert_includes importmap, 'to: "recording_studio_admin/controllers"'
+    assert_includes importmap, 'pin "@rails/activestorage"'
+    assert_includes importmap, 'under: "controllers/recording_studio_attachable"'
   end
 
   def test_dummy_importmap_pins_flat_pack_controllers_for_stimulus
@@ -58,6 +63,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes importmap, 'pin "@hotwired/turbo-rails", to: "turbo.min.js"'
     assert_includes application, 'import "@hotwired/turbo-rails"'
     assert_includes application, 'import { initLocalTimes } from "flat_pack/local_time"'
+    assert_includes application, 'import * as ActiveStorage from "@rails/activestorage"'
+    assert_includes application, "ActiveStorage.start()"
   end
 
   def test_dummy_tailwind_imports_generated_gem_sources

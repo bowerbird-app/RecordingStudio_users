@@ -5,8 +5,9 @@
 - **User** stays the actor only: Devise, uuid, email, password. It is not a recordable and not a root.
 - **People** is this gem's shared root (`label: "People"`, `root: true`, `shared: true`), the same idea as core's `MessagesRoot`. Workspace remains the host's owned bucket.
 - **Profile** is the only child under People. One current profile per user, with `user_id` on the snapshot. User is not in the tree.
+- One profile image sits under the Profile recording as an Attachable child. Not a gallery. Not a parallel table.
 
-Accessible grants live on **Profile** recordings. Attachable avatars and a redesigned profile UI are later slices. This gem still ships the 0.1.x mounted profile routes and the read-only RecordingStudioAdmin users report.
+Accessible grants live on **Profile** recordings so the owner can show and edit. Profile screens do not invite other actors. This gem still ships the mounted profile routes and the read-only RecordingStudioAdmin users report.
 
 ## Installation
 
@@ -16,19 +17,21 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable`, `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible on Profile only. It does not enable Accessible on People, and it does not enable Attachable.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.4), `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
-The host remains responsible for its existing User and Devise setup.
+The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 
 Then run:
 
 ```bash
 bin/rails generate recording_studio_user:install
 bin/rails generate recording_studio_user:migrations
+bin/rails generate recording_studio_attachable:install
+bin/rails generate recording_studio_attachable:migrations
 bin/rails db:migrate
 ```
 
-Register the gem's recordables next to the host's types. If `recording_studio_attachable` is bundled, also register its attachment type so core declaration validation can boot; do not enable Attachable on People or Profile in this slice:
+Register the gem's recordables next to the host's types, including Attachable's attachment type:
 
 ```ruby
 RecordingStudio.configure do |config|
@@ -70,7 +73,7 @@ The configured `user_class_name` must name the existing, Devise-compatible Activ
 
 ## People and Profile
 
-People is a shared root. Nobody owns the forest through that root node. Accessible is enabled on Profile, the domain child, not on People.
+People is a shared root. Nobody owns the forest through that root node. Accessible and Attachable are enabled on Profile, the domain child, not on People.
 
 ```ruby
 class RecordingStudioUser::People < ApplicationRecord
@@ -84,8 +87,15 @@ class RecordingStudioUser::Profile < ApplicationRecord
                               root: false,
                               allowed_parent_types: ALLOWED_PARENT_TYPES
   RecordingStudio.enable_capability(:accessible, on: self)
+  include RecordingStudio::Capabilities::Attachable.to(
+    allowed_content_types: ["image/*"],
+    enabled_attachment_kinds: %i[image],
+    max_file_count: 1
+  )
 end
 ```
+
+`max_file_count` is the Attachable per-upload batch limit, not a lifetime cap. The product still shows one image: upload when empty, replace when present.
 
 Profile snapshots hold `first_name`, `last_name`, `time_zone`, and `additional_profile_attributes`. Writes go through public helpers, never raw `Recording` / `Event` inserts:
 
@@ -107,9 +117,19 @@ RecordingStudioUser.record_profile!(
   last_name: "Byron",
   time_zone: "UTC"
 )
+
+RecordingStudioUser.attach_profile_image!(
+  user,
+  io: File.open("ada.png"),
+  filename: "ada.png",
+  content_type: "image/png"
+)
+RecordingStudioUser.profile_image_recording_for(user)
 ```
 
 `create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.bootstrap_owner_access!` on that Profile recording (role `:admin`). Do not bootstrap People — Accessible rejects the shared root on purpose. Later membership uses `grant_access`. Later profile changes `revise` the existing recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
+
+`attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. Swap files through Attachable's revision screen / `replace_attachment_file`.
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
 
@@ -117,11 +137,7 @@ Mounted profile show/edit/update still authenticate with Devise, then authorize 
 
 Flash notices come from the host layout. Profile show does not render `notice` again. When the host uses Recording Studio's default layout, that layout already draws `flash[:notice]` as a FlatPack alert.
 
-The profile screens put Accessible's public access-management control in the PageNav right slot (`recording_studio_page_nav_right` + `recording_access_management_link`). Hosts that want that control should mount Accessible and generate the link helper:
-
-```bash
-bin/rails generate recording_studio_accessible:access_management --link-helper
-```
+The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
 
 ## Users administration
 
@@ -133,14 +149,14 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 The dummy keeps Devise login at `/users/sign_in`. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Rounded on profile pages is core's `body data-theme` (default `"rounded"`).
 
-Profile show/edit are that chrome only — no sidebar, Sign out, or Root Switchable. Accessible is mounted at `/recording_studio_accessible`, and the profile PageNav right slot links with `recording_access_management_link`. Seeded accounts include:
+Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Attachable is mounted at `/recording_studio_attachable` with the same default layout so upload and replace stay rounded. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |
 | `admin@admin.com` | `Password` |
 | `member@admin.com` | `Password` |
 
-Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Workspace remains the host-owned bucket.
+Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Workspace remains the host-owned bucket.
 
 ## Development
 
