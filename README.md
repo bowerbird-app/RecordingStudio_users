@@ -139,7 +139,7 @@ Flash notices come from the host layout. Profile show does not render `notice` a
 
 The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
 
-Show puts **Edit** in the PageTitle actions slot and keeps **Swap this photo** next to the avatar. Edit stacks First name, Last name, and Time zone as full-width rows. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Subtitles stay plain: "Your name, email, and photo." and "Change your name, time zone, or photo."
+Show puts **Edit** in the PageTitle actions slot and keeps **Swap this photo** next to the avatar. Edit wraps the photo, stacked fields, and actions in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Subtitles stay plain: "Your name, email, and photo." and "Change your name, time zone, or photo."
 
 ## Users administration
 

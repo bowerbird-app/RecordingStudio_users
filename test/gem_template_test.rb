@@ -35,7 +35,7 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "Tidy up"
     refute_includes edit, "The photo lives here too."
     assert_includes edit, "Change your name, time zone, or photo."
-    refute_includes edit, "FlatPack::Grid::Component"
+    assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     refute_includes edit, "FlatPack::ButtonGroup::Component"
     assert_includes edit, "FlatPack::Button::Component"
     assert_includes edit, "Update profile"

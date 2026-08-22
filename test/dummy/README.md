@@ -7,7 +7,7 @@ This Rails application demonstrates RecordingStudioUser in a host application.
 - One profile image is an Attachable child of the Profile recording. Dummy mounts Attachable and Active Storage.
 - Workspace remains the host-owned bucket. Access-controlled, read-only reporting on sitewide users is still mounted.
 - Signed-in pages use Recording Studio's default layout (`RecordingStudio::UsesDefaultLayout`). Devise keeps `layouts/application`. Dummy does not own `recording_studio/default_layout`. A `recording_studio/_default_layout_head` hook sets `html data-theme="rounded"` so Flatpack primary tokens resolve on `:root`.
-- Profile show/edit are PageNav back/close only. The right slot stays empty. There is no Access control, sidebar Sign out, or Root Switchable on those screens. Show puts Edit in the page title. Edit stacks each field on its own row. Update profile and Cancel are separate Flatpack buttons, not a ButtonGroup.
+- Profile show/edit are PageNav back/close only. The right slot stays empty. There is no Access control, sidebar Sign out, or Root Switchable on those screens. Show puts Edit in the page title. Edit puts the form in one cell of a two-column Flatpack Grid (the other cell stays empty) so fields do not stretch full-bleed on a wide screen. Each field is still its own full-width row. Update profile and Cancel are separate Flatpack buttons, not a ButtonGroup.
 - The photo replace screen uses the same core layout. Dummy overrides Attachable's attachment show so that gem's in-view PageNav is not stacked on top of core's.
 
 ## Quick Start
