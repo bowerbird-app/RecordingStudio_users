@@ -23,6 +23,19 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes view, 'render "photo"'
     end
 
+    photo = File.read(File.expand_path("../app/views/recording_studio_user/profiles/_photo.html.erb", __dir__))
+    assert_includes photo, "FlatPack::Avatar::Component"
+    assert_includes photo, "file_field_tag :photo"
+    assert_includes photo, "photo_profile_path"
+    assert_includes photo, "Add a photo"
+    assert_includes photo, "Swap this photo"
+    refute_includes photo, "profile_image_replace_path"
+    refute_includes photo, "profile_image_upload_path"
+    refute_includes photo, "attachment_path"
+    refute_includes photo, "recording_attachment_upload_path"
+    refute_includes photo, "attachment[name]"
+    refute_includes photo, "attachment[description]"
+
     show = profile_views.first
     edit = profile_views.last
     refute_includes show, "notice"

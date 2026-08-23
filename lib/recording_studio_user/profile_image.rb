@@ -22,6 +22,22 @@ module RecordingStudioUser
       import!(recording, io:, filename:, content_type:, actor: actor || user)
     end
 
+    def replace!(user, io:, filename:, content_type:, actor: nil)
+      recording = Directory.profile_recording_for(user)
+      raise ArgumentError, "Profile recording is missing" if recording.blank?
+
+      existing = recording_for(user)
+      actor ||= user
+      return import!(recording, io:, filename:, content_type:, actor: actor) if existing.blank?
+
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: io,
+        filename: filename,
+        content_type: content_type
+      )
+      existing.replace_attachment_file(signed_blob_id: blob.signed_id, actor: actor)
+    end
+
     def import!(recording, io:, filename:, content_type:, actor:)
       result = RecordingStudioAttachable::Services::ImportAttachment.call(
         parent_recording: recording,

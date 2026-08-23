@@ -40,14 +40,16 @@
                 error: resource.errors[:password].first
               ) %>
 
-              <%= render FlatPack::PasswordInput::Component.new(
-                name: "user[password_confirmation]",
-                id: "user_password_confirmation",
-                label: "Password confirmation",
-                required: true,
-                autocomplete: "new-password",
-                error: resource.errors[:password_confirmation].first
-              ) %>
+              <% if RecordingStudioUser.config.require_password_confirmation? %>
+                <%= render FlatPack::PasswordInput::Component.new(
+                  name: "user[password_confirmation]",
+                  id: "user_password_confirmation",
+                  label: "Password confirmation",
+                  required: true,
+                  autocomplete: "new-password",
+                  error: resource.errors[:password_confirmation].first
+                ) %>
+              <% end %>
 
               <%= render FlatPack::Button::Component.new(
                 text: "Sign up",

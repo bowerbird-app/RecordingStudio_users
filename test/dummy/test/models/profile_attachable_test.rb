@@ -37,6 +37,32 @@ class ProfileAttachableTest < ActiveSupport::TestCase
     assert_equal first.id, RecordingStudioUser.profile_image_recording_for(user).id
   end
 
+  test "replace_profile_image! swaps the file on the same attachment recording" do
+    user = RecordingStudioUser.create_user!(
+      email: "swap-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Swap",
+      last_name: "Owner",
+      time_zone: "UTC"
+    )
+    first = attach_profile_photo!(user)
+
+    File.open(profile_photo_fixture_path, "rb") do |io|
+      swapped = RecordingStudioUser.replace_profile_image!(
+        user,
+        io: io,
+        filename: "swapped.png",
+        content_type: "image/png",
+        actor: user
+      )
+      assert_equal first.id, swapped.id
+    end
+
+    current = RecordingStudioUser.profile_image_recording_for(user)
+    assert_equal first.id, current.id
+    assert_equal "swapped.png", current.recordable.original_filename
+  end
+
   test "People is not attachable" do
     people = File.read(RecordingStudioUser::Engine.root.join("app/models/recording_studio_user/people.rb"))
 

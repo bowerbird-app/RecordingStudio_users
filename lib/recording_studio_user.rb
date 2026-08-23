@@ -56,6 +56,10 @@ module RecordingStudioUser
       ProfileImage.attach!(...)
     end
 
+    def replace_profile_image!(...)
+      ProfileImage.replace!(...)
+    end
+
     def create_user!(...)
       Directory.create_user!(...)
     end

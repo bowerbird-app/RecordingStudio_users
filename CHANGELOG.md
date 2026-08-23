@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dummy overrides Attachable's attachment show so only core `recording_studio/default_layout` PageNav renders. Attachable 0.4.0 has no config to hide its in-view PageNav; the host template keeps the replace UI and leaves the right slot empty.
 - Dummy `recording_studio/_default_layout_head` sets `html data-theme="rounded"` so Flatpack `--button-primary-*` aliases inherit charcoal. Core's body attribute alone leaves `:root` primary blue.
 - Dummy Devise sign up (`/users/sign_up`) uses Flatpack `EmailInput`, `PasswordInput` (password + confirmation), and a primary **Sign up** button on `layouts/application`. It is still Devise registerable, not a Users product registration flow.
+- `require_password_confirmation` (default `true`) hides the Devise confirmation field and does not require the param when the host turns it off.
+- Empty Profile photos use Flatpack Avatar's person-icon fallback (no name/initials). Add / Swap stay on the profile form via `photo_profile_path` and `replace_profile_image!`. They no longer open Attachable's Name / Description record edit.
 - Profile show puts **Edit** in the PageTitle actions slot. Edit wraps photo, stacked fields, and Update / Cancel in a Flatpack Grid `cols: 2` so the form occupies one cell (width constraint). Fields stay full-width rows — not two columns of first/last name. Update profile and Cancel are two separate Flatpack buttons, not a ButtonGroup. Subtitles drop the cute lines: "Your name, email, and photo." and "Change your name, time zone, or photo."
 
 ### Upgrade notes

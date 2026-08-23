@@ -56,6 +56,7 @@ RecordingStudioUser.configure do |config|
   config.admin_route_path = "user-reporting"
   config.layout = "application"
   config.additional_profile_attributes = []
+  config.require_password_confirmation = true
 end
 ```
 
@@ -129,9 +130,11 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.bootstrap_owner_access!` on that Profile recording (role `:admin`). Do not bootstrap People — Accessible rejects the shared root on purpose. Later membership uses `grant_access`. Later profile changes `revise` the existing recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
 
-`attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. Swap files through Attachable's revision screen / `replace_attachment_file`.
+`attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. `replace_profile_image!` swaps the file on that same attachment through `replace_attachment_file`. Profile show/edit keep Add / Swap on the Edit Profile form (file input posts to `photo_profile_path`). They do not open Attachable's Name / Description record edit.
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
+
+`require_password_confirmation` defaults to `true`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false`. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail.
 
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 
@@ -139,7 +142,7 @@ Flash notices come from the host layout. Profile show does not render `notice` a
 
 The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
 
-Show puts **Edit** in the PageTitle actions slot and keeps **Swap this photo** next to the avatar. Edit wraps the photo, stacked fields, and actions in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Subtitles stay plain: "Your name, email, and photo." and "Change your name, time zone, or photo."
+Show puts **Edit** in the PageTitle actions slot. Empty photos use Flatpack Avatar's person icon (no name/initials). Add / Swap stay on the profile form. Edit wraps the photo, stacked fields, and actions in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Subtitles stay plain: "Your name, email, and photo." and "Change your name, time zone, or photo."
 
 ## Users administration
 
@@ -151,7 +154,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs and a primary button — not a Users product registration flow. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
 
-Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Attachable is mounted at `/recording_studio_attachable` with the same default layout so upload and replace stay rounded. Dummy overrides Attachable's attachment show to omit the gem's in-view PageNav so core owns the single back/close set. Seeded accounts include:
+Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Add / Swap photo stay on those screens. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |

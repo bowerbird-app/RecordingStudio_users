@@ -23,22 +23,6 @@ module RecordingStudioUser
       end
     end
 
-    def profile_image_upload_path(profile_recording, return_to: profile_path)
-      attachable_routes.recording_attachment_upload_path(
-        profile_recording,
-        redirect_mode: "return_to",
-        return_to: return_to
-      )
-    end
-
-    def profile_image_replace_path(attachment_recording, return_to: profile_path)
-      attachable_routes.attachment_path(
-        attachment_recording,
-        redirect_mode: "return_to",
-        return_to: return_to
-      )
-    end
-
     private
 
     def attachable_routes

@@ -22,6 +22,25 @@ module RecordingStudioUser
       render :edit, status: :unprocessable_entity
     end
 
+    def update_photo
+      photo = params[:photo]
+      if photo.blank?
+        redirect_to photo_return_path, alert: "Choose a photo first."
+        return
+      end
+
+      RecordingStudioUser.replace_profile_image!(
+        current_user,
+        io: photo,
+        filename: photo.original_filename,
+        content_type: photo.content_type,
+        actor: current_user
+      )
+      redirect_to photo_return_path, notice: "Photo updated."
+    rescue ArgumentError, ActiveRecord::RecordInvalid => e
+      redirect_to photo_return_path, alert: e.message
+    end
+
     private
 
     def set_profile
@@ -42,6 +61,12 @@ module RecordingStudioUser
 
     def required_profile_role
       action_name == "show" ? :view : :edit
+    end
+
+    def photo_return_path
+      return edit_profile_path if params[:return_to].to_s == edit_profile_path
+
+      profile_path
     end
 
     def profile_params

@@ -142,7 +142,12 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Your name, email, and photo."
     refute_includes response.body, "Just you."
     assert_includes response.body, "page-title-actions"
-    assert_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
+    assert_includes response.body, recording_studio_users.photo_profile_path
+    assert_select "input#profile_photo[type='file']"
+    refute_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
+    refute_includes response.body, 'name="attachment[name]"'
+    refute_includes response.body, 'name="attachment[description]"'
+    assert_includes response.body, "M12 2C6.48 2 2 6.48"
     refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
   end
 
@@ -172,7 +177,12 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "[&>*:first-child]:rounded-l-md"
     assert_includes response.body, "Update profile"
     assert_includes response.body, "Cancel"
-    assert_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
+    assert_includes response.body, recording_studio_users.photo_profile_path
+    assert_select "input#profile_photo[type='file']"
+    refute_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
+    refute_includes response.body, 'name="attachment[name]"'
+    refute_includes response.body, 'name="attachment[description]"'
+    assert_includes response.body, "M12 2C6.48 2 2 6.48"
   end
 
   test "profile show and edit display one attached image and a replace path" do
@@ -185,20 +195,54 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Swap this photo"
     refute_includes response.body, "Add a photo"
-    assert_includes response.body, recording_studio_attachable.attachment_path(image)
+    refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(image))}"}, response.body)
+    assert_includes response.body, recording_studio_users.photo_profile_path
     assert(
       response.body.include?(recording_studio_attachable.attachment_preview_file_path(image, variant_name: :square_med)) ||
         response.body.include?(recording_studio_attachable.attachment_file_path(image))
     )
     refute_includes response.body, recording_studio_attachable.recording_attachments_path(recording)
     refute_includes response.body, "Manage access"
+    refute_includes response.body, 'name="attachment[name]"'
+    refute_includes response.body, 'name="attachment[description]"'
 
     get recording_studio_users.edit_profile_path
 
     assert_response :success
     assert_includes response.body, "Swap this photo"
-    assert_includes response.body, recording_studio_attachable.attachment_path(image)
+    refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(image))}"}, response.body)
+    assert_includes response.body, recording_studio_users.photo_profile_path
     refute_includes response.body, "Manage access"
+    refute_includes response.body, 'name="attachment[name]"'
+    refute_includes response.body, 'name="attachment[description]"'
+  end
+
+  test "add and swap photo stay on profile and persist through attachable" do
+    sign_in @user
+
+    assert_difference -> { RecordingStudioUser.profile_recording_for(@user).images.to_a.size }, +1 do
+      patch recording_studio_users.photo_profile_path, params: {
+        photo: Rack::Test::UploadedFile.new(profile_photo_fixture_path, "image/png"),
+        return_to: recording_studio_users.edit_profile_path
+      }
+    end
+
+    assert_redirected_to recording_studio_users.edit_profile_path
+    first = RecordingStudioUser.profile_image_recording_for(@user)
+    assert_equal "profile.png", first.recordable.original_filename
+
+    patch recording_studio_users.photo_profile_path, params: {
+      photo: Rack::Test::UploadedFile.new(profile_photo_fixture_path, "image/png"),
+      return_to: recording_studio_users.edit_profile_path
+    }
+
+    assert_redirected_to recording_studio_users.edit_profile_path
+    follow_redirect!
+    assert_response :success
+    refute_includes response.body, 'name="attachment[name]"'
+    refute_includes response.body, 'name="attachment[description]"'
+    assert_equal 1, RecordingStudioUser.profile_recording_for(@user).images.to_a.size
+    assert_equal first.id, RecordingStudioUser.profile_image_recording_for(@user).id
   end
 
   test "profile photo replace uses one core PageNav and rounded default layout" do
