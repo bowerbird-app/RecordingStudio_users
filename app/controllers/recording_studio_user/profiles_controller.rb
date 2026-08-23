@@ -23,12 +23,18 @@ module RecordingStudioUser
     end
 
     def update_photo
-      photo = params[:photo]
-      if photo.blank?
-        redirect_to photo_return_path, alert: "Choose a photo first."
-        return
-      end
+      return redirect_to(photo_return_path, alert: "Choose a photo first.") if params[:photo].blank?
 
+      replace_uploaded_photo!
+      redirect_to photo_return_path, notice: "Photo updated."
+    rescue ArgumentError, ActiveRecord::RecordInvalid => e
+      redirect_to photo_return_path, alert: e.message
+    end
+
+    private
+
+    def replace_uploaded_photo!
+      photo = params[:photo]
       RecordingStudioUser.replace_profile_image!(
         current_user,
         io: photo,
@@ -36,12 +42,7 @@ module RecordingStudioUser
         content_type: photo.content_type,
         actor: current_user
       )
-      redirect_to photo_return_path, notice: "Photo updated."
-    rescue ArgumentError, ActiveRecord::RecordInvalid => e
-      redirect_to photo_return_path, alert: e.message
     end
-
-    private
 
     def set_profile
       @user = current_user
