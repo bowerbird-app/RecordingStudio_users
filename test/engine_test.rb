@@ -20,6 +20,16 @@ class EngineTest < Minitest::Test
     refute_includes routes, "root"
   end
 
+  def test_profile_show_does_not_render_notice_or_flash
+    show = File.read(File.expand_path("../app/views/recording_studio_user/profiles/show.html.erb", __dir__))
+
+    refute_includes show, "notice"
+    refute_includes show, "flash"
+    refute_includes show, "FlatPack::Alert::Component"
+    assert_includes show, "recording_studio_page_nav_right"
+    assert_includes show, "recording_access_management_link"
+  end
+
   def test_profile_authorization_uses_accessible_not_current_user_acl
     controller = File.read(File.expand_path("../app/controllers/recording_studio_user/profiles_controller.rb", __dir__))
     profile = File.read(File.expand_path("../app/models/recording_studio_user/profile.rb", __dir__))
@@ -32,5 +42,24 @@ class EngineTest < Minitest::Test
     refute_includes controller, "can_access?"
     refute_includes controller, "@user.update"
     refute_includes admin, "user.admin?"
+  end
+
+  def test_first_owner_uses_bootstrap_on_profile_without_authorizer_swap
+    directory = File.read(File.expand_path("../lib/recording_studio_user/directory.rb", __dir__))
+    access = File.read(File.expand_path("../lib/recording_studio_user/profile_access.rb", __dir__))
+
+    assert_includes directory, "RecordingStudioAccessible.bootstrap_owner_access!("
+    assert_includes directory, "recording: recording"
+    assert_includes directory, "actor: user"
+    assert_includes access, "RecordingStudioAccessible.grant_access"
+    refute_includes directory, "access_management_authorizer"
+    refute_includes access, "access_management_authorizer"
+    refute_includes directory, "AccessCreationContext"
+    refute_includes access, "AccessCreationContext"
+    refute_includes directory, "grant_first_owner"
+    refute_includes access, "first_owner_retry?"
+    refute_includes access, "AUTHORIZER_MUTEX"
+    refute_includes access, "ensure_owner_access!"
+    refute_includes directory, "bootstrap_owner_access!(recording: people_root"
   end
 end

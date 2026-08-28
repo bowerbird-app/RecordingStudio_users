@@ -138,18 +138,15 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "recordingstudio_addon.example_method"
   end
 
-  test "sidebar includes documentation links" do
+  test "docs pages use default layout without sidebar chrome" do
     get docs_install_path
 
-    assert_includes response.body, "RecordingStudioUser"
-    assert_select %(a[href="#{docs_install_path}"]), text: /Install/
-    assert_select %(a[href="#{docs_config_path}"]), text: /Config/
-    assert_select %(a[href="#{docs_recordable_types_path}"]), text: /Diagnostics: Recordable types/
-    assert_select %(a[href="#{docs_recordings_tree_path}"]), text: /Diagnostics: Recordings tree/
-    assert_select %(a[href="#{docs_gem_views_path}"]), text: /Diagnostics: Gem Views/
-    assert_select %(a[href="#{docs_methods_path}"]), text: /Routes and integrations/
-    assert_select %(a[href="#{recording_studio_users.profile_path}"]), text: /My profile/
-    assert_select %(a[href="#{recording_studio_users.admin_path}"]), count: 0
+    assert_response :success
+    assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
+    assert_select %(body[data-theme="rounded"]), count: 1
+    refute_includes response.body, "flat-pack-sidebar-layout"
+    refute_includes response.body, "Sign out"
+    refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
   end
 
   test "home page renders only the profile action without an admin root" do

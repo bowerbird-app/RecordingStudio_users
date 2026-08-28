@@ -16,7 +16,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible`, `recording_studio_attachable`, `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible on Profile only. It does not enable Accessible on People, and it does not enable Attachable.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable`, `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible on Profile only. It does not enable Accessible on People, and it does not enable Attachable.
 
 The host remains responsible for its existing User and Devise setup.
 
@@ -109,11 +109,19 @@ RecordingStudioUser.record_profile!(
 )
 ```
 
-`create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.grant_access` on that Profile recording. Later changes `revise` the existing profile recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
+`create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.bootstrap_owner_access!` on that Profile recording (role `:admin`). Do not bootstrap People — Accessible rejects the shared root on purpose. Later membership uses `grant_access`. Later profile changes `revise` the existing recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
 
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
+
+Flash notices come from the host layout. Profile show does not render `notice` again. When the host uses Recording Studio's default layout, that layout already draws `flash[:notice]` as a FlatPack alert.
+
+The profile screens put Accessible's public access-management control in the PageNav right slot (`recording_studio_page_nav_right` + `recording_access_management_link`). Hosts that want that control should mount Accessible and generate the link helper:
+
+```bash
+bin/rails generate recording_studio_accessible:access_management --link-helper
+```
 
 ## Users administration
 
@@ -123,7 +131,9 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps the existing Devise login at `/users/sign_in`, root-switcher integration, and FlatPack layouts. Seeded accounts include:
+The dummy keeps Devise login at `/users/sign_in`. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Rounded on profile pages is core's `body data-theme` (default `"rounded"`).
+
+Profile show/edit are that chrome only — no sidebar, Sign out, or Root Switchable. Accessible is mounted at `/recording_studio_accessible`, and the profile PageNav right slot links with `recording_access_management_link`. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |

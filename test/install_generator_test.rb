@@ -38,6 +38,8 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes generator, "as: :recording_studio_users"
     assert_includes generator, "recording_studio_user:migrations"
     assert_includes generator, "Accessible on Profile"
-    assert_includes generator, "grant the user on that Profile recording"
+    assert_includes generator, "bootstrap_owner_access!"
+    refute_includes generator, "access_management_authorizer"
+    refute_includes generator, "AccessCreationContext"
   end
 end

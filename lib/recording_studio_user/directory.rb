@@ -47,7 +47,7 @@ module RecordingStudioUser
 
       ActiveRecord::Base.transaction do
         recording = write_profile_recording(user, actor, assignment)
-        ProfileAccess.ensure_owner_access!(user, recording, manager_actor: actor)
+        bootstrap_profile_owner!(user, recording) unless ProfileAccess.authorized?(user, recording, role: :admin)
       end
 
       recording
@@ -75,6 +75,16 @@ module RecordingStudioUser
       else
         people_root.record(Profile, actor: actor, &assignment)
       end
+    end
+
+    def bootstrap_profile_owner!(user, recording)
+      result = RecordingStudioAccessible.bootstrap_owner_access!(
+        recording: recording,
+        actor: user
+      )
+      raise result.error if result.failure?
+
+      result.value
     end
 
     def profile_assignment(user, attrs)

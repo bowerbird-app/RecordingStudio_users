@@ -1,5 +1,17 @@
 <% content_for :title, "Edit Profile | Recording Studio User" %>
 
+<% recording_studio_page_nav(
+  title: "Edit Profile",
+  page_nav_back_url: profile_path,
+  page_nav_back_label: "My Profile",
+  page_nav_anchor_url: main_app.root_path,
+  page_nav_anchor_label: "Close"
+) %>
+
+<% recording_studio_page_nav_right do %>
+  <%= recording_access_management_link(@profile_recording) %>
+<% end %>
+
 <%= render FlatPack::PageTitle::Component.new(
   title: "Edit Profile",
   subtitle: "Update your personal information and contact details.",

@@ -27,6 +27,17 @@ class PeopleAndProfilesEngineTest < ActiveSupport::TestCase
     refute RecordingStudio.capability_enabled?(:accessible, for: RecordingStudioUser::People)
   end
 
+  test "directory bootstraps Profile first-owner and never People" do
+    directory = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/directory.rb"))
+    access = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/profile_access.rb"))
+
+    assert_includes directory, "RecordingStudioAccessible.bootstrap_owner_access!("
+    refute_includes directory, "bootstrap_owner_access!(recording: people_root"
+    refute_includes directory, "access_management_authorizer"
+    refute_includes access, "access_management_authorizer"
+    refute_includes access, "grant_first_owner"
+  end
+
   test "people_root.record creates Profile snapshots without raw recording inserts" do
     user = User.create!(
       email: "engine-profile-#{SecureRandom.hex(4)}@example.com",

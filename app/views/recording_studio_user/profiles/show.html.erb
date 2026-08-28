@@ -1,14 +1,20 @@
 <% content_for :title, "My Profile | Recording Studio User" %>
 
+<% recording_studio_page_nav(
+  title: "My Profile",
+  page_nav_anchor_url: main_app.root_path,
+  page_nav_anchor_label: "Close"
+) %>
+
+<% recording_studio_page_nav_right do %>
+  <%= recording_access_management_link(@profile_recording) %>
+<% end %>
+
 <%= render FlatPack::PageTitle::Component.new(
   title: "My Profile",
   subtitle: "Manage your personal details and account settings.",
   variant: :h1
 ) %>
-
-<% if notice.present? %>
-  <%= render FlatPack::Alert::Component.new(description: notice, style: :success, dismissible: true) %>
-<% end %>
 
 <div class="mt-6 space-y-4">
   <%= render FlatPack::Button::Component.new(

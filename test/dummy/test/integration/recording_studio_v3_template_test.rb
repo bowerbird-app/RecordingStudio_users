@@ -7,6 +7,9 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
     assert_equal [ "roots" ], RecordingStudioRootSwitchable.configuration.scopes.keys
     assert_equal :application_layout, RecordingStudioRootSwitchable.configuration.layout
     assert_includes ApplicationController.ancestors, RecordingStudio::RootSwitchable::ControllerSupport
+    assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
+    assert_equal "recording_studio/default_layout", RecordingStudioUser.config.layout
+    refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
   end
 
   test "dummy app validates v3 recordable declarations" do
