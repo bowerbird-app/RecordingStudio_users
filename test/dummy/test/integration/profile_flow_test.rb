@@ -154,6 +154,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, @user.email
     assert_includes response.body, "UTC"
     refute_includes response.body, "parent-attachment-slot"
+    refute_includes response.body, "attachment-chrome-image_slot"
     refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_select "input[type='file']", count: 0
     refute_includes response.body, "Choose File"
@@ -193,9 +194,10 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "[&>*:first-child]:rounded-l-md"
     assert_includes response.body, "Update profile"
     assert_includes response.body, "Cancel"
-    assert_includes response.body, "parent-attachment-slot"
+    assert_includes response.body, "attachment-chrome-image_slot"
     assert_select "input[type='file'].hidden"
-    assert_select "#parent-attachment-slot button", text: "Add"
+    assert_select "#attachment-chrome-image_slot button", text: "Add"
+    refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_includes response.body, "h-24 w-24"
     assert_includes response.body, "mb-8"
@@ -222,6 +224,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Add a photo"
     refute_includes response.body, "parent-attachment-slot"
+    refute_includes response.body, "attachment-chrome-image_slot"
     refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_select "input[type='file']", count: 0
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(image))}"}, response.body)
@@ -239,8 +242,9 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Choose File"
-    assert_includes response.body, "parent-attachment-slot"
-    assert_select "#parent-attachment-slot button", text: "Change"
+    assert_includes response.body, "attachment-chrome-image_slot"
+    assert_select "#attachment-chrome-image_slot button", text: "Change"
+    refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_includes response.body, "h-24 w-24"
     assert_select "input[type='file'].hidden"
@@ -295,7 +299,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to edit_path
     follow_redirect!
     assert_response :success
-    assert_includes response.body, "parent-attachment-slot"
+    assert_includes response.body, "attachment-chrome-image_slot"
+    refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, 'name="attachment[name]"'
     refute_includes response.body, 'name="attachment[description]"'
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(first))}"}, response.body)

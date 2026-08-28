@@ -26,6 +26,7 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes avatar, "file_field_tag"
     refute_includes avatar, "photo_profile_path"
     refute_includes avatar, "render_parent_attachment"
+    refute_includes avatar, "render_attachment_image_slot"
     refute File.exist?(File.expand_path("../app/views/recording_studio_user/profiles/_photo.html.erb", __dir__))
 
     show = profile_views.first
@@ -49,12 +50,15 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "Name"
     refute_includes show, "city"
     refute_includes show, "render_parent_attachment"
+    refute_includes show, "render_attachment_image_slot"
+    refute_includes show, "attachment-chrome-image_slot"
     refute_includes show, "file_field_tag"
     refute_includes show, "photo_profile_path"
     refute_includes show, "Tidy up"
     refute_includes edit, "The photo lives here too."
     refute_includes edit, 'render "photo"'
-    assert_includes edit, "render_parent_attachment(@profile_recording,"
+    refute_includes edit, "render_parent_attachment"
+    assert_includes edit, "render_attachment_image_slot(@profile_recording,"
     assert_includes edit, "return_to: edit_profile_path, shape: :circle, size: :\"2xl\")"
     refute_includes edit, "FlatPack::Card::Component"
     assert_includes edit, "Change your name, time zone, or photo."
@@ -72,17 +76,18 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "FlatPack::Select::Component"
   end
 
-  def test_gemfiles_pin_attachable_parent_attachment_branch
+  def test_gemfiles_pin_attachable_split_chrome_sha
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_attachable"'
       assert_includes contents, 'branch: "cursor/file-only-replace-path-a5db"'
+      assert_includes contents, 'ref: "4f6897c86e077281d1b104e9962418263cc56e44"'
       refute_includes contents, 'tag: "0.4.0"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
-      assert_includes File.read(lockfile), "1477cc9242f2cddb8ca5b955e9ca9833a8ab6b0a"
+      assert_includes File.read(lockfile), "4f6897c86e077281d1b104e9962418263cc56e44"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))

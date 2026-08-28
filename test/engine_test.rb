@@ -35,6 +35,7 @@ class EngineTest < Minitest::Test
     refute_includes show, "file_field_tag"
     refute_includes show, "photo_profile_path"
     refute_includes show, "render_parent_attachment"
+    refute_includes show, "render_attachment_image_slot"
   end
 
   def test_profile_authorization_uses_accessible_not_current_user_acl
