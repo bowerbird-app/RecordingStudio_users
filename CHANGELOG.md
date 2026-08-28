@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enabled Recording Studio Attachable on **Profile** with `include RecordingStudio::Capabilities::Attachable.to(allowed_content_types: ["image/*"], enabled_attachment_kinds: %i[image], max_file_count: 1)`. People stays without Attachable. `max_file_count` is a per-upload batch limit, not a lifetime cap; the product still shows one image.
 - Public helpers `profile_image_recording_for`, `attach_profile_image!`, and `replace_profile_image!`. The image is an Attachable child of the Profile recording (`import_attachment`), not a parallel table.
 - Profile **show** renders a Flatpack Avatar only (image or person-icon fallback). **Edit** calls Attachable `render_parent_attachment(recording, return_to:, shape: :circle, size: :xl)` for Avatar plus the icon-only camera. These screens are not a gallery or library.
-- Dummy mounts `RecordingStudioAttachable::Engine`, runs Active Storage plus Attachable migrations, wires direct uploads, and seeds Avery Admin (`admin@admin.com`) with a real image on their Profile recording.
+- Dummy mounts `RecordingStudioAttachable::Engine`, runs Active Storage plus Attachable migrations, wires direct uploads, and seeds Avery Admin (`admin@admin.com`) with a real image on their Profile recording. `doc/review/profile-edit-upload.mp4` records a throwaway empty Edit Profile using the camera slot — the Avatar updates on the same URL, not via seeded stills.
 
 ### Changed
 - Profile PageNav right slot is empty. Profile is owner-only: Accessible still records the first owner with `bootstrap_owner_access!`, but show/edit no longer render `recording_access_management_link` or any grant/invite control.

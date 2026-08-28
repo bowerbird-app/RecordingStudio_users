@@ -27,7 +27,7 @@ Run these commands from the dummy app directory. Sign in through Devise at `/use
 ## RecordingStudioUser Routes
 
 - `/recording_studio_users/profile`: the signed-in user's profile. Accessible must grant them a role on that Profile recording. Flash notices come from the default layout, not the show template. The photo is the single Attachable child. Show is Avatar plus Edit only.
-- `/recording_studio_users/profile/edit`: profile editing route. Writes go through `record_profile!`. The photo row is Attachable `render_parent_attachment` (camera posts stay on this page).
+- `/recording_studio_users/profile/edit`: profile editing route. Writes go through `record_profile!`. The photo row is Attachable `render_parent_attachment` (camera posts stay on this page). `doc/review/profile-edit-upload.mp4` is a viewport clip of an empty throwaway profile picking a file with that camera and staying on this URL.
 - `/recording_studio_attachable/attachments/:id`: leftover Attachable record screen if opened directly. Profile does not link here.
 - `/recording_studio_users/admin`: authorizes the actor against the Admin root, then opens the shared read-only users report.
 
