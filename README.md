@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.4), `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5), `recording_studio_admin`, `flat_pack`, and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 
@@ -130,7 +130,7 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.bootstrap_owner_access!` on that Profile recording (role `:admin`). Do not bootstrap People — Accessible rejects the shared root on purpose. Later membership uses `grant_access`. Later profile changes `revise` the existing recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
 
-`attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. `replace_profile_image!` swaps the file on that same attachment through `replace_attachment_file`. Profile show/edit keep Add / Swap on the Edit Profile form (file input posts to `photo_profile_path`). They do not open Attachable's Name / Description record edit.
+`attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. `replace_profile_image!` swaps the file on that same attachment through `replace_attachment_file`. Edit Profile renders Attachable's `render_parent_attachment` (circle, xl) so the camera control stays on that page. My Profile shows the Avatar only. Neither screen opens Attachable's Name / Description record edit.
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
 
@@ -142,7 +142,7 @@ Flash notices come from the host layout. Profile show does not render `notice` a
 
 The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
 
-Show puts **Edit** in the PageTitle actions slot. Empty photos use Flatpack Avatar's person icon (no name/initials). Add / Swap stay on the profile form. Edit wraps the photo, stacked fields, and actions in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Subtitles stay plain: "Your name, email, and photo." and "Change your name, time zone, or photo."
+Show puts **Edit** in the PageTitle actions slot and a Flatpack Avatar (image or person-icon fallback, no name/initials when empty). Edit renders `render_parent_attachment(..., shape: :circle, size: :xl)` for Avatar plus the icon-only camera, then stacked fields, in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Subtitles stay plain: "Your name, email, and photo." and "Change your name, time zone, or photo."
 
 ## Users administration
 
@@ -154,7 +154,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs and a primary button — not a Users product registration flow. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
 
-Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Add / Swap photo stay on those screens. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
+Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit. Edit uses Attachable's parent-attachment slot for the camera. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |

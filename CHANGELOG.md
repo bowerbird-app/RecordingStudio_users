@@ -11,25 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Enabled Recording Studio Attachable on **Profile** with `include RecordingStudio::Capabilities::Attachable.to(allowed_content_types: ["image/*"], enabled_attachment_kinds: %i[image], max_file_count: 1)`. People stays without Attachable. `max_file_count` is a per-upload batch limit, not a lifetime cap; the product still shows one image.
-- Public helpers `profile_image_recording_for` and `attach_profile_image!`. The image is an Attachable child of the Profile recording (`import_attachment`), not a parallel table.
-- Profile show/edit render one FlatPack avatar. Empty profiles offer **Add a photo** (Attachable upload). A present photo offers **Swap this photo** (Attachable revision / `replace_attachment_file`). These screens are not a gallery or library.
+- Public helpers `profile_image_recording_for`, `attach_profile_image!`, and `replace_profile_image!`. The image is an Attachable child of the Profile recording (`import_attachment`), not a parallel table.
+- Profile **show** renders a Flatpack Avatar only (image or person-icon fallback). **Edit** calls Attachable `render_parent_attachment(recording, return_to:, shape: :circle, size: :xl)` for Avatar plus the icon-only camera. These screens are not a gallery or library.
 - Dummy mounts `RecordingStudioAttachable::Engine`, runs Active Storage plus Attachable migrations, wires direct uploads, and seeds Avery Admin (`admin@admin.com`) with a real image on their Profile recording.
 
 ### Changed
 - Profile PageNav right slot is empty. Profile is owner-only: Accessible still records the first owner with `bootstrap_owner_access!`, but show/edit no longer render `recording_access_management_link` or any grant/invite control.
-- Dummy overrides Attachable's attachment show so only core `recording_studio/default_layout` PageNav renders. Attachable 0.4.0 has no config to hide its in-view PageNav; the host template keeps the replace UI and leaves the right slot empty.
+- Dummy overrides Attachable's attachment show so only core `recording_studio/default_layout` PageNav renders if that leftover URL is opened. Profile screens do not link there.
 - Dummy `recording_studio/_default_layout_head` sets `html data-theme="rounded"` so Flatpack `--button-primary-*` aliases inherit charcoal. Core's body attribute alone leaves `:root` primary blue.
 - Dummy Devise sign up (`/users/sign_up`) uses Flatpack `EmailInput`, `PasswordInput` (password + confirmation), and a primary **Sign up** button on `layouts/application`. It is still Devise registerable, not a Users product registration flow.
 - `require_password_confirmation` (default `true`) hides the Devise confirmation field and does not require the param when the host turns it off.
-- Empty Profile photos use Flatpack Avatar's person-icon fallback (no name/initials). Add / Swap stay on the profile form via `photo_profile_path` and `replace_profile_image!`. They no longer open Attachable's Name / Description record edit.
-- Profile show puts **Edit** in the PageTitle actions slot. Edit wraps photo, stacked fields, and Update / Cancel in a Flatpack Grid `cols: 2` so the form occupies one cell (width constraint). Fields stay full-width rows — not two columns of first/last name. Update profile and Cancel are two separate Flatpack buttons, not a ButtonGroup. Subtitles drop the cute lines: "Your name, email, and photo." and "Change your name, time zone, or photo."
+- Empty Profile photos use Flatpack Avatar's person-icon fallback (no name/initials). Edit's camera persists through Attachable import / `replace_attachment_file` and stays on Edit Profile.
+- Profile show puts **Edit** in the PageTitle actions slot. Edit wraps the Attachable photo slot, stacked fields, and Update / Cancel in a Flatpack Grid `cols: 2` so the form occupies one cell (width constraint). Fields stay full-width rows — not two columns of first/last name. Update profile and Cancel are two separate Flatpack buttons, not a ButtonGroup. Subtitles drop the cute lines: "Your name, email, and photo." and "Change your name, time zone, or photo."
+- Dummy and development Gemfiles pin `recording_studio_attachable` to branch `cursor/file-only-replace-path-a5db` (0.5.0) for `render_parent_attachment`. The gemspec requires `~> 0.5`.
 
 ### Upgrade notes
 - Enable Attachable on Profile only, using the `.to` mixin and the image-only options above. Do not enable it on People.
-- Run `bin/rails generate recording_studio_attachable:install`, `bin/rails generate recording_studio_attachable:migrations`, and `bin/rails active_storage:install` if those are missing. Mount the engine and keep `@rails/activestorage` plus `ActiveStorage.start()` as the Attachable README describes.
+- Require RecordingStudioAttachable `~> 0.5` (this branch pins `cursor/file-only-replace-path-a5db` until that release is tagged). Run `bin/rails generate recording_studio_attachable:install`, `bin/rails generate recording_studio_attachable:migrations`, and `bin/rails active_storage:install` if those are missing. Mount the engine and keep `@rails/activestorage` plus `ActiveStorage.start()` as the Attachable README describes.
 - Remove `recording_access_management_link` (and any Access control) from Profile PageNav. First-owner bootstrap stays; do not add invite/grant UI on Profile.
-- Use `attach_profile_image!` or `recording.import_attachment` to place one image under the Profile recording. Use the Attachable revision screen / `replace_attachment_file` to swap it. Do not ship a library as the profile page.
-- If Attachable uses core `recording_studio/default_layout`, override the attachment show view so it does not render a second PageNav. Attachable 0.4.0 has no hide-chrome setting.
+- Use `attach_profile_image!` or `recording.import_attachment` to place one image under the Profile recording. On Edit Profile call `render_parent_attachment(recording, return_to: edit_profile_path, shape: :circle, size: :xl)`. Show the Avatar only on My Profile. Do not compose a Users-owned photo form or link replace to `attachments#show`.
+- If Attachable uses core `recording_studio/default_layout`, you can still override the leftover attachment show view so it does not render a second PageNav. Profile screens do not navigate there.
 - Hosts that use core `recording_studio/default_layout` should add `app/views/recording_studio/_default_layout_head.html.erb` that sets `document.documentElement.setAttribute("data-theme", "rounded")`. Core puts the named theme on `body`; Flatpack `--button-primary-*` aliases live on `:root` and otherwise stay the default blue. Do not copy the layout or invent a host theme.
 
 ## [0.4.0] - 2026-08-21

@@ -20,21 +20,14 @@ class RecordingStudioUserTest < Minitest::Test
       refute_includes view, "recording_studio_page_nav_right"
       refute_includes view, "recording_access_management_link"
       refute_includes view, "Manage access"
-      assert_includes view, 'render "photo"'
     end
 
-    photo = File.read(File.expand_path("../app/views/recording_studio_user/profiles/_photo.html.erb", __dir__))
-    assert_includes photo, "FlatPack::Avatar::Component"
-    assert_includes photo, "file_field_tag :photo"
-    assert_includes photo, "photo_profile_path"
-    assert_includes photo, "Add a photo"
-    assert_includes photo, "Swap this photo"
-    refute_includes photo, "profile_image_replace_path"
-    refute_includes photo, "profile_image_upload_path"
-    refute_includes photo, "attachment_path"
-    refute_includes photo, "recording_attachment_upload_path"
-    refute_includes photo, "attachment[name]"
-    refute_includes photo, "attachment[description]"
+    avatar = File.read(File.expand_path("../app/views/recording_studio_user/profiles/_avatar.html.erb", __dir__))
+    assert_includes avatar, "FlatPack::Avatar::Component"
+    refute_includes avatar, "file_field_tag"
+    refute_includes avatar, "photo_profile_path"
+    refute_includes avatar, "render_parent_attachment"
+    refute File.exist?(File.expand_path("../app/views/recording_studio_user/profiles/_photo.html.erb", __dir__))
 
     show = profile_views.first
     edit = profile_views.last
@@ -45,8 +38,14 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "Just you."
     assert_includes show, "Your name, email, and photo."
     assert_includes show, "page_title.slot"
+    assert_includes show, 'render "avatar"'
+    refute_includes show, "render_parent_attachment"
+    refute_includes show, "file_field_tag"
+    refute_includes show, "photo_profile_path"
     refute_includes show, "Tidy up"
     refute_includes edit, "The photo lives here too."
+    refute_includes edit, 'render "photo"'
+    assert_includes edit, "render_parent_attachment(@profile_recording, return_to: edit_profile_path, shape: :circle, size: :xl)"
     assert_includes edit, "Change your name, time zone, or photo."
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     refute_includes edit, "FlatPack::ButtonGroup::Component"
@@ -55,6 +54,19 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "Cancel"
     assert_includes edit, "FlatPack::TextInput::Component"
     assert_includes edit, "FlatPack::Select::Component"
+  end
+
+  def test_gemfiles_pin_attachable_parent_attachment_branch
+    [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
+      contents = File.read(gemfile)
+
+      assert_includes contents, 'github: "bowerbird-app/RecordingStudio_attachable"'
+      assert_includes contents, 'branch: "cursor/file-only-replace-path-a5db"'
+      refute_includes contents, 'tag: "0.4.0"'
+    end
+
+    gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
+    assert_includes gemspec, '"recording_studio_attachable", "~> 0.5"'
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html

@@ -14,7 +14,7 @@ class EngineTest < Minitest::Test
 
     assert_includes routes, "profile"
     assert_includes routes, "edit_profile"
-    assert_includes routes, "photo_profile"
+    refute_includes routes, "photo_profile"
     assert_includes routes, "admin"
     refute_includes routes, "admin_user"
     refute_includes routes, "edit_admin_user"
@@ -30,7 +30,11 @@ class EngineTest < Minitest::Test
     refute_includes show, "recording_studio_page_nav_right"
     refute_includes show, "recording_access_management_link"
     refute_includes show, "Manage access"
-    assert_includes show, "photo"
+    assert_includes show, 'render "avatar"'
+    refute_includes show, 'render "photo"'
+    refute_includes show, "file_field_tag"
+    refute_includes show, "photo_profile_path"
+    refute_includes show, "render_parent_attachment"
   end
 
   def test_profile_authorization_uses_accessible_not_current_user_acl
@@ -47,6 +51,8 @@ class EngineTest < Minitest::Test
     refute_includes people, "enable_capability(:accessible"
     refute_includes people, "Capabilities::Attachable"
     assert_includes controller, "RecordingStudioAccessible.authorized?"
+    refute_includes controller, "update_photo"
+    refute_includes controller, "photo_return_path"
     refute_includes controller, "can_access?"
     refute_includes controller, "@user.update"
     refute_includes admin, "user.admin?"

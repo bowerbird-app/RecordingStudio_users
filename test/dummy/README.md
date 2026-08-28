@@ -7,8 +7,8 @@ This Rails application demonstrates RecordingStudioUser in a host application.
 - One profile image is an Attachable child of the Profile recording. Dummy mounts Attachable and Active Storage.
 - Workspace remains the host-owned bucket. Access-controlled, read-only reporting on sitewide users is still mounted.
 - Signed-in pages use Recording Studio's default layout (`RecordingStudio::UsesDefaultLayout`). Devise keeps `layouts/application` with `html data-theme="rounded"`. Dummy does not own `recording_studio/default_layout`. A `recording_studio/_default_layout_head` hook sets the same theme on signed-in pages so Flatpack primary tokens resolve on `:root`. Login and sign up are Devise views that use Flatpack inputs and a primary button. They are not a Users product registration flow.
-- Profile show/edit are PageNav back/close only. The right slot stays empty. There is no Access control, sidebar Sign out, or Root Switchable on those screens. Show puts Edit in the page title. Empty photos show Flatpack Avatar's person icon. Add / Swap stay on the profile form. Edit puts the form in one cell of a two-column Flatpack Grid (the other cell stays empty) so fields do not stretch full-bleed on a wide screen. Each field is still its own full-width row. Update profile and Cancel are separate Flatpack buttons, not a ButtonGroup.
-- The photo replace screen uses the same core layout. Dummy overrides Attachable's attachment show so that gem's in-view PageNav is not stacked on top of core's.
+- Profile show/edit are PageNav back/close only. The right slot stays empty. There is no Access control, sidebar Sign out, or Root Switchable on those screens. Show puts Edit in the page title and a Flatpack Avatar only. Empty photos show Avatar's person icon. Edit calls Attachable `render_parent_attachment` for Avatar plus the icon-only camera. Edit puts the form in one cell of a two-column Flatpack Grid (the other cell stays empty) so fields do not stretch full-bleed on a wide screen. Each field is still its own full-width row. Update profile and Cancel are separate Flatpack buttons, not a ButtonGroup.
+- Dummy still overrides Attachable's leftover attachment show so that gem's in-view PageNav is not stacked on top of core's. Profile screens do not link there.
 
 ## Quick Start
 
@@ -26,10 +26,9 @@ Run these commands from the dummy app directory. Sign in through Devise at `/use
 
 ## RecordingStudioUser Routes
 
-- `/recording_studio_users/profile`: the signed-in user's profile. Accessible must grant them a role on that Profile recording. Flash notices come from the default layout, not the show template. The photo is the single Attachable child.
-- `/recording_studio_users/profile/edit`: profile editing route. Writes go through `record_profile!`. Photo add/swap posts the file to `/recording_studio_users/profile/photo` (`replace_profile_image!`).
-- `/recording_studio_attachable/recordings/:recording_id/attachments/upload`: Attachable upload when the profile has no photo.
-- `/recording_studio_attachable/attachments/:id`: Attachable revision screen for swapping the photo.
+- `/recording_studio_users/profile`: the signed-in user's profile. Accessible must grant them a role on that Profile recording. Flash notices come from the default layout, not the show template. The photo is the single Attachable child. Show is Avatar plus Edit only.
+- `/recording_studio_users/profile/edit`: profile editing route. Writes go through `record_profile!`. The photo row is Attachable `render_parent_attachment` (camera posts stay on this page).
+- `/recording_studio_attachable/attachments/:id`: leftover Attachable record screen if opened directly. Profile does not link here.
 - `/recording_studio_users/admin`: authorizes the actor against the Admin root, then opens the shared read-only users report.
 
 Seeded users get Profile snapshots under People. `record_profile!` bootstraps first-owner `:admin` on each Profile recording with `bootstrap_owner_access!`. People itself is not bootstrapped. User is not a recordable.
