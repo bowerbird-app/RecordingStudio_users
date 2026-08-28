@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "cgi"
 require "test_helper"
 require "devise/test/integration_helpers"
 
@@ -188,7 +189,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "parent-attachment-slot"
     assert_select "input[type='file'].hidden"
     assert_includes response.body, 'data-flat-pack--icon-name-value="camera"'
-    assert_includes response.body, recording_studio_attachable.recording_attachment_imports_path(
+    assert_includes unescaped_page, recording_studio_attachable.recording_attachment_imports_path(
       recording,
       redirect_mode: "return_to",
       return_to: recording_studio_users.edit_profile_path
@@ -232,7 +233,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_select "input[type='file'].hidden"
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(image))}"}, response.body)
-    assert_includes response.body, recording_studio_attachable.attachment_path(
+    assert_includes unescaped_page, recording_studio_attachable.attachment_path(
       image,
       redirect_mode: "return_to",
       return_to: recording_studio_users.edit_profile_path
@@ -331,5 +332,11 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes controller, "@user.update"
     refute_includes controller, "current_user.admin"
     refute_includes controller, "user.admin?"
+  end
+
+  private
+
+  def unescaped_page
+    CGI.unescapeHTML(response.body)
   end
 end

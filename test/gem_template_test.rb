@@ -45,7 +45,8 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "Tidy up"
     refute_includes edit, "The photo lives here too."
     refute_includes edit, 'render "photo"'
-    assert_includes edit, "render_parent_attachment(@profile_recording, return_to: edit_profile_path, shape: :circle, size: :xl)"
+    assert_includes edit, "render_parent_attachment(@profile_recording,"
+    assert_includes edit, "return_to: edit_profile_path, shape: :circle, size: :xl)"
     assert_includes edit, "Change your name, time zone, or photo."
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     refute_includes edit, "FlatPack::ButtonGroup::Component"

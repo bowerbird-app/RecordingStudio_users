@@ -26,9 +26,7 @@ module RecordingStudioUser
     private
 
     def attachable_routes
-      return recording_studio_attachable if respond_to?(:recording_studio_attachable)
-
-      main_app.recording_studio_attachable
+      recording_studio_attachable
     end
   end
 end
