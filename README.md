@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5), `recording_studio_admin`, `flat_pack` (~> 0.1.135), and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.135), and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 

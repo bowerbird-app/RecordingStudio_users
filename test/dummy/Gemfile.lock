@@ -27,9 +27,8 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_attachable.git
-  revision: 62c2f944d1ed206c84c80275851db0aee8e3306a
-  ref: 62c2f944d1ed206c84c80275851db0aee8e3306a
-  branch: cursor/file-only-replace-path-a5db
+  revision: 542777b2557ea235050fd4f42753653df90fe957
+  tag: v0.5.0
   specs:
     recording_studio_attachable (0.5.0)
       flat_pack (>= 0.1.135)
@@ -68,7 +67,7 @@ PATH
       recording_studio (~> 4.2)
       recording_studio_accessible (~> 0.7)
       recording_studio_admin (~> 2.0)
-      recording_studio_attachable (~> 0.5)
+      recording_studio_attachable (~> 0.5.0)
 
 GEM
   remote: https://rubygems.org/
