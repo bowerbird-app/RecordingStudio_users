@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-22
+
+### Added
+- Enabled Recording Studio Attachable on **Profile** with `include RecordingStudio::Capabilities::Attachable.to(allowed_content_types: ["image/*"], enabled_attachment_kinds: %i[image], max_file_count: 1)`. People stays without Attachable. `max_file_count` is a per-upload batch limit, not a lifetime cap; the product still shows one image.
+- Public helpers `profile_image_recording_for`, `attach_profile_image!`, and `replace_profile_image!`. The image is an Attachable child of the Profile recording (`import_attachment`), not a parallel table.
+- Profile **show** renders one Flatpack elevated Card: Avatar (image or person-icon fallback) above unlabeled name, email, and time zone in one column on every width. **Edit** hosts a `profile-photo` Turbo frame with Flatpack Avatar (`attachment_preview_url`, `size: :"2xl"`, `shape: :circle`) plus Attachable `render_attachment_file_button` for Add/Change. These screens are not a gallery or library.
+- Dummy mounts `RecordingStudioAttachable::Engine`, runs Active Storage plus Attachable migrations, wires direct uploads, and seeds Avery Admin (`admin@admin.com`) with a real image on their Profile recording. `doc/review/profile-edit-upload.mp4` records a throwaway empty Edit Profile using the camera slot — the Avatar updates on the same URL, not via seeded stills.
+
+### Changed
+- Profile PageNav right slot is empty. Profile is owner-only: Accessible still records the first owner with `bootstrap_owner_access!`, but show/edit no longer render `recording_access_management_link` or any grant/invite control.
+- Dummy overrides Attachable's attachment show so only core `recording_studio/default_layout` PageNav renders if that leftover URL is opened. Profile screens do not link there.
+- Dummy `recording_studio/_default_layout_head` sets `html data-theme="rounded"` so Flatpack `--button-primary-*` aliases inherit charcoal. Core's body attribute alone leaves `:root` primary blue.
+- Dummy Devise sign up (`/users/sign_up`) uses Flatpack `EmailInput`, `PasswordInput` (password + confirmation), and a primary **Sign up** button on `layouts/application`. It is still Devise registerable, not a Users product registration flow.
+- `require_password_confirmation` (default `true`) hides the Devise confirmation field and does not require the param when the host turns it off.
+- Empty Profile photos use Flatpack Avatar's person-icon fallback (no name/initials). Edit's Add/Change control persists through Attachable import / `replace_attachment_file` and stays on Edit Profile. Edit hosts a `profile-photo` Turbo frame; Attachable only supplies `attachment_preview_url` and `render_attachment_file_button`. An `mb-8` wrapper around the frame keeps the gap under the whole slot.
+- Profile show puts **Edit** in the PageTitle actions slot (not in the card) and drops the subtitle. A Flatpack Grid `cols: 2` wraps the Card only (desktop width cap). Inside the card, Avatar sits above unlabeled name, email, and time zone — one column on desktop and phone. No inner Grid and no flex row. No city field. Edit wraps the Attachable photo slot, stacked fields, and Update / Cancel in a Flatpack Grid `cols: 2` so the form occupies one cell (width constraint). Fields stay full-width rows — not two columns of first/last name. Update profile and Cancel are two separate Flatpack buttons, not a ButtonGroup. Edit keeps the plain subtitle: "Change your name, time zone, or photo."
+- Dummy and development Gemfiles pin `recording_studio_attachable` to published tag `v0.5.0` (annotated tag `542777b2557ea235050fd4f42753653df90fe957`, commit `76c3b234e392df823013a36f2d8d1a6b57c951f0`) so `render_attachment_file_button` owns Add/Change text buttons. The gemspec requires `~> 0.5.0`.
+- Dummy and development Gemfiles pin Flatpack `v0.1.135` (annotated tag `534ce32b29d0d1666c24d04e75485ddd57fa4e2f`, commit `e9318c39498e14d13ad2bee69ce945bb62081402`). The gemspec requires `flat_pack ~> 0.1.135` so Edit Profile can pass Avatar `size: :"2xl"` (`h-24 w-24`, 96px). Show stays `:xl`.
+
+### Upgrade notes
+- Enable Attachable on Profile only, using the `.to` mixin and the image-only options above. Do not enable it on People.
+- Require RecordingStudioAttachable `~> 0.5.0` (pin git tag `v0.5.0`). Run `bin/rails generate recording_studio_attachable:install`, `bin/rails generate recording_studio_attachable:migrations`, and `bin/rails active_storage:install` if those are missing. Mount the engine and keep `@rails/activestorage` plus `ActiveStorage.start()` as the Attachable README describes.
+- Remove `recording_access_management_link` (and any Access control) from Profile PageNav. First-owner bootstrap stays; do not add invite/grant UI on Profile.
+- Use `attach_profile_image!` or `recording.import_attachment` to place one image under the Profile recording. On Edit Profile host a `profile-photo` Turbo frame with Flatpack Avatar (`src: attachment_preview_url(recording, variant: :square_med)`, `size: :"2xl"`, `shape: :circle`) and `render_attachment_file_button(recording, return_to: edit_profile_path)`. Wrap the frame in `mb-8`. Do not call `render_parent_attachment` or `render_attachment_image_slot`. Require Flatpack `~> 0.1.135` (this branch pins tag `v0.1.135`). Attachable owns the Add/Change labels — do not invent Users button copy. On My Profile wrap one elevated Card in a Grid `cols: 2` width cap and stack Avatar above unlabeled name, email, and time zone. Do not put Avatar and text in that Grid. Do not compose a Users-owned photo form or link replace to `attachments#show`. Show can keep `:xl`.
+- If Attachable uses core `recording_studio/default_layout`, you can still override the leftover attachment show view so it does not render a second PageNav. Profile screens do not navigate there.
+- Hosts that use core `recording_studio/default_layout` should add `app/views/recording_studio/_default_layout_head.html.erb` that sets `document.documentElement.setAttribute("data-theme", "rounded")`. Core puts the named theme on `body`; Flatpack `--button-primary-*` aliases live on `:root` and otherwise stay the default blue. Do not copy the layout or invent a host theme.
+
 ## [0.4.0] - 2026-08-21
 
 ### Changed
@@ -132,7 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.5.0
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.4.0
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.2.0

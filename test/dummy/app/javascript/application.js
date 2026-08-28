@@ -11,3 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("turbo:load", () => {
   initLocalTimes()
 })
+
+import * as ActiveStorage from "@rails/activestorage"
+ActiveStorage.start()
+import "recording_studio_attachable/tiptap/attachment_image_addon"

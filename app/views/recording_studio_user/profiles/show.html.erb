@@ -6,35 +6,26 @@
   page_nav_anchor_label: "Close"
 ) %>
 
-<% recording_studio_page_nav_right do %>
-  <%= recording_access_management_link(@profile_recording) %>
-<% end %>
-
 <%= render FlatPack::PageTitle::Component.new(
   title: "My Profile",
-  subtitle: "Manage your personal details and account settings.",
   variant: :h1
-) %>
+) do |page_title| %>
+  <% page_title.slot do %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Edit",
+      href: edit_profile_path,
+      style: :primary
+    ) %>
+  <% end %>
+<% end %>
 
-<div class="mt-6 space-y-4">
-  <%= render FlatPack::Button::Component.new(
-    text: "Edit",
-    href: edit_profile_path,
-    style: :secondary
-  ) %>
-
-  <dl class="space-y-4">
+<%= render FlatPack::Grid::Component.new(cols: 2) do %>
+  <%= render FlatPack::Card::Component.new(style: :elevated) do %>
+    <%= render "avatar" %>
     <div>
-      <dt class="text-sm text-[var(--surface-muted-content-color)]">Name</dt>
-      <dd class="mt-1 font-medium"><%= profile_display_name(@user) %></dd>
+      <p class="font-semibold"><%= profile_display_name(@user) %></p>
+      <p class="text-[var(--surface-muted-content-color)]"><%= @user.email %></p>
+      <p class="text-[var(--surface-muted-content-color)]"><%= @profile.time_zone %></p>
     </div>
-    <div>
-      <dt class="text-sm text-[var(--surface-muted-content-color)]">Email</dt>
-      <dd class="mt-1 font-medium"><%= @user.email %></dd>
-    </div>
-    <div>
-      <dt class="text-sm text-[var(--surface-muted-content-color)]">Time zone</dt>
-      <dd class="mt-1 font-medium"><%= @profile.time_zone %></dd>
-    </div>
-  </dl>
-</div>
+  <% end %>
+<% end %>

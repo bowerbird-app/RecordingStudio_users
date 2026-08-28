@@ -21,6 +21,7 @@ class InstallGeneratorTest < Minitest::Test
 
     assert_includes initializer, "Route configuration must load before Rails draws routes."
     assert_includes initializer, "additional_profile_attributes"
+    assert_includes initializer, "require_password_confirmation"
     assert_includes initializer, 'config.mount_path = "/recording_studio_users"'
     assert_includes initializer, 'config.profile_route_path = "profile"'
     assert_includes initializer, 'config.admin_route_path = "admin"'
@@ -37,8 +38,10 @@ class InstallGeneratorTest < Minitest::Test
     refute_includes generator, "invoke \"recording_studio_user:admin\""
     assert_includes generator, "as: :recording_studio_users"
     assert_includes generator, "recording_studio_user:migrations"
-    assert_includes generator, "Accessible on Profile"
+    assert_includes generator, "Accessible and"
+    assert_includes generator, "Attachable on Profile"
     assert_includes generator, "bootstrap_owner_access!"
+    assert_includes generator, "recording_studio_attachable:install"
     refute_includes generator, "access_management_authorizer"
     refute_includes generator, "AccessCreationContext"
   end

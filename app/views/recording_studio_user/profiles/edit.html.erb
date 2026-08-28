@@ -8,70 +8,83 @@
   page_nav_anchor_label: "Close"
 ) %>
 
-<% recording_studio_page_nav_right do %>
-  <%= recording_access_management_link(@profile_recording) %>
-<% end %>
-
 <%= render FlatPack::PageTitle::Component.new(
   title: "Edit Profile",
-  subtitle: "Update your personal information and contact details.",
+  subtitle: "Change your name, time zone, or photo.",
   variant: :h1
 ) %>
 
-<%= form_with url: profile_path, method: :patch, class: "mt-6" do %>
-  <% if @profile.errors.any? %>
-    <%= render FlatPack::Alert::Component.new(
-      title: "#{pluralize(@profile.errors.count, "error")} prevented your profile from being saved",
-      description: @profile.errors.full_messages.join(", "),
-      style: :danger
-    ) %>
-  <% end %>
-
-  <div class="space-y-4">
-    <%= render FlatPack::TextInput::Component.new(
-      name: "user[first_name]",
-      id: "user_first_name",
-      label: "First name",
-      value: @profile.first_name,
-      required: true,
-      autocomplete: "given-name",
-      error: @profile.errors[:first_name].first
-    ) %>
-
-    <%= render FlatPack::TextInput::Component.new(
-      name: "user[last_name]",
-      id: "user_last_name",
-      label: "Last name",
-      value: @profile.last_name,
-      required: true,
-      autocomplete: "family-name",
-      error: @profile.errors[:last_name].first
-    ) %>
-
-    <%= render FlatPack::Select::Component.new(
-      name: "user[time_zone]",
-      id: "user_time_zone",
-      label: "Time zone",
-      value: @profile.time_zone,
-      options: ActiveSupport::TimeZone.all.map { |zone| [zone.to_s, zone.name] },
-      searchable: true,
-      required: true,
-      error: @profile.errors[:time_zone].first
-    ) %>
-
-    <% RecordingStudioUser.config.additional_profile_attributes.each do |attribute| %>
-      <%= render FlatPack::TextInput::Component.new(
-        name: "user[#{attribute}]",
-        id: "user_#{attribute}",
-        label: attribute.to_s.humanize,
-        value: @profile.additional_profile_attributes[attribute.to_s],
-        error: @profile.errors[attribute].first
-      ) %>
-    <% end %>
-
-    <div class="flex gap-2">
-      <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
-      <%= render FlatPack::Button::Component.new(text: "Cancel", href: profile_path, style: :secondary) %>
+<%= render FlatPack::Grid::Component.new(cols: 2) do %>
+  <div>
+    <div class="mb-8">
+      <%= turbo_frame_tag "profile-photo" do %>
+        <div class="inline-flex items-end gap-3">
+          <%= render FlatPack::Avatar::Component.new(
+                src: attachment_preview_url(@profile_recording, variant: :square_med),
+                size: :"2xl",
+                shape: :circle
+              ) %>
+          <%= render_attachment_file_button(@profile_recording, return_to: edit_profile_path) %>
+        </div>
+      <% end %>
     </div>
+
+    <%= form_with url: profile_path, method: :patch do %>
+      <% if @profile.errors.any? %>
+        <%= render FlatPack::Alert::Component.new(
+          title: "#{pluralize(@profile.errors.count, "error")} prevented your profile from being saved",
+          description: @profile.errors.full_messages.join(", "),
+          style: :danger
+        ) %>
+      <% end %>
+
+      <div class="space-y-4">
+        <%= render FlatPack::TextInput::Component.new(
+          name: "user[first_name]",
+          id: "user_first_name",
+          label: "First name",
+          value: @profile.first_name,
+          required: true,
+          autocomplete: "given-name",
+          error: @profile.errors[:first_name].first
+        ) %>
+
+        <%= render FlatPack::TextInput::Component.new(
+          name: "user[last_name]",
+          id: "user_last_name",
+          label: "Last name",
+          value: @profile.last_name,
+          required: true,
+          autocomplete: "family-name",
+          error: @profile.errors[:last_name].first
+        ) %>
+
+        <%= render FlatPack::Select::Component.new(
+          name: "user[time_zone]",
+          id: "user_time_zone",
+          label: "Time zone",
+          value: @profile.time_zone,
+          options: ActiveSupport::TimeZone.all.map { |zone| [zone.to_s, zone.name] },
+          searchable: true,
+          required: true,
+          error: @profile.errors[:time_zone].first
+        ) %>
+
+        <% RecordingStudioUser.config.additional_profile_attributes.each do |attribute| %>
+          <%= render FlatPack::TextInput::Component.new(
+            name: "user[#{attribute}]",
+            id: "user_#{attribute}",
+            label: attribute.to_s.humanize,
+            value: @profile.additional_profile_attributes[attribute.to_s],
+            error: @profile.errors[attribute].first
+          ) %>
+        <% end %>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
+          <%= render FlatPack::Button::Component.new(text: "Cancel", href: profile_path, style: :secondary) %>
+        </div>
+      </div>
+    <% end %>
   </div>
 <% end %>

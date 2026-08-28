@@ -14,6 +14,16 @@ class ConfigurationTest < Minitest::Test
     assert_equal "admin", @configuration.admin_route_path
     assert_equal "application", @configuration.layout
     assert_empty @configuration.additional_profile_attributes
+    assert @configuration.require_password_confirmation
+    assert_predicate @configuration, :require_password_confirmation?
+  end
+
+  def test_require_password_confirmation_casts_like_other_flags
+    @configuration.require_password_confirmation = false
+    refute_predicate @configuration, :require_password_confirmation?
+
+    @configuration.require_password_confirmation = "true"
+    assert_predicate @configuration, :require_password_confirmation?
   end
 
   def test_normalizes_configured_paths

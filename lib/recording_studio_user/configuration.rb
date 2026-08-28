@@ -9,7 +9,8 @@ module RecordingStudioUser
     ].freeze
 
     attr_accessor :user_class_name, :layout
-    attr_reader :mount_path, :profile_route_path, :admin_route_path, :additional_profile_attributes
+    attr_reader :mount_path, :profile_route_path, :admin_route_path, :additional_profile_attributes,
+                :require_password_confirmation
 
     def initialize
       @user_class_name = "User"
@@ -18,6 +19,15 @@ module RecordingStudioUser
       @admin_route_path = "admin"
       @layout = "application"
       @additional_profile_attributes = []
+      @require_password_confirmation = true
+    end
+
+    def require_password_confirmation=(value)
+      @require_password_confirmation = ActiveModel::Type::Boolean.new.cast(value)
+    end
+
+    def require_password_confirmation?
+      require_password_confirmation
     end
 
     def mount_path=(value)

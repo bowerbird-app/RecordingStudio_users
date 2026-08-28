@@ -14,6 +14,7 @@ class EngineTest < Minitest::Test
 
     assert_includes routes, "profile"
     assert_includes routes, "edit_profile"
+    refute_includes routes, "photo_profile"
     assert_includes routes, "admin"
     refute_includes routes, "admin_user"
     refute_includes routes, "edit_admin_user"
@@ -26,8 +27,16 @@ class EngineTest < Minitest::Test
     refute_includes show, "notice"
     refute_includes show, "flash"
     refute_includes show, "FlatPack::Alert::Component"
-    assert_includes show, "recording_studio_page_nav_right"
-    assert_includes show, "recording_access_management_link"
+    refute_includes show, "recording_studio_page_nav_right"
+    refute_includes show, "recording_access_management_link"
+    refute_includes show, "Manage access"
+    assert_includes show, 'render "avatar"'
+    refute_includes show, 'render "photo"'
+    refute_includes show, "file_field_tag"
+    refute_includes show, "photo_profile_path"
+    refute_includes show, "render_parent_attachment"
+    refute_includes show, "render_attachment_image_slot"
+    refute_includes show, "render_attachment_file_button"
   end
 
   def test_profile_authorization_uses_accessible_not_current_user_acl
@@ -37,8 +46,15 @@ class EngineTest < Minitest::Test
     admin = File.read(File.expand_path("../app/controllers/recording_studio_user/admin/users_controller.rb", __dir__))
 
     assert_includes profile, "RecordingStudio.enable_capability(:accessible, on: self)"
+    assert_includes profile, "RecordingStudio::Capabilities::Attachable.to"
+    assert_includes profile, 'allowed_content_types: ["image/*"]'
+    assert_includes profile, "enabled_attachment_kinds: %i[image]"
+    assert_includes profile, "max_file_count: 1"
     refute_includes people, "enable_capability(:accessible"
+    refute_includes people, "Capabilities::Attachable"
     assert_includes controller, "RecordingStudioAccessible.authorized?"
+    refute_includes controller, "update_photo"
+    refute_includes controller, "photo_return_path"
     refute_includes controller, "can_access?"
     refute_includes controller, "@user.update"
     refute_includes admin, "user.admin?"

@@ -5,6 +5,7 @@ require "recording_studio_user/configuration"
 require "recording_studio_user/engine"
 require "recording_studio_user/admin"
 require "recording_studio_user/directory"
+require "recording_studio_user/profile_image"
 require "recording_studio_user/profile_access"
 
 module RecordingStudioUser
@@ -45,6 +46,18 @@ module RecordingStudioUser
 
     def profile_recording_for(user)
       Directory.profile_recording_for(user)
+    end
+
+    def profile_image_recording_for(user)
+      ProfileImage.recording_for(user)
+    end
+
+    def attach_profile_image!(...)
+      ProfileImage.attach!(...)
+    end
+
+    def replace_profile_image!(...)
+      ProfileImage.replace!(...)
     end
 
     def create_user!(...)

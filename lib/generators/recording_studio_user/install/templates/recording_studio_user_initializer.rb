@@ -8,6 +8,7 @@ RecordingStudioUser.configure do |config|
   config.admin_route_path = "admin"
   config.layout = "application"
   config.additional_profile_attributes = []
+  config.require_password_confirmation = true
 end
 
 # Register RecordingStudioUser::People and RecordingStudioUser::Profile in
