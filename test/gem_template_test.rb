@@ -27,6 +27,7 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes avatar, "photo_profile_path"
     refute_includes avatar, "render_parent_attachment"
     refute_includes avatar, "render_attachment_image_slot"
+    refute_includes avatar, "render_attachment_file_button"
     refute File.exist?(File.expand_path("../app/views/recording_studio_user/profiles/_photo.html.erb", __dir__))
 
     show = profile_views.first
@@ -51,6 +52,8 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "city"
     refute_includes show, "render_parent_attachment"
     refute_includes show, "render_attachment_image_slot"
+    refute_includes show, "render_attachment_file_button"
+    refute_includes show, 'turbo_frame_tag "profile-photo"'
     refute_includes show, "attachment-chrome-image_slot"
     refute_includes show, "file_field_tag"
     refute_includes show, "photo_profile_path"
@@ -58,8 +61,11 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes edit, "The photo lives here too."
     refute_includes edit, 'render "photo"'
     refute_includes edit, "render_parent_attachment"
-    assert_includes edit, "render_attachment_image_slot(@profile_recording,"
-    assert_includes edit, "return_to: edit_profile_path, shape: :circle, size: :\"2xl\")"
+    refute_includes edit, "render_attachment_image_slot"
+    assert_includes edit, 'turbo_frame_tag "profile-photo"'
+    assert_includes edit, "attachment_preview_url(@profile_recording, variant: :square_med)"
+    assert_includes edit, "render_attachment_file_button(@profile_recording, return_to: edit_profile_path)"
+    assert_includes edit, "size: :\"2xl\""
     refute_includes edit, "FlatPack::Card::Component"
     assert_includes edit, "Change your name, time zone, or photo."
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
@@ -82,12 +88,12 @@ class RecordingStudioUserTest < Minitest::Test
 
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_attachable"'
       assert_includes contents, 'branch: "cursor/file-only-replace-path-a5db"'
-      assert_includes contents, 'ref: "4f6897c86e077281d1b104e9962418263cc56e44"'
+      assert_includes contents, 'ref: "62c2f944d1ed206c84c80275851db0aee8e3306a"'
       refute_includes contents, 'tag: "0.4.0"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
-      assert_includes File.read(lockfile), "4f6897c86e077281d1b104e9962418263cc56e44"
+      assert_includes File.read(lockfile), "62c2f944d1ed206c84c80275851db0aee8e3306a"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))

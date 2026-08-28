@@ -13,7 +13,7 @@ gem "recording_studio_admin",
 gem "recording_studio_attachable",
     github: "bowerbird-app/RecordingStudio_attachable",
     branch: "cursor/file-only-replace-path-a5db",
-    ref: "4f6897c86e077281d1b104e9962418263cc56e44"
+    ref: "62c2f944d1ed206c84c80275851db0aee8e3306a"
 gemspec
 
 gem "puma"

@@ -17,7 +17,16 @@
 <%= render FlatPack::Grid::Component.new(cols: 2) do %>
   <div>
     <div class="mb-8">
-      <%= render_attachment_image_slot(@profile_recording, return_to: edit_profile_path, shape: :circle, size: :"2xl") %>
+      <%= turbo_frame_tag "profile-photo" do %>
+        <div class="inline-flex items-end gap-3">
+          <%= render FlatPack::Avatar::Component.new(
+                src: attachment_preview_url(@profile_recording, variant: :square_med),
+                size: :"2xl",
+                shape: :circle
+              ) %>
+          <%= render_attachment_file_button(@profile_recording, return_to: edit_profile_path) %>
+        </div>
+      <% end %>
     </div>
 
     <%= form_with url: profile_path, method: :patch do %>
