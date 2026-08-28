@@ -59,7 +59,8 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes edit, "FlatPack::Card::Component"
     assert_includes edit, "Change your name, time zone, or photo."
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
-    assert_includes edit, "space-y-8"
+    assert_includes edit, %(class="mb-12")
+    refute_includes edit, "space-y-8"
     refute_includes edit, "icon_only"
     refute_includes edit, "camera"
     refute_includes edit, "FlatPack::ButtonGroup::Component"

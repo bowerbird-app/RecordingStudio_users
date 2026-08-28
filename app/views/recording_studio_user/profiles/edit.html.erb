@@ -15,8 +15,10 @@
 ) %>
 
 <%= render FlatPack::Grid::Component.new(cols: 2) do %>
-  <div class="space-y-8">
-    <%= render_parent_attachment(@profile_recording, return_to: edit_profile_path, shape: :circle, size: :xl) %>
+  <div>
+    <div class="mb-12">
+      <%= render_parent_attachment(@profile_recording, return_to: edit_profile_path, shape: :circle, size: :xl) %>
+    </div>
 
     <%= form_with url: profile_path, method: :patch do %>
       <% if @profile.errors.any? %>
