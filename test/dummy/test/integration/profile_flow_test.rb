@@ -198,7 +198,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_select "#parent-attachment-slot button", text: "Add"
     refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_includes response.body, "h-24 w-24"
-    assert_includes response.body, "mb-16"
+    assert_includes response.body, "mb-8"
     assert_includes unescaped_page, recording_studio_attachable.recording_attachment_imports_path(
       recording,
       redirect_mode: "return_to",
