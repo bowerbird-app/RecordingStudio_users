@@ -17,7 +17,7 @@
 <%= render FlatPack::Grid::Component.new(cols: 2) do %>
   <div>
     <div class="mb-16">
-      <%= render_parent_attachment(@profile_recording, return_to: edit_profile_path, shape: :circle, size: :xl) %>
+      <%= render_parent_attachment(@profile_recording, return_to: edit_profile_path, shape: :circle, size: :2xl) %>
     </div>
 
     <%= form_with url: profile_path, method: :patch do %>
