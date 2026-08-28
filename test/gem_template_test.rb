@@ -40,6 +40,11 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes show, 'render "avatar"'
     assert_includes show, "FlatPack::Card::Component"
     assert_includes show, "style: :elevated"
+    assert_equal 1, show.scan("FlatPack::Grid::Component").size
+    assert_includes show, "FlatPack::Grid::Component.new(cols: 2)"
+    refute_includes show, "align: :center"
+    refute_includes show, "inline-flex"
+    refute_includes show, "Cluster"
     refute_includes show, "<dt"
     refute_includes show, "Name"
     refute_includes show, "city"

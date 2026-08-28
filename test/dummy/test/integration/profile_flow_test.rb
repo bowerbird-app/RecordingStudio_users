@@ -147,6 +147,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Just you."
     assert_includes response.body, "page-title-actions"
     assert_includes response.body, "shadow-md"
+    assert_equal 1, response.body.scan("md:grid-cols-2").size
+    refute_includes response.body, "inline-flex flex-wrap items-center"
     assert_select "dt", count: 0
     assert_includes response.body, "Profile User"
     assert_includes response.body, @user.email
