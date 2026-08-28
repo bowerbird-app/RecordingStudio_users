@@ -59,6 +59,9 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes edit, "FlatPack::Card::Component"
     assert_includes edit, "Change your name, time zone, or photo."
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
+    assert_includes edit, "space-y-8"
+    refute_includes edit, "icon_only"
+    refute_includes edit, "camera"
     refute_includes edit, "FlatPack::ButtonGroup::Component"
     assert_includes edit, "FlatPack::Button::Component"
     assert_includes edit, "Update profile"
@@ -74,6 +77,10 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_attachable"'
       assert_includes contents, 'branch: "cursor/file-only-replace-path-a5db"'
       refute_includes contents, 'tag: "0.4.0"'
+    end
+
+    [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
+      assert_includes File.read(lockfile), "1477cc9242f2cddb8ca5b955e9ca9833a8ab6b0a"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))

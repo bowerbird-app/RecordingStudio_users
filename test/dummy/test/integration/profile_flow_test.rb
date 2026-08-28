@@ -195,7 +195,9 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Cancel"
     assert_includes response.body, "parent-attachment-slot"
     assert_select "input[type='file'].hidden"
-    assert_includes response.body, 'data-flat-pack--icon-name-value="camera"'
+    assert_select "#parent-attachment-slot button", text: "Add"
+    refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
+    assert_includes response.body, "space-y-8"
     assert_includes unescaped_page, recording_studio_attachable.recording_attachment_imports_path(
       recording,
       redirect_mode: "return_to",
@@ -237,7 +239,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Choose File"
     assert_includes response.body, "parent-attachment-slot"
-    assert_includes response.body, 'data-flat-pack--icon-name-value="camera"'
+    assert_select "#parent-attachment-slot button", text: "Change"
+    refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_select "input[type='file'].hidden"
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(image))}"}, response.body)
     assert_includes unescaped_page, recording_studio_attachable.attachment_path(
