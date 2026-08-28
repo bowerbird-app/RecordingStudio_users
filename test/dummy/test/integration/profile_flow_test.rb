@@ -143,9 +143,14 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Add photo"
     refute_includes response.body, "Replace photo"
-    assert_includes response.body, "Your name, email, and photo."
+    refute_includes response.body, "Your name, email, and photo."
     refute_includes response.body, "Just you."
     assert_includes response.body, "page-title-actions"
+    assert_includes response.body, "shadow-md"
+    assert_select "dt", count: 0
+    assert_includes response.body, "Profile User"
+    assert_includes response.body, @user.email
+    assert_includes response.body, "UTC"
     refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_select "input[type='file']", count: 0

@@ -8,14 +8,13 @@ class RecordingStudioUserTest < Minitest::Test
     assert_kind_of Class, RecordingStudioUser::Engine
   end
 
-  def test_profile_pages_use_a_page_title_without_an_outer_card
+  def test_profile_pages_use_a_page_title_and_show_identity_card
     profile_views = %w[show edit].map do |name|
       File.read(File.expand_path("../app/views/recording_studio_user/profiles/#{name}.html.erb", __dir__))
     end
 
     profile_views.each do |view|
       assert_includes view, "FlatPack::PageTitle::Component"
-      refute_includes view, "FlatPack::Card::Component"
       assert_includes view, "recording_studio_page_nav"
       refute_includes view, "recording_studio_page_nav_right"
       refute_includes view, "recording_access_management_link"
@@ -36,9 +35,14 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "if notice"
     refute_includes show, "FlatPack::Alert::Component"
     refute_includes show, "Just you."
-    assert_includes show, "Your name, email, and photo."
+    refute_includes show, "Your name, email, and photo."
     assert_includes show, "page_title.slot"
     assert_includes show, 'render "avatar"'
+    assert_includes show, "FlatPack::Card::Component"
+    assert_includes show, "style: :elevated"
+    refute_includes show, "<dt"
+    refute_includes show, "Name"
+    refute_includes show, "city"
     refute_includes show, "render_parent_attachment"
     refute_includes show, "file_field_tag"
     refute_includes show, "photo_profile_path"
@@ -47,6 +51,7 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes edit, 'render "photo"'
     assert_includes edit, "render_parent_attachment(@profile_recording,"
     assert_includes edit, "return_to: edit_profile_path, shape: :circle, size: :xl)"
+    refute_includes edit, "FlatPack::Card::Component"
     assert_includes edit, "Change your name, time zone, or photo."
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     refute_includes edit, "FlatPack::ButtonGroup::Component"

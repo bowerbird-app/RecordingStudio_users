@@ -8,7 +8,6 @@
 
 <%= render FlatPack::PageTitle::Component.new(
   title: "My Profile",
-  subtitle: "Your name, email, and photo.",
   variant: :h1
 ) do |page_title| %>
   <% page_title.slot do %>
@@ -20,21 +19,15 @@
   <% end %>
 <% end %>
 
-<div class="space-y-4">
-  <%= render "avatar" %>
-
-  <dl class="space-y-4">
-    <div>
-      <dt class="text-sm text-[var(--surface-muted-content-color)]">Name</dt>
-      <dd class="mt-1 font-medium"><%= profile_display_name(@user) %></dd>
-    </div>
-    <div>
-      <dt class="text-sm text-[var(--surface-muted-content-color)]">Email</dt>
-      <dd class="mt-1 font-medium"><%= @user.email %></dd>
-    </div>
-    <div>
-      <dt class="text-sm text-[var(--surface-muted-content-color)]">Time zone</dt>
-      <dd class="mt-1 font-medium"><%= @profile.time_zone %></dd>
-    </div>
-  </dl>
-</div>
+<%= render FlatPack::Grid::Component.new(cols: 2) do %>
+  <%= render FlatPack::Card::Component.new(style: :elevated) do %>
+    <%= render FlatPack::Grid::Component.new(cols: 2, align: :center) do %>
+      <%= render "avatar" %>
+      <div>
+        <p class="font-semibold"><%= profile_display_name(@user) %></p>
+        <p class="text-[var(--surface-muted-content-color)]"><%= @user.email %></p>
+        <p class="text-[var(--surface-muted-content-color)]"><%= @profile.time_zone %></p>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
