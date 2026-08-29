@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-08-29
+
+### Changed
+- Dummy and development Gemfiles pin Flatpack `v0.1.141` (annotated tag `31ea491672030525cd0fd0b300e0ae7041b65981`, commit `c50fee8a4b1bbd73d1122d6d0b8fff5873b26220`). The gemspec requires `flat_pack ~> 0.1.141`. FormField DRY from Flatpack 0.1.140 lets Timezone Select and password TextInputs share one chrome/height; this release is the pin only — no Users restyle of Select or TextInput.
+
+### Upgrade notes
+- Require Flatpack `~> 0.1.141` (pin git tag `v0.1.141`). No host view or config changes for this bump.
+
 ## [0.5.0] - 2026-08-22
 
 ### Added
@@ -159,7 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.5.1
 [0.5.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.5.0
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.4.0
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.3.0

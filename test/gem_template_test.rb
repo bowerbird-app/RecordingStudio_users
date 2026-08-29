@@ -108,18 +108,18 @@ class RecordingStudioUserTest < Minitest::Test
 
   def test_gemfiles_pin_flatpack_two_xl_avatar
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
-      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.135"'
+      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.141"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.1.135"
-      assert_includes lock, "flat_pack (0.1.135)"
-      assert_includes lock, "534ce32b29d0d1666c24d04e75485ddd57fa4e2f"
+      assert_includes lock, "tag: v0.1.141"
+      assert_includes lock, "flat_pack (0.1.141)"
+      assert_includes lock, "31ea491672030525cd0fd0b300e0ae7041b65981"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"flat_pack", "~> 0.1.135"'
+    assert_includes gemspec, '"flat_pack", "~> 0.1.141"'
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
