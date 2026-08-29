@@ -14,15 +14,11 @@ module RecordingStudioUser
     def handle_omniauth
       run_omniauth_callback
     rescue Omniauth::MissingEmailError
-      redirect_to_failure(
-        "#{provider_label_for(request.env["omniauth.auth"])} did not return an email address."
-      )
+      redirect_to_failure(missing_email_alert)
     rescue Omniauth::AccountCreationDisabledError
-      redirect_to_failure(
-        "No account exists for that #{provider_label_for(request.env["omniauth.auth"])} email, and new accounts are disabled."
-      )
-    rescue Omniauth::IdentityTakenError => error
-      redirect_to after_connect_path, alert: error.message
+      redirect_to_failure(account_creation_disabled_alert)
+    rescue Omniauth::IdentityTakenError => e
+      redirect_to after_connect_path, alert: e.message
     end
 
     def run_omniauth_callback
@@ -53,6 +49,15 @@ module RecordingStudioUser
 
     def provider_label_for(auth)
       Omniauth.provider_label(auth&.provider || "provider")
+    end
+
+    def missing_email_alert
+      "#{provider_label_for(request.env['omniauth.auth'])} did not return an email address."
+    end
+
+    def account_creation_disabled_alert
+      label = provider_label_for(request.env["omniauth.auth"])
+      "No account exists for that #{label} email, and new accounts are disabled."
     end
   end
 end
