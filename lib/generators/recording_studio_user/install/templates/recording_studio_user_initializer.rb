@@ -9,6 +9,8 @@ RecordingStudioUser.configure do |config|
   config.layout = "application"
   config.additional_profile_attributes = []
   config.require_password_confirmation = true
+  # Devise login page heading (host sessions#new). Default "Welcome back".
+  # config.login_title = "Welcome back"
   # OmniAuth providers. Empty hash keeps login/sign-up without provider buttons.
   # Secrets stay in host credentials / ENV — never commit real keys.
   #

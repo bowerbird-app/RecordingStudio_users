@@ -16,6 +16,7 @@ class ConfigurationTest < Minitest::Test
     assert_empty @configuration.additional_profile_attributes
     assert @configuration.require_password_confirmation
     assert_predicate @configuration, :require_password_confirmation?
+    assert_equal "Welcome back", @configuration.login_title
     assert_empty @configuration.omniauth_providers
     assert @configuration.omniauth_create_account
     assert_predicate @configuration, :omniauth_create_account?
@@ -28,6 +29,14 @@ class ConfigurationTest < Minitest::Test
 
     @configuration.require_password_confirmation = "true"
     assert_predicate @configuration, :require_password_confirmation?
+  end
+
+  def test_login_title_defaults_and_rejects_blank
+    @configuration.login_title = "Sign in to Acme"
+    assert_equal "Sign in to Acme", @configuration.login_title
+
+    @configuration.login_title = "  "
+    assert_equal "Welcome back", @configuration.login_title
   end
 
   def test_omniauth_flags_and_providers

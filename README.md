@@ -57,6 +57,7 @@ RecordingStudioUser.configure do |config|
   config.layout = "application"
   config.additional_profile_attributes = []
   config.require_password_confirmation = true
+  # config.login_title = "Welcome back"
   config.omniauth_providers = {
     google_oauth2: {
       client_id: Rails.application.credentials.dig(:google_oauth, :client_id) || ENV["GOOGLE_CLIENT_ID"],
@@ -210,6 +211,8 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `require_password_confirmation` defaults to `true`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false`. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail.
 
+`login_title` defaults to `"Welcome back"` for the host Devise login heading. Blank values fall back to that default.
+
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 
 Flash notices come from the host layout. Profile show does not render `notice` again. When the host uses Recording Studio's default layout, that layout already draws `flash[:notice]` as a FlatPack alert.
@@ -226,7 +229,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both use the same Flatpack auth stack (Card + Grid width cap): title, fields, primary Sign in / Sign up, cross-link, Flatpack Divider `Or`, then full-width **Continue with {Provider}** secondary buttons for every configured OmniAuth provider — not a Users product registration flow. Login keeps Remember me; sign-up password confirmation stays host-configurable. The login seed hint sits under the card. OmniAuth runs in test mode with mocks for Google, Microsoft, Apple, LinkedIn, and Instagram so CI and screenshots do not need live apps. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.142` for Divider.
+The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both use the same Flatpack auth stack with a Grid `cols: 2` width cap (no Card): `login_title` (default **Welcome back**) / **Sign up**, fields, primary Sign in / Sign up, cross-link, Flatpack Divider `Or`, then full-width **Continue with {Provider}** secondary buttons for every configured OmniAuth provider — not a Users product registration flow. Login does not show Remember me (Devise rememberable may stay on). Sign-up password confirmation stays host-configurable. The login seed hint sits under the form. OmniAuth runs in test mode with mocks for Google, Microsoft, Apple, LinkedIn, and Instagram so CI and screenshots do not need live apps. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.142` for Divider.
 
 Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit and Sign-in methods at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.142`) with Attachable's file button for Add/Change. Connect / Disconnect live on `/recording_studio_users/profile/sign-in-methods`. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 
