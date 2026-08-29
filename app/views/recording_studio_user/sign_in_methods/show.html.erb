@@ -16,8 +16,10 @@
 
 <%= render FlatPack::Grid::Component.new(cols: 2) do %>
   <div>
-    <% show_google_connect = recording_studio_user_google_oauth_configured? && !recording_studio_user_google_connected?(@user) %>
-    <% if @identities.any? || show_google_connect %>
+    <% connectable_providers = recording_studio_user_omniauth_provider_names.reject { |provider|
+         recording_studio_user_provider_connected?(@user, provider)
+       } %>
+    <% if @identities.any? || connectable_providers.any? %>
       <%= render FlatPack::Card::Component.new(style: :elevated) do |card| %>
         <% card.body do %>
           <%= render FlatPack::List::Component.new(divider: true) do %>
@@ -44,13 +46,15 @@
               <% end %>
             <% end %>
 
-            <% if show_google_connect %>
+            <% connectable_providers.each do |provider| %>
+              <% authorize_path = recording_studio_user_omniauth_authorize_path(provider) %>
+              <% next if authorize_path.blank? %>
               <%= render FlatPack::List::Item.new(
-                **recording_studio_user_provider_list_item_leading(:google_oauth2),
+                **recording_studio_user_provider_list_item_leading(provider),
                 trailing: capture {
                   render FlatPack::Button::Component.new(
                     text: "Connect",
-                    href: recording_studio_user_continue_with_google_path,
+                    href: authorize_path,
                     method: :post,
                     style: :secondary,
                     size: :sm,
@@ -58,7 +62,7 @@
                   )
                 }
               ) do %>
-                <p class="font-medium"><%= recording_studio_user_provider_label(:google_oauth2) %></p>
+                <p class="font-medium"><%= recording_studio_user_provider_label(provider) %></p>
               <% end %>
             <% end %>
           <% end %>

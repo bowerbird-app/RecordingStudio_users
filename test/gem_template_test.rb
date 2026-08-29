@@ -92,6 +92,15 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes show, "page_nav_back_url"
     refute_includes show, "page_nav_back_label"
 
+    continue_partial = File.read(
+      File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_providers.html.erb", __dir__)
+    )
+    assert_includes continue_partial, "Continue with"
+    assert_includes continue_partial, "recording_studio_user_omniauth_provider_names"
+    refute File.exist?(
+      File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_google.html.erb", __dir__)
+    )
+
     sign_in_methods = File.read(
       File.expand_path("../app/views/recording_studio_user/sign_in_methods/show.html.erb", __dir__)
     )
@@ -99,6 +108,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes sign_in_methods, "FlatPack::Card::Component"
     assert_includes sign_in_methods, 'text: "Connect"'
     assert_includes sign_in_methods, "Disconnect"
+    assert_includes sign_in_methods, "connectable_providers"
     refute_includes sign_in_methods, "Connect Google"
     refute_includes sign_in_methods, "large_subtitle"
   end

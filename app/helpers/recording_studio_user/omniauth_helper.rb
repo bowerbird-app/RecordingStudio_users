@@ -2,20 +2,31 @@
 
 module RecordingStudioUser
   module OmniauthHelper
-    def recording_studio_user_google_oauth_configured?
-      RecordingStudioUser.config.google_oauth2_configured?
+    def recording_studio_user_omniauth_configured?
+      RecordingStudioUser.config.omniauth_configured?
     end
 
-    def recording_studio_user_continue_with_google_path
-      return unless recording_studio_user_google_oauth_configured?
-
-      main_app.user_google_oauth2_omniauth_authorize_path
+    def recording_studio_user_omniauth_provider_names
+      RecordingStudioUser.config.omniauth_provider_names
     end
 
-    def recording_studio_user_google_connected?(user = (respond_to?(:current_user) ? current_user : nil))
+    def recording_studio_user_provider_configured?(provider)
+      RecordingStudioUser.config.omniauth_providers.key?(provider.to_sym)
+    end
+
+    def recording_studio_user_omniauth_authorize_path(provider)
+      return unless recording_studio_user_provider_configured?(provider)
+
+      helper_name = "user_#{provider}_omniauth_authorize_path"
+      return unless main_app.respond_to?(helper_name)
+
+      main_app.public_send(helper_name)
+    end
+
+    def recording_studio_user_provider_connected?(user, provider)
       return false if user.nil?
 
-      user.respond_to?(:identity_for) && user.identity_for(:google_oauth2).present?
+      user.respond_to?(:identity_for) && user.identity_for(provider).present?
     end
 
     def recording_studio_user_provider_label(provider)
@@ -36,9 +47,8 @@ module RecordingStudioUser
       options = RecordingStudioUser.config.omniauth_providers[provider.to_sym] || {}
       configured = options[:logo].presence || options["logo"].presence
       return configured if configured.present?
-      return RecordingStudioUser::Omniauth::GOOGLE_LOGO_SVG if provider.to_sym == :google_oauth2
 
-      nil
+      RecordingStudioUser::Omniauth.default_logo(provider)
     end
   end
 end

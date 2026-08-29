@@ -61,13 +61,33 @@ RecordingStudioUser.configure do |config|
     google_oauth2: {
       client_id: Rails.application.credentials.dig(:google_oauth, :client_id) || ENV["GOOGLE_CLIENT_ID"],
       client_secret: Rails.application.credentials.dig(:google_oauth, :client_secret) || ENV["GOOGLE_CLIENT_SECRET"]
+    },
+    microsoft_graph: {
+      client_id: ENV["MICROSOFT_CLIENT_ID"],
+      client_secret: ENV["MICROSOFT_CLIENT_SECRET"]
+    },
+    apple: {
+      client_id: ENV["APPLE_CLIENT_ID"],
+      client_secret: "",
+      team_id: ENV["APPLE_TEAM_ID"],
+      key_id: ENV["APPLE_KEY_ID"],
+      pem: ENV["APPLE_PEM"],
+      scope: "email name"
+    },
+    linkedin: {
+      client_id: ENV["LINKEDIN_CLIENT_ID"],
+      client_secret: ENV["LINKEDIN_CLIENT_SECRET"]
+    },
+    instagram: {
+      client_id: ENV["INSTAGRAM_CLIENT_ID"],
+      client_secret: ENV["INSTAGRAM_CLIENT_SECRET"]
     }
   }
   config.omniauth_create_account = true
 end
 ```
 
-When providers is empty, login looks as today (no Google button). Host Devise must use Users' callback controller:
+When providers is empty, login looks as today (no Continue buttons). Host Devise must use Users' callback controller:
 
 ```ruby
 devise_for :users, controllers: {
@@ -75,11 +95,25 @@ devise_for :users, controllers: {
 }
 ```
 
-`omniauth_create_account` defaults to `true`. When `false`, unknown Google emails do not create a User.
+`omniauth_create_account` defaults to `true`. When `false`, unknown provider emails do not create a User.
 
-## Google sign-in
+## OmniAuth providers (Google, Microsoft, Apple, LinkedIn, Instagram)
 
-Users owns OmniAuth behavior: config, identities, callback, find-or-create, Profile Connect UI, and the login partial. The host keeps the Devise `User` model and `devise_for :users`. Identities live on the User only — not a recordable, not in the People tree. One User, many identities. Password can stay; disconnect does not delete the User.
+Users owns OmniAuth behavior: config, identities, callbacks, find-or-create, Sign-in methods UI, and the login/sign-up Continue partial. The host keeps the Devise `User` model and `devise_for :users`. Identities live on the User only — not a recordable, not in the People tree. One User, many identities. Password can stay; disconnect does not delete the User.
+
+Strategy gems (registered by provider key, not a Google-only branch):
+
+| Config key | Gem | Label |
+|---|---|---|
+| `google_oauth2` | `omniauth-google-oauth2` | Google |
+| `microsoft_graph` | `omniauth-microsoft_graph` | Microsoft |
+| `apple` | `omniauth-apple` | Apple |
+| `linkedin` | `omniauth-linkedin-openid` | LinkedIn |
+| `instagram` | `omniauth-instagram-api` | Instagram |
+
+Instagram uses **Instagram API with Instagram Login** (`omniauth-instagram-api`) — Instagram app client id/secret. That is different from older Facebook-Login Instagram Graph strategies.
+
+**Email caveats (fail closed on first login without email — `MissingEmailError`):** Instagram often returns no email. Apple may send email only on first consent (or a private relay); later visits match Identity by uid. Connect while already signed in still works and does **not** invent an email (`Identity.email` may be blank).
 
 Find-or-create used by the callback:
 
@@ -88,15 +122,15 @@ Find-or-create used by the callback:
 3. Else if `omniauth_create_account` → `create_user!` / `record_profile!` (name from OmniAuth when present, timezone UTC), create Identity, return User.
 4. Else fail closed.
 
-Google-only users get an unusable blank password digest; `password_required?` is false while they have at least one identity. Connect on the owner-only **Sign-in methods** page attaches Google to the signed-in User. Disconnect refuses if that Identity is the only sign-in method and the user has no password.
+Provider-only users get an unusable blank password digest; `password_required?` is false while they have at least one identity. Connect on the owner-only **Sign-in methods** page attaches the provider to the signed-in User. Disconnect refuses if that Identity is the only sign-in method and the user has no password.
 
-Render the Flatpack partial on host Devise login and sign-up when Google is configured:
+Render the Flatpack partial on host Devise login and sign-up (one Continue button per configured provider):
 
 ```erb
-<%= render "recording_studio_user/omniauth/continue_with_google" %>
+<%= render "recording_studio_user/omniauth/continue_with_providers" %>
 ```
 
-Optional `omniauth_providers[:google_oauth2][:logo]` accepts a URL or inline SVG. The gem ships a default Google SVG for List rows. Flatpack List has no first-class image-URL lead — SVG uses `icon:`, URLs use `leading:` with an `<img>`.
+Optional `omniauth_providers[:provider][:logo]` accepts a URL or inline SVG. The gem ships a default SVG for each of the five for List rows. Flatpack List has no first-class image-URL lead — SVG uses `icon:`, URLs use `leading:` with an `<img>`. `:logo` is stripped before Devise strategy registration.
 
 My Profile show stays read-only (Edit + Sign-in methods actions). Connect / Disconnect live only on Sign-in methods (`…/profile/sign-in-methods`) as matching Card + List rows (logo + provider name; Connect or Disconnect trailing, secondary sm). Edit has no Sign-in methods link.
 
@@ -192,7 +226,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs, a primary button, and **Continue with Google** when `omniauth_providers` includes `google_oauth2` — not a Users product registration flow. OmniAuth runs in test mode with a mock auth hash so CI and screenshots do not need a live Google app. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
+The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs, a primary button, and **Continue with {Provider}** for every configured OmniAuth provider — not a Users product registration flow. OmniAuth runs in test mode with mocks for Google, Microsoft, Apple, LinkedIn, and Instagram so CI and screenshots do not need live apps. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
 
 Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit and Sign-in methods at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.141`) with Attachable's file button for Add/Change. Connect / Disconnect live on `/recording_studio_users/profile/sign-in-methods`. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 

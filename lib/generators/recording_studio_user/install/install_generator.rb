@@ -76,7 +76,7 @@ module RecordingStudioUser
             "RecordingStudioAccessible.bootstrap_owner_access!. One profile image is an " \
             "Attachable child of the Profile recording.",
             :yellow
-        say "Google OmniAuth: set config.omniauth_providers and point devise_for callbacks at " \
+        say "OmniAuth: set config.omniauth_providers and point devise_for callbacks at " \
             "recording_studio_user/omniauth_callbacks. Secrets stay in credentials/ENV.",
             :yellow
         say "Host apps that need uploads: bin/rails generate recording_studio_attachable:install " \

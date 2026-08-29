@@ -4,8 +4,9 @@ module RecordingStudioUser
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     include Rails.application.routes.mounted_helpers
 
-    def google_oauth2
-      handle_omniauth
+    # Devise routes each configured provider to a same-named action.
+    Omniauth::PROVIDER_LABELS.each_key do |provider|
+      define_method(provider) { handle_omniauth }
     end
 
     private
@@ -13,11 +14,15 @@ module RecordingStudioUser
     def handle_omniauth
       run_omniauth_callback
     rescue Omniauth::MissingEmailError
-      redirect_to_failure("Google did not return an email address.")
+      redirect_to_failure(
+        "#{provider_label_for(request.env["omniauth.auth"])} did not return an email address."
+      )
     rescue Omniauth::AccountCreationDisabledError
-      redirect_to_failure("No account exists for that Google email, and new accounts are disabled.")
-    rescue Omniauth::IdentityTakenError
-      redirect_to after_connect_path, alert: "That Google account is already linked to another user."
+      redirect_to_failure(
+        "No account exists for that #{provider_label_for(request.env["omniauth.auth"])} email, and new accounts are disabled."
+      )
+    rescue Omniauth::IdentityTakenError => error
+      redirect_to after_connect_path, alert: error.message
     end
 
     def run_omniauth_callback
@@ -27,7 +32,7 @@ module RecordingStudioUser
 
     def connect_current_user!(auth)
       Omniauth.connect!(current_user, auth)
-      redirect_to after_connect_path, notice: "Google connected."
+      redirect_to after_connect_path, notice: "#{Omniauth.provider_label(auth.provider)} connected."
     end
 
     def sign_in_from_omniauth!(auth)
@@ -44,6 +49,10 @@ module RecordingStudioUser
 
     def redirect_to_failure(message)
       redirect_to main_app.new_user_session_path, alert: message
+    end
+
+    def provider_label_for(auth)
+      Omniauth.provider_label(auth&.provider || "provider")
     end
   end
 end

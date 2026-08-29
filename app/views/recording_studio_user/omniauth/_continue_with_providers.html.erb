@@ -1,0 +1,17 @@
+<%# Flatpack Continue-with buttons for every configured OmniAuth provider. %>
+<% if recording_studio_user_omniauth_configured? %>
+  <div class="space-y-2 pt-2">
+    <% recording_studio_user_omniauth_provider_names.each do |provider| %>
+      <% authorize_path = recording_studio_user_omniauth_authorize_path(provider) %>
+      <% next if authorize_path.blank? %>
+      <%= render FlatPack::Button::Component.new(
+        text: "Continue with #{recording_studio_user_provider_label(provider)}",
+        href: authorize_path,
+        method: :post,
+        style: :secondary,
+        size: :md,
+        data: { turbo: false }
+      ) %>
+    <% end %>
+  </div>
+<% end %>

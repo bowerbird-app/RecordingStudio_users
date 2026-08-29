@@ -57,8 +57,8 @@ module RecordingStudioUser
       omniauth_providers.any?
     end
 
-    def google_oauth2_configured?
-      omniauth_providers.key?(:google_oauth2)
+    def omniauth_provider_configured?(provider)
+      omniauth_providers.key?(provider.to_sym)
     end
 
     def mount_path=(value)

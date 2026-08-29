@@ -42,7 +42,8 @@ class ConfigurationTest < Minitest::Test
     }
     assert_equal({ google_oauth2: { client_id: "id", client_secret: "secret" } }, @configuration.omniauth_providers)
     assert_predicate @configuration, :omniauth_configured?
-    assert_predicate @configuration, :google_oauth2_configured?
+    assert @configuration.omniauth_provider_configured?(:google_oauth2)
+    refute @configuration.omniauth_provider_configured?(:apple)
   end
 
   def test_normalizes_configured_paths

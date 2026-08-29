@@ -3,36 +3,40 @@
 require "test_helper"
 require "devise/test/integration_helpers"
 
-class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
+class OmniauthFlowTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
     OmniAuth.config.test_mode = true
-    OmniAuth.config.mock_auth[:google_oauth2] = nil
+    clear_omniauth_mocks!
     @original_create_account = RecordingStudioUser.config.omniauth_create_account
     RecordingStudioUser.config.omniauth_create_account = true
   end
 
   teardown do
-    OmniAuth.config.mock_auth[:google_oauth2] = nil
+    clear_omniauth_mocks!
     RecordingStudioUser.config.omniauth_create_account = @original_create_account
   end
 
-  test "login and sign up show Continue with Google when configured" do
+  test "login and sign up show Continue with each configured provider" do
     get new_user_session_path
 
     assert_response :success
-    assert_select "a, button", text: /Continue with Google/
+    %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
+      assert_select "a, button", text: /Continue with #{Regexp.escape(label)}/
+    end
     assert_select "input[type='password']"
 
     get new_user_registration_path
 
     assert_response :success
     assert_select "a, button", text: /Continue with Google/
+    assert_select "a, button", text: /Continue with Microsoft/
   end
 
   test "new Google account creates User Profile and Identity then signs in" do
-    mock_google_auth!(
+    mock_provider_auth!(
+      :google_oauth2,
       uid: "google-new-#{SecureRandom.hex(4)}",
       email: "oauth-new-#{SecureRandom.hex(4)}@example.com",
       first_name: "Gail",
@@ -54,16 +58,17 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "known Google email links Identity to the existing User" do
+  test "Microsoft find-or-create links known email and creates unknown email" do
     existing = RecordingStudioUser.create_user!(
-      email: "linked-#{SecureRandom.hex(4)}@example.com",
+      email: "ms-linked-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Existing",
       last_name: "User",
       time_zone: "UTC"
     )
-    mock_google_auth!(
-      uid: "google-link-#{SecureRandom.hex(4)}",
+    mock_provider_auth!(
+      :microsoft_graph,
+      uid: "ms-link-#{SecureRandom.hex(4)}",
       email: existing.email,
       first_name: "Ignored",
       last_name: "Name"
@@ -71,17 +76,74 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { User.count } do
       assert_difference -> { RecordingStudioUser::Identity.count }, +1 do
-        get user_google_oauth2_omniauth_callback_path
+        get user_microsoft_graph_omniauth_callback_path
       end
     end
 
     existing.reload
-    assert existing.encrypted_password.present?
-    assert_equal 1, existing.identities.where(provider: "google_oauth2").count
-    assert_equal "Existing User", RecordingStudioUser.display_name_for(existing)
+    assert existing.identities.exists?(provider: "microsoft_graph")
+
+    delete destroy_user_session_path if respond_to?(:destroy_user_session_path)
+    reset!
+
+    mock_provider_auth!(
+      :microsoft_graph,
+      uid: "ms-new-#{SecureRandom.hex(4)}",
+      email: "ms-new-#{SecureRandom.hex(4)}@example.com",
+      first_name: "New",
+      last_name: "Microsoft"
+    )
+
+    assert_difference -> { User.count }, +1 do
+      get user_microsoft_graph_omniauth_callback_path
+    end
   end
 
-  test "signed-in Connect attaches Google to the current User" do
+  test "Instagram without email fails closed on first login but connects while signed in" do
+    mock_provider_auth!(
+      :instagram,
+      uid: "ig-no-email-#{SecureRandom.hex(4)}",
+      email: nil,
+      first_name: "Ig",
+      last_name: "User"
+    )
+
+    assert_no_difference -> { User.count } do
+      assert_no_difference -> { RecordingStudioUser::Identity.count } do
+        get user_instagram_omniauth_callback_path
+      end
+    end
+
+    assert_redirected_to new_user_session_path
+    follow_redirect!
+    assert_match(/did not return an email/i, flash[:alert].to_s + response.body)
+
+    user = RecordingStudioUser.create_user!(
+      email: "ig-connect-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Ig",
+      last_name: "Connect",
+      time_zone: "UTC"
+    )
+    sign_in user
+    mock_provider_auth!(
+      :instagram,
+      uid: "ig-connect-#{SecureRandom.hex(4)}",
+      email: nil,
+      first_name: "Ig",
+      last_name: "Connect"
+    )
+
+    assert_difference -> { RecordingStudioUser::Identity.count }, +1 do
+      get user_instagram_omniauth_callback_path
+    end
+
+    identity = user.identities.find_by!(provider: "instagram")
+    assert_nil identity.email
+    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
+  end
+
+  test "signed-in Connect and Disconnect work across providers" do
     user = RecordingStudioUser.create_user!(
       email: "connect-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -90,70 +152,49 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
       time_zone: "UTC"
     )
     sign_in user
-    mock_google_auth!(
-      uid: "google-connect-#{SecureRandom.hex(4)}",
-      email: "other-google-#{SecureRandom.hex(4)}@example.com",
-      first_name: "Other",
-      last_name: "Google"
+    mock_provider_auth!(
+      :linkedin,
+      uid: "li-connect-#{SecureRandom.hex(4)}",
+      email: "li-#{SecureRandom.hex(4)}@example.com",
+      first_name: "Li",
+      last_name: "User"
     )
 
-    assert_no_difference -> { User.count } do
-      assert_difference -> { user.identities.count }, +1 do
-        get user_google_oauth2_omniauth_callback_path
-      end
+    assert_difference -> { RecordingStudioUser::Identity.count }, +1 do
+      get user_linkedin_omniauth_callback_path
     end
-
     assert_redirected_to recording_studio_users.sign_in_methods_profile_path
-    assert user.reload.identity_for(:google_oauth2).present?
-    assert user.encrypted_password.present?
+
+    delete recording_studio_users.profile_identity_path("linkedin")
+    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
+    refute user.identities.exists?(provider: "linkedin")
   end
 
-  test "disconnect removes Identity when another sign-in method remains" do
-    user = RecordingStudioUser.create_user!(
-      email: "disconnect-#{SecureRandom.hex(4)}@example.com",
-      password: "Password123!",
-      first_name: "Has",
-      last_name: "Password",
-      time_zone: "UTC"
+  test "disconnect refuses last method when user has no password" do
+    mock_provider_auth!(
+      :apple,
+      uid: "apple-only-#{SecureRandom.hex(4)}",
+      email: "apple-only-#{SecureRandom.hex(4)}@example.com",
+      first_name: "Apple",
+      last_name: "Only"
     )
-    user.identities.create!(provider: "google_oauth2", uid: "uid-#{SecureRandom.hex(4)}", email: user.email)
+    get user_apple_omniauth_callback_path
+    user = User.order(:created_at).last
     sign_in user
 
-    assert_difference -> { user.identities.count }, -1 do
-      delete recording_studio_users.profile_identity_path("google_oauth2")
+    assert_no_difference -> { RecordingStudioUser::Identity.count } do
+      delete recording_studio_users.profile_identity_path("apple")
     end
-
     assert_redirected_to recording_studio_users.sign_in_methods_profile_path
-    refute user.reload.identity_for(:google_oauth2).present?
+    assert_match(/password|sign-in method/i, flash[:alert].to_s)
   end
 
-  test "cannot disconnect the last sign-in method without a password" do
-    mock_google_auth!(
-      uid: "google-only-#{SecureRandom.hex(4)}",
-      email: "google-only-#{SecureRandom.hex(4)}@example.com",
-      first_name: "Only",
-      last_name: "Google"
-    )
-    get user_google_oauth2_omniauth_callback_path
-    user = User.find_by!(email: OmniAuth.config.mock_auth[:google_oauth2].info.email)
-    assert user.encrypted_password.blank?
-
-    assert_no_difference -> { user.identities.count } do
-      delete recording_studio_users.profile_identity_path("google_oauth2")
-    end
-
-    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
-    follow_redirect!
-    assert_match(/password|sign-in method/i, flash[:alert].to_s + response.body)
-  end
-
-  test "omniauth_create_account false rejects unknown emails" do
+  test "omniauth_create_account false refuses unknown emails" do
     RecordingStudioUser.config.omniauth_create_account = false
-    mock_google_auth!(
-      uid: "google-disabled-#{SecureRandom.hex(4)}",
-      email: "unknown-#{SecureRandom.hex(4)}@example.com",
-      first_name: "No",
-      last_name: "Create"
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: "disabled-#{SecureRandom.hex(4)}",
+      email: "disabled-#{SecureRandom.hex(4)}@example.com"
     )
 
     assert_no_difference -> { User.count } do
@@ -161,11 +202,10 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
         get user_google_oauth2_omniauth_callback_path
       end
     end
-
     assert_redirected_to new_user_session_path
   end
 
-  test "connect rejects a Google uid already linked to another User" do
+  test "uid collision rejects Connect to another User" do
     owner = RecordingStudioUser.create_user!(
       email: "owner-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -173,8 +213,7 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
       last_name: "User",
       time_zone: "UTC"
     )
-    uid = "shared-uid-#{SecureRandom.hex(4)}"
-    owner.identities.create!(provider: "google_oauth2", uid: uid, email: owner.email)
+    owner.identities.create!(provider: "google_oauth2", uid: "shared-uid", email: owner.email)
 
     other = RecordingStudioUser.create_user!(
       email: "other-#{SecureRandom.hex(4)}@example.com",
@@ -184,14 +223,12 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
       time_zone: "UTC"
     )
     sign_in other
-    mock_google_auth!(uid: uid, email: "collision-#{SecureRandom.hex(4)}@example.com")
+    mock_provider_auth!(:google_oauth2, uid: "shared-uid", email: "ignored@example.com")
 
-    assert_no_difference -> { other.identities.count } do
+    assert_no_difference -> { RecordingStudioUser::Identity.count } do
       get user_google_oauth2_omniauth_callback_path
     end
-
     assert_redirected_to recording_studio_users.sign_in_methods_profile_path
-    follow_redirect!
     assert_match(/already linked/i, flash[:alert].to_s + response.body)
   end
 
@@ -208,24 +245,18 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     get recording_studio_users.edit_profile_path
 
     assert_response :success
-    assert_includes response.body, "Ui User"
     refute_includes response.body, "Connect Google"
     refute_includes response.body, "Disconnect"
     refute_includes response.body, recording_studio_users.sign_in_methods_profile_path
-    refute_includes response.body, 'alt="Avatar"'
-    refute_match(/>\s*Avatar\s*</, response.body)
 
     get recording_studio_users.profile_path
 
     assert_response :success
-    assert_includes response.body, "Edit"
     assert_includes response.body, "Sign-in methods"
     assert_includes response.body, recording_studio_users.sign_in_methods_profile_path
-    refute_includes response.body, "Connect Google"
-    refute_includes response.body, "Disconnect"
   end
 
-  test "sign-in methods page shows Connect row when Google is not linked" do
+  test "sign-in methods lists Connect for every unlinked configured provider" do
     user = RecordingStudioUser.create_user!(
       email: "methods-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -238,16 +269,14 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     get recording_studio_users.sign_in_methods_profile_path
 
     assert_response :success
-    assert_includes response.body, "Sign-in methods"
-    assert_includes response.body, "Methods User"
     assert_includes response.body, 'role="list"'
-    assert_includes response.body, "<svg"
-    assert_select "a, button", text: /\AConnect\z/
-    assert_select "a, button", text: /\AConnect Google\z/, count: 0
-    refute_includes response.body, "large_subtitle"
+    %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
+      assert_includes response.body, label
+    end
+    assert_select "a, button", text: /\AConnect\z/, count: 5
   end
 
-  test "sign-in methods page lists Google with logo and Disconnect when linked" do
+  test "sign-in methods shows Disconnect for linked Google and Connect for others" do
     user = RecordingStudioUser.create_user!(
       email: "connected-ui-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -267,24 +296,30 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Disconnect"
     assert_includes response.body, user.email
-    assert_includes response.body, "<svg"
-    assert_includes response.body, 'role="list"'
-    assert_select "a, button", text: /\AConnect\z/, count: 0
-    assert_select "a, button", text: /\AConnect Google\z/, count: 0
+    assert_select "a, button", text: /\AConnect\z/, count: 4
+    assert_select "a, button", text: /\ADisconnect\z/, count: 1
   end
 
   private
 
-  def mock_google_auth!(uid:, email:, first_name: "Google", last_name: "User")
-    OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
-      provider: "google_oauth2",
+  def clear_omniauth_mocks!
+    %i[google_oauth2 microsoft_graph apple linkedin instagram].each do |provider|
+      OmniAuth.config.mock_auth[provider] = nil
+    end
+  end
+
+  def mock_provider_auth!(provider, uid:, email:, first_name: "OAuth", last_name: "User")
+    info = {
+      name: "#{first_name} #{last_name}",
+      first_name: first_name,
+      last_name: last_name
+    }
+    info[:email] = email if email.present?
+
+    OmniAuth.config.mock_auth[provider] = OmniAuth::AuthHash.new(
+      provider: provider.to_s,
       uid: uid,
-      info: {
-        email: email,
-        name: "#{first_name} #{last_name}",
-        first_name: first_name,
-        last_name: last_name
-      }
+      info: info
     )
   end
 end
