@@ -185,7 +185,9 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Add a photo"
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Choose File"
-    assert_includes response.body, "Change your name, time zone, or photo."
+    assert_includes response.body, "Profile User"
+    assert_includes response.body, "Sign-in methods"
+    refute_includes response.body, "Change your name, time zone, or photo."
     refute_includes response.body, "Tidy up"
     refute_includes response.body, "The photo lives here too."
     assert_equal 1, response.body.scan("md:grid-cols-2").size

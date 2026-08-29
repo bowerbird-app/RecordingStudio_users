@@ -1,0 +1,13 @@
+<%# Flatpack "Continue with Google" — render when google_oauth2 is configured. %>
+<% if recording_studio_user_google_oauth_configured? %>
+  <div class="pt-2">
+    <%= render FlatPack::Button::Component.new(
+      text: "Continue with Google",
+      href: recording_studio_user_continue_with_google_path,
+      method: :post,
+      style: :secondary,
+      size: :md,
+      data: { turbo: false }
+    ) %>
+  </div>
+<% end %>

@@ -10,7 +10,7 @@ module RecordingStudioUser
 
     attr_accessor :user_class_name, :layout
     attr_reader :mount_path, :profile_route_path, :admin_route_path, :additional_profile_attributes,
-                :require_password_confirmation
+                :require_password_confirmation, :omniauth_providers, :omniauth_create_account
 
     def initialize
       @user_class_name = "User"
@@ -20,6 +20,8 @@ module RecordingStudioUser
       @layout = "application"
       @additional_profile_attributes = []
       @require_password_confirmation = true
+      @omniauth_providers = {}
+      @omniauth_create_account = true
     end
 
     def require_password_confirmation=(value)
@@ -28,6 +30,35 @@ module RecordingStudioUser
 
     def require_password_confirmation?
       require_password_confirmation
+    end
+
+    def omniauth_create_account=(value)
+      @omniauth_create_account = ActiveModel::Type::Boolean.new.cast(value)
+    end
+
+    def omniauth_create_account?
+      omniauth_create_account
+    end
+
+    def omniauth_providers=(value)
+      providers = value.respond_to?(:to_h) ? value.to_h : {}
+      @omniauth_providers = providers.each_with_object({}) do |(name, options), memo|
+        key = name.to_sym
+        opts = (options || {}).to_h.transform_keys(&:to_sym)
+        memo[key] = opts
+      end
+    end
+
+    def omniauth_provider_names
+      omniauth_providers.keys.map(&:to_sym)
+    end
+
+    def omniauth_configured?
+      omniauth_providers.any?
+    end
+
+    def google_oauth2_configured?
+      omniauth_providers.key?(:google_oauth2)
     end
 
     def mount_path=(value)

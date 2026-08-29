@@ -39,6 +39,13 @@
         config.layout = "application"
         config.additional_profile_attributes = %i[display_name]
         config.require_password_confirmation = true
+        config.omniauth_providers = {
+          google_oauth2: {
+            client_id: ENV.fetch("GOOGLE_CLIENT_ID", "test-google-client-id"),
+            client_secret: ENV.fetch("GOOGLE_CLIENT_SECRET", "test-google-client-secret")
+          }
+        }
+        config.omniauth_create_account = true
       end
     CODE
   ) %>
@@ -47,6 +54,10 @@
     Defaults are <code>User</code>, <code>application</code>, <code>/recording_studio_users</code>,
     <code>profile</code>, and <code>admin</code>. A conventional initializer runs too late to change an already
     mounted engine path or its already-drawn profile and admin routes.
+    <code>omniauth_providers</code> defaults to an empty hash (no Google button).
+    <code>omniauth_create_account</code> defaults to <code>true</code>.
+    Host Devise must route OmniAuth callbacks to
+    <code>recording_studio_user/omniauth_callbacks</code> when providers are configured.
   </p>
 
   <p class="text-sm leading-6 text-(--surface-content-color)">

@@ -17,9 +17,9 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.135), and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.135), `devise`, `omniauth`, `omniauth-google-oauth2`, and `omniauth-rails_csrf_protection` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
-The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
+The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount. OmniAuth secrets stay in host credentials or ENV.
 
 Then run:
 
@@ -57,8 +57,46 @@ RecordingStudioUser.configure do |config|
   config.layout = "application"
   config.additional_profile_attributes = []
   config.require_password_confirmation = true
+  config.omniauth_providers = {
+    google_oauth2: {
+      client_id: Rails.application.credentials.dig(:google_oauth, :client_id) || ENV["GOOGLE_CLIENT_ID"],
+      client_secret: Rails.application.credentials.dig(:google_oauth, :client_secret) || ENV["GOOGLE_CLIENT_SECRET"]
+    }
+  }
+  config.omniauth_create_account = true
 end
 ```
+
+When providers is empty, login looks as today (no Google button). Host Devise must use Users' callback controller:
+
+```ruby
+devise_for :users, controllers: {
+  omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+}
+```
+
+`omniauth_create_account` defaults to `true`. When `false`, unknown Google emails do not create a User.
+
+## Google sign-in
+
+Users owns OmniAuth behavior: config, identities, callback, find-or-create, Profile Connect UI, and the login partial. The host keeps the Devise `User` model and `devise_for :users`. Identities live on the User only — not a recordable, not in the People tree. One User, many identities. Password can stay; disconnect does not delete the User.
+
+Find-or-create used by the callback:
+
+1. Find Identity by provider+uid → that User.
+2. Else find User by email → create Identity, return User.
+3. Else if `omniauth_create_account` → `create_user!` / `record_profile!` (name from OmniAuth when present, timezone UTC), create Identity, return User.
+4. Else fail closed.
+
+Google-only users get an unusable blank password digest; `password_required?` is false while they have at least one identity. Connect on Edit Profile attaches Google to the signed-in User. Disconnect refuses if that Identity is the only sign-in method and the user has no password.
+
+Render the Flatpack partial on host Devise login and sign-up when Google is configured:
+
+```erb
+<%= render "recording_studio_user/omniauth/continue_with_google" %>
+```
+
+Edit Profile lists connected providers with Connect Google / Disconnect. My Profile show stays read-only.
 
 Host code uses the mounted-engine proxy:
 
@@ -142,7 +180,7 @@ Flash notices come from the host layout. Profile show does not render `notice` a
 
 The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
 
-Show puts **Edit** in the PageTitle actions slot (not in the card) and one Flatpack elevated Card. A Grid `cols: 2` wraps the Card only so it occupies one cell on a wide screen. Inside the card, Avatar sits above unlabeled name, email, and time zone — one column on desktop and phone. Empty photos use Avatar's person icon, not initials. There is no show subtitle and no city field. Edit hosts a `profile-photo` Turbo frame with Flatpack Avatar (`attachment_preview_url(..., variant: :square_med)`, `size: :"2xl"`, `shape: :circle`) plus Attachable `render_attachment_file_button` for Add/Change, then stacked fields, in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. An `mb-8` wrapper under the helper puts a field of air between the avatar and First name. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Edit keeps the plain subtitle: "Change your name, time zone, or photo."
+Show puts **Edit** in the PageTitle actions slot (not in the card) and one Flatpack elevated Card. A Grid `cols: 2` wraps the Card only so it occupies one cell on a wide screen. Inside the card, Avatar sits above unlabeled name, email, and time zone — one column on desktop and phone. Empty photos use Avatar's person icon, not initials. There is no show subtitle and no city field. Edit hosts a `profile-photo` Turbo frame with Flatpack Avatar (`attachment_preview_url(..., variant: :square_med)`, `size: :"2xl"`, `shape: :circle`) plus Attachable `render_attachment_file_button` for Add/Change, then stacked fields, in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. An `mb-8` wrapper under the helper puts a field of air between the avatar and First name. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Edit PageTitle stays **Edit Profile**; the subtitle is the profile name at default muted size (not `large_subtitle`). When OmniAuth providers are configured, Edit also shows a **Sign-in methods** block under the form.
 
 ## Users administration
 
@@ -152,9 +190,9 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs and a primary button — not a Users product registration flow. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
+The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs, a primary button, and **Continue with Google** when `omniauth_providers` includes `google_oauth2` — not a Users product registration flow. OmniAuth runs in test mode with a mock auth hash so CI and screenshots do not need a live Google app. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
 
-Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.135`) with Attachable's file button for Add/Change. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
+Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.135`) with Attachable's file button for Add/Change, plus Sign-in methods (Connect / Disconnect Google). Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |

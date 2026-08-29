@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-29
+
+### Added
+- Google OmniAuth sign-in and Connect on Edit Profile. Users owns OmniAuth config, identities, callbacks, find-or-create, and the Flatpack “Continue with Google” partial. Host keeps Devise `User` and `devise_for :users`.
+- `RecordingStudioUser::Configuration#omniauth_providers` (default `{}`) and `#omniauth_create_account` (default `true`). When providers is empty, login looks as today. Dummy sets `google_oauth2` with test client id/secret (or `ENV`).
+- `recording_studio_user_identities` table and `RecordingStudioUser::Identity` (provider + uid unique; one User, many identities). Identities are not recordables and are not in the People tree. Table accepts other providers later without a second migration; only Google UI ships now.
+- Find-or-create used by the callback: Identity by provider+uid → else User by email (link Identity) → else create via `Directory.create_user!` / `record_profile!` when `omniauth_create_account` → else fail closed. Connect while signed in attaches to the current User; uid already on another User is rejected. Disconnect deletes that Identity and refuses if it is the only sign-in method and the user has no password.
+- Owner-only **Sign-in methods** page under the profile resource (Flatpack List + Card, Connect / Disconnect). Edit Profile stays photo + name + timezone. My Profile show stays read-only with Edit and Sign-in methods actions.
+- Gemspec depends on `omniauth`, `omniauth-google-oauth2`, and `omniauth-rails_csrf_protection`. Dummy uses OmniAuth test mode so CI and screenshots do not need a live Google app.
+
+### Changed
+- Host `devise_for` must route OmniAuth callbacks to Users: `controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }`. ProfiledUser adds `:omniauthable` when providers are present and sets `password_required?` false while an identity exists.
+- Migrations generator also copies the identities table.
+
+### Upgrade notes
+- Bump to `0.6.0`. Requires Flatpack `~> 0.1.141` (already on main as 0.5.1). This release does not change the Flatpack pin.
+- Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` for `recording_studio_user_identities`.
+- Set `config.omniauth_providers` (Google `client_id` / `client_secret` from credentials or ENV) and `config.omniauth_create_account` as needed. Point `devise_for :users` OmniAuth callbacks at `recording_studio_user/omniauth_callbacks`.
+- Render `recording_studio_user/omniauth/continue_with_google` on host Devise login/sign-up when Google is configured. Secrets stay out of the repo.
+- OAuth tokens are not stored. Login only needs provider, uid, and email.
+
 ## [0.5.1] - 2026-08-29
 
 ### Changed

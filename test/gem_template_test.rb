@@ -67,7 +67,11 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "render_attachment_file_button(@profile_recording, return_to: edit_profile_path)"
     assert_includes edit, "size: :\"2xl\""
     refute_includes edit, "FlatPack::Card::Component"
-    assert_includes edit, "Change your name, time zone, or photo."
+    assert_includes edit, "subtitle: profile_display_name(@user)"
+    refute_includes edit, "large_subtitle"
+    assert_includes edit, "Sign-in methods"
+    assert_includes edit, "Connect Google"
+    assert_includes edit, "Disconnect"
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     assert_includes edit, %(class="mb-8")
     refute_includes edit, %(class="mb-16")
