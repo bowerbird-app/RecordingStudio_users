@@ -29,7 +29,7 @@ Run these commands from the dummy app directory. Sign in through Devise at `/use
 
 - `/recording_studio_users/profile`: the signed-in user's profile. Accessible must grant them a role on that Profile recording. Flash notices come from the default layout, not the show template. The photo is the single Attachable child. Show is an elevated identity Card plus **Edit** and **Sign-in methods** in the title (no Connect/Disconnect on show). Review stills for OAuth live under `docs/review/google-oauth/`.
 - `/recording_studio_users/profile/edit`: profile editing route. Writes go through `record_profile!`. The photo row is a host `profile-photo` Turbo frame: Avatar via `attachment_preview_url(..., variant: :square_med)` plus Attachable `render_attachment_file_button` (Add/Change posts stay on this page). Dummy pins Attachable tag `v0.5.0` and Flatpack `v0.1.141`. Empty photos use profile-name initials (never the word “Avatar”).
-- `/recording_studio_users/profile/sign-in-methods`: owner-only Sign-in methods (same Accessible grant as Edit). Flatpack Card + List of linked providers with configured Google logo, Connect Google when not linked. Core PageNav back to My Profile.
+- `/recording_studio_users/profile/sign-in-methods`: owner-only Sign-in methods (same Accessible grant as Edit). Flatpack elevated Card + List: linked providers show logo, name, email, Disconnect; when Google is configured but not linked, the same row shows logo, Google, and Connect (secondary, sm). Core PageNav back to My Profile.
 - `/recording_studio_attachable/attachments/:id`: leftover Attachable record screen if opened directly. Profile does not link here.
 - `/recording_studio_users/admin`: authorizes the actor against the Admin root, then opens the shared read-only users report.
 
