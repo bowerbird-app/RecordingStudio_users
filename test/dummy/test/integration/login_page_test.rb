@@ -23,7 +23,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Don't have an account?"
     assert_includes response.body, "Continue with Google"
     assert_match(/\bOr\b/, response.body)
-    assert_includes response.body, "Default: admin@admin.com / Password"
+    refute_includes response.body, "Default: admin@admin.com / Password"
   end
 
   test "login title follows RecordingStudioUser.config.login_title" do

@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Host `devise_for` must route OmniAuth callbacks to Users: `controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }`. ProfiledUser adds `:omniauthable` when providers are present and sets `password_required?` false while an identity exists.
 - Migrations generator also copies the identities table.
-- Dummy Devise login and sign-up use ordinary Tailwind viewport centering (`min-h-dvh flex items-center justify-center`, inner `max-w-sm w-full`) without a Card: title → fields → primary button → cross-link → `Divider` (`label: "Or"`) → full-width secondary Continue-with buttons (provider logo via `icon:`). Login omits Remember me. Seed hint sits under the login form. Requires Flatpack `~> 0.1.143` (tagged `v0.1.143`, includes Divider). Button `icon:` SVG logos use a small engine shim until Flatpack Button mirrors List::Item.
+- Dummy Devise login and sign-up use ordinary Tailwind viewport centering (`min-h-dvh flex items-center justify-center`, inner `max-w-sm w-full`) without a Card: title → fields → primary button → cross-link → `Divider` (`label: "Or"`) → full-width secondary Continue-with buttons (provider logo via `icon:`). Login omits Remember me and the seed credential Badge. Requires Flatpack `~> 0.1.143` (tagged `v0.1.143`, includes Divider). Button `icon:` SVG logos use a small engine shim until Flatpack Button mirrors List::Item.
 
 ### Upgrade notes
 - Bump to `0.6.0`. Requires Flatpack `~> 0.1.143` (git tag `v0.1.143`).
