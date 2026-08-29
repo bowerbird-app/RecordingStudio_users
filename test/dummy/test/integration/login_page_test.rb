@@ -14,7 +14,10 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_select "input[name='user[remember_me]']", count: 0
     assert_select "button[type='submit']", text: "Sign in"
     refute_includes response.body, "Remember me"
-    refute_includes response.body, "FlatPack::Card"
+    refute_includes response.body, "fixed inset-0"
+    refute_includes response.body, "place-content-center"
+    refute_includes response.body, "mx-auto my-28"
+    assert_includes response.body, "max-w-sm"
     assert_includes response.body, "Don't have an account?"
     assert_includes response.body, "Continue with Google"
     assert_match(/\bOr\b/, response.body)
