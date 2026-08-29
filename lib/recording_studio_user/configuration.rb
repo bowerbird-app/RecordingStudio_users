@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module RecordingStudioUser
+  DEFAULT_LOGIN_TITLE = "Welcome back"
+
   class Configuration
     PROTECTED_PROFILE_ATTRIBUTES = %w[
       id email password password_confirmation encrypted_password reset_password_token
@@ -10,7 +12,7 @@ module RecordingStudioUser
 
     attr_accessor :user_class_name, :layout
     attr_reader :mount_path, :profile_route_path, :admin_route_path, :additional_profile_attributes,
-                :require_password_confirmation
+                :require_password_confirmation, :login_title, :omniauth_providers, :omniauth_create_account
 
     def initialize
       @user_class_name = "User"
@@ -19,7 +21,10 @@ module RecordingStudioUser
       @admin_route_path = "admin"
       @layout = "application"
       @additional_profile_attributes = []
-      @require_password_confirmation = true
+      @require_password_confirmation = false
+      @login_title = DEFAULT_LOGIN_TITLE
+      @omniauth_providers = {}
+      @omniauth_create_account = true
     end
 
     def require_password_confirmation=(value)
@@ -28,6 +33,39 @@ module RecordingStudioUser
 
     def require_password_confirmation?
       require_password_confirmation
+    end
+
+    def login_title=(value)
+      @login_title = value.to_s.strip.presence || DEFAULT_LOGIN_TITLE
+    end
+
+    def omniauth_create_account=(value)
+      @omniauth_create_account = ActiveModel::Type::Boolean.new.cast(value)
+    end
+
+    def omniauth_create_account?
+      omniauth_create_account
+    end
+
+    def omniauth_providers=(value)
+      providers = value.respond_to?(:to_h) ? value.to_h : {}
+      @omniauth_providers = providers.each_with_object({}) do |(name, options), memo|
+        key = name.to_sym
+        opts = (options || {}).to_h.transform_keys(&:to_sym)
+        memo[key] = opts
+      end
+    end
+
+    def omniauth_provider_names
+      omniauth_providers.keys.map(&:to_sym)
+    end
+
+    def omniauth_configured?
+      omniauth_providers.any?
+    end
+
+    def omniauth_provider_configured?(provider)
+      omniauth_providers.key?(provider.to_sym)
     end
 
     def mount_path=(value)

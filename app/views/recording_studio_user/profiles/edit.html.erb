@@ -10,7 +10,7 @@
 
 <%= render FlatPack::PageTitle::Component.new(
   title: "Edit Profile",
-  subtitle: "Change your name, time zone, or photo.",
+  subtitle: profile_display_name(@user),
   variant: :h1
 ) %>
 
@@ -18,11 +18,15 @@
   <div>
     <div class="mb-8">
       <%= turbo_frame_tag "profile-photo" do %>
+        <% preview_src = attachment_preview_url(@profile_recording, variant: :square_med) %>
         <div class="inline-flex items-end gap-3">
           <%= render FlatPack::Avatar::Component.new(
-                src: attachment_preview_url(@profile_recording, variant: :square_med),
+                src: preview_src,
+                name: profile_display_name(@user),
+                alt: profile_display_name(@user),
                 size: :"2xl",
-                shape: :circle
+                shape: :circle,
+                show_tooltip: false
               ) %>
           <%= render_attachment_file_button(@profile_recording, return_to: edit_profile_path) %>
         </div>

@@ -14,16 +14,45 @@ class ConfigurationTest < Minitest::Test
     assert_equal "admin", @configuration.admin_route_path
     assert_equal "application", @configuration.layout
     assert_empty @configuration.additional_profile_attributes
-    assert @configuration.require_password_confirmation
-    assert_predicate @configuration, :require_password_confirmation?
+    refute @configuration.require_password_confirmation
+    refute_predicate @configuration, :require_password_confirmation?
+    assert_equal "Welcome back", @configuration.login_title
+    assert_empty @configuration.omniauth_providers
+    assert @configuration.omniauth_create_account
+    assert_predicate @configuration, :omniauth_create_account?
+    refute_predicate @configuration, :omniauth_configured?
   end
 
   def test_require_password_confirmation_casts_like_other_flags
-    @configuration.require_password_confirmation = false
-    refute_predicate @configuration, :require_password_confirmation?
-
-    @configuration.require_password_confirmation = "true"
+    @configuration.require_password_confirmation = true
     assert_predicate @configuration, :require_password_confirmation?
+
+    @configuration.require_password_confirmation = "false"
+    refute_predicate @configuration, :require_password_confirmation?
+  end
+
+  def test_login_title_defaults_and_rejects_blank
+    @configuration.login_title = "Sign in to Acme"
+    assert_equal "Sign in to Acme", @configuration.login_title
+
+    @configuration.login_title = "  "
+    assert_equal "Welcome back", @configuration.login_title
+  end
+
+  def test_omniauth_flags_and_providers
+    @configuration.omniauth_create_account = false
+    refute_predicate @configuration, :omniauth_create_account?
+
+    @configuration.omniauth_create_account = "true"
+    assert_predicate @configuration, :omniauth_create_account?
+
+    @configuration.omniauth_providers = {
+      "google_oauth2" => { "client_id" => "id", "client_secret" => "secret" }
+    }
+    assert_equal({ google_oauth2: { client_id: "id", client_secret: "secret" } }, @configuration.omniauth_providers)
+    assert_predicate @configuration, :omniauth_configured?
+    assert @configuration.omniauth_provider_configured?(:google_oauth2)
+    refute @configuration.omniauth_provider_configured?(:apple)
   end
 
   def test_normalizes_configured_paths

@@ -11,11 +11,20 @@
   variant: :h1
 ) do |page_title| %>
   <% page_title.slot do %>
-    <%= render FlatPack::Button::Component.new(
-      text: "Edit",
-      href: edit_profile_path,
-      style: :primary
-    ) %>
+    <div class="flex flex-wrap items-center gap-3">
+      <%= render FlatPack::Button::Component.new(
+        text: "Edit",
+        href: edit_profile_path,
+        style: :primary
+      ) %>
+      <% if RecordingStudioUser.config.omniauth_configured? %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Sign-in methods",
+          href: sign_in_methods_profile_path,
+          style: :secondary
+        ) %>
+      <% end %>
+    </div>
   <% end %>
 <% end %>
 

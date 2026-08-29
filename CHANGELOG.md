@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-29
+
+### Added
+- OmniAuth sign-in for **Google, Microsoft, Apple, LinkedIn, and Instagram**. Users owns OmniAuth config, identities, callbacks, find-or-create, Sign-in methods, and the Flatpack `continue_with_providers` partial. Host keeps Devise `User` and `devise_for :users`.
+- `RecordingStudioUser::Configuration#omniauth_providers` (default `{}`) and `#omniauth_create_account` (default `true`). When providers is empty, login looks as today. Dummy enables all five with OmniAuth test-mode mocks (or `ENV`).
+- Strategy gems: `omniauth-google-oauth2`, `omniauth-microsoft_graph`, `omniauth-apple`, `omniauth-linkedin-openid`, `omniauth-instagram-api`, plus `omniauth` / `omniauth-rails_csrf_protection`. Providers register by config key — not a Google-only branch.
+- `recording_studio_user_identities` table and `RecordingStudioUser::Identity` (provider + uid unique; one User, many identities). Identities are not recordables and are not in the People tree.
+- Find-or-create used by the callback: Identity by provider+uid → else User by email (link Identity) → else create via `Directory.create_user!` / `record_profile!` when `omniauth_create_account` → else fail closed. Connect while signed in attaches to the current User (no invented email); uid already on another User is rejected. Disconnect deletes that Identity and refuses if it is the only sign-in method and the user has no password.
+- Owner-only **Sign-in methods** page at `profile/sign-in-methods` (Flatpack Card + List with configured provider logo). Connected rows use Disconnect; each configured but unlinked provider gets the same row with Connect (secondary, sm). Edit Profile stays photo + name + timezone only (no Sign-in methods link). Avatar uses profile name for initials / alt — never the word “Avatar”. My Profile show stays read-only with **Edit** and **Sign-in methods** actions (no `page_nav_back_*`; core Flatpack PageNav still paints history.back — see notes).
+- Optional `omniauth_providers[:provider][:logo]` (URL or inline SVG). Gem ships default SVGs for all five. Flatpack List has no first-class image-URL lead; SVG uses `icon:`, image URLs use `leading:` with an `<img>`. `:logo` is stripped before Devise strategy registration.
+- **Email caveats:** first login without email fails closed (`MissingEmailError`). Instagram often has no email; Apple may send it only once / as a relay. Connect-from-profile still works with a blank `Identity.email`.
+- `RecordingStudioUser::Configuration#login_title` (default `"Welcome back"`) for the host Devise login heading. Blank values fall back to the default. Install generator comments the option.
+
+### Changed
+- Host `devise_for` must route OmniAuth callbacks to Users: `controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }`. ProfiledUser adds `:omniauthable` when providers are present and sets `password_required?` false while an identity exists.
+- Migrations generator also copies the identities table.
+- Dummy Devise login and sign-up use ordinary Tailwind viewport centering (`min-h-dvh flex items-center justify-center`, inner `max-w-sm w-full`) without a Card: centered title → fields → primary button → centered cross-link → `Divider` (`label: "Or"`) → full-width secondary Continue-with buttons (provider logo via `icon:`). Login omits Remember me and the seed credential Badge. `require_password_confirmation` defaults to `false` (dummy signup has no confirm field; hosts may set `true`). Requires Flatpack `~> 0.1.143` (tagged `v0.1.143`, includes Divider). Button `icon:` SVG logos use a small engine shim until Flatpack Button mirrors List::Item.
+
+### Upgrade notes
+- Bump to `0.6.0`. Requires Flatpack `~> 0.1.143` (git tag `v0.1.143`).
+- Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` for `recording_studio_user_identities`.
+- Set `config.omniauth_providers` (per-provider `client_id` / `client_secret` from credentials or ENV; optional `logo` and strategy options such as Apple `team_id` / `key_id` / `pem`) and `config.omniauth_create_account` as needed. Point `devise_for :users` OmniAuth callbacks at `recording_studio_user/omniauth_callbacks`.
+- Optional `config.login_title` (default `"Welcome back"`) for the Devise login heading.
+- `config.require_password_confirmation` now defaults to `false`. Set `true` if the host still wants a confirmation field on Devise sign-up.
+- Mount Sign-in methods at the engine profile route (`…/profile/sign-in-methods`). Link it from My Profile; keep Connect/Disconnect off show and off Edit.
+- Render `recording_studio_user/omniauth/continue_with_providers` on host Devise login/sign-up when any provider is configured (replaces the old Google-only partial name). The partial includes the labeled Or divider and one Continue button per provider. Secrets stay out of the repo.
+- OAuth tokens are not stored. Login needs provider, uid, and email (except Connect-while-signed-in, which tolerates a blank email).
+
 ## [0.5.1] - 2026-08-29
 
 ### Changed
