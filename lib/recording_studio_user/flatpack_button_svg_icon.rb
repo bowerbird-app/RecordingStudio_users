@@ -7,17 +7,24 @@ module RecordingStudioUser
   module FlatpackButtonSvgIcon
     def render_icon
       return unless @icon
+      return render_svg_icon if svg_icon?
 
-      if @icon.is_a?(String) && @icon.start_with?("<svg")
-        content_tag(
-          :span,
-          @icon.html_safe, # rubocop:disable Rails/OutputSafety -- trusted gem-shipped / host-configured SVG logos
-          class: "inline-flex h-5 w-5 shrink-0 items-center justify-center [&_svg]:h-full [&_svg]:w-full",
-          "aria-hidden": true
-        )
-      else
-        render FlatPack::Shared::IconComponent.new(name: @icon, size: @size)
-      end
+      render FlatPack::Shared::IconComponent.new(name: @icon, size: @size)
+    end
+
+    private
+
+    def svg_icon?
+      @icon.is_a?(String) && @icon.start_with?("<svg")
+    end
+
+    def render_svg_icon
+      content_tag(
+        :span,
+        @icon.html_safe,
+        class: "inline-flex h-5 w-5 shrink-0 items-center justify-center [&_svg]:h-full [&_svg]:w-full",
+        "aria-hidden": true
+      )
     end
   end
 end
