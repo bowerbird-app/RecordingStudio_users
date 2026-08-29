@@ -98,7 +98,7 @@ Render the Flatpack partial on host Devise login and sign-up when Google is conf
 
 Optional `omniauth_providers[:google_oauth2][:logo]` accepts a URL or inline SVG. The gem ships a default Google SVG for List rows. Flatpack List has no first-class image-URL lead — SVG uses `icon:`, URLs use `leading:` with an `<img>`.
 
-My Profile show stays read-only (Edit + Sign-in methods actions). Connect/Disconnect live only on Sign-in methods (`…/profile/sign-in-methods`).
+My Profile show stays read-only (Edit + Sign-in methods actions). Connect / Disconnect live only on Sign-in methods (`…/profile/sign-in-methods`) as matching Card + List rows (logo + provider name; Connect or Disconnect trailing, secondary sm). Edit has no Sign-in methods link.
 
 Host code uses the mounted-engine proxy:
 

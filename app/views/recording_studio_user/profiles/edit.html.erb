@@ -90,13 +90,5 @@
         </div>
       </div>
     <% end %>
-
-    <% if RecordingStudioUser.config.omniauth_configured? %>
-      <p class="mt-8 text-sm text-[var(--surface-muted-content-color)]">
-        <%= render FlatPack::Link::Component.new(href: sign_in_methods_profile_path) do %>
-          Sign-in methods
-        <% end %>
-      </p>
-    <% end %>
   </div>
 <% end %>

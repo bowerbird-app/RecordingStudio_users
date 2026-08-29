@@ -71,7 +71,7 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes edit, "large_subtitle"
     refute_includes edit, "Connect Google"
     refute_includes edit, "Disconnect"
-    assert_includes edit, "sign_in_methods_profile_path"
+    refute_includes edit, "sign_in_methods_profile_path"
     assert_includes edit, "name: profile_display_name(@user)"
     assert_includes edit, "show_tooltip: false"
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
@@ -89,14 +89,17 @@ class RecordingStudioUserTest < Minitest::Test
 
     assert_includes show, "Sign-in methods"
     assert_includes show, "sign_in_methods_profile_path"
+    refute_includes show, "page_nav_back_url"
+    refute_includes show, "page_nav_back_label"
 
     sign_in_methods = File.read(
       File.expand_path("../app/views/recording_studio_user/sign_in_methods/show.html.erb", __dir__)
     )
     assert_includes sign_in_methods, "FlatPack::List::Component"
     assert_includes sign_in_methods, "FlatPack::Card::Component"
-    assert_includes sign_in_methods, "Connect Google"
+    assert_includes sign_in_methods, 'text: "Connect"'
     assert_includes sign_in_methods, "Disconnect"
+    refute_includes sign_in_methods, "Connect Google"
     refute_includes sign_in_methods, "large_subtitle"
   end
 

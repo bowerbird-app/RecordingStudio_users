@@ -15,8 +15,9 @@
 ) %>
 
 <%= render FlatPack::Grid::Component.new(cols: 2) do %>
-  <div class="space-y-6">
-    <% if @identities.any? %>
+  <div>
+    <% show_google_connect = recording_studio_user_google_oauth_configured? && !recording_studio_user_google_connected?(@user) %>
+    <% if @identities.any? || show_google_connect %>
       <%= render FlatPack::Card::Component.new(style: :elevated) do |card| %>
         <% card.body do %>
           <%= render FlatPack::List::Component.new(divider: true) do %>
@@ -42,20 +43,27 @@
                 <% end %>
               <% end %>
             <% end %>
+
+            <% if show_google_connect %>
+              <%= render FlatPack::List::Item.new(
+                **recording_studio_user_provider_list_item_leading(:google_oauth2),
+                trailing: capture {
+                  render FlatPack::Button::Component.new(
+                    text: "Connect",
+                    href: recording_studio_user_continue_with_google_path,
+                    method: :post,
+                    style: :secondary,
+                    size: :sm,
+                    data: { turbo: false }
+                  )
+                }
+              ) do %>
+                <p class="font-medium"><%= recording_studio_user_provider_label(:google_oauth2) %></p>
+              <% end %>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>
-    <% end %>
-
-    <% if recording_studio_user_google_oauth_configured? && !recording_studio_user_google_connected?(@user) %>
-      <%= render FlatPack::Button::Component.new(
-        text: "Connect Google",
-        href: recording_studio_user_continue_with_google_path,
-        method: :post,
-        style: :secondary,
-        size: :md,
-        data: { turbo: false }
-      ) %>
     <% end %>
   </div>
 <% end %>

@@ -188,7 +188,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Choose File"
     assert_includes response.body, "Profile User"
-    assert_includes response.body, recording_studio_users.sign_in_methods_profile_path
+    refute_includes response.body, recording_studio_users.sign_in_methods_profile_path
     refute_includes response.body, "Connect Google"
     refute_includes response.body, "Change your name, time zone, or photo."
     refute_includes response.body, "Tidy up"

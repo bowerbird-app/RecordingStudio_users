@@ -195,7 +195,7 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     assert_match(/already linked/i, flash[:alert].to_s + response.body)
   end
 
-  test "edit profile has no Connect controls and links to Sign-in methods" do
+  test "edit profile has no Connect or Sign-in methods link" do
     user = RecordingStudioUser.create_user!(
       email: "ui-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -211,7 +211,7 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Ui User"
     refute_includes response.body, "Connect Google"
     refute_includes response.body, "Disconnect"
-    assert_includes response.body, recording_studio_users.sign_in_methods_profile_path
+    refute_includes response.body, recording_studio_users.sign_in_methods_profile_path
     refute_includes response.body, 'alt="Avatar"'
     refute_match(/>\s*Avatar\s*</, response.body)
 
@@ -220,11 +220,12 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Edit"
     assert_includes response.body, "Sign-in methods"
+    assert_includes response.body, recording_studio_users.sign_in_methods_profile_path
     refute_includes response.body, "Connect Google"
     refute_includes response.body, "Disconnect"
   end
 
-  test "sign-in methods page shows Connect when Google is not linked" do
+  test "sign-in methods page shows Connect row when Google is not linked" do
     user = RecordingStudioUser.create_user!(
       email: "methods-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -239,7 +240,10 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Sign-in methods"
     assert_includes response.body, "Methods User"
-    assert_select "a, button", text: /\AConnect Google\z/
+    assert_includes response.body, 'role="list"'
+    assert_includes response.body, "<svg"
+    assert_select "a, button", text: /\AConnect\z/
+    assert_select "a, button", text: /\AConnect Google\z/, count: 0
     refute_includes response.body, "large_subtitle"
   end
 
@@ -265,6 +269,7 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, user.email
     assert_includes response.body, "<svg"
     assert_includes response.body, 'role="list"'
+    assert_select "a, button", text: /\AConnect\z/, count: 0
     assert_select "a, button", text: /\AConnect Google\z/, count: 0
   end
 
