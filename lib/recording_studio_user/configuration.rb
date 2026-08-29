@@ -21,7 +21,7 @@ module RecordingStudioUser
       @admin_route_path = "admin"
       @layout = "application"
       @additional_profile_attributes = []
-      @require_password_confirmation = true
+      @require_password_confirmation = false
       @login_title = DEFAULT_LOGIN_TITLE
       @omniauth_providers = {}
       @omniauth_create_account = true

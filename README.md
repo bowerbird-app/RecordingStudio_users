@@ -56,7 +56,7 @@ RecordingStudioUser.configure do |config|
   config.admin_route_path = "user-reporting"
   config.layout = "application"
   config.additional_profile_attributes = []
-  config.require_password_confirmation = true
+  config.require_password_confirmation = false
   # config.login_title = "Welcome back"
   config.omniauth_providers = {
     google_oauth2: {
@@ -209,7 +209,7 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
 
-`require_password_confirmation` defaults to `true`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false`. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail.
+`require_password_confirmation` defaults to `false`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false` (the default). Set it to `true` to show confirmation. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail when confirmation is off.
 
 `login_title` defaults to `"Welcome back"` for the host Devise login heading. Blank values fall back to that default.
 

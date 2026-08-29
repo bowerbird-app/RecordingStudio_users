@@ -3,7 +3,7 @@
     <%= render FlatPack::PageTitle::Component.new(
       title: RecordingStudioUser.config.login_title,
       variant: :h2,
-      class: "mb-0 pb-0"
+      class: "mb-0 pb-0 text-center"
     ) %>
 
     <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
@@ -32,7 +32,7 @@
       </div>
     <% end %>
 
-    <p class="text-sm text-[var(--surface-muted-content-color)]">
+    <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
       Don't have an account?
       <%= render FlatPack::Link::Component.new(href: new_registration_path(resource_name)) do %>
         Sign up

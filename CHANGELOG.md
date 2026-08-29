@@ -23,13 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Host `devise_for` must route OmniAuth callbacks to Users: `controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }`. ProfiledUser adds `:omniauthable` when providers are present and sets `password_required?` false while an identity exists.
 - Migrations generator also copies the identities table.
-- Dummy Devise login and sign-up use ordinary Tailwind viewport centering (`min-h-dvh flex items-center justify-center`, inner `max-w-sm w-full`) without a Card: title → fields → primary button → cross-link → `Divider` (`label: "Or"`) → full-width secondary Continue-with buttons (provider logo via `icon:`). Login omits Remember me and the seed credential Badge. Requires Flatpack `~> 0.1.143` (tagged `v0.1.143`, includes Divider). Button `icon:` SVG logos use a small engine shim until Flatpack Button mirrors List::Item.
+- Dummy Devise login and sign-up use ordinary Tailwind viewport centering (`min-h-dvh flex items-center justify-center`, inner `max-w-sm w-full`) without a Card: centered title → fields → primary button → centered cross-link → `Divider` (`label: "Or"`) → full-width secondary Continue-with buttons (provider logo via `icon:`). Login omits Remember me and the seed credential Badge. `require_password_confirmation` defaults to `false` (dummy signup has no confirm field; hosts may set `true`). Requires Flatpack `~> 0.1.143` (tagged `v0.1.143`, includes Divider). Button `icon:` SVG logos use a small engine shim until Flatpack Button mirrors List::Item.
 
 ### Upgrade notes
 - Bump to `0.6.0`. Requires Flatpack `~> 0.1.143` (git tag `v0.1.143`).
 - Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` for `recording_studio_user_identities`.
 - Set `config.omniauth_providers` (per-provider `client_id` / `client_secret` from credentials or ENV; optional `logo` and strategy options such as Apple `team_id` / `key_id` / `pem`) and `config.omniauth_create_account` as needed. Point `devise_for :users` OmniAuth callbacks at `recording_studio_user/omniauth_callbacks`.
 - Optional `config.login_title` (default `"Welcome back"`) for the Devise login heading.
+- `config.require_password_confirmation` now defaults to `false`. Set `true` if the host still wants a confirmation field on Devise sign-up.
 - Mount Sign-in methods at the engine profile route (`…/profile/sign-in-methods`). Link it from My Profile; keep Connect/Disconnect off show and off Edit.
 - Render `recording_studio_user/omniauth/continue_with_providers` on host Devise login/sign-up when any provider is configured (replaces the old Google-only partial name). The partial includes the labeled Or divider and one Continue button per provider. Secrets stay out of the repo.
 - OAuth tokens are not stored. Login needs provider, uid, and email (except Connect-while-signed-in, which tolerates a blank email).

@@ -3,7 +3,7 @@
     <%= render FlatPack::PageTitle::Component.new(
       title: "Sign up",
       variant: :h2,
-      class: "mb-0 pb-0"
+      class: "mb-0 pb-0 text-center"
     ) %>
 
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
@@ -58,7 +58,7 @@
       </div>
     <% end %>
 
-    <p class="text-sm text-[var(--surface-muted-content-color)]">
+    <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
       Already have one?
       <%= render FlatPack::Link::Component.new(href: new_session_path(resource_name)) do %>
         Log in

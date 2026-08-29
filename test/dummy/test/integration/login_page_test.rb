@@ -21,6 +21,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "min-h-dvh"
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "Don't have an account?"
+    assert_includes response.body, "text-center"
     assert_includes response.body, "Continue with Google"
     assert_match(/\bOr\b/, response.body)
     refute_includes response.body, "Default: admin@admin.com / Password"
