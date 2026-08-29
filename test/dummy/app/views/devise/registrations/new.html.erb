@@ -55,16 +55,20 @@
                 text: "Sign up",
                 style: :primary,
                 size: :md,
-                type: "submit"
+                type: "submit",
+                class: "w-full"
               ) %>
-
-              <%= render "recording_studio_user/omniauth/continue_with_providers" %>
             </div>
           <% end %>
 
-          <%= render FlatPack::Link::Component.new(href: new_session_path(resource_name)) do %>
-            Log in
-          <% end %>
+          <p class="text-sm text-[var(--surface-muted-content-color)]">
+            Already have one?
+            <%= render FlatPack::Link::Component.new(href: new_session_path(resource_name)) do %>
+              Log in
+            <% end %>
+          </p>
+
+          <%= render "recording_studio_user/omniauth/continue_with_providers" %>
         </div>
       <% end %>
     <% end %>

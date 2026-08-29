@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.135), `devise`, `omniauth`, `omniauth-google-oauth2`, and `omniauth-rails_csrf_protection` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.142), `devise`, `omniauth`, `omniauth-google-oauth2`, `omniauth-microsoft_graph`, `omniauth-apple`, `omniauth-linkedin-openid`, `omniauth-instagram-api`, and `omniauth-rails_csrf_protection` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount. OmniAuth secrets stay in host credentials or ENV.
 
@@ -124,13 +124,13 @@ Find-or-create used by the callback:
 
 Provider-only users get an unusable blank password digest; `password_required?` is false while they have at least one identity. Connect on the owner-only **Sign-in methods** page attaches the provider to the signed-in User. Disconnect refuses if that Identity is the only sign-in method and the user has no password.
 
-Render the Flatpack partial on host Devise login and sign-up (one Continue button per configured provider):
+Render the Flatpack partial on host Devise login and sign-up after the primary button and account cross-link. When any provider is configured it paints a labeled Or divider and one full-width secondary Continue button per provider (logo via `icon:` when the logo is inline SVG):
 
 ```erb
 <%= render "recording_studio_user/omniauth/continue_with_providers" %>
 ```
 
-Optional `omniauth_providers[:provider][:logo]` accepts a URL or inline SVG. The gem ships a default SVG for each of the five for List rows. Flatpack List has no first-class image-URL lead — SVG uses `icon:`, URLs use `leading:` with an `<img>`. `:logo` is stripped before Devise strategy registration.
+Optional `omniauth_providers[:provider][:logo]` accepts a URL or inline SVG. The gem ships a default SVG for each of the five. Flatpack List has no first-class image-URL lead — SVG uses `icon:`, URLs use `leading:` with an `<img>`. Continue buttons pass SVG logos through Button `icon:` (Users prepends SVG support onto Flatpack Button until Flatpack mirrors List). `:logo` is stripped before Devise strategy registration.
 
 My Profile show stays read-only (Edit + Sign-in methods actions). Connect / Disconnect live only on Sign-in methods (`…/profile/sign-in-methods`) as matching Card + List rows (logo + provider name; Connect or Disconnect trailing, secondary sm). Edit has no Sign-in methods link.
 
@@ -226,9 +226,9 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs, a primary button, and **Continue with {Provider}** for every configured OmniAuth provider — not a Users product registration flow. OmniAuth runs in test mode with mocks for Google, Microsoft, Apple, LinkedIn, and Instagram so CI and screenshots do not need live apps. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
+The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both use the same Flatpack auth stack (Card + Grid width cap): title, fields, primary Sign in / Sign up, cross-link, Flatpack Divider `Or`, then full-width **Continue with {Provider}** secondary buttons for every configured OmniAuth provider — not a Users product registration flow. Login keeps Remember me; sign-up password confirmation stays host-configurable. The login seed hint sits under the card. OmniAuth runs in test mode with mocks for Google, Microsoft, Apple, LinkedIn, and Instagram so CI and screenshots do not need live apps. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.142` for Divider.
 
-Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit and Sign-in methods at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.141`) with Attachable's file button for Add/Change. Connect / Disconnect live on `/recording_studio_users/profile/sign-in-methods`. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
+Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit and Sign-in methods at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.142`) with Attachable's file button for Add/Change. Connect / Disconnect live on `/recording_studio_users/profile/sign-in-methods`. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |

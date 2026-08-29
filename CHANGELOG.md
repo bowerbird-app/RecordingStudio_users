@@ -22,13 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Host `devise_for` must route OmniAuth callbacks to Users: `controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }`. ProfiledUser adds `:omniauthable` when providers are present and sets `password_required?` false while an identity exists.
 - Migrations generator also copies the identities table.
+- Dummy Devise login and sign-up use the Flatpack auth stack: title → fields → primary button → cross-link → `Divider` (`label: "Or"`) → full-width secondary Continue-with buttons (provider logo via `icon:`). Seed hint sits under the login card, not in the form. Requires Flatpack `~> 0.1.142` (Divider). Button `icon:` SVG logos use a small engine shim until Flatpack Button mirrors List::Item.
 
 ### Upgrade notes
-- Bump to `0.6.0`. Requires Flatpack `~> 0.1.141` (already on main as 0.5.1). This release does not change the Flatpack pin.
+- Bump to `0.6.0`. Requires Flatpack `~> 0.1.142` (git tag `v0.1.142`).
 - Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` for `recording_studio_user_identities`.
 - Set `config.omniauth_providers` (per-provider `client_id` / `client_secret` from credentials or ENV; optional `logo` and strategy options such as Apple `team_id` / `key_id` / `pem`) and `config.omniauth_create_account` as needed. Point `devise_for :users` OmniAuth callbacks at `recording_studio_user/omniauth_callbacks`.
 - Mount Sign-in methods at the engine profile route (`…/profile/sign-in-methods`). Link it from My Profile; keep Connect/Disconnect off show and off Edit.
-- Render `recording_studio_user/omniauth/continue_with_providers` on host Devise login/sign-up when any provider is configured (replaces the old Google-only partial name). Secrets stay out of the repo.
+- Render `recording_studio_user/omniauth/continue_with_providers` on host Devise login/sign-up when any provider is configured (replaces the old Google-only partial name). The partial includes the labeled Or divider and one Continue button per provider. Secrets stay out of the repo.
 - OAuth tokens are not stored. Login needs provider, uid, and email (except Connect-while-signed-in, which tolerates a blank email).
 
 ## [0.5.1] - 2026-08-29

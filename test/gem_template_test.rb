@@ -97,6 +97,9 @@ class RecordingStudioUserTest < Minitest::Test
     )
     assert_includes continue_partial, "Continue with"
     assert_includes continue_partial, "recording_studio_user_omniauth_provider_names"
+    assert_includes continue_partial, 'FlatPack::Divider::Component.new(label: "Or"'
+    assert_includes continue_partial, "recording_studio_user_provider_logo"
+    assert_includes continue_partial, 'class: "w-full"'
     refute File.exist?(
       File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_google.html.erb", __dir__)
     )
@@ -137,20 +140,20 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_attachable", "~> 0.5.0"'
   end
 
-  def test_gemfiles_pin_flatpack_two_xl_avatar
+  def test_gemfiles_pin_flatpack_divider_release
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
-      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.141"'
+      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.142"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.1.141"
-      assert_includes lock, "flat_pack (0.1.141)"
-      assert_includes lock, "31ea491672030525cd0fd0b300e0ae7041b65981"
+      assert_includes lock, "tag: v0.1.142"
+      assert_includes lock, "flat_pack (0.1.142)"
+      assert_includes lock, "942e7822245889242bc054990f74794c7f504438"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"flat_pack", "~> 0.1.141"'
+    assert_includes gemspec, '"flat_pack", "~> 0.1.142"'
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
