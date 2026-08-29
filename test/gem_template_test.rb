@@ -140,21 +140,21 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_attachable", "~> 0.5.0"'
   end
 
-  def test_gemfiles_pin_flatpack_grid_justify_max_branch
+  def test_gemfiles_pin_flatpack_v0143
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
-      assert_includes File.read(gemfile),
-                      'gem "flat_pack", github: "bowerbird-app/flatpack", branch: "cursor/grid-justify-max-8d62"'
+      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.143"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "branch: cursor/grid-justify-max-8d62"
-      assert_includes lock, "flat_pack (0.1.144)"
-      assert_includes lock, "8ae25818091f30db76b4b76fa11016b0d4a830e1"
+      assert_includes lock, "tag: v0.1.143"
+      assert_includes lock, "flat_pack (0.1.143)"
+      assert_includes lock, "3654913a87f3d72556223b81e0d8140a292e3c2e"
+      refute_includes lock, "cursor/grid-justify-max-8d62"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"flat_pack", "~> 0.1.144"'
+    assert_includes gemspec, '"flat_pack", "~> 0.1.143"'
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
