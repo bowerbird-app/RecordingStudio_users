@@ -13,7 +13,7 @@ module RecordingStudioUser
     end
 
     def recording_studio_user_google_connected?(user = (respond_to?(:current_user) ? current_user : nil))
-      user&.respond_to?(:identity_for) && user.identity_for(:google_oauth2).present?
+      user.respond_to?(:identity_for) && user.identity_for(:google_oauth2).present?
     end
 
     def recording_studio_user_provider_label(provider)

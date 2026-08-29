@@ -23,21 +23,12 @@ module RecordingStudioUser
       providers = RecordingStudioUser.config.omniauth_providers
       return if providers.blank?
 
-      Devise.setup do |config|
-        providers.each do |name, options|
-          opts = (options || {}).to_h.symbolize_keys
-          client_id = opts.fetch(:client_id)
-          client_secret = opts.fetch(:client_secret)
-          extra = opts.except(:client_id, :client_secret)
-          config.omniauth(name.to_sym, client_id, client_secret, **extra)
-        end
-      end
+      Devise.setup { |config| providers.each { |name, options| register_provider!(config, name, options) } }
     end
 
     def ensure_omniauthable!(user_class)
       providers = RecordingStudioUser.config.omniauth_provider_names
-      return if providers.empty?
-      return if user_class.devise_modules.include?(:omniauthable)
+      return if providers.empty? || user_class.devise_modules.include?(:omniauthable)
 
       user_class.devise :omniauthable, omniauth_providers: providers
     end
@@ -46,36 +37,27 @@ module RecordingStudioUser
       identity = Identity.find_by(provider: auth.provider, uid: auth.uid.to_s)
       return identity.user if identity
 
-      email = auth.info&.email.to_s.strip.downcase
-      raise MissingEmailError, "Email is required from the provider" if email.blank?
+      email = normalized_email(auth)
+      existing = RecordingStudioUser.config.user_class.find_by(email: email)
+      return create_identity!(existing, auth) && existing if existing
 
-      user = RecordingStudioUser.config.user_class.find_by(email: email)
-      if user
-        create_identity!(user, auth)
-        return user
-      end
-
-      unless RecordingStudioUser.config.omniauth_create_account?
-        raise AccountCreationDisabledError, "Account creation from this provider is disabled"
-      end
+      raise AccountCreationDisabledError, "Account creation from this provider is disabled" unless
+        RecordingStudioUser.config.omniauth_create_account?
 
       create_user_from_auth!(auth, email)
     end
 
     def connect!(user, auth)
       existing = Identity.find_by(provider: auth.provider, uid: auth.uid.to_s)
-      if existing
-        raise IdentityTakenError, "That Google account is already linked to another user" if existing.user_id != user.id
-
-        return existing
-      end
+      return existing if existing&.user_id == user.id
+      raise IdentityTakenError, "That Google account is already linked to another user" if existing
 
       create_identity!(user, auth)
     end
 
     def disconnect!(user, provider)
       identity = user.identities.find_by!(provider: provider.to_s)
-      if user.identities.count == 1 && !password_set?(user)
+      if user.identities.one? && !password_set?(user)
         raise LastSignInMethodError, "Connect another sign-in method or set a password before disconnecting"
       end
 
@@ -90,50 +72,56 @@ module RecordingStudioUser
       PROVIDER_LABELS.fetch(provider.to_sym) { provider.to_s.humanize }
     end
 
+    def register_provider!(config, name, options)
+      opts = (options || {}).to_h.symbolize_keys
+      config.omniauth(name.to_sym, opts.fetch(:client_id), opts.fetch(:client_secret),
+                      **opts.except(:client_id, :client_secret))
+    end
+
+    def normalized_email(auth)
+      email = auth.info&.email.to_s.strip.downcase
+      raise MissingEmailError, "Email is required from the provider" if email.blank?
+
+      email
+    end
+
     def create_identity!(user, auth)
-      user.identities.create!(
-        provider: auth.provider.to_s,
-        uid: auth.uid.to_s,
-        email: auth.info&.email
-      )
+      user.identities.create!(provider: auth.provider.to_s, uid: auth.uid.to_s, email: auth.info&.email)
     end
 
     def create_user_from_auth!(auth, email)
       password = Devise.friendly_token[0, 32]
       first_name, last_name = name_parts_from(auth)
-      user = nil
 
       ActiveRecord::Base.transaction do
         user = Directory.create_user!(
-          email: email,
-          password: password,
-          password_confirmation: password,
-          first_name: first_name,
-          last_name: last_name,
-          time_zone: "UTC"
+          email: email, password: password, password_confirmation: password,
+          first_name: first_name, last_name: last_name, time_zone: "UTC"
         )
         create_identity!(user, auth)
-        # Google-only: keep a blank digest so disconnect lockout checks work and
-        # password_required? stays false while an identity is present.
-        user.update_column(:encrypted_password, "")
+        clear_oauth_password!(user)
       end
+    end
 
+    def clear_oauth_password!(user)
+      # Google-only: blank digest so disconnect lockout checks and password_required? work.
+      user.update_column(:encrypted_password, "")
       user
     end
 
     def name_parts_from(auth)
       info = auth.info
-      first = info&.first_name.to_s.strip
-      last = info&.last_name.to_s.strip
-      if first.blank? && last.blank?
-        parts = info&.name.to_s.strip.split(/\s+/, 2)
-        first = parts[0].to_s
-        last = parts[1].to_s
-      end
-      first = "User" if first.blank?
-      last = "Account" if last.blank?
-      [first, last]
+      first = present_name(info&.first_name)
+      last = present_name(info&.last_name)
+      first, last = present_name(info&.name).to_s.split(/\s+/, 2) if first.blank? && last.blank?
+      [first.presence || "User", last.presence || "Account"]
     end
-    private_class_method :create_identity!, :create_user_from_auth!, :name_parts_from
+
+    def present_name(value)
+      value.to_s.strip.presence
+    end
+
+    private_class_method :register_provider!, :normalized_email, :create_identity!,
+                         :create_user_from_auth!, :clear_oauth_password!, :name_parts_from, :present_name
   end
 end
