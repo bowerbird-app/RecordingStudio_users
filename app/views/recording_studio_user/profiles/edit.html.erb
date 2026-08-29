@@ -18,11 +18,15 @@
   <div>
     <div class="mb-8">
       <%= turbo_frame_tag "profile-photo" do %>
+        <% preview_src = attachment_preview_url(@profile_recording, variant: :square_med) %>
         <div class="inline-flex items-end gap-3">
           <%= render FlatPack::Avatar::Component.new(
-                src: attachment_preview_url(@profile_recording, variant: :square_med),
+                src: preview_src,
+                name: profile_display_name(@user),
+                alt: profile_display_name(@user),
                 size: :"2xl",
-                shape: :circle
+                shape: :circle,
+                show_tooltip: false
               ) %>
           <%= render_attachment_file_button(@profile_recording, return_to: edit_profile_path) %>
         </div>
@@ -88,46 +92,11 @@
     <% end %>
 
     <% if RecordingStudioUser.config.omniauth_configured? %>
-      <div class="mt-10 space-y-4">
-        <%= render FlatPack::SectionTitle::Component.new(
-          title: "Sign-in methods",
-          subtitle: "Link a provider so you can sign in without typing a password."
-        ) %>
-
-        <% if @user.identities.any? %>
-          <ul class="space-y-3">
-            <% @user.identities.order(:provider).each do |identity| %>
-              <li class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p class="font-medium"><%= recording_studio_user_provider_label(identity.provider) %></p>
-                  <% if identity.email.present? %>
-                    <p class="text-sm text-[var(--surface-muted-content-color)]"><%= identity.email %></p>
-                  <% end %>
-                </div>
-                <%= render FlatPack::Button::Component.new(
-                  text: "Disconnect",
-                  href: profile_identity_path(identity.provider),
-                  method: :delete,
-                  style: :secondary,
-                  size: :sm,
-                  data: { turbo_confirm: "Disconnect #{recording_studio_user_provider_label(identity.provider)}?" }
-                ) %>
-              </li>
-            <% end %>
-          </ul>
+      <p class="mt-8 text-sm text-[var(--surface-muted-content-color)]">
+        <%= render FlatPack::Link::Component.new(href: sign_in_methods_profile_path) do %>
+          Sign-in methods
         <% end %>
-
-        <% if recording_studio_user_google_oauth_configured? && !recording_studio_user_google_connected?(@user) %>
-          <%= render FlatPack::Button::Component.new(
-            text: "Connect Google",
-            href: recording_studio_user_continue_with_google_path,
-            method: :post,
-            style: :secondary,
-            size: :md,
-            data: { turbo: false }
-          ) %>
-        <% end %>
-      </div>
+      </p>
     <% end %>
   </div>
 <% end %>

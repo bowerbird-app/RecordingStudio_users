@@ -103,7 +103,7 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
       end
     end
 
-    assert_redirected_to recording_studio_users.edit_profile_path
+    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
     assert user.reload.identity_for(:google_oauth2).present?
     assert user.encrypted_password.present?
   end
@@ -123,7 +123,7 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
       delete recording_studio_users.profile_identity_path("google_oauth2")
     end
 
-    assert_redirected_to recording_studio_users.edit_profile_path
+    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
     refute user.reload.identity_for(:google_oauth2).present?
   end
 
@@ -142,7 +142,7 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
       delete recording_studio_users.profile_identity_path("google_oauth2")
     end
 
-    assert_redirected_to recording_studio_users.edit_profile_path
+    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
     follow_redirect!
     assert_match(/password|sign-in method/i, flash[:alert].to_s + response.body)
   end
@@ -190,12 +190,12 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
       get user_google_oauth2_omniauth_callback_path
     end
 
-    assert_redirected_to recording_studio_users.edit_profile_path
+    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
     follow_redirect!
     assert_match(/already linked/i, flash[:alert].to_s + response.body)
   end
 
-  test "edit profile shows Connect Google and show stays read-only" do
+  test "edit profile has no Connect controls and links to Sign-in methods" do
     user = RecordingStudioUser.create_user!(
       email: "ui-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -208,20 +208,42 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     get recording_studio_users.edit_profile_path
 
     assert_response :success
-    assert_includes response.body, "Sign-in methods"
-    assert_includes response.body, "Connect Google"
     assert_includes response.body, "Ui User"
-    refute_includes response.body, "large_subtitle"
+    refute_includes response.body, "Connect Google"
+    refute_includes response.body, "Disconnect"
+    assert_includes response.body, recording_studio_users.sign_in_methods_profile_path
+    refute_includes response.body, 'alt="Avatar"'
+    refute_match(/>\s*Avatar\s*</, response.body)
 
     get recording_studio_users.profile_path
 
     assert_response :success
+    assert_includes response.body, "Edit"
+    assert_includes response.body, "Sign-in methods"
     refute_includes response.body, "Connect Google"
     refute_includes response.body, "Disconnect"
-    refute_includes response.body, "Sign-in methods"
   end
 
-  test "edit profile shows Disconnect when Google is connected" do
+  test "sign-in methods page shows Connect when Google is not linked" do
+    user = RecordingStudioUser.create_user!(
+      email: "methods-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Methods",
+      last_name: "User",
+      time_zone: "UTC"
+    )
+    sign_in user
+
+    get recording_studio_users.sign_in_methods_profile_path
+
+    assert_response :success
+    assert_includes response.body, "Sign-in methods"
+    assert_includes response.body, "Methods User"
+    assert_select "a, button", text: /\AConnect Google\z/
+    refute_includes response.body, "large_subtitle"
+  end
+
+  test "sign-in methods page lists Google with logo and Disconnect when linked" do
     user = RecordingStudioUser.create_user!(
       email: "connected-ui-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -236,10 +258,13 @@ class GoogleOauthFlowTest < ActionDispatch::IntegrationTest
     )
     sign_in user
 
-    get recording_studio_users.edit_profile_path
+    get recording_studio_users.sign_in_methods_profile_path
 
     assert_response :success
     assert_includes response.body, "Disconnect"
+    assert_includes response.body, user.email
+    assert_includes response.body, "<svg"
+    assert_includes response.body, 'role="list"'
     assert_select "a, button", text: /\AConnect Google\z/, count: 0
   end
 

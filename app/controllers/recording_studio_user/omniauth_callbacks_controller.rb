@@ -39,7 +39,7 @@ module RecordingStudioUser
     end
 
     def after_connect_path
-      recording_studio_users.edit_profile_path
+      recording_studio_users.sign_in_methods_profile_path
     end
 
     def redirect_to_failure(message)

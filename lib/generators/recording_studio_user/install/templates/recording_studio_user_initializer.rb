@@ -14,7 +14,8 @@ RecordingStudioUser.configure do |config|
   # config.omniauth_providers = {
   #   google_oauth2: {
   #     client_id: Rails.application.credentials.dig(:google_oauth, :client_id) || ENV["GOOGLE_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:google_oauth, :client_secret) || ENV["GOOGLE_CLIENT_SECRET"]
+  #     client_secret: Rails.application.credentials.dig(:google_oauth, :client_secret) || ENV["GOOGLE_CLIENT_SECRET"],
+  #     logo: "https://example.com/google.svg" # optional; Google ships a default SVG in the gem
   #   }
   # }
   config.omniauth_providers = {}

@@ -1,24 +1,21 @@
 # frozen_string_literal: true
 
 module RecordingStudioUser
-  class IdentitiesController < ApplicationController
+  class SignInMethodsController < ApplicationController
     before_action :authenticate_user!
     before_action :set_profile
     before_action :authorize_profile_edit!
 
-    def destroy
-      RecordingStudioUser::Omniauth.disconnect!(current_user, params[:provider])
-      redirect_to sign_in_methods_profile_path, notice: "Sign-in method disconnected."
-    rescue Omniauth::LastSignInMethodError => e
-      redirect_to sign_in_methods_profile_path, alert: e.message
-    rescue ActiveRecord::RecordNotFound
-      redirect_to sign_in_methods_profile_path, alert: "That sign-in method is not connected."
+    def show
+      @identities = current_user.identities.order(:provider)
     end
 
     private
 
     def set_profile
+      @user = current_user
       @profile_recording = RecordingStudioUser.profile_recording_for(current_user)
+      @profile = @profile_recording&.recordable
     end
 
     def authorize_profile_edit!
