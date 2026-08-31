@@ -149,6 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_000000) do
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["provider", "uid"], name: "index_recording_studio_user_identities_on_provider_and_uid", unique: true
+    t.index ["user_id", "provider"], name: "index_recording_studio_user_identities_on_user_id_and_provider", unique: true
     t.index ["user_id"], name: "index_recording_studio_user_identities_on_user_id"
   end
 
