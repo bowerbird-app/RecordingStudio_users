@@ -27,16 +27,16 @@
               <%= render FlatPack::List::Item.new(
                 **recording_studio_user_provider_list_item_leading(identity.provider),
                 trailing: capture {
-                  render FlatPack::Button::Component.new(
-                    text: "Disconnect",
-                    href: profile_identity_path(identity.provider),
-                    method: :delete,
-                    style: :secondary,
-                    size: :sm,
-                    data: {
-                      turbo_confirm: "Disconnect #{recording_studio_user_provider_label(identity.provider)}?"
-                    }
-                  )
+                  form_with url: profile_identity_path(identity.provider), method: :delete,
+                            class: "contents",
+                            data: { turbo_confirm: "Disconnect #{recording_studio_user_provider_label(identity.provider)}?" } do
+                    concat render FlatPack::Button::Component.new(
+                      text: "Disconnect",
+                      type: "submit",
+                      style: :secondary,
+                      size: :sm
+                    )
+                  end
                 }
               ) do %>
                 <p class="font-medium"><%= recording_studio_user_provider_label(identity.provider) %></p>
@@ -52,14 +52,15 @@
               <%= render FlatPack::List::Item.new(
                 **recording_studio_user_provider_list_item_leading(provider),
                 trailing: capture {
-                  render FlatPack::Button::Component.new(
-                    text: "Connect",
-                    href: authorize_path,
-                    method: :post,
-                    style: :secondary,
-                    size: :sm,
-                    data: { turbo: false }
-                  )
+                  form_with url: authorize_path, method: :post, class: "contents",
+                            data: { turbo: false } do
+                    concat render FlatPack::Button::Component.new(
+                      text: "Connect",
+                      type: "submit",
+                      style: :secondary,
+                      size: :sm
+                    )
+                  end
                 }
               ) do %>
                 <p class="font-medium"><%= recording_studio_user_provider_label(provider) %></p>

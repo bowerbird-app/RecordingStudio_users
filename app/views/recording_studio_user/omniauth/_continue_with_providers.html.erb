@@ -8,16 +8,18 @@
       <% next if authorize_path.blank? %>
       <% logo = recording_studio_user_provider_logo(provider) %>
       <% button_icon = logo.to_s.start_with?("<svg") ? logo : nil %>
-      <%= render FlatPack::Button::Component.new(
-        text: "Continue with #{recording_studio_user_provider_label(provider)}",
-        icon: button_icon,
-        href: authorize_path,
-        method: :post,
-        style: :secondary,
-        size: :md,
-        class: "w-full",
-        data: { turbo: false }
-      ) %>
+      <%# Full-page form POST so omniauth-rails_csrf_protection gets the CSRF token and the
+          browser follows the provider redirect itself (Turbo cannot follow a cross-origin one). %>
+      <%= form_with url: authorize_path, method: :post, data: { turbo: false }, class: "contents" do %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Continue with #{recording_studio_user_provider_label(provider)}",
+          icon: button_icon,
+          type: "submit",
+          style: :secondary,
+          size: :md,
+          class: "w-full"
+        ) %>
+      <% end %>
     <% end %>
   </div>
 <% end %>

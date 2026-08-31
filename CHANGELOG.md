@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-08-31
+
+### Fixed
+- OmniAuth **Continue with**, **Connect**, and **Disconnect** buttons now submit real HTML forms instead of `link_to ..., method:` links. The old links relied on `rails-ujs` `data-method`, which is not present in Turbo-only hosts (Rails 7+/8 default), so clicking them issued a plain `GET` and hit `ActionController::RoutingError (No route matches [GET] "/users/auth/<provider>")`. Continue/Connect use a full-page `POST` (`data: { turbo: false }`) so `omniauth-rails_csrf_protection` receives the CSRF token and the browser follows the provider's cross-origin redirect itself; Disconnect uses a Turbo `DELETE` form that keeps the confirm prompt. Buttons stay Flatpack `Button` submit buttons.
+
+### Upgrade notes
+- Bump to `0.6.1`. No configuration or database changes. Hosts rendering `recording_studio_user/omniauth/continue_with_providers` or mounting the Sign-in methods page get the fix automatically — no host action required.
+- Hosts do **not** need to add `rails-ujs`; the buttons now work on Turbo-only apps.
+
 ## [0.6.0] - 2026-08-29
 
 ### Added
