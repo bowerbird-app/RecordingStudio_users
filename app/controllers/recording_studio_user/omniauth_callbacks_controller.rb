@@ -15,6 +15,8 @@ module RecordingStudioUser
       run_omniauth_callback
     rescue Omniauth::MissingEmailError
       redirect_to_failure(missing_email_alert)
+    rescue Omniauth::UnverifiedEmailError
+      redirect_to_failure(unverified_email_alert)
     rescue Omniauth::AccountCreationDisabledError
       redirect_to_failure(account_creation_disabled_alert)
     rescue Omniauth::IdentityTakenError => e
@@ -53,6 +55,10 @@ module RecordingStudioUser
 
     def missing_email_alert
       "#{provider_label_for(request.env['omniauth.auth'])} did not return an email address."
+    end
+
+    def unverified_email_alert
+      "#{provider_label_for(request.env['omniauth.auth'])} did not verify that email address."
     end
 
     def account_creation_disabled_alert

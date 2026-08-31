@@ -20,16 +20,20 @@ RecordingStudioUser.configure do |config|
   # config.omniauth_providers = {
   #   google_oauth2: {
   #     client_id: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_id) || ENV["GOOGLE_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_secret) || ENV["GOOGLE_CLIENT_SECRET"],
+  #     client_secret: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_secret) ||
+  #       ENV["GOOGLE_CLIENT_SECRET"],
   #     logo: "https://example.com/google.svg" # optional; gem ships default SVGs
   #   },
   #   microsoft_graph: {
-  #     client_id: Rails.application.credentials.dig(:omniauth, :microsoft_graph, :client_id) || ENV["MICROSOFT_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :microsoft_graph, :client_secret) || ENV["MICROSOFT_CLIENT_SECRET"]
+  #     client_id: Rails.application.credentials.dig(:omniauth, :microsoft_graph, :client_id) ||
+  #       ENV["MICROSOFT_CLIENT_ID"],
+  #     client_secret: Rails.application.credentials.dig(:omniauth, :microsoft_graph, :client_secret) ||
+  #       ENV["MICROSOFT_CLIENT_SECRET"]
   #   },
   #   apple: {
   #     client_id: Rails.application.credentials.dig(:omniauth, :apple, :client_id) || ENV["APPLE_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :apple, :client_secret) || ENV.fetch("APPLE_CLIENT_SECRET", ""),
+  #     client_secret: Rails.application.credentials.dig(:omniauth, :apple, :client_secret) ||
+  #       ENV.fetch("APPLE_CLIENT_SECRET", ""),
   #     team_id: Rails.application.credentials.dig(:omniauth, :apple, :team_id) || ENV["APPLE_TEAM_ID"],
   #     key_id: Rails.application.credentials.dig(:omniauth, :apple, :key_id) || ENV["APPLE_KEY_ID"],
   #     pem: Rails.application.credentials.dig(:omniauth, :apple, :pem) || ENV["APPLE_PEM"],
@@ -37,11 +41,13 @@ RecordingStudioUser.configure do |config|
   #   },
   #   linkedin: {
   #     client_id: Rails.application.credentials.dig(:omniauth, :linkedin, :client_id) || ENV["LINKEDIN_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :linkedin, :client_secret) || ENV["LINKEDIN_CLIENT_SECRET"]
+  #     client_secret: Rails.application.credentials.dig(:omniauth, :linkedin, :client_secret) ||
+  #       ENV["LINKEDIN_CLIENT_SECRET"]
   #   },
   #   instagram: {
   #     client_id: Rails.application.credentials.dig(:omniauth, :instagram, :client_id) || ENV["INSTAGRAM_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :instagram, :client_secret) || ENV["INSTAGRAM_CLIENT_SECRET"]
+  #     client_secret: Rails.application.credentials.dig(:omniauth, :instagram, :client_secret) ||
+  #       ENV["INSTAGRAM_CLIENT_SECRET"]
   #   }
   # }
   config.omniauth_providers = {}

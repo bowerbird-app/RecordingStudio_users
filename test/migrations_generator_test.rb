@@ -39,11 +39,10 @@ class MigrationsGeneratorTest < Minitest::Test
     assert_includes template, "return if table_exists?(:recording_studio_user_identities)"
     assert_includes template, "create_table :recording_studio_user_identities"
     assert_includes template, "t.uuid :user_id, null: false"
-    assert_includes template, "t.string :provider, null: false"
-    assert_includes template, "t.string :uid, null: false"
+    assert_includes template, "t.string :provider, :uid, null: false"
     assert_includes template, "t.string :email"
-    assert_includes template, "add_index :recording_studio_user_identities, %i[provider uid], unique: true"
-    assert_includes template, "add_foreign_key :recording_studio_user_identities, :users"
+    assert_includes template, "t.index %i[provider uid], unique: true"
+    assert_includes template, "t.foreign_key :users, column: :user_id"
     refute_includes template, "oauth_token"
   end
 

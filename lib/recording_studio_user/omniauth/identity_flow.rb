@@ -51,8 +51,14 @@ module RecordingStudioUser
       def normalized_email(auth)
         email = auth.info&.email.to_s.strip.downcase
         raise MissingEmailError, "Email is required from the provider" if email.blank?
+        raise UnverifiedEmailError, "Email was not verified by the provider" if email_explicitly_unverified?(auth)
 
         email
+      end
+
+      def email_explicitly_unverified?(auth)
+        value = auth.info&.email_verified
+        value == false || value.to_s.casecmp?("false")
       end
 
       def create_identity!(user, auth)
