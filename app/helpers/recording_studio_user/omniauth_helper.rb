@@ -35,10 +35,21 @@ module RecordingStudioUser
 
     # Flatpack List::Item can lead with an inline SVG via `icon:` or text/HTML via `leading:`.
     # It has no first-class image URL prop — configured logo URLs use `leading:` with an <img>.
+    # Prefer `leading:` for SVGs so the mark sits in a fixed square and middle-aligns with actions.
     def recording_studio_user_provider_list_item_leading(provider)
       logo = recording_studio_user_provider_logo(provider)
       return {} if logo.blank?
-      return { icon: logo } if logo.to_s.start_with?("<svg")
+
+      if logo.to_s.start_with?("<svg")
+        return {
+          leading: content_tag(
+            :span,
+            logo.html_safe,
+            class: "inline-flex h-8 w-8 shrink-0 items-center justify-center",
+            aria: { hidden: true }
+          )
+        }
+      end
 
       { leading: image_tag(logo, alt: "", class: "h-8 w-8 shrink-0", aria: { hidden: true }) }
     end

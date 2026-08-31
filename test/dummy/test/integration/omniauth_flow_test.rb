@@ -503,6 +503,9 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Disconnect"
     assert_includes response.body, user.email
+    assert_includes response.body, "!items-center"
+    assert_select "li[class*='!items-center']", minimum: 1
+    assert_select "form.inline-flex.items-center", minimum: 1
     assert_select "a, button", text: /\AConnect\z/, count: 4
     assert_select "a, button", text: /\ADisconnect\z/, count: 1
   end
