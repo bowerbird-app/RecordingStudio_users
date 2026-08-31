@@ -11,7 +11,8 @@ module RecordingStudioUser
         return identity.user if identity
 
         email = normalized_email(auth)
-        existing = RecordingStudioUser.config.user_class.find_by(email: email)
+        existing = find_user_by_email(email)
+        raise UnconfirmedEmailError, "Existing email is not confirmed" if existing && !email_confirmed?(existing)
         return create_identity!(existing, auth) && existing if existing
 
         raise AccountCreationDisabledError, "Account creation from this provider is disabled" unless
@@ -24,10 +25,7 @@ module RecordingStudioUser
         existing = Identity.find_by(provider: auth.provider, uid: auth.uid.to_s)
         return existing if existing&.user_id == user.id
 
-        if existing
-          raise IdentityTakenError,
-                "That #{provider_label(auth.provider)} account is already linked to another user"
-        end
+        ensure_identity_available!(user, auth, existing)
 
         # Connect while signed in does not invent an email. Instagram often has none;
         # Apple may omit it after the first consent. Identity.email stays blank.
@@ -48,6 +46,17 @@ module RecordingStudioUser
         user.respond_to?(:encrypted_password) && user.encrypted_password.present?
       end
 
+      def ensure_identity_available!(user, auth, existing)
+        if existing
+          raise IdentityTakenError,
+                "That #{provider_label(auth.provider)} account is already linked to another user"
+        end
+        return unless user.identity_for(auth.provider)
+
+        raise IdentityTakenError,
+              "A #{provider_label(auth.provider)} account is already linked to this user"
+      end
+
       def normalized_email(auth)
         email = auth.info&.email.to_s.strip.downcase
         raise MissingEmailError, "Email is required from the provider" if email.blank?
@@ -58,6 +67,7 @@ module RecordingStudioUser
 
       def email_explicitly_unverified?(auth)
         value = auth.info&.email_verified
+        value = auth.extra&.raw_info&.email_verified if value.nil?
         value == false || value.to_s.casecmp?("false")
       end
 
@@ -65,8 +75,16 @@ module RecordingStudioUser
         user.identities.create!(
           provider: auth.provider.to_s,
           uid: auth.uid.to_s,
-          email: auth.info&.email.presence
+          email: auth.info&.email.to_s.strip.downcase.presence
         )
+      end
+
+      def find_user_by_email(email)
+        RecordingStudioUser.config.user_class.find_by("LOWER(email) = ?", email)
+      end
+
+      def email_confirmed?(user)
+        !user.respond_to?(:confirmed?) || user.confirmed?
       end
 
       def create_user_from_auth!(auth, email)

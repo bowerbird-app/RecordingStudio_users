@@ -16,6 +16,7 @@ module RecordingStudioUser
     class Error < StandardError; end
     class MissingEmailError < Error; end
     class UnverifiedEmailError < Error; end
+    class UnconfirmedEmailError < Error; end
     class AccountCreationDisabledError < Error; end
     class IdentityTakenError < Error; end
     class LastSignInMethodError < Error; end

@@ -13,6 +13,8 @@ RecordingStudioUser.configure do |config|
   # Secrets stay in host credentials / ENV — never commit real keys.
   #
   # Email caveats (Users requires email on first login — MissingEmailError fail-closed):
+  # - Automatic matching-email links reject provider emails explicitly marked unverified.
+  #   If User supports Devise Confirmable, the existing email must also be confirmed.
   # - Instagram often returns no email. Connect while signed in still works; do not invent emails.
   # - Apple may send email only once (or a private relay). Later visits match Identity by uid.
   # Instagram uses omniauth-instagram-api (Instagram Login client id/secret).

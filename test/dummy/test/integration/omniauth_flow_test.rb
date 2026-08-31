@@ -18,6 +18,16 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     RecordingStudioUser.config.omniauth_create_account = @original_create_account
   end
 
+  test "Devise callback route is wired to the Users callback controller" do
+    route = Rails.application.routes.recognize_path(
+      "/users/auth/google_oauth2/callback",
+      method: :get
+    )
+
+    assert_equal "recording_studio_user/omniauth_callbacks", route[:controller]
+    assert_equal "google_oauth2", route[:action]
+  end
+
   test "login and sign up show Continue with each configured provider" do
     get new_user_session_path
 
@@ -58,6 +68,31 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "returning provider uid signs into its existing User without using a changed email" do
+    user = RecordingStudioUser.create_user!(
+      email: "returning-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Returning",
+      last_name: "User",
+      time_zone: "UTC"
+    )
+    uid = "returning-#{SecureRandom.hex(4)}"
+    user.identities.create!(provider: "google_oauth2", uid: uid, email: user.email)
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: uid,
+      email: "changed-#{SecureRandom.hex(4)}@example.com"
+    )
+
+    assert_no_difference -> { User.count } do
+      assert_no_difference -> { RecordingStudioUser::Identity.count } do
+        get user_google_oauth2_omniauth_callback_path
+      end
+    end
+
+    assert_redirected_to root_path
+  end
+
   test "Microsoft find-or-create links known email and creates unknown email" do
     existing = RecordingStudioUser.create_user!(
       email: "ms-linked-#{SecureRandom.hex(4)}@example.com",
@@ -82,7 +117,7 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
 
     existing.reload
     identity = existing.identities.find_by!(provider: "microsoft_graph")
-    assert_equal existing.email.upcase, identity.email
+    assert_equal existing.email, identity.email
 
     delete destroy_user_session_path if respond_to?(:destroy_user_session_path)
     reset!
@@ -206,6 +241,30 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_path
   end
 
+  test "omniauth_create_account false still links a matching existing email" do
+    RecordingStudioUser.config.omniauth_create_account = false
+    existing = RecordingStudioUser.create_user!(
+      email: "known-disabled-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Known",
+      last_name: "User",
+      time_zone: "UTC"
+    )
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: "known-disabled-#{SecureRandom.hex(4)}",
+      email: existing.email.upcase
+    )
+
+    assert_no_difference -> { User.count } do
+      assert_difference -> { RecordingStudioUser::Identity.count }, +1 do
+        get user_google_oauth2_omniauth_callback_path
+      end
+    end
+
+    assert existing.identities.exists?(provider: "google_oauth2")
+  end
+
   test "explicitly unverified provider email never links an existing User" do
     existing = RecordingStudioUser.create_user!(
       email: "unverified-#{SecureRandom.hex(4)}@example.com",
@@ -229,6 +288,36 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to new_user_session_path
     assert_match(/did not verify/i, flash[:alert].to_s)
+  end
+
+  test "unconfirmed existing email is not automatically linked when the User supports confirmation" do
+    existing = RecordingStudioUser.create_user!(
+      email: "unconfirmed-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Unconfirmed",
+      last_name: "User",
+      time_zone: "UTC"
+    )
+    original_confirmed = User.instance_method(:confirmed?) if User.method_defined?(:confirmed?)
+    User.define_method(:confirmed?) { false }
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: "unconfirmed-#{SecureRandom.hex(4)}",
+      email: existing.email
+    )
+
+    assert_no_difference -> { RecordingStudioUser::Identity.count } do
+      get user_google_oauth2_omniauth_callback_path
+    end
+
+    assert_redirected_to new_user_session_path
+    assert_match(/Confirm your email/i, flash[:alert].to_s)
+  ensure
+    if original_confirmed
+      User.define_method(:confirmed?, original_confirmed)
+    else
+      User.send(:remove_method, :confirmed?) if User.method_defined?(:confirmed?)
+    end
   end
 
   test "uid collision rejects Connect to another User" do
@@ -258,6 +347,33 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_match(/already linked/i, flash[:alert].to_s + response.body)
   end
 
+  test "a User cannot connect a second identity for the same provider" do
+    user = RecordingStudioUser.create_user!(
+      email: "one-provider-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "One",
+      last_name: "Provider",
+      time_zone: "UTC"
+    )
+    user.identities.create!(
+      provider: "google_oauth2",
+      uid: "first-#{SecureRandom.hex(4)}",
+      email: user.email
+    )
+    sign_in user
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: "second-#{SecureRandom.hex(4)}",
+      email: user.email
+    )
+
+    assert_no_difference -> { RecordingStudioUser::Identity.count } do
+      get user_google_oauth2_omniauth_callback_path
+    end
+    assert_redirected_to recording_studio_users.sign_in_methods_profile_path
+    assert_match(/already linked/i, flash[:alert].to_s)
+  end
+
   test "edit profile has no Connect or Sign-in methods link" do
     user = RecordingStudioUser.create_user!(
       email: "ui-#{SecureRandom.hex(4)}@example.com",
@@ -280,6 +396,71 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Sign-in methods"
     assert_includes response.body, recording_studio_users.sign_in_methods_profile_path
+  end
+
+  test "Sign-in methods and identity removal require Accessible edit access" do
+    locked_out = User.create!(
+      email: "oauth-locked-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    RecordingStudioUser.people_root.record(RecordingStudioUser::Profile) do |profile|
+      profile.user_id = locked_out.id
+      profile.first_name = "OAuth"
+      profile.last_name = "Locked"
+      profile.time_zone = "UTC"
+    end
+    identity = locked_out.identities.create!(
+      provider: "google_oauth2",
+      uid: "locked-#{SecureRandom.hex(4)}",
+      email: locked_out.email
+    )
+    sign_in locked_out
+
+    get recording_studio_users.sign_in_methods_profile_path
+    assert_response :forbidden
+
+    assert_no_difference -> { RecordingStudioUser::Identity.count } do
+      delete recording_studio_users.profile_identity_path("google_oauth2")
+    end
+    assert_response :forbidden
+    assert_predicate identity.reload, :persisted?
+  end
+
+  test "Continue Connect and Disconnect forms include CSRF tokens" do
+    original_forgery_protection = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+
+    get new_user_session_path
+    RecordingStudioUser.config.omniauth_provider_names.each do |provider|
+      path = Rails.application.routes.url_helpers.public_send("user_#{provider}_omniauth_authorize_path")
+      assert_select "form[action='#{path}'][method='post'] input[name='authenticity_token']", count: 1
+    end
+
+    user = RecordingStudioUser.create_user!(
+      email: "csrf-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Csrf",
+      last_name: "User",
+      time_zone: "UTC"
+    )
+    user.identities.create!(
+      provider: "google_oauth2",
+      uid: "csrf-#{SecureRandom.hex(4)}",
+      email: user.email
+    )
+    sign_in user
+    get recording_studio_users.sign_in_methods_profile_path
+
+    disconnect_path = recording_studio_users.profile_identity_path("google_oauth2")
+    assert_select "form[action='#{disconnect_path}'][method='post'] input[name='authenticity_token']", count: 1
+    assert_select "form[action='#{disconnect_path}'] input[name='_method'][value='delete']", count: 1
+    %i[microsoft_graph apple linkedin instagram].each do |provider|
+      path = Rails.application.routes.url_helpers.public_send("user_#{provider}_omniauth_authorize_path")
+      assert_select "form[action='#{path}'][method='post'] input[name='authenticity_token']", count: 1
+    end
+  ensure
+    ActionController::Base.allow_forgery_protection = original_forgery_protection
   end
 
   test "sign-in methods lists Connect for every unlinked configured provider" do
