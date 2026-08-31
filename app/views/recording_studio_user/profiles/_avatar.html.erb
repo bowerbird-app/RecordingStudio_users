@@ -1,10 +1,16 @@
 <% image_recording = profile_image_recording(@profile_recording) %>
 <% preview_path = profile_image_preview_path(image_recording) %>
-<%= render FlatPack::Avatar::Component.new(
-  src: preview_path,
-  name: profile_display_name(@user),
-  alt: profile_display_name(@user),
-  size: :xl,
-  shape: :circle,
-  show_tooltip: false
-) %>
+<% if preview_path.present? %>
+  <%= render FlatPack::Avatar::Component.new(
+    src: preview_path,
+    alt: profile_display_name(@user),
+    name: profile_display_name(@user),
+    size: :xl,
+    shape: :circle
+  ) %>
+<% else %>
+  <%= render FlatPack::Avatar::Component.new(
+    size: :xl,
+    shape: :circle
+  ) %>
+<% end %>

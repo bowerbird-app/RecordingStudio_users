@@ -17,9 +17,9 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.143), `devise`, `omniauth`, `omniauth-google-oauth2`, `omniauth-microsoft_graph`, `omniauth-apple`, `omniauth-linkedin-openid`, `omniauth-instagram-api`, and `omniauth-rails_csrf_protection` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.135), and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
-The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount. OmniAuth secrets stay in host credentials or ENV.
+The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 
 Then run:
 
@@ -56,84 +56,9 @@ RecordingStudioUser.configure do |config|
   config.admin_route_path = "user-reporting"
   config.layout = "application"
   config.additional_profile_attributes = []
-  config.require_password_confirmation = false
-  # config.login_title = "Welcome back"
-  config.omniauth_providers = {
-    google_oauth2: {
-      client_id: Rails.application.credentials.dig(:google_oauth, :client_id) || ENV["GOOGLE_CLIENT_ID"],
-      client_secret: Rails.application.credentials.dig(:google_oauth, :client_secret) || ENV["GOOGLE_CLIENT_SECRET"]
-    },
-    microsoft_graph: {
-      client_id: ENV["MICROSOFT_CLIENT_ID"],
-      client_secret: ENV["MICROSOFT_CLIENT_SECRET"]
-    },
-    apple: {
-      client_id: ENV["APPLE_CLIENT_ID"],
-      client_secret: "",
-      team_id: ENV["APPLE_TEAM_ID"],
-      key_id: ENV["APPLE_KEY_ID"],
-      pem: ENV["APPLE_PEM"],
-      scope: "email name"
-    },
-    linkedin: {
-      client_id: ENV["LINKEDIN_CLIENT_ID"],
-      client_secret: ENV["LINKEDIN_CLIENT_SECRET"]
-    },
-    instagram: {
-      client_id: ENV["INSTAGRAM_CLIENT_ID"],
-      client_secret: ENV["INSTAGRAM_CLIENT_SECRET"]
-    }
-  }
-  config.omniauth_create_account = true
+  config.require_password_confirmation = true
 end
 ```
-
-When providers is empty, login looks as today (no Continue buttons). Host Devise must use Users' callback controller:
-
-```ruby
-devise_for :users, controllers: {
-  omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
-}
-```
-
-`omniauth_create_account` defaults to `true`. When `false`, unknown provider emails do not create a User.
-
-## OmniAuth providers (Google, Microsoft, Apple, LinkedIn, Instagram)
-
-Users owns OmniAuth behavior: config, identities, callbacks, find-or-create, Sign-in methods UI, and the login/sign-up Continue partial. The host keeps the Devise `User` model and `devise_for :users`. Identities live on the User only — not a recordable, not in the People tree. One User, many identities. Password can stay; disconnect does not delete the User.
-
-Strategy gems (registered by provider key, not a Google-only branch):
-
-| Config key | Gem | Label |
-|---|---|---|
-| `google_oauth2` | `omniauth-google-oauth2` | Google |
-| `microsoft_graph` | `omniauth-microsoft_graph` | Microsoft |
-| `apple` | `omniauth-apple` | Apple |
-| `linkedin` | `omniauth-linkedin-openid` | LinkedIn |
-| `instagram` | `omniauth-instagram-api` | Instagram |
-
-Instagram uses **Instagram API with Instagram Login** (`omniauth-instagram-api`) — Instagram app client id/secret. That is different from older Facebook-Login Instagram Graph strategies.
-
-**Email caveats (fail closed on first login without email — `MissingEmailError`):** Instagram often returns no email. Apple may send email only on first consent (or a private relay); later visits match Identity by uid. Connect while already signed in still works and does **not** invent an email (`Identity.email` may be blank).
-
-Find-or-create used by the callback:
-
-1. Find Identity by provider+uid → that User.
-2. Else find User by email → create Identity, return User.
-3. Else if `omniauth_create_account` → `create_user!` / `record_profile!` (name from OmniAuth when present, timezone UTC), create Identity, return User.
-4. Else fail closed.
-
-Provider-only users get an unusable blank password digest; `password_required?` is false while they have at least one identity. Connect on the owner-only **Sign-in methods** page attaches the provider to the signed-in User. Disconnect refuses if that Identity is the only sign-in method and the user has no password.
-
-Render the Flatpack partial on host Devise login and sign-up after the primary button and account cross-link. When any provider is configured it paints a labeled Or divider and one full-width secondary Continue button per provider (logo via `icon:` when the logo is inline SVG):
-
-```erb
-<%= render "recording_studio_user/omniauth/continue_with_providers" %>
-```
-
-Optional `omniauth_providers[:provider][:logo]` accepts a URL or inline SVG. The gem ships a default SVG for each of the five. Flatpack List has no first-class image-URL lead — SVG uses `icon:`, URLs use `leading:` with an `<img>`. Continue buttons pass SVG logos through Button `icon:` (Users prepends SVG support onto Flatpack Button until Flatpack mirrors List). `:logo` is stripped before Devise strategy registration.
-
-My Profile show stays read-only (Edit + Sign-in methods actions). Connect / Disconnect live only on Sign-in methods (`…/profile/sign-in-methods`) as matching Card + List rows (logo + provider name; Connect or Disconnect trailing, secondary sm). Edit has no Sign-in methods link.
 
 Host code uses the mounted-engine proxy:
 
@@ -209,9 +134,7 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
 
-`require_password_confirmation` defaults to `false`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false` (the default). Set it to `true` to show confirmation. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail when confirmation is off.
-
-`login_title` defaults to `"Welcome back"` for the host Devise login heading. Blank values fall back to that default.
+`require_password_confirmation` defaults to `true`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false`. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail.
 
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 
@@ -219,7 +142,7 @@ Flash notices come from the host layout. Profile show does not render `notice` a
 
 The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
 
-Show puts **Edit** and **Sign-in methods** (when OmniAuth is configured) in the PageTitle actions slot and one Flatpack elevated Card. A Grid `cols: 2` wraps the Card only so it occupies one cell on a wide screen. Inside the card, Avatar sits above unlabeled name, email, and time zone — one column on desktop and phone. Empty photos use profile-name initials (never the word “Avatar”). There is no show subtitle and no city field. Show omits `page_nav_back_url` / `page_nav_back_label` (root owner page). Core `default_layout` still mounts Flatpack PageNav, which always paints a history.back control — hiding it needs Flatpack/core, not a Users fork or CSS hide. Edit hosts a `profile-photo` Turbo frame with Flatpack Avatar (`attachment_preview_url(..., variant: :square_med)`, `size: :"2xl"`, `shape: :circle`, `name`/`alt` from the profile display name, `show_tooltip: false`) plus Attachable `render_attachment_file_button` for Add/Change, then stacked fields, in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. An `mb-8` wrapper under the helper puts a field of air between the avatar and First name. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Edit PageTitle stays **Edit Profile**; the subtitle is the profile name at default muted size (not `large_subtitle`). Edit is photo + name + timezone only — no Sign-in methods link. Sign-in methods is a separate owner-only page (elevated Card + List): connected identities show logo, name, email, and Disconnect; when Google is configured but not linked, the same row shape shows logo, “Google”, and Connect (secondary, sm).
+Show puts **Edit** in the PageTitle actions slot (not in the card) and one Flatpack elevated Card. A Grid `cols: 2` wraps the Card only so it occupies one cell on a wide screen. Inside the card, Avatar sits above unlabeled name, email, and time zone — one column on desktop and phone. Empty photos use Avatar's person icon, not initials. There is no show subtitle and no city field. Edit hosts a `profile-photo` Turbo frame with Flatpack Avatar (`attachment_preview_url(..., variant: :square_med)`, `size: :"2xl"`, `shape: :circle`) plus Attachable `render_attachment_file_button` for Add/Change, then stacked fields, in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. An `mb-8` wrapper under the helper puts a field of air between the avatar and First name. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Edit keeps the plain subtitle: "Change your name, time zone, or photo."
 
 ## Users administration
 
@@ -229,9 +152,9 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both viewport-center with ordinary Tailwind (`min-h-dvh flex items-center justify-center`, inner `max-w-sm w-full` — no Card, no Flatpack Grid centering): `login_title` (default **Welcome back**) / **Sign up**, fields, primary Sign in / Sign up, cross-link, Flatpack Divider `Or`, then full-width **Continue with {Provider}** secondary buttons for every configured OmniAuth provider — not a Users product registration flow. Login does not show Remember me (Devise rememberable may stay on). Sign-up password confirmation stays host-configurable. OmniAuth runs in test mode with mocks for Google, Microsoft, Apple, LinkedIn, and Instagram so CI and screenshots do not need live apps. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.143`.
+The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both are Devise views with Flatpack inputs and a primary button — not a Users product registration flow. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue.
 
-Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit and Sign-in methods at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.143`) with Attachable's file button for Add/Change. Connect / Disconnect live on `/recording_studio_users/profile/sign-in-methods`. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
+Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.135`) with Attachable's file button for Add/Change. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |

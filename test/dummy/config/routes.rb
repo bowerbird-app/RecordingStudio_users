@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
-  devise_for :users, controllers: {
-    omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
-  }
+  devise_for :users
 
   # RecordingStudio engine is data/API-focused and has no browser root route.
   # Keep legacy links working by redirecting the base path to the app home.
