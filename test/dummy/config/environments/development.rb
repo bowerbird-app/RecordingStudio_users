@@ -81,6 +81,7 @@ Rails.application.configure do
   config.hosts << ".cursor.com"
   config.hosts << ".ngrok.io"
   config.hosts << ".ngrok-free.app"
+  config.hosts << ".trycloudflare.com"
 
   # Keep CSRF tokens enabled, but relax strict origin matching so
   # localhost-origin form posts work against forwarded preview URLs.

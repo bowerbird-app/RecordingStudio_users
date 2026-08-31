@@ -1,0 +1,14 @@
+{
+  "install": "bash .cursor/cloud-agent-install.sh",
+  "start": "bash .cursor/cloud-agent-start.sh",
+  "ports": [
+    { "name": "web", "port": 3000 }
+  ],
+  "terminals": [
+    {
+      "name": "tailwind",
+      "command": "bash .cursor/cloud-agent-tailwind.sh",
+      "description": "Tailwind CSS watcher for the dummy app (styles rebuild on change)"
+    }
+  ]
+}
