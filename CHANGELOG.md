@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-08-31
+
+### Added
+- Devise OmniAuth sign-in for Google, Microsoft, Apple, LinkedIn, and Instagram. Hosts opt in through `omniauth_providers`; an empty hash leaves email/password sign-in unchanged.
+- Provider identities and an owner-only **Sign-in methods** page for connecting and disconnecting configured providers.
+- Automatic identity linking to an existing User with the same normalized email. Unknown emails create a User and Profile only when `omniauth_create_account` is enabled.
+- Credential-first, environment-variable fallback examples for every supported provider in the generated initializer. OAuth tokens are not stored.
+
+### Changed
+- Continue, Connect, and Disconnect actions submit real CSRF-protected forms so they work in Turbo-only hosts without rails-ujs.
+- The identities migration uses a new guarded migration version. It restores the table for hosts that followed the 0.6.1 drop instruction and leaves retained 0.6.0 tables intact.
+
+### Upgrade notes
+- Bump to `0.6.2`, run `bin/rails generate recording_studio_user:migrations`, then `bin/rails db:migrate`.
+- Configure one or more `omniauth_providers` with secrets from Rails credentials or ENV. Set `omniauth_create_account = false` to reject provider emails that do not match an existing User.
+- Route `devise_for :users` callbacks to `recording_studio_user/omniauth_callbacks`.
+- Render `recording_studio_user/omniauth/continue_with_providers` in host Devise login and sign-up views. Link the engine's **Sign-in methods** page from the profile if the host overrides the supplied profile view.
+- First login requires a provider email. Instagram may not provide one; Apple may return one only on first consent or use a private relay. Connecting from a signed-in profile does not require an email.
+
 ## [0.6.1] - 2026-08-31
 
 ### Removed

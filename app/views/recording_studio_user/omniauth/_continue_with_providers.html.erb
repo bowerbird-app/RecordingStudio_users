@@ -1,0 +1,21 @@
+<%# Continue-with buttons for every configured OmniAuth provider. %>
+<% if recording_studio_user_omniauth_configured? %>
+  <div class="space-y-2">
+    <% recording_studio_user_omniauth_provider_names.each do |provider| %>
+      <% authorize_path = recording_studio_user_omniauth_authorize_path(provider) %>
+      <% next if authorize_path.blank? %>
+      <% logo = recording_studio_user_provider_logo(provider) %>
+      <% button_icon = logo.to_s.start_with?("<svg") ? logo : nil %>
+      <%= form_with url: authorize_path, method: :post, data: { turbo: false } do %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Continue with #{recording_studio_user_provider_label(provider)}",
+          icon: button_icon,
+          type: "submit",
+          style: :secondary,
+          size: :md,
+          class: "w-full"
+        ) %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

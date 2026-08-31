@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.135), and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.141), `devise`, and the supported OmniAuth strategies are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 
@@ -67,6 +67,38 @@ recording_studio_users.profile_path
 recording_studio_users.edit_profile_path
 recording_studio_users.admin_path
 ```
+
+## Social sign-in
+
+Hosts opt in to Google, Microsoft, Apple, LinkedIn, and Instagram independently. An empty provider hash keeps the existing email/password screens unchanged. Keep credentials in Rails credentials or environment variables:
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.omniauth_providers = {
+    google_oauth2: {
+      client_id: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_id) ||
+        ENV["GOOGLE_CLIENT_ID"],
+      client_secret: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_secret) ||
+        ENV["GOOGLE_CLIENT_SECRET"]
+    }
+  }
+  config.omniauth_create_account = true
+end
+```
+
+The generated initializer contains credential and environment-variable examples for all five providers. Apple also accepts `team_id`, `key_id`, `pem`, and `scope`. Point host Devise callbacks at the engine controller:
+
+```ruby
+devise_for :users, controllers: {
+  omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+}
+```
+
+Render `recording_studio_user/omniauth/continue_with_providers` in the host's Devise login and sign-up views. The engine adds `:omniauthable` only when providers are configured. Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` to restore the identities table; the 0.6.2 migration is safe whether a host retained or dropped the 0.6.0 table.
+
+On callback, Users first finds `provider` + `uid`. For a new identity, it normalizes the provider email and automatically links it to the existing User with that email. If no User matches, `omniauth_create_account` controls whether `Directory.create_user!` creates the User and Profile. Setting it to `false` fails closed for unknown emails. OAuth tokens are not stored.
+
+First login requires an email. Instagram often returns none, and Apple may return an email only on first consent or use a private relay; those first logins fail closed when no email is available. A signed-in user can still connect such a provider from **My Profile → Sign-in methods**, because the provider identity can safely attach to the current User without inventing an email. Disconnect is blocked when it would remove the only sign-in method from a user without a password.
 
 ## User contract
 

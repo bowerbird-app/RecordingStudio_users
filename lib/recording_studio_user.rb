@@ -7,6 +7,7 @@ require "recording_studio_user/admin"
 require "recording_studio_user/directory"
 require "recording_studio_user/profile_image"
 require "recording_studio_user/profile_access"
+require "recording_studio_user/omniauth"
 
 module RecordingStudioUser
   class << self
