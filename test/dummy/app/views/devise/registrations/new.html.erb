@@ -63,6 +63,8 @@
           <%= render FlatPack::Link::Component.new(href: new_session_path(resource_name)) do %>
             Log in
           <% end %>
+
+          <%= render "recording_studio_user/omniauth/continue_with_providers" %>
         </div>
       <% end %>
     <% end %>
