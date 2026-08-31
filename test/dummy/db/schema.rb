@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_22_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -141,6 +141,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_000002) do
     t.index ["root_recording_id"], name: "idx_rs_root_switchable_root_recording"
   end
 
+  create_table "recording_studio_user_identities", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "provider", null: false
+    t.string "uid", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["provider", "uid"], name: "index_recording_studio_user_identities_on_provider_and_uid", unique: true
+    t.index ["user_id"], name: "index_recording_studio_user_identities_on_user_id"
+  end
+
   create_table "recording_studio_user_people", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
   end
@@ -178,5 +189,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_000002) do
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
+  add_foreign_key "recording_studio_user_identities", "users"
   add_foreign_key "recording_studio_user_profiles", "users"
 end

@@ -46,11 +46,26 @@ module RecordingStudioUser
     end
 
     def self.apply_profiled_user!
-      user_class = RecordingStudioUser.config.user_class
+      require_dependency root.join(
+        "app/models/concerns/recording_studio_user/profiled_user.rb"
+      ).to_s
+      user_class = load_user_class
       user_class.include RecordingStudioUser::ProfiledUser unless user_class < RecordingStudioUser::ProfiledUser
       RecordingStudioUser::Omniauth.ensure_omniauthable!(user_class)
     rescue ArgumentError
       # Host user class may not be loadable during early boot in some hosts.
+    end
+
+    def self.load_user_class
+      application_record_path = Rails.root.join("app/models/application_record.rb")
+      require_dependency application_record_path.to_s if application_record_path.exist?
+
+      model_path = Rails.root.join(
+        "app/models",
+        "#{RecordingStudioUser.config.user_class_name.underscore}.rb"
+      )
+      require_dependency model_path.to_s if model_path.exist?
+      RecordingStudioUser.config.user_class
     end
   end
 end

@@ -206,6 +206,31 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_path
   end
 
+  test "explicitly unverified provider email never links an existing User" do
+    existing = RecordingStudioUser.create_user!(
+      email: "unverified-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Existing",
+      last_name: "User",
+      time_zone: "UTC"
+    )
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: "unverified-#{SecureRandom.hex(4)}",
+      email: existing.email,
+      email_verified: false
+    )
+
+    assert_no_difference -> { User.count } do
+      assert_no_difference -> { RecordingStudioUser::Identity.count } do
+        get user_google_oauth2_omniauth_callback_path
+      end
+    end
+
+    assert_redirected_to new_user_session_path
+    assert_match(/did not verify/i, flash[:alert].to_s)
+  end
+
   test "uid collision rejects Connect to another User" do
     owner = RecordingStudioUser.create_user!(
       email: "owner-#{SecureRandom.hex(4)}@example.com",
@@ -309,13 +334,21 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def mock_provider_auth!(provider, uid:, email:, first_name: "OAuth", last_name: "User")
+  def mock_provider_auth!(
+    provider,
+    uid:,
+    email:,
+    first_name: "OAuth",
+    last_name: "User",
+    email_verified: nil
+  )
     info = {
       name: "#{first_name} #{last_name}",
       first_name: first_name,
       last_name: last_name
     }
     info[:email] = email if email.present?
+    info[:email_verified] = email_verified unless email_verified.nil?
 
     OmniAuth.config.mock_auth[provider] = OmniAuth::AuthHash.new(
       provider: provider.to_s,
