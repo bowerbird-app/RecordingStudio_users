@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class DocsController < ApplicationController
+  # Dummy debug chrome: same sidebar as Home for install/config/diagnostics.
+  layout "flat_pack_sidebar"
+
   def install
   end
 
