@@ -36,6 +36,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes sign_in_methods, 'text: "Connect"'
     assert_includes sign_in_methods, 'text: "Disconnect"'
     assert_includes sign_in_methods, "form_with"
+    assert_includes sign_in_methods, '!items-center'
+    assert_includes sign_in_methods, "inline-flex items-center"
     assert_includes profile_show, "sign_in_methods_profile_path"
     refute_includes profile_edit, "sign_in_methods_profile_path"
     assert_includes profile_edit, "Change your name, time zone, or photo."

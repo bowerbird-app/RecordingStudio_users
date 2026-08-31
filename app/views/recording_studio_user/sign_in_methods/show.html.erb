@@ -26,10 +26,13 @@
             <% @identities.each do |identity| %>
               <%= render FlatPack::List::Item.new(
                 **recording_studio_user_provider_list_item_leading(identity.provider),
+                # Flatpack List::Item defaults to items-start; force middle align for logo + actions.
+                class: "!items-center",
                 trailing: capture {
                   form_with(
                     url: profile_identity_path(identity.provider),
                     method: :delete,
+                    class: "inline-flex items-center",
                     data: {
                       turbo_confirm: "Disconnect #{recording_studio_user_provider_label(identity.provider)}?"
                     }
@@ -55,8 +58,14 @@
               <% next if authorize_path.blank? %>
               <%= render FlatPack::List::Item.new(
                 **recording_studio_user_provider_list_item_leading(provider),
+                class: "!items-center",
                 trailing: capture {
-                  form_with(url: authorize_path, method: :post, data: { turbo: false }) do
+                  form_with(
+                    url: authorize_path,
+                    method: :post,
+                    class: "inline-flex items-center",
+                    data: { turbo: false }
+                  ) do
                     render FlatPack::Button::Component.new(
                       text: "Connect",
                       type: "submit",
