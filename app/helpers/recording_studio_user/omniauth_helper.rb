@@ -39,17 +39,7 @@ module RecordingStudioUser
     def recording_studio_user_provider_list_item_leading(provider)
       logo = recording_studio_user_provider_logo(provider)
       return {} if logo.blank?
-
-      if logo.to_s.start_with?("<svg")
-        return {
-          leading: content_tag(
-            :span,
-            logo.html_safe,
-            class: "inline-flex h-8 w-8 shrink-0 items-center justify-center",
-            aria: { hidden: true }
-          )
-        }
-      end
+      return { leading: provider_logo_svg_mark(logo) } if logo.to_s.start_with?("<svg")
 
       { leading: image_tag(logo, alt: "", class: "h-8 w-8 shrink-0", aria: { hidden: true }) }
     end
@@ -60,6 +50,17 @@ module RecordingStudioUser
       return configured if configured.present?
 
       RecordingStudioUser::Omniauth.default_logo(provider)
+    end
+
+    private
+
+    def provider_logo_svg_mark(logo)
+      content_tag(
+        :span,
+        logo.html_safe,
+        class: "inline-flex h-8 w-8 shrink-0 items-center justify-center",
+        aria: { hidden: true }
+      )
     end
   end
 end
