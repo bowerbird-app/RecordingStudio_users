@@ -6,12 +6,6 @@ module RecordingStudioUser
 
     included do
       before_validation :fill_password_confirmation_when_optional
-
-      has_many :identities,
-               class_name: "RecordingStudioUser::Identity",
-               foreign_key: :user_id,
-               dependent: :destroy,
-               inverse_of: :user
     end
 
     def display_name
@@ -20,20 +14,6 @@ module RecordingStudioUser
 
     def profile
       RecordingStudioUser.profile_for(self)
-    end
-
-    def password_required?
-      return false if identities.exists? && password.blank? && password_confirmation.blank?
-
-      super
-    end
-
-    def password_set?
-      RecordingStudioUser::Omniauth.password_set?(self)
-    end
-
-    def identity_for(provider)
-      identities.find_by(provider: provider.to_s)
     end
 
     private

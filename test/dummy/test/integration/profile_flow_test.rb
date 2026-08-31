@@ -163,9 +163,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, recording_studio_attachable.recording_attachment_imports_path(recording)
     refute_includes response.body, 'name="attachment[name]"'
     refute_includes response.body, 'name="attachment[description]"'
-    # Empty photo uses profile-name initials (never the word "Avatar" or person-icon path alone).
-    assert_includes response.body, "PU"
-    refute_includes response.body, 'alt="Avatar"'
+    assert_includes response.body, "M12 2C6.48 2 2 6.48"
     refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
   end
 
@@ -187,10 +185,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Add a photo"
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Choose File"
-    assert_includes response.body, "Profile User"
-    refute_includes response.body, recording_studio_users.sign_in_methods_profile_path
-    refute_includes response.body, "Connect Google"
-    refute_includes response.body, "Change your name, time zone, or photo."
+    assert_includes response.body, "Change your name, time zone, or photo."
     refute_includes response.body, "Tidy up"
     refute_includes response.body, "The photo lives here too."
     assert_equal 1, response.body.scan("md:grid-cols-2").size
@@ -219,8 +214,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.recording_attachments_path(recording))}"}, response.body)
     refute_includes response.body, 'name="attachment[name]"'
     refute_includes response.body, 'name="attachment[description]"'
-    assert_includes response.body, "PU"
-    refute_includes response.body, 'alt="Avatar"'
+    assert_includes response.body, "M12 2C6.48 2 2 6.48"
   end
 
   test "profile show and edit display one attached image and a replace path" do

@@ -2,8 +2,6 @@
 
 module RecordingStudioUser
   module ProfilesHelper
-    include OmniauthHelper
-
     def profile_display_name(user)
       RecordingStudioUser.display_name_for(user)
     end

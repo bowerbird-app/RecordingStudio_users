@@ -67,13 +67,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "render_attachment_file_button(@profile_recording, return_to: edit_profile_path)"
     assert_includes edit, "size: :\"2xl\""
     refute_includes edit, "FlatPack::Card::Component"
-    assert_includes edit, "subtitle: profile_display_name(@user)"
-    refute_includes edit, "large_subtitle"
-    refute_includes edit, "Connect Google"
-    refute_includes edit, "Disconnect"
-    refute_includes edit, "sign_in_methods_profile_path"
-    assert_includes edit, "name: profile_display_name(@user)"
-    assert_includes edit, "show_tooltip: false"
+    assert_includes edit, "Change your name, time zone, or photo."
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     assert_includes edit, %(class="mb-8")
     refute_includes edit, %(class="mb-16")
@@ -86,34 +80,6 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "Cancel"
     assert_includes edit, "FlatPack::TextInput::Component"
     assert_includes edit, "FlatPack::Select::Component"
-
-    assert_includes show, "Sign-in methods"
-    assert_includes show, "sign_in_methods_profile_path"
-    refute_includes show, "page_nav_back_url"
-    refute_includes show, "page_nav_back_label"
-
-    continue_partial = File.read(
-      File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_providers.html.erb", __dir__)
-    )
-    assert_includes continue_partial, "Continue with"
-    assert_includes continue_partial, "recording_studio_user_omniauth_provider_names"
-    assert_includes continue_partial, 'FlatPack::Divider::Component.new(label: "Or"'
-    assert_includes continue_partial, "recording_studio_user_provider_logo"
-    assert_includes continue_partial, 'class: "w-full"'
-    refute File.exist?(
-      File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_google.html.erb", __dir__)
-    )
-
-    sign_in_methods = File.read(
-      File.expand_path("../app/views/recording_studio_user/sign_in_methods/show.html.erb", __dir__)
-    )
-    assert_includes sign_in_methods, "FlatPack::List::Component"
-    assert_includes sign_in_methods, "FlatPack::Card::Component"
-    assert_includes sign_in_methods, 'text: "Connect"'
-    assert_includes sign_in_methods, "Disconnect"
-    assert_includes sign_in_methods, "connectable_providers"
-    refute_includes sign_in_methods, "Connect Google"
-    refute_includes sign_in_methods, "large_subtitle"
   end
 
   def test_gemfiles_pin_attachable_v050_tag
@@ -140,21 +106,20 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_attachable", "~> 0.5.0"'
   end
 
-  def test_gemfiles_pin_flatpack_v0143
+  def test_gemfiles_pin_flatpack_two_xl_avatar
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
-      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.143"'
+      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.141"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.1.143"
-      assert_includes lock, "flat_pack (0.1.143)"
-      assert_includes lock, "3654913a87f3d72556223b81e0d8140a292e3c2e"
-      refute_includes lock, "cursor/grid-justify-max-8d62"
+      assert_includes lock, "tag: v0.1.141"
+      assert_includes lock, "flat_pack (0.1.141)"
+      assert_includes lock, "31ea491672030525cd0fd0b300e0ae7041b65981"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"flat_pack", "~> 0.1.143"'
+    assert_includes gemspec, '"flat_pack", "~> 0.1.141"'
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html

@@ -68,16 +68,13 @@ module RecordingStudioUser
         say "The installer does not invoke recording_studio_user:admin. Host apps create the admin root, " \
             "resolvers, access items, and grants themselves.",
             :yellow
-        say "People + Profile + Identity tables: bin/rails generate recording_studio_user:migrations", :green
+        say "People + Profile tables: bin/rails generate recording_studio_user:migrations", :green
         say "Register RecordingStudioUser::People and RecordingStudioUser::Profile in " \
             "config.recordable_types, then run db:migrate. The gem enables Accessible and " \
             "Attachable on Profile (not People). create_user! / record_profile! bootstrap the " \
             "first owner on that Profile recording with " \
             "RecordingStudioAccessible.bootstrap_owner_access!. One profile image is an " \
             "Attachable child of the Profile recording.",
-            :yellow
-        say "OmniAuth: set config.omniauth_providers and point devise_for callbacks at " \
-            "recording_studio_user/omniauth_callbacks. Secrets stay in credentials/ENV.",
             :yellow
         say "Host apps that need uploads: bin/rails generate recording_studio_attachable:install " \
             "and recording_studio_attachable:migrations, plus Active Storage.",
