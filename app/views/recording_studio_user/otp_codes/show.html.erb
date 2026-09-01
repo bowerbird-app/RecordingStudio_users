@@ -1,27 +1,35 @@
-<div class="mx-auto flex w-full max-w-2xl flex-col gap-6">
-  <%= render FlatPack::PageNav::Component.new(anchor_url: main_app.root_path) %>
+<% content_for :title, "Your sign-in code | Recording Studio User" %>
 
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Your sign-in code",
-    subtitle: (@code.present? ? "Use this code to finish signing in." : nil),
-    variant: :h1
+<% recording_studio_page_nav(
+  title: "Your sign-in code",
+  page_nav_anchor_url: main_app.root_path,
+  page_nav_anchor_label: "Close"
+) %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Your sign-in code",
+  subtitle: (@code.present? ? "Use this code to finish signing in." : nil),
+  variant: :h1
+) %>
+
+<% if @code.present? %>
+  <p class="select-all font-mono text-5xl font-semibold tracking-[0.25em] text-(--surface-content-color)">
+    <%= @code %>
+  </p>
+  <p class="mt-2 text-sm text-(--surface-muted-content-color)">
+    Expires in about <%= time_ago_in_words(@challenge.expires_at) %>.
+  </p>
+<% else %>
+  <%= render FlatPack::Alert::Component.new(
+    title: "This code is no longer valid",
+    description: "Request a fresh code from sign in.",
+    style: :info
   ) %>
-
-  <% if @code.present? %>
-    <%= render FlatPack::CodeBlock::Component.new(language: :text, code: @code) %>
-    <p class="text-sm text-(--surface-muted-content-color)">
-      This code expires <%= time_ago_in_words(@challenge.expires_at) %> from now.
-    </p>
-  <% else %>
-    <%= render FlatPack::Alert::Component.new(
-      title: "This code is no longer valid",
-      description: "Request a fresh code from sign in.",
-      style: :info
-    ) %>
+  <div class="mt-4">
     <%= render FlatPack::Button::Component.new(
       text: "Request a new code",
       href: main_app.new_user_session_path,
       style: :primary
     ) %>
-  <% end %>
-</div>
+  </div>
+<% end %>

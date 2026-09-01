@@ -277,6 +277,28 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, code
   end
 
+  test "login code page expiry follows the configured otp_expires_in" do
+    user = RecordingStudioUser.create_user!(
+      email: "code-expiry-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Code",
+      last_name: "Expiry",
+      time_zone: "UTC"
+    )
+    sign_in user
+
+    original = RecordingStudioUser.config.otp_expires_in
+    RecordingStudioUser.config.otp_expires_in = 20.minutes
+    challenge = RecordingStudioUser.issue_otp!(user: user, purpose: :login).challenge
+
+    get recording_studio_users.otp_code_path(challenge)
+
+    assert_response :success
+    assert_includes response.body, "20 minutes"
+  ensure
+    RecordingStudioUser.config.otp_expires_in = original
+  end
+
   test "login code page does not expose another user's code" do
     owner = RecordingStudioUser.create_user!(
       email: "code-owner-#{SecureRandom.hex(4)}@example.com",
