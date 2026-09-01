@@ -103,12 +103,9 @@ class OmniauthTest < Minitest::Test
 
   def fake_credentials(hash)
     Object.new.tap do |credentials|
-      credentials.define_singleton_method(:dig) do |*keys|
-        hash.dig(*keys)
-      end
+      credentials.define_singleton_method(:[]) { |key| hash[key] }
     end
   end
-
 
   def auth_hash(email:, email_verified: nil)
     info = { email: email }

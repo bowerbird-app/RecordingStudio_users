@@ -125,7 +125,7 @@ module RecordingStudioUser
     def credential_omniauth_hash(credentials)
       return {} unless credentials
 
-      raw = credentials.dig(:omniauth) || credentials.dig("omniauth")
+      raw = credentials[:omniauth]
       return {} unless raw.respond_to?(:to_h)
 
       raw.to_h
