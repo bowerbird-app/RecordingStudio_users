@@ -20,10 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The identities migration uses a new guarded migration version. It restores the table for hosts that followed the 0.6.1 drop instruction and repairs indexes and the foreign key on retained 0.6.0 tables.
 - Dummy home and `/docs/*` pages again use `flat_pack_sidebar` (Install, Config, diagnostics, Sign out, Root Switchable). Profile and other product surfaces stay on `recording_studio/default_layout`.
 - Continue-with buttons follow Rails credentials under `omniauth:`. An empty `omniauth_providers` hash reads those keys; blank or commented credential entries stay hidden. Dummy development credentials keep live Google secrets and commented examples for Microsoft, Apple, LinkedIn, and Instagram.
+- Sign-in methods lists only identities whose provider is still configured, and disconnect no longer counts an identity for a dropped provider as a remaining sign-in method. An identity for an unconfigured provider cannot sign anyone in, because no strategy or callback route exists for it.
 - Dummy never enables OmniAuth test mode or `OMNIAUTH_TEST_MODE`. Dummy tests set `OmniAuth.config.test_mode` in `test/test_helper.rb` only.
 
 ### Upgrade notes
 - Bump to `0.6.2`, run `bin/rails generate recording_studio_user:migrations`, then `bin/rails db:migrate`.
+- If a provider was configured in `0.6.0` and is no longer in credentials, its identity rows are now hidden and inert. Delete them with `bin/rails recording_studio_user:prune_unconfigured_identities`.
 - Add provider secrets under `omniauth:` in Rails credentials. Leave `config.omniauth_providers` empty so buttons appear from those keys. Set `omniauth_create_account = false` to reject provider emails that do not match an existing User.
 - Route `devise_for :users` callbacks to `recording_studio_user/omniauth_callbacks`.
 - Render `recording_studio_user/omniauth/continue_with_providers` in host Devise login and sign-up views. Link the engine's **Sign-in methods** page from the profile if the host overrides the supplied profile view.

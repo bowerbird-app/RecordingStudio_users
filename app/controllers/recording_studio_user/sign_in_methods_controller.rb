@@ -7,7 +7,7 @@ module RecordingStudioUser
     before_action :authorize_profile_edit!
 
     def show
-      @identities = current_user.identities.order(:provider)
+      @identities = current_user.usable_identities.order(:provider)
     end
 
     private
