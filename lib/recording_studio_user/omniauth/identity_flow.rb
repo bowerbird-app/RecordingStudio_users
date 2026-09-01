@@ -34,12 +34,17 @@ module RecordingStudioUser
 
       def disconnect!(user, provider)
         identity = user.identities.find_by!(provider: provider.to_s)
-        if user.identities.one? && !password_set?(user)
+        if !other_usable_identity?(user, identity) && !password_set?(user)
           raise LastSignInMethodError,
                 "Connect another sign-in method or set a password before disconnecting"
         end
 
         identity.destroy!
+      end
+
+      # Identities for providers the host dropped are not a fallback sign-in method.
+      def other_usable_identity?(user, identity)
+        user.identities.for_configured_providers.where.not(id: identity.id).exists?
       end
 
       def password_set?(user)

@@ -32,6 +32,11 @@ module RecordingStudioUser
       RecordingStudioUser::Omniauth.password_set?(self)
     end
 
+    # Only providers the host still configures can actually sign someone in.
+    def usable_identities
+      identities.for_configured_providers
+    end
+
     def identity_for(provider)
       identities.find_by(provider: provider.to_s)
     end

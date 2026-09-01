@@ -510,7 +510,68 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_select "a, button", text: /\ADisconnect\z/, count: 1
   end
 
+  test "identities for providers without credentials are hidden and are not a sign-in method" do
+    user = RecordingStudioUser.create_user!(
+      email: "dropped-provider-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Dropped",
+      last_name: "Provider",
+      time_zone: "UTC"
+    )
+    user.identities.create!(provider: "google_oauth2", uid: "g-#{SecureRandom.hex(4)}", email: user.email)
+    user.identities.create!(provider: "apple", uid: "a-#{SecureRandom.hex(4)}", email: user.email)
+    user.update_column(:encrypted_password, "")
+    sign_in user
+
+    with_only_google_configured do
+      assert_equal %w[google_oauth2], user.usable_identities.pluck(:provider)
+
+      get recording_studio_users.sign_in_methods_profile_path
+
+      assert_response :success
+      assert_select "a, button", text: /\ADisconnect\z/, count: 1
+      assert_no_match(/Apple/, response.body)
+
+      assert_no_difference -> { RecordingStudioUser::Identity.count } do
+        delete recording_studio_users.profile_identity_path("google_oauth2")
+      end
+      assert_match(/password|sign-in method/i, flash[:alert].to_s)
+    end
+  end
+
+  test "prune_unconfigured_identities deletes only identities without credentials" do
+    user = RecordingStudioUser.create_user!(
+      email: "prune-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Prune",
+      last_name: "User",
+      time_zone: "UTC"
+    )
+    keep = user.identities.create!(provider: "google_oauth2", uid: "keep-#{SecureRandom.hex(4)}")
+    drop = user.identities.create!(provider: "apple", uid: "drop-#{SecureRandom.hex(4)}")
+
+    with_only_google_configured do
+      require "rake"
+      Rails.application.load_tasks unless Rake::Task.task_defined?(
+        "recording_studio_user:prune_unconfigured_identities"
+      )
+      Rake::Task["recording_studio_user:prune_unconfigured_identities"].reenable
+      capture_io { Rake::Task["recording_studio_user:prune_unconfigured_identities"].invoke }
+    end
+
+    assert_predicate keep.reload, :persisted?
+    refute RecordingStudioUser::Identity.exists?(drop.id)
+  end
+
   private
+
+  def with_only_google_configured
+    original = RecordingStudioUser.config.omniauth_providers
+    RecordingStudioUser.config.omniauth_providers = { google_oauth2: original.fetch(:google_oauth2) }
+    yield
+  ensure
+    RecordingStudioUser.config.omniauth_providers = original
+  end
 
   def clear_omniauth_mocks!
     %i[google_oauth2 microsoft_graph apple linkedin instagram].each do |provider|

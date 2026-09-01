@@ -8,6 +8,10 @@ module RecordingStudioUser
       RecordingStudioUser::Omniauth.register_providers!
     end
 
+    rake_tasks do
+      load RecordingStudioUser::Engine.root.join("lib/tasks/recording_studio_user_identities.rake")
+    end
+
     initializer "recording_studio_user.helpers" do
       ActiveSupport.on_load(:action_controller) do
         helper RecordingStudioUser::OmniauthHelper if respond_to?(:helper)
