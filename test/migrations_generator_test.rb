@@ -67,17 +67,31 @@ class MigrationsGeneratorTest < Minitest::Test
     end
   end
 
-  def test_authentication_method_migration_template
+  def test_registered_with_migration_template
     template = File.read(
       File.expand_path(
-        "../lib/generators/recording_studio_user/migrations/templates/add_authentication_method_to_users.rb.tt",
+        "../lib/generators/recording_studio_user/migrations/templates/add_registered_with_to_users.rb.tt",
         __dir__
       )
     )
 
-    assert_includes template, "authentication_method"
-    assert_includes template, "users_authentication_method_check"
-    assert_includes template, "UPDATE users SET authentication_method = 'password'"
+    assert_includes template, "registered_with"
+    assert_includes template, "users_registered_with_check"
+    assert_includes template, "UPDATE users SET registered_with = 'password'"
+    refute_includes template, "add_column :users, :authentication_method"
+  end
+
+  def test_rename_authentication_method_migration_template
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/" \
+        "rename_authentication_method_to_registered_with.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "rename_column :users, :authentication_method, :registered_with"
+    assert_includes template, "users_registered_with_check"
   end
 
   def test_confirmable_backfill_migration_template

@@ -7,7 +7,7 @@ module RecordingStudioUser
 
       def create
         user = resource_class.find_by(email: resource_params[:email].to_s.strip.downcase)
-        if user&.otp_authentication_method?
+        if user&.registered_with_otp?
           flash[:notice] = "This account signs in with email codes. Use Email OTP on the sign-in page."
           redirect_to host_new_user_session_path and return
         end

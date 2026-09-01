@@ -14,7 +14,7 @@ module RecordingStudioUser
       def create_password
         user = resource_class.find_for_database_authentication(email: sign_in_params[:email])
         return render_password_failure("This account signs in with email codes. Use the Email OTP tab.") if
-          user&.otp_authentication_method?
+          user&.registered_with_otp?
         return render_password_failure("Email or password did not match.") unless
           user&.valid_password?(sign_in_params[:password])
 

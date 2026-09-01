@@ -4,12 +4,12 @@ module RecordingStudioUser
   module ProfiledUser
     extend ActiveSupport::Concern
 
-    AUTHENTICATION_METHODS = %w[password otp].freeze
+    REGISTERED_WITH_VALUES = %w[password otp].freeze
 
     included do
       before_validation :fill_password_confirmation_when_optional
-      validates :authentication_method, inclusion: { in: AUTHENTICATION_METHODS }, if: :authentication_method_column?
-      after_create :confirm_password_account, if: :password_authentication_method?
+      validates :registered_with, inclusion: { in: REGISTERED_WITH_VALUES }, if: :registered_with_column?
+      after_create :confirm_password_account, if: :registered_with_password?
 
       has_many :identities,
                class_name: "RecordingStudioUser::Identity",
@@ -26,23 +26,23 @@ module RecordingStudioUser
       RecordingStudioUser.profile_for(self)
     end
 
-    def otp_authentication_method?
-      authentication_method_column? && authentication_method == "otp"
+    def registered_with_otp?
+      registered_with_column? && registered_with == "otp"
     end
 
-    def password_authentication_method?
-      !authentication_method_column? || authentication_method.blank? || authentication_method == "password"
+    def registered_with_password?
+      !registered_with_column? || registered_with.blank? || registered_with == "password"
     end
 
     def password_required?
-      return false if otp_authentication_method?
+      return false if registered_with_otp?
       return false if identities.exists? && password.blank? && password_confirmation.blank?
 
       super
     end
 
     def active_for_authentication?
-      return false if otp_authentication_method? && !confirmed?
+      return false if registered_with_otp? && !confirmed?
 
       super
     end
@@ -62,8 +62,8 @@ module RecordingStudioUser
 
     private
 
-    def authentication_method_column?
-      self.class.column_names.include?("authentication_method")
+    def registered_with_column?
+      self.class.column_names.include?("registered_with")
     end
 
     def fill_password_confirmation_when_optional
@@ -76,7 +76,7 @@ module RecordingStudioUser
 
     def confirm_password_account
       return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
-      return unless password_authentication_method?
+      return unless registered_with_password?
       return unless self.class.column_names.include?("confirmed_at")
       return if confirmed_at.present?
 

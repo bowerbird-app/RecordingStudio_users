@@ -62,7 +62,7 @@ class NotificationsHostTest < ActionDispatch::IntegrationTest
     user = User.find_or_initialize_by(email: email)
     user.password = "Password123!"
     user.password_confirmation = "Password123!"
-    user.authentication_method = "password"
+    user.registered_with = "password"
     user.skip_confirmation! if user.respond_to?(:skip_confirmation!) && !user.confirmed?
     user.save!
     user

@@ -73,9 +73,9 @@ module RecordingStudioUser
 
     def devise_user_attributes(attributes)
       attrs = attributes.symbolize_keys
-      return attrs unless RecordingStudioUser.config.user_class.column_names.include?("authentication_method")
+      return attrs unless RecordingStudioUser.config.user_class.column_names.include?("registered_with")
 
-      attrs.merge(authentication_method: "password")
+      attrs.merge(registered_with: "password")
     end
 
     def skip_confirmation_for_password_account(user)
@@ -90,7 +90,7 @@ module RecordingStudioUser
 
       user = RecordingStudioUser.config.user_class.new(
         email: email,
-        authentication_method: "otp"
+        registered_with: "otp"
       )
       user.skip_confirmation_notification! if user.respond_to?(:skip_confirmation_notification!)
       user.save!

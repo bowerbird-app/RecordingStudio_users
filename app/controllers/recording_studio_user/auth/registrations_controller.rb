@@ -70,7 +70,7 @@ module RecordingStudioUser
 
       def build_password_resource(attrs = {})
         @resource = resource_class.new(attrs)
-        @resource.authentication_method = "password" if @resource.respond_to?(:authentication_method=)
+        @resource.registered_with = "password" if @resource.respond_to?(:registered_with=)
       end
 
       def sign_up_params
@@ -82,7 +82,7 @@ module RecordingStudioUser
       end
 
       def otp_account?(email)
-        resource_class.find_by(email: email)&.otp_authentication_method?
+        resource_class.find_by(email: email)&.registered_with_otp?
       end
 
       def render_password_taken
@@ -98,13 +98,13 @@ module RecordingStudioUser
 
       def confirm_password_account!
         return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
-        return unless resource.password_authentication_method? && resource.confirmed_at.nil?
+        return unless resource.registered_with_password? && resource.confirmed_at.nil?
 
         resource.update_column(:confirmed_at, Time.current)
       end
 
       def existing_account_blocks_otp?(existing)
-        existing&.confirmed? || existing&.password_authentication_method?
+        existing&.confirmed? || existing&.registered_with_password?
       end
 
       def redirect_to_sign_in_for(existing)
@@ -114,7 +114,7 @@ module RecordingStudioUser
 
       def issue_registration_resend!
         user = user_for_otp_resend
-        return unless user&.otp_authentication_method? && !user.confirmed?
+        return unless user&.registered_with_otp? && !user.confirmed?
 
         RecordingStudioUser.issue_otp!(
           user: user,

@@ -8,7 +8,7 @@ class OtpChallengeTest < ActiveSupport::TestCase
       email: "otp-test-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       password_confirmation: "Password123!",
-      authentication_method: "otp"
+      registered_with: "otp"
     )
     @user.skip_confirmation_notification! if @user.respond_to?(:skip_confirmation_notification!)
     @user.save!(validate: false)

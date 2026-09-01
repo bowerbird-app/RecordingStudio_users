@@ -207,7 +207,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       email: email,
       password: "Password123!",
       password_confirmation: "Password123!",
-      authentication_method: "password",
+      registered_with: "password",
       created_at: created_at,
       updated_at: created_at
     )

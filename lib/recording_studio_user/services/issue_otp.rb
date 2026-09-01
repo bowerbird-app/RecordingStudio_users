@@ -50,7 +50,7 @@ module RecordingStudioUser
       end
 
       def validate_registration_user!
-        raise ArgumentError, "registration OTP requires an OTP user" unless @user.otp_authentication_method?
+        raise ArgumentError, "registration OTP requires an OTP user" unless @user.registered_with_otp?
         raise ArgumentError, "registration OTP requires an unconfirmed user" if @user.confirmed?
       end
 

@@ -27,7 +27,7 @@ module RecordingStudioUser
       private
 
       def validate!
-        raise ArgumentError, "registration completion requires an OTP user" unless @user.otp_authentication_method?
+        raise ArgumentError, "registration completion requires an OTP user" unless @user.registered_with_otp?
         raise ArgumentError, "challenge purpose must be registration" unless @challenge.registration?
       end
 

@@ -5,7 +5,7 @@ module RecordingStudioUser
     module_function
 
     REQUIRED_USER_COLUMNS = %w[
-      authentication_method confirmation_token confirmed_at confirmation_sent_at unconfirmed_email
+      registered_with confirmation_token confirmed_at confirmation_sent_at unconfirmed_email
     ].freeze
     OTP_CHALLENGES_TABLE = "recording_studio_user_otp_challenges"
 

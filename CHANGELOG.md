@@ -8,13 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Login codes are available to **any** confirmed, active account, including password accounts. `authentication_method` now records how an account was created rather than restricting how it signs in. Registration codes are still OTP-account only, and OTP accounts still cannot sign in with a password.
+- Login codes are available to **any** confirmed, active account, including password accounts. `registered_with` records how an account was created rather than restricting how it signs in. Registration codes are still OTP-account only, and OTP accounts still cannot sign in with a password.
+- Renamed the users column `authentication_method` to `registered_with`. Predicates are `registered_with_otp?` and `registered_with_password?`. Hosts that already migrated should generate and run `rename_authentication_method_to_registered_with`; new hosts get `add_registered_with_to_users` instead of `add_authentication_method_to_users`.
 - Login notifications open a recipient-only code page while the challenge is active. The plaintext code remains absent from the notification row; used, revoked, expired, and over-attempted challenges show a request-new-code state.
 - Dummy eagerly registers Notifications and Push Stimulus controllers so their loaders do not try to resolve Flatpack controllers inside notification namespaces.
 - Dummy vendors `recording_studio_notifications` `0.3.0`, `recording_studio_notifications_email` `0.3.0`, and `recording_studio_notifications_push` `0.2.0` from their merged `main` branches.
 - Dummy mounts the notifications inbox at `/notifications`, email as a channel (no screens), and push devices at `/notifications/push`. Debug chrome adds inbox, settings, and devices links plus the async notification menu.
 - Dummy development mail uses Letter Opener Web. The debug sidebar adds a **Letters** link to `/letter_opener`.
 - Dummy seeds a confirmed `otp@admin.com` account so email-code sign-in is testable. Password accounts do not receive login codes.
+
+### Upgrade notes
+- Hosts that already added `users.authentication_method` should run `rails generate recording_studio_user:migrations` and migrate `rename_authentication_method_to_registered_with`. Delete `*_add_authentication_method_to_users.rb` if that file has not run yet. Verify with: `User.column_names.include?("registered_with")` and `!User.column_names.include?("authentication_method")`.
 
 ## [0.7.0] - 2026-09-01
 

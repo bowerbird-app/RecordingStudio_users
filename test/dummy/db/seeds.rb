@@ -47,7 +47,7 @@ end
 # needs its own confirmed user to test against.
 seed_otp_user = lambda do |email:, first_name:, last_name:, time_zone:|
   user = User.find_or_initialize_by(email: email)
-  user.authentication_method = "otp"
+  user.registered_with = "otp"
   user.skip_confirmation! if user.respond_to?(:skip_confirmation!) && !user.confirmed?
   user.save! if user.new_record? || user.changed?
 
@@ -73,7 +73,7 @@ begin
     last_name: "Admin",
     time_zone: "UTC"
   )
-  user.update!(authentication_method: "password", confirmed_at: user.confirmed_at || Time.current)
+  user.update!(registered_with: "password", confirmed_at: user.confirmed_at || Time.current)
   Current.actor = user
 
   avery_photo = Rails.root.join("db/seeds/avery-admin.png")

@@ -211,7 +211,7 @@ bin/rails db:migrate
 
 Mount the OTP auth routes from this gem's `config/routes.rb`. Password sign-up and sign-in keep working. See `MIGRATION_NOTES.md` for backfill details and route mapping.
 
-`authentication_method` records how the account was created, not the only way it can sign in:
+`registered_with` records how the account was created, not the only way it can sign in:
 
 - **Password accounts** can sign in with their password *or* request an email code. Having a password is a capability, not a restriction.
 - **OTP accounts** have no usable password, so they sign in with email codes only.

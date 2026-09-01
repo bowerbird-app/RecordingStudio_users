@@ -7,7 +7,7 @@ module RecordingStudioUser
     PROTECTED_PROFILE_ATTRIBUTES = %w[
       id email password password_confirmation encrypted_password reset_password_token
       reset_password_sent_at remember_created_at admin role roles root_id root_recording_id
-      recording_id recordable_id recordable_type membership memberships authentication_method
+      recording_id recordable_id recordable_type membership memberships registered_with
     ].freeze
 
     AUTHENTICATION_METHODS = %i[password otp].freeze

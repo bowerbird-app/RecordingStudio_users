@@ -14,7 +14,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
   # --- Happy paths ---
 
-  test "password registration stores authentication_method password and creates profile" do
+  test "password registration stores registered_with password and creates profile" do
     email = "password-reg-#{SecureRandom.hex(4)}@example.com"
 
     assert_difference -> { User.count }, +1 do
@@ -24,7 +24,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     end
 
     user = User.find_by!(email: email)
-    assert user.password_authentication_method?
+    assert user.registered_with_password?
     assert RecordingStudioUser.profile_for(user)
     assert_redirected_to root_path
 
@@ -41,7 +41,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     end
 
     user = User.find_by!(email: email)
-    assert user.otp_authentication_method?
+    assert user.registered_with_otp?
     refute user.confirmed?
     assert_nil RecordingStudioUser.profile_for(user)
     assert user.encrypted_password.blank?
@@ -210,7 +210,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     user = User.find_by!(email: email)
-    assert user.password_authentication_method?
+    assert user.registered_with_password?
 
     code = current_otp_code(user, "login")
     post verify_user_session_path, params: { code: code }
@@ -240,7 +240,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
     post user_session_path, params: { user: { email: email, password: "Password123!" } }
     assert_redirected_to root_path
-    assert_equal "password", user.reload.authentication_method
+    assert_equal "password", user.reload.registered_with
   end
 
   test "login notification opens a protected page with the active code" do
@@ -331,7 +331,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       email: email,
       password: "Password123!",
       password_confirmation: "Password123!",
-      authentication_method: "password"
+      registered_with: "password"
     )
     user.update_column(:confirmed_at, nil)
 
