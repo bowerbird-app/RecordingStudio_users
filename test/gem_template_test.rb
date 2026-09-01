@@ -208,7 +208,8 @@ class RecordingStudioUserTest < Minitest::Test
     controllers = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
 
     assert_includes controllers, 'lazyLoadControllersFrom("controllers/recording_studio_notifications", application)'
-    assert_includes controllers, 'lazyLoadControllersFrom("controllers/recording_studio_notifications_push", application)'
+    assert_includes controllers,
+                    'lazyLoadControllersFrom("controllers/recording_studio_notifications_push", application)'
   end
 
   def test_dummy_importmap_pins_flat_pack_controllers_for_stimulus
