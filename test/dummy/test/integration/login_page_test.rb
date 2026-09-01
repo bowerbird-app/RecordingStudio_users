@@ -21,4 +21,11 @@ class LoginPageTest < ActionDispatch::IntegrationTest
       assert_select "form[method='post'] button[type='submit']", text: "Continue with #{label}"
     end
   end
+
+  test "dummy OmniAuth secrets read credentials before ENV" do
+    source = File.read(Rails.root.join("config/initializers/recording_studio_user.rb"))
+
+    assert_includes source, "credentials.dig(:omniauth"
+    assert_includes source, 'env: "GOOGLE_CLIENT_ID"'
+  end
 end
