@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continue, Connect, and Disconnect actions submit real CSRF-protected forms so they work in Turbo-only hosts without rails-ujs.
 - The identities migration uses a new guarded migration version. It restores the table for hosts that followed the 0.6.1 drop instruction and repairs indexes and the foreign key on retained 0.6.0 tables.
 - Dummy home and `/docs/*` pages again use `flat_pack_sidebar` (Install, Config, diagnostics, Sign out, Root Switchable). Profile and other product surfaces stay on `recording_studio/default_layout`.
-- Dummy OmniAuth secrets prefer Rails credentials (`config/credentials/development.yml.enc`), then ENV, then test fallbacks. The development encryption key is gitignored.
+- Dummy OmniAuth secrets prefer Rails credentials (`config/credentials/development.yml.enc`), then ENV, then test fallbacks. The dummy `development.key` is committed so the encrypted file can be decrypted.
 
 ### Upgrade notes
 - Bump to `0.6.2`, run `bin/rails generate recording_studio_user:migrations`, then `bin/rails db:migrate`.
