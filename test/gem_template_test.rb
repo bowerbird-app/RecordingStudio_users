@@ -184,6 +184,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes sidebar, 'text: "My profile"'
     assert_includes sidebar, "recording_studio_users.profile_path"
     refute_includes sidebar, "recording_studio_users.admin_path"
+    assert_includes sidebar, 'text: "Letters"'
+    assert_includes sidebar, "letter_opener_web.letters_path"
   end
 
   def test_dummy_importmap_pins_recording_studio_admin_controllers

@@ -12,9 +12,14 @@ class ApplicationController < ActionController::Base
   layout :application_layout
 
   before_action :authenticate_user!
+  skip_before_action :authenticate_user!, if: :letter_opener_request?
   before_action :set_current_actor
 
   private
+
+  def letter_opener_request?
+    defined?(LetterOpenerWeb) && request.path.start_with?("/letter_opener")
+  end
 
   def application_layout
     return "application" if devise_controller?
