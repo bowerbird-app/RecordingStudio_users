@@ -14,9 +14,20 @@ This Rails application demonstrates RecordingStudioUser in a host application.
 
 ## Google OAuth in development
 
-1. Create a Google OAuth client (Web application).
-2. Set the authorized redirect URI to `http://localhost:3000/users/auth/google_oauth2/callback`.
-3. Edit credentials:
+The dummy app's live Google client lives in the **BowerBird Dev** GCP project, as the **RecordingStudioUsers** Web application client:
+
+- [OAuth clients in BowerBird Dev](https://console.cloud.google.com/auth/clients?project=key-buttress-507301-d2)
+- [RecordingStudioUsers client](https://console.cloud.google.com/auth/clients/332241240783-36h23frfv5ovlnqtkcc3cc1a96afqkji.apps.googleusercontent.com?project=key-buttress-507301-d2)
+
+Authorized redirect URI on that client:
+
+```text
+http://localhost:3000/users/auth/google_oauth2/callback
+```
+
+Also register `http://127.0.0.1:3000/users/auth/google_oauth2/callback` if you open the dummy as `127.0.0.1`. Google treats `localhost` and `127.0.0.1` as different URIs. After saving the client, wait a few minutes before retrying.
+
+Encrypted dummy credentials already hold this client's id and secret. To point a fork at a different client, or to add Microsoft, Apple, LinkedIn, or Instagram:
 
 ```bash
 cd test/dummy
@@ -50,7 +61,7 @@ omniauth:
   #   client_secret: your-instagram-client-secret
 ```
 
-4. Start the dummy. Continue with Google talks to Google when those credential keys are set.
+Start the dummy. Continue with Google talks to Google when those credential keys are set.
 
 ```bash
 cd test/dummy

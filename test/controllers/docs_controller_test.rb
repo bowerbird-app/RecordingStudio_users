@@ -57,6 +57,10 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "email"
     assert_includes response.body, "timestamps"
     assert_includes response.body, "protected"
+    assert_includes response.body, "Dummy Google OAuth"
+    assert_includes response.body, "BowerBird Dev"
+    assert_includes response.body, "RecordingStudioUsers"
+    assert_includes response.body, "key-buttress-507301-d2"
     refute_includes response.body, "Replace this placeholder"
   end
 

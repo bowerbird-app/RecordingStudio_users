@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continue-with buttons follow Rails credentials under `omniauth:`. An empty `omniauth_providers` hash reads those keys; blank or commented credential entries stay hidden. Dummy development credentials keep live Google secrets and commented examples for Microsoft, Apple, LinkedIn, and Instagram.
 - Sign-in methods lists only identities whose provider is still configured, and disconnect no longer counts an identity for a dropped provider as a remaining sign-in method. An identity for an unconfigured provider cannot sign anyone in, because no strategy or callback route exists for it.
 - Dummy never enables OmniAuth test mode or `OMNIAUTH_TEST_MODE`. Dummy tests set `OmniAuth.config.test_mode` in `test/test_helper.rb` only.
+- Dummy README, gem README, and dummy Config docs point at the BowerBird Dev GCP **RecordingStudioUsers** OAuth client used by `test/dummy`.
 
 ### Upgrade notes
 - Bump to `0.6.2`, run `bin/rails generate recording_studio_user:migrations`, then `bin/rails db:migrate`.
