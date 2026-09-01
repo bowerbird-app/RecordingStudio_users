@@ -65,7 +65,9 @@
           text: "Notifications",
           href: recording_studio_notifications.notifications_path,
           icon: :bell,
-          active: notifications_inbox_nav?
+          active: request.path.start_with?("/notifications") &&
+            !request.path.start_with?("/notifications/push") &&
+            !request.path.start_with?("/notifications/settings")
         ) %>
 
         <%= render FlatPack::Sidebar::Item::Component.new(

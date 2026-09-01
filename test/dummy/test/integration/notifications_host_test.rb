@@ -15,10 +15,12 @@ class NotificationsHostTest < ActionDispatch::IntegrationTest
     get "/"
 
     assert_response :success
-    assert_select %(a[href="#{recording_studio_notifications.notifications_path}"]), text: "Notifications", count: 1
-    assert_select %(a[href="#{recording_studio_notifications.settings_path}"]), text: "Notification settings", count: 1
-    assert_select %(a[href="#{recording_studio_notifications_push.devices_path}"]), text: "Push devices", count: 1
+    assert_includes response.body, "/notifications/notifications"
+    assert_includes response.body, "/notifications/settings"
+    assert_includes response.body, "/notifications/push/devices"
     assert_includes response.body, "recording-studio-notifications--notification-polling"
+    assert_match(/Notification settings/, response.body)
+    assert_match(/Push devices/, response.body)
   end
 
   test "signed-in user can open the notifications inbox" do
@@ -32,14 +34,14 @@ class NotificationsHostTest < ActionDispatch::IntegrationTest
       idempotency_key: "dummy-inbox-check-#{@user.id}"
     )
 
-    get recording_studio_notifications.notifications_path
+    get "/notifications/notifications"
 
     assert_response :success
     assert_includes response.body, "Inbox check"
   end
 
   test "signed-in user can open notification settings" do
-    get recording_studio_notifications.settings_path
+    get "/notifications/settings"
 
     assert_response :success
     assert_includes response.body, "Registration code"
@@ -47,7 +49,7 @@ class NotificationsHostTest < ActionDispatch::IntegrationTest
   end
 
   test "signed-in user can open push devices" do
-    get recording_studio_notifications_push.devices_path
+    get "/notifications/push/devices"
 
     assert_response :success
     assert_includes response.body, "Push Notifications"

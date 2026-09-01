@@ -22,3 +22,7 @@ RecordingStudioNotifications.configure do |config|
     scope: :optional_root
   )
 end
+
+Rails.application.config.to_prepare do
+  ActionView::Base.include RecordingStudioNotifications::MenuHelper
+end
