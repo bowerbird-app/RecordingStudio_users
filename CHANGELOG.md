@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dummy vendors `recording_studio_notifications` `0.3.0`, `recording_studio_notifications_email` `0.3.0`, and `recording_studio_notifications_push` `0.2.0` from their merged `main` branches.
 - Dummy mounts the notifications inbox at `/notifications`, email as a channel (no screens), and push devices at `/notifications/push`. Debug chrome adds inbox, settings, and devices links plus the async notification menu.
 - Dummy development mail uses Letter Opener Web. The debug sidebar adds a **Letters** link to `/letter_opener`.
+- Dummy seeds a confirmed `otp@admin.com` account so email-code sign-in is testable. Password accounts do not receive login codes.
 
 ## [0.7.0] - 2026-09-01
 

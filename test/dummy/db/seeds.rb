@@ -43,6 +43,27 @@ seed_user = lambda do |email:, first_name:, last_name:, time_zone:, created_at: 
   user
 end
 
+# Email-code account. Password accounts never get login codes, so OTP sign-in
+# needs its own confirmed user to test against.
+seed_otp_user = lambda do |email:, first_name:, last_name:, time_zone:|
+  user = User.find_or_initialize_by(email: email)
+  user.authentication_method = "otp"
+  user.skip_confirmation! if user.respond_to?(:skip_confirmation!) && !user.confirmed?
+  user.save! if user.new_record? || user.changed?
+
+  if RecordingStudioUser.profile_for(user).nil?
+    RecordingStudioUser.record_profile!(
+      user,
+      first_name: first_name,
+      last_name: last_name,
+      time_zone: time_zone,
+      actor: user
+    )
+  end
+
+  user
+end
+
 previous_actor = Current.actor
 
 begin
@@ -71,6 +92,13 @@ begin
     first_name: "Morgan",
     last_name: "Member",
     time_zone: "Eastern Time (US & Canada)"
+  )
+
+  otp_user = seed_otp_user.call(
+    email: "otp@admin.com",
+    first_name: "Ollie",
+    last_name: "Otp",
+    time_zone: "UTC"
   )
 
   seed_start = Date.current - 89.days
@@ -133,6 +161,7 @@ end
 
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: member@admin.com / Password"
+puts "Seeded: #{otp_user.email} signs in with an email code (no password)"
 puts "Seeded: Workspace '#{workspace.name}' with first-owner admin access and root recording ##{root_recording.id}"
 puts "Seeded: Admin root with first-owner admin access for users reporting"
 puts "Seeded: Workspace '#{accessible_workspace.name}' with first-owner admin access and root recording ##{accessible_root_recording.id}"

@@ -83,6 +83,7 @@ Run these commands from the dummy app directory. Sign in through Devise at `/use
 
 - `admin@admin.com` / `Password`: first-owner `:admin` on the Admin root, My workspace, and Client Workspace via `bootstrap_owner_access!`. Avery Admin also has a seeded profile photo. Use this account to test workspace switching and the users report.
 - `member@admin.com` / `Password`: can sign in but cannot access the Admin root or users report.
+- `otp@admin.com`: no password. Sign in with **Email OTP** and read the code in **Letters**. Password accounts never receive login codes, so use this one to test OTP sign-in.
 
 ## RecordingStudioUser Routes
 

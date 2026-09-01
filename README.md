@@ -235,6 +235,7 @@ Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable
 | --- | --- |
 | `admin@admin.com` | `Password` |
 | `member@admin.com` | `Password` |
+| `otp@admin.com` | none — signs in with an email code |
 
 Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Dummy mounts notifications at `/notifications` (inbox and settings), email as a delivery channel, and push at `/notifications/push`. Workspace remains the host-owned bucket.
 
