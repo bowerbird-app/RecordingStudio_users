@@ -1,0 +1,68 @@
+<%# Push handlers for the host service worker composition seam.
+    FCM sends data-only web payloads; this partial owns native Chrome
+    notifications via registration.showNotification (OS banner, not in-page UI). %>
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (_error) {
+    try {
+      payload = { body: event.data ? event.data.text() : "" };
+    } catch (_textError) {
+      payload = {};
+    }
+  }
+
+  const data = payload.data || payload;
+  const title = data.title || payload.notification?.title || "Notification";
+  const body = data.body || payload.notification?.body || "";
+  const url = data.url || payload.fcmOptions?.link || payload.notification?.click_action || "/";
+  const icon = absoluteAssetUrl(data.icon || payload.notification?.icon || "/icon.png");
+  const image = absoluteAssetUrl(data.image || data.icon || payload.notification?.image || "");
+
+  const options = {
+    body: body,
+    icon: icon,
+    badge: icon,
+    data: { url: url }
+  };
+  if (image) {
+    options.image = image;
+  }
+
+  // FCM web sends are data-only; the service worker must show the OS banner.
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || "/";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) {
+          client.navigate?.(targetUrl);
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+      return undefined;
+    })
+  );
+});
+
+function absoluteAssetUrl(pathOrUrl) {
+  const value = (pathOrUrl || "").toString().trim();
+  if (!value) {
+    return "";
+  }
+
+  try {
+    return new URL(value, self.location.origin).href;
+  } catch (_error) {
+    return value;
+  }
+}

@@ -20,6 +20,7 @@ module RecordingStudioUser
           user_class.devise :confirmable
         end
         OtpNotifications.register!
+        OtpSetup.validate_schema_when_ready!
       end
     end
 

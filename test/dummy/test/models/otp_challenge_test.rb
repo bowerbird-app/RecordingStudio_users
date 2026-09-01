@@ -37,5 +37,12 @@ class OtpChallengeTest < ActiveSupport::TestCase
     challenge = RecordingStudioUser::OtpChallenge.issue_for!(user: @user, purpose: "registration", code: "123456")
     challenge.revoke!
     refute challenge.active?
+    refute challenge.deliverable?
+  end
+
+  test "consumed challenge is not deliverable" do
+    challenge = RecordingStudioUser::OtpChallenge.issue_for!(user: @user, purpose: "registration", code: "123456")
+    challenge.consume!
+    refute challenge.deliverable?
   end
 end

@@ -9,12 +9,13 @@ module RecordingStudioUser
         new(...).call
       end
 
-      def initialize(user:, purpose:, request: nil, session: nil, channels: nil)
+      def initialize(user:, purpose:, request: nil, session: nil, channels: nil, rate_limit_scope: :issue)
         @user = user
         @purpose = purpose.to_s
         @request = request
         @session = session
         @channels = channels
+        @rate_limit_scope = rate_limit_scope.to_sym
       end
 
       def call
@@ -56,11 +57,11 @@ module RecordingStudioUser
           @request&.remote_ip,
           @session&.id
         ].compact_blank
-        keys.each { |key| OtpRateLimiter.allow_request!(scope: :issue, key: key) }
+        keys.each { |key| OtpRateLimiter.allow_request!(scope: @rate_limit_scope, key: key) }
       end
 
       def revoke_existing!
-        OtpChallenge.where(user: @user, purpose: @purpose, consumed_at: nil, revoked_at: nil).find_each(&:revoke!)
+        OtpChallenge.where(user: @user, purpose: @purpose, consumed_at: nil, revoked_at: nil).lock.find_each(&:revoke!)
       end
 
       def store_session!(challenge)
@@ -68,25 +69,24 @@ module RecordingStudioUser
 
         @session[:otp_challenge_id] = challenge.id
         @session[:otp_purpose] = @purpose
+        @session[:otp_user_id] = @user.id
       end
 
       def enqueue_notification_after_commit!(challenge)
         notification_type = @purpose == "registration" ? :registration_otp : :login_otp
         selected_channels = Array(@channels || default_channels).map(&:to_sym)
 
-        ActiveRecord::Base.connection.after_transaction_commit do
-          RecordingStudioNotifications.notify(
-            notification_type: notification_type,
-            recipient: @user,
-            title: notification_title,
-            body: nil,
-            metadata: { "otp_challenge_id" => challenge.id },
-            channels: selected_channels,
-            idempotency_key: "otp/#{challenge.id}",
-            deliver_later: true
-          )
-          instrument!(:delivery_queued, challenge)
-        end
+        RecordingStudioNotifications.notify(
+          notification_type: notification_type,
+          recipient: @user,
+          title: notification_title,
+          body: nil,
+          metadata: { "otp_challenge_id" => challenge.id },
+          channels: selected_channels,
+          idempotency_key: "otp/#{challenge.id}",
+          deliver_later: nil
+        )
+        instrument!(:delivery_queued, challenge)
       end
 
       def default_channels

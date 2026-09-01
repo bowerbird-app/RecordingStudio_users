@@ -32,5 +32,16 @@ module RecordingStudioUser
             "OTP is enabled but recording_studio_notifications is not installed. " \
             "Add the gem and run its install generator."
     end
+
+    def validate_schema_when_ready!
+      return unless RecordingStudioUser.config.otp_enabled?
+
+      connection = ActiveRecord::Base.connection
+      return unless connection.data_source_exists?(OtpChallenge.table_name)
+
+      validate_schema!
+    rescue ActiveRecord::NoDatabaseError, ActiveRecord::ConnectionNotEstablished, ActiveRecord::StatementInvalid
+      nil
+    end
   end
 end

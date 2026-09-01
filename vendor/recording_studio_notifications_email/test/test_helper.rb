@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+
+require_relative "simplecov_helper"
+require "minitest/autorun"
+require "minitest/mock"
+require "rails"
+require "recording_studio"
+require "recording_studio_notifications"
+require "recording_studio_notifications_email"

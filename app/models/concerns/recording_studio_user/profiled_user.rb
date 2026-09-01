@@ -56,10 +56,10 @@ module RecordingStudioUser
 
     def confirm_password_account
       return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
-      return unless respond_to?(:skip_confirmation!)
-      return if confirmed?
+      return unless password_authentication_method?
+      return if confirmed_at.present?
 
-      skip_confirmation!
+      update_column(:confirmed_at, Time.current)
     end
   end
 end

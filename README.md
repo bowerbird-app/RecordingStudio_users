@@ -136,6 +136,28 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `require_password_confirmation` defaults to `true`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false`. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail.
 
+## Email OTP authentication (opt-in)
+
+OTP registration and login are **disabled by default**. Turn them on only after running the OTP migrations and installing `recording_studio_notifications` with the email channel gem (and push, if you want login codes on devices).
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.otp_enabled = true
+  config.otp_registration_enabled = true
+  config.otp_login_enabled = true
+  config.registration_authentication_methods = %i[password otp]
+  config.otp_registration_channels = %i[email]
+  config.otp_login_channels = %i[email push]
+end
+```
+
+```bash
+bin/rails generate recording_studio_user:migrations
+bin/rails db:migrate
+```
+
+Mount the OTP auth routes from this gem's `config/routes.rb`. Password sign-up and sign-in keep working. OTP users have no usable password and sign in with email codes only. See `MIGRATION_NOTES.md` for backfill details and route mapping.
+
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 
 Flash notices come from the host layout. Profile show does not render `notice` again. When the host uses Recording Studio's default layout, that layout already draws `flash[:notice]` as a FlatPack alert.

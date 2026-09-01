@@ -23,10 +23,10 @@ Rails.application.routes.draw do
     get "sign_in/verify", to: "sessions#verify", as: :verify_user_session
     post "sign_in/verify", to: "sessions#submit_verify"
     post "sign_in/resend", to: "sessions#resend", as: :resend_user_session
-    delete "sign_out", to: "devise/sessions#destroy", as: :destroy_user_session
   end
 
   devise_scope :user do
+    delete "users/sign_out", to: "devise/sessions#destroy", as: :destroy_user_session
     get "users/password/new", to: "recording_studio_user/auth/passwords#new", as: :new_user_password
     post "users/password", to: "recording_studio_user/auth/passwords#create", as: :user_password
   end

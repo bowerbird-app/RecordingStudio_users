@@ -3,6 +3,8 @@
 module RecordingStudioUser
   module Auth
     class SessionsController < BaseController
+      before_action :require_otp_login_enabled!, only: %i[otp create_otp verify submit_verify resend]
+
       def new; end
 
       def password
@@ -40,7 +42,7 @@ module RecordingStudioUser
       end
 
       def verify
-        redirect_to new_user_session_path unless session[:otp_challenge_id]
+        redirect_to host_new_user_session_path unless session[:otp_challenge_id]
       end
 
       def submit_verify
@@ -67,6 +69,18 @@ module RecordingStudioUser
       end
 
       def resend
+        user = user_for_otp_resend
+        if user&.otp_authentication_method? && user.confirmed? && user.active_for_authentication?
+          RecordingStudioUser.issue_otp!(
+            user: user,
+            purpose: :login,
+            request: request,
+            session: session,
+            rate_limit_scope: :resend
+          )
+        end
+        redirect_to otp_session_verify_path, notice: generic_login_notice
+      rescue Services::OtpRateLimiter::RateLimited
         redirect_to otp_session_verify_path, notice: generic_login_notice
       end
 
@@ -82,10 +96,6 @@ module RecordingStudioUser
 
       def auth_options
         { scope: :user, recall: "#{controller_path}#password" }
-      end
-
-      def after_sign_in_path_for(_resource)
-        main_app.root_path
       end
 
       def verify_failure_message(reason)

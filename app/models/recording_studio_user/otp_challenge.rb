@@ -6,7 +6,7 @@ module RecordingStudioUser
 
     PURPOSES = %w[registration login].freeze
 
-    belongs_to :user, class_name: "User"
+    belongs_to :user, class_name: RecordingStudioUser.config.user_class_name
 
     validates :purpose, inclusion: { in: PURPOSES }
     validates :code_digest, presence: true
@@ -41,7 +41,7 @@ module RecordingStudioUser
     end
 
     def deliverable?
-      active? || (consumed_at.blank? && revoked_at.blank? && !expired?)
+      active?
     end
 
     def verify_code!(submitted)

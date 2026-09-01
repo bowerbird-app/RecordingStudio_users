@@ -3,6 +3,8 @@
 module RecordingStudioUser
   module Auth
     class RegistrationsController < BaseController
+      before_action :require_otp_registration_enabled!, only: %i[otp create_otp verify submit_verify resend]
+
       def new
         @resource = resource_class.new
       end
@@ -13,12 +15,20 @@ module RecordingStudioUser
       end
 
       def create_password
+        email = sign_up_params[:email].to_s.strip.downcase
+        existing = resource_class.find_by(email: email)
+        if existing&.otp_authentication_method?
+          flash.now[:alert] = "That email already has an account. Try signing in."
+          build_password_resource(sign_up_params)
+          return render :password, status: :unprocessable_entity
+        end
+
         build_password_resource(sign_up_params)
         if resource.save
-          if password_registration_confirms_immediately?
-            resource.skip_confirmation! if resource.respond_to?(:skip_confirmation!) && resource.respond_to?(:confirmed?) && !resource.confirmed?
+          if password_registration_confirms_immediately? && resource.password_authentication_method?
+            resource.update_column(:confirmed_at, Time.current) if resource.confirmed_at.nil?
           end
-          RecordingStudioUser.record_profile!(resource, actor: resource)
+          RecordingStudioUser.record_profile!(resource, actor: resource, **default_password_profile_attributes(resource))
           sign_in_user!(resource)
           redirect_to after_sign_up_path_for(resource)
         else
@@ -35,12 +45,12 @@ module RecordingStudioUser
 
         if existing&.confirmed?
           flash[:notice] = "That email already has an account. Try signing in."
-          redirect_to new_user_session_path and return
+          redirect_to host_new_user_session_path and return
         end
 
         if existing&.password_authentication_method?
           flash[:alert] = "That email already has an account. Try signing in."
-          redirect_to new_user_session_path and return
+          redirect_to host_new_user_session_path and return
         end
 
         user = existing || RecordingStudioUser.create_unconfirmed_user!(email: email)
@@ -52,7 +62,7 @@ module RecordingStudioUser
       end
 
       def verify
-        redirect_to new_user_registration_path unless session[:otp_challenge_id]
+        redirect_to host_new_user_registration_path unless session[:otp_challenge_id]
       end
 
       def submit_verify
@@ -74,10 +84,15 @@ module RecordingStudioUser
       end
 
       def resend
-        user = resource_class.find_by(id: session[:otp_user_id]) ||
-               resource_class.find_by(email: session[:otp_email])
+        user = user_for_otp_resend
         if user&.otp_authentication_method? && !user.confirmed?
-          RecordingStudioUser.issue_otp!(user: user, purpose: :registration, request: request, session: session)
+          RecordingStudioUser.issue_otp!(
+            user: user,
+            purpose: :registration,
+            request: request,
+            session: session,
+            rate_limit_scope: :resend
+          )
         end
         redirect_to otp_registration_verify_path, notice: "Fresh code on the way."
       rescue Services::OtpRateLimiter::RateLimited
@@ -107,10 +122,6 @@ module RecordingStudioUser
         RecordingStudioUser.config.password_registration_confirmation == :existing_policy
       end
 
-      def after_sign_up_path_for(_resource)
-        main_app.root_path
-      end
-
       def verify_failure_message(reason)
         {
           invalid_code: "That code did not work. Try again.",
@@ -120,6 +131,15 @@ module RecordingStudioUser
           too_many_attempts: "Too many tries. Request a new code.",
           session_mismatch: "Start over with a new code."
         }.fetch(reason, "That code did not work.")
+      end
+
+      def default_password_profile_attributes(user)
+        local = user.email.to_s.split("@").first.to_s
+        {
+          first_name: local.presence || "Account",
+          last_name: "Member",
+          time_zone: "UTC"
+        }
       end
     end
   end

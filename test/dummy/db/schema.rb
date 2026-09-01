@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_01_040003) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_050001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -110,9 +110,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_040003) do
     t.text "error_message"
     t.jsonb "metadata", default: {}, null: false
     t.uuid "notification_id", null: false
+    t.datetime "rollup_reserved_at"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
     t.index ["notification_id", "channel"], name: "idx_rsn_deliveries_notification_channel", unique: true
+    t.index ["status", "rollup_reserved_at"], name: "idx_rsn_deliveries_rollup_reservation"
   end
 
   create_table "recording_studio_notifications_notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -136,6 +138,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_040003) do
     t.string "url"
     t.index ["recipient_type", "recipient_id", "idempotency_key"], name: "idx_rsn_notifications_idempotency", unique: true, where: "(idempotency_key IS NOT NULL)"
     t.index ["recipient_type", "recipient_id", "notification_type"], name: "idx_rsn_notifications_recipient_type"
+  end
+
+  create_table "recording_studio_notifications_push_installations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "disabled_at"
+    t.string "firebase_installation_id", null: false
+    t.string "label"
+    t.datetime "last_seen_at"
+    t.string "legacy_fcm_token"
+    t.string "platform"
+    t.uuid "recipient_id", null: false
+    t.string "recipient_type", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.index ["disabled_at"], name: "idx_rsnp_installations_disabled"
+    t.index ["firebase_installation_id"], name: "idx_rsnp_installations_fid"
+    t.index ["recipient_type", "recipient_id", "firebase_installation_id"], name: "idx_rsnp_installations_recipient_fid", unique: true
+    t.index ["recipient_type", "recipient_id"], name: "idx_rsnp_installations_recipient"
   end
 
   create_table "recording_studio_recordings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

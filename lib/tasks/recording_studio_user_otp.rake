@@ -17,6 +17,9 @@ namespace :recording_studio_user do
     user_class.where(authentication_method: "otp", confirmed_at: nil)
               .where("created_at < ?", retention)
               .find_each do |user|
+      if defined?(RecordingStudioNotifications)
+        RecordingStudioNotifications::Notification.where(recipient: user).destroy_all
+      end
       RecordingStudioUser::OtpChallenge.where(user: user).delete_all
       user.destroy!
     end

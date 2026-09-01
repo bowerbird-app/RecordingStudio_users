@@ -3,9 +3,9 @@ source "https://rubygems.org"
 # Use the RecordingStudioUser engine
 gem "recording_studio_user", path: "../.."
 
-gem "recording_studio_notifications", path: "/home/ubuntu/repos/RecordingStudio_notifications"
-gem "recording_studio_notifications_email", path: "/home/ubuntu/repos/RecordingStudio_notifications_email"
-gem "recording_studio_notifications_push", path: "/home/ubuntu/repos/RecordingStudio_notifications_push"
+gem "recording_studio_notifications", path: "../../vendor/recording_studio_notifications"
+gem "recording_studio_notifications_email", path: "../../vendor/recording_studio_notifications_email"
+gem "recording_studio_notifications_push", path: "../../vendor/recording_studio_notifications_push"
 
 # RecordingStudio engine
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"

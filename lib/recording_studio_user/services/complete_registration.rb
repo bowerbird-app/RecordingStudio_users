@@ -20,7 +20,7 @@ module RecordingStudioUser
 
         ActiveRecord::Base.transaction do
           @user.confirm unless @user.confirmed?
-          RecordingStudioUser.record_profile!( @user, actor: @user )
+          RecordingStudioUser.record_profile!(@user, actor: @user, **default_profile_attributes)
         end
 
         ActiveSupport::Notifications.instrument(
@@ -33,6 +33,15 @@ module RecordingStudioUser
       rescue StandardError
         @user.update_column(:confirmed_at, nil) if @user.confirmed? && RecordingStudioUser.profile_for(@user).nil?
         raise
+      end
+
+      def default_profile_attributes
+        local = @user.email.to_s.split("@").first.to_s
+        {
+          first_name: local.presence || "Account",
+          last_name: "Member",
+          time_zone: "UTC"
+        }
       end
     end
   end

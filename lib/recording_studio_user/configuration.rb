@@ -48,6 +48,7 @@ module RecordingStudioUser
 
     def otp_login_enabled=(value)
       @otp_login_enabled = ActiveModel::Type::Boolean.new.cast(value)
+      validate_otp_login_requirement!
     end
 
     def otp_login_enabled?
@@ -65,6 +66,7 @@ module RecordingStudioUser
     def registration_authentication_methods=(value)
       @registration_authentication_methods = Array(value).map { |method| method.to_sym }.uniq
       validate_registration_authentication_methods!
+      validate_otp_login_requirement!
     end
 
     def password_registration_confirmation=(value)
