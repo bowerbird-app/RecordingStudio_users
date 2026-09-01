@@ -10,7 +10,7 @@ module RecordingStudioUser
 
     attr_accessor :user_class_name, :layout
     attr_reader :mount_path, :profile_route_path, :admin_route_path, :additional_profile_attributes,
-                :require_password_confirmation, :omniauth_providers, :omniauth_create_account
+                :require_password_confirmation, :omniauth_create_account
 
     def initialize
       @user_class_name = "User"
@@ -47,6 +47,12 @@ module RecordingStudioUser
         opts = (options || {}).to_h.transform_keys(&:to_sym)
         memo[key] = opts
       end
+    end
+
+    # Buttons and Devise strategies follow credentials when this hash is empty.
+    # An explicit non-empty hash still wins, but blank client secrets are skipped.
+    def omniauth_providers
+      RecordingStudioUser::Omniauth.resolve_providers(@omniauth_providers)
     end
 
     def omniauth_provider_names

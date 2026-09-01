@@ -70,23 +70,36 @@ recording_studio_users.admin_path
 
 ## Social sign-in
 
-Hosts opt in to Google, Microsoft, Apple, LinkedIn, and Instagram independently. An empty provider hash keeps the existing email/password screens unchanged. Keep credentials in Rails credentials or environment variables:
+Continue-with buttons appear only for providers whose secrets are present in Rails credentials under `omniauth:`. An empty `omniauth_providers` hash (the default) reads those credentials. Commented-out or blank credential keys stay hidden. Do not use environment-variable fallbacks or OmniAuth test mode in the app.
 
-```ruby
-RecordingStudioUser.configure do |config|
-  config.omniauth_providers = {
-    google_oauth2: {
-      client_id: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_id) ||
-        ENV["GOOGLE_CLIENT_ID"],
-      client_secret: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_secret) ||
-        ENV["GOOGLE_CLIENT_SECRET"]
-    }
-  }
-  config.omniauth_create_account = true
-end
+Add keys with `bin/rails credentials:edit` (or `--environment development`):
+
+```yaml
+omniauth:
+  google_oauth2:
+    client_id: your-google-client-id
+    client_secret: your-google-client-secret
+  # microsoft_graph:
+  #   client_id: your-microsoft-client-id
+  #   client_secret: your-microsoft-client-secret
+  # apple:
+  #   client_id: your-apple-client-id
+  #   client_secret: ""
+  #   team_id: your-apple-team-id
+  #   key_id: your-apple-key-id
+  #   pem: |
+  #     -----BEGIN PRIVATE KEY-----
+  #     ...
+  #     -----END PRIVATE KEY-----
+  # linkedin:
+  #   client_id: your-linkedin-client-id
+  #   client_secret: your-linkedin-client-secret
+  # instagram:
+  #   client_id: your-instagram-client-id
+  #   client_secret: your-instagram-client-secret
 ```
 
-The generated initializer contains credential and environment-variable examples for all five providers. Apple also accepts `team_id`, `key_id`, `pem`, and `scope`. Point host Devise callbacks at the engine controller:
+`config.omniauth_create_account` still controls whether an unknown provider email creates a User. An explicit non-empty `omniauth_providers` hash still overrides credentials. Apple also accepts `team_id`, `key_id`, `pem`, and `scope`. Point host Devise callbacks at the engine controller:
 
 ```ruby
 devise_for :users, controllers: {

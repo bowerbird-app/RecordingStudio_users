@@ -9,8 +9,33 @@ RecordingStudioUser.configure do |config|
   config.layout = "application"
   config.additional_profile_attributes = []
   config.require_password_confirmation = true
-  # OmniAuth providers. Empty hash keeps login/sign-up without provider buttons.
-  # Secrets stay in host credentials / ENV — never commit real keys.
+  # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
+  # whose secrets are present in Rails credentials (`omniauth:`). Commented or
+  # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in
+  # the app. Add the YAML below with `bin/rails credentials:edit`.
+  #
+  # omniauth:
+  #   google_oauth2:
+  #     client_id: your-google-client-id
+  #     client_secret: your-google-client-secret
+  #   microsoft_graph:
+  #     client_id: your-microsoft-client-id
+  #     client_secret: your-microsoft-client-secret
+  #   apple:
+  #     client_id: your-apple-client-id
+  #     client_secret: ""
+  #     team_id: your-apple-team-id
+  #     key_id: your-apple-key-id
+  #     pem: |
+  #       -----BEGIN PRIVATE KEY-----
+  #       ...
+  #       -----END PRIVATE KEY-----
+  #   linkedin:
+  #     client_id: your-linkedin-client-id
+  #     client_secret: your-linkedin-client-secret
+  #   instagram:
+  #     client_id: your-instagram-client-id
+  #     client_secret: your-instagram-client-secret
   #
   # Email caveats (Users requires email on first login — MissingEmailError fail-closed):
   # - Automatic matching-email links reject provider emails explicitly marked unverified.
@@ -19,39 +44,6 @@ RecordingStudioUser.configure do |config|
   # - Apple may send email only once (or a private relay). Later visits match Identity by uid.
   # Instagram uses omniauth-instagram-api (Instagram Login client id/secret).
   # Apple often uses client_secret: "" with team_id / key_id / pem options.
-  # config.omniauth_providers = {
-  #   google_oauth2: {
-  #     client_id: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_id) || ENV["GOOGLE_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :google_oauth2, :client_secret) ||
-  #       ENV["GOOGLE_CLIENT_SECRET"],
-  #     logo: "https://example.com/google.svg" # optional; gem ships default SVGs
-  #   },
-  #   microsoft_graph: {
-  #     client_id: Rails.application.credentials.dig(:omniauth, :microsoft_graph, :client_id) ||
-  #       ENV["MICROSOFT_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :microsoft_graph, :client_secret) ||
-  #       ENV["MICROSOFT_CLIENT_SECRET"]
-  #   },
-  #   apple: {
-  #     client_id: Rails.application.credentials.dig(:omniauth, :apple, :client_id) || ENV["APPLE_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :apple, :client_secret) ||
-  #       ENV.fetch("APPLE_CLIENT_SECRET", ""),
-  #     team_id: Rails.application.credentials.dig(:omniauth, :apple, :team_id) || ENV["APPLE_TEAM_ID"],
-  #     key_id: Rails.application.credentials.dig(:omniauth, :apple, :key_id) || ENV["APPLE_KEY_ID"],
-  #     pem: Rails.application.credentials.dig(:omniauth, :apple, :pem) || ENV["APPLE_PEM"],
-  #     scope: "email name"
-  #   },
-  #   linkedin: {
-  #     client_id: Rails.application.credentials.dig(:omniauth, :linkedin, :client_id) || ENV["LINKEDIN_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :linkedin, :client_secret) ||
-  #       ENV["LINKEDIN_CLIENT_SECRET"]
-  #   },
-  #   instagram: {
-  #     client_id: Rails.application.credentials.dig(:omniauth, :instagram, :client_id) || ENV["INSTAGRAM_CLIENT_ID"],
-  #     client_secret: Rails.application.credentials.dig(:omniauth, :instagram, :client_secret) ||
-  #       ENV["INSTAGRAM_CLIENT_SECRET"]
-  #   }
-  # }
   config.omniauth_providers = {}
   # When false, unknown provider emails do not create a User (fail closed).
   config.omniauth_create_account = true

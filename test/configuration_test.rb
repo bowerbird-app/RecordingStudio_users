@@ -37,7 +37,8 @@ class ConfigurationTest < Minitest::Test
     assert_predicate @configuration, :omniauth_create_account?
 
     @configuration.omniauth_providers = {
-      "google_oauth2" => { "client_id" => "id", "client_secret" => "secret" }
+      "google_oauth2" => { "client_id" => "id", "client_secret" => "secret" },
+      "microsoft_graph" => { "client_id" => "", "client_secret" => "secret" }
     }
 
     assert_equal(
@@ -46,6 +47,7 @@ class ConfigurationTest < Minitest::Test
     )
     assert_predicate @configuration, :omniauth_configured?
     assert @configuration.omniauth_provider_configured?(:google_oauth2)
+    refute @configuration.omniauth_provider_configured?(:microsoft_graph)
     refute @configuration.omniauth_provider_configured?(:apple)
   end
 

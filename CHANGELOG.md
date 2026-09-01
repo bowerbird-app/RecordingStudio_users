@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.2] - 2026-08-31
 
 ### Added
-- Devise OmniAuth sign-in for Google, Microsoft, Apple, LinkedIn, and Instagram. Hosts opt in through `omniauth_providers`; an empty hash leaves email/password sign-in unchanged.
+- Devise OmniAuth sign-in for Google, Microsoft, Apple, LinkedIn, and Instagram. Hosts leave `omniauth_providers` empty so buttons follow Rails credentials under `omniauth:`; an empty credentials hash leaves email/password sign-in unchanged.
 - Provider identities and an owner-only **Sign-in methods** page for connecting and disconnecting configured providers.
 - Automatic identity linking to an existing User with the same normalized email. Unknown emails create a User and Profile only when `omniauth_create_account` is enabled.
 - Credential-first, environment-variable fallback examples for every supported provider in the generated initializer. OAuth tokens are not stored.
@@ -19,11 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continue, Connect, and Disconnect actions submit real CSRF-protected forms so they work in Turbo-only hosts without rails-ujs.
 - The identities migration uses a new guarded migration version. It restores the table for hosts that followed the 0.6.1 drop instruction and repairs indexes and the foreign key on retained 0.6.0 tables.
 - Dummy home and `/docs/*` pages again use `flat_pack_sidebar` (Install, Config, diagnostics, Sign out, Root Switchable). Profile and other product surfaces stay on `recording_studio/default_layout`.
-- Dummy OmniAuth secrets prefer Rails credentials (`config/credentials/development.yml.enc`), then ENV, then test fallbacks. The dummy `development.key` is committed so the encrypted file can be decrypted.
+- Continue-with buttons follow Rails credentials under `omniauth:`. An empty `omniauth_providers` hash reads those keys; blank or commented credential entries stay hidden. Dummy development credentials keep live Google secrets and commented examples for Microsoft, Apple, LinkedIn, and Instagram.
+- Dummy never enables OmniAuth test mode or `OMNIAUTH_TEST_MODE`. Dummy tests set `OmniAuth.config.test_mode` in `test/test_helper.rb` only.
 
 ### Upgrade notes
 - Bump to `0.6.2`, run `bin/rails generate recording_studio_user:migrations`, then `bin/rails db:migrate`.
-- Configure one or more `omniauth_providers` with secrets from Rails credentials or ENV. Set `omniauth_create_account = false` to reject provider emails that do not match an existing User.
+- Add provider secrets under `omniauth:` in Rails credentials. Leave `config.omniauth_providers` empty so buttons appear from those keys. Set `omniauth_create_account = false` to reject provider emails that do not match an existing User.
 - Route `devise_for :users` callbacks to `recording_studio_user/omniauth_callbacks`.
 - Render `recording_studio_user/omniauth/continue_with_providers` in host Devise login and sign-up views. Link the engine's **Sign-in methods** page from the profile if the host overrides the supplied profile view.
 - First login requires a provider email. Instagram may not provide one; Apple may return one only on first consent or use a private relay. Connecting from a signed-in profile does not require an email.
