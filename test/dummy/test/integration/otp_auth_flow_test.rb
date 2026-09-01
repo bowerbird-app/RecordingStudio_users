@@ -163,6 +163,57 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to verify_user_session_path
     assert_match(/eligible account/i, flash[:notice])
+    follow_redirect!
+    assert_response :success
+    assert_select "input[name='code']"
+    assert_includes response.body, "Enter your code"
+  end
+
+  test "ineligible and eligible OTP login emails render the same verify page" do
+    password_email = "password-enum-#{SecureRandom.hex(4)}@example.com"
+    RecordingStudioUser.create_user!(
+      email: password_email,
+      password: "Password123!",
+      first_name: "Pass",
+      last_name: "Word",
+      time_zone: "UTC"
+    )
+
+    post "#{new_user_session_path}/otp", params: { user: { email: password_email } }
+    follow_redirect!
+    assert_response :success
+    assert_select "input[name='code']"
+    assert_includes response.body, "Enter your code"
+
+    otp_email = "otp-enum-#{SecureRandom.hex(4)}@example.com"
+    confirm_otp_user!(otp_email)
+    sign_out_user!
+    clear_otp_session!
+
+    post "#{new_user_session_path}/otp", params: { user: { email: otp_email } }
+    follow_redirect!
+    assert_response :success
+    assert_select "input[name='code']"
+    assert_includes response.body, "Enter your code"
+  end
+
+  test "confirmed OTP user can sign in with a login code" do
+    email = "otp-login-#{SecureRandom.hex(4)}@example.com"
+    confirm_otp_user!(email)
+    sign_out_user!
+    clear_otp_session!
+
+    post "#{new_user_session_path}/otp", params: { user: { email: email } }
+    follow_redirect!
+    assert_response :success
+
+    user = User.find_by!(email: email)
+    code = current_otp_code(user, "login")
+    post verify_user_session_path, params: { code: code }
+    assert_redirected_to root_path
+
+    get recording_studio_users.profile_path
+    assert_response :success
   end
 
   test "unconfirmed OTP user cannot access authenticated routes" do

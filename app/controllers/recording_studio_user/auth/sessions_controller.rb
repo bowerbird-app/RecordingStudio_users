@@ -42,7 +42,7 @@ module RecordingStudioUser
       end
 
       def verify
-        redirect_to host_new_user_session_path unless session[:otp_challenge_id]
+        render :verify
       end
 
       def submit_verify
