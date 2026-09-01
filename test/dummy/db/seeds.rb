@@ -52,6 +52,7 @@ begin
     last_name: "Admin",
     time_zone: "UTC"
   )
+  user.update!(authentication_method: "password", confirmed_at: user.confirmed_at || Time.current)
   Current.actor = user
 
   avery_photo = Rails.root.join("db/seeds/avery-admin.png")

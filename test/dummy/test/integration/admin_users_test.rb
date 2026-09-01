@@ -203,12 +203,16 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   private
 
   def create_user(email, created_at: nil)
-    User.create!(
+    user = User.new(
       email: email,
       password: "Password123!",
       password_confirmation: "Password123!",
+      authentication_method: "password",
       created_at: created_at,
       updated_at: created_at
     )
+    user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
+    user.save!
+    user
   end
 end

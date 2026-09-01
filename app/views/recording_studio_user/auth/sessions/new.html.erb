@@ -1,0 +1,7 @@
+<div class="space-y-6">
+  <%= render FlatPack::PageTitle::Component.new(title: "Sign in", variant: :h2) %>
+  <div class="flex flex-col gap-3">
+    <%= render FlatPack::Button::Component.new(text: "Password", style: :secondary, href: otp_session_password_path) %>
+    <%= render FlatPack::Button::Component.new(text: "Email OTP", style: :primary, href: otp_session_otp_path) %>
+  </div>
+</div>

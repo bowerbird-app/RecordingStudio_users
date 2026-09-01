@@ -60,12 +60,33 @@ module RecordingStudioUser
     end
 
     def create_devise_user!(email, password, password_confirmation, attributes)
-      RecordingStudioUser.config.user_class.create!(
+      klass = RecordingStudioUser.config.user_class
+      attrs = attributes.stringify_keys
+      attrs["authentication_method"] = "password" if klass.column_names.include?("authentication_method")
+      user = klass.new(
         email: email,
         password: password,
         password_confirmation: password_confirmation,
-        **attributes
+        **attrs.symbolize_keys
       )
+      if RecordingStudioUser.config.password_registration_confirmation == :existing_policy &&
+         user.respond_to?(:skip_confirmation!)
+        user.skip_confirmation!
+      end
+      user.save!
+      user
+    end
+
+    def create_unconfirmed_user!(email:)
+      raise ArgumentError, "OTP is not enabled" unless RecordingStudioUser.config.otp_enabled?
+
+      user = RecordingStudioUser.config.user_class.new(
+        email: email,
+        authentication_method: "otp"
+      )
+      user.skip_confirmation_notification! if user.respond_to?(:skip_confirmation_notification!)
+      user.save!
+      user
     end
 
     def write_profile_recording(user, actor, assignment)

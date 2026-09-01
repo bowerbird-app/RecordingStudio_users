@@ -7,6 +7,13 @@ require "recording_studio_user/admin"
 require "recording_studio_user/directory"
 require "recording_studio_user/profile_image"
 require "recording_studio_user/profile_access"
+require "recording_studio_user/otp_setup"
+require "recording_studio_user/otp_notifications"
+require "recording_studio_user/otp_delivery_payload"
+require "recording_studio_user/services/otp_rate_limiter"
+require "recording_studio_user/services/issue_otp"
+require "recording_studio_user/services/verify_otp"
+require "recording_studio_user/services/complete_registration"
 
 module RecordingStudioUser
   class << self
@@ -66,6 +73,22 @@ module RecordingStudioUser
 
     def record_profile!(...)
       Directory.record_profile!(...)
+    end
+
+    def create_unconfirmed_user!(email:)
+      Directory.create_unconfirmed_user!(email: email)
+    end
+
+    def issue_otp!(...)
+      Services::IssueOtp.call(...)
+    end
+
+    def verify_otp!(...)
+      Services::VerifyOtp.call(...)
+    end
+
+    def complete_registration!(...)
+      Services::CompleteRegistration.call(...)
     end
 
     private

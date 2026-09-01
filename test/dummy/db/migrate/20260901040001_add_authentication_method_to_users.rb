@@ -1,0 +1,6 @@
+class AddAuthenticationMethodToUsers < ActiveRecord::Migration[8.1]
+  def change
+    add_column :users, :authentication_method, :string, null: false, default: "password"
+    add_check_constraint :users, "authentication_method IN ('password', 'otp')", name: "users_authentication_method_check"
+  end
+end

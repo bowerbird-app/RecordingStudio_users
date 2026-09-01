@@ -1,0 +1,11 @@
+<div class="space-y-6">
+  <%= render FlatPack::PageTitle::Component.new(title: "Sign up with email", variant: :h2) %>
+  <p class="text-muted">We will email you a six-digit code.</p>
+
+  <%= form_with scope: :user, url: otp_registration_otp_path, method: :post do %>
+    <div class="space-y-4">
+      <%= render FlatPack::EmailInput::Component.new(name: "user[email]", id: "user_email", label: "Email", required: true, autocomplete: "email") %>
+      <%= render FlatPack::Button::Component.new(text: "Send code", style: :primary, type: "submit") %>
+    </div>
+  <% end %>
+</div>

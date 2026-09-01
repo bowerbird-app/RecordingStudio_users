@@ -1,0 +1,10 @@
+<div class="space-y-6">
+  <%= render FlatPack::PageTitle::Component.new(title: "Email sign-in code", variant: :h2) %>
+  <p class="text-muted">We will email a code if your account is eligible.</p>
+  <%= form_with scope: :user, url: otp_session_otp_path, method: :post do %>
+    <div class="space-y-4">
+      <%= render FlatPack::EmailInput::Component.new(name: "user[email]", label: "Email", required: true, autocomplete: "email") %>
+      <%= render FlatPack::Button::Component.new(text: "Send code", style: :primary, type: "submit") %>
+    </div>
+  <% end %>
+</div>

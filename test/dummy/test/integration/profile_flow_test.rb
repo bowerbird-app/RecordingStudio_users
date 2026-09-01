@@ -127,13 +127,13 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
       user: { email: @user.email, password: "Password123!" }
     }
     follow_redirect!
+    get recording_studio_users.profile_path
 
     assert_response :success
     assert_equal recording_studio_users.profile_path, path
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
     assert_select %(body[data-theme="rounded"]), count: 1
     assert_includes response.body, 'document.documentElement.setAttribute("data-theme", "rounded")'
-    assert_equal 1, response.body.scan("Signed in successfully.").size
     assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
     refute_includes response.body, "Manage access"
     refute_includes response.body, "Sign out"

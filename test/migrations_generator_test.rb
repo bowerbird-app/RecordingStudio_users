@@ -36,7 +36,7 @@ class MigrationsGeneratorTest < Minitest::Test
       )
       generator.define_singleton_method(:destination_root) { dir }
 
-      assert generator.send(:migration_exists?)
+      assert generator.send(:migration_already_exists?, "create_recording_studio_user_people_and_profiles")
     end
   end
 end

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-01
+
+### Added
+- Optional email OTP registration and login (`config.otp_enabled`, default `false`). Password and OTP are separate registration choices; `authentication_method` is persisted as `password` or `otp`.
+- `RecordingStudioUser.create_unconfirmed_user!`, `issue_otp!`, `verify_otp!`, `complete_registration!`, and `OtpDeliveryPayload` for secure notification delivery.
+- Migration generator templates for `authentication_method`, Devise confirmable columns, and `recording_studio_user_otp_challenges`.
+- Auth controllers and Flatpack views for password/OTP registration and login when OTP is enabled.
+- `recording_studio_user:cleanup_otp` task for expired challenges and abandoned unconfirmed OTP users.
+
+### Changed
+- When `otp_enabled`, the engine idempotently enables Devise `:confirmable` and registers `registration_otp` / `login_otp` notification types with delivery-payload resolvers.
+- Password registration calls `skip_confirmation!` when `password_registration_confirmation` is `:existing_policy`.
+
+### Upgrade notes
+- Requires `recording_studio_notifications` `>= 0.3.0` and `recording_studio_notifications_email` when OTP is enabled. Optional push uses `recording_studio_notifications_push` `>= 0.2.0` for login codes.
+- Run `rails generate recording_studio_user:migrations` and migrate before setting `config.otp_enabled = true`.
+- Map host Devise routes to `recording_studio_user/auth/*` controllers (see dummy `config/routes.rb`).
+
 ## [0.6.1] - 2026-08-31
 
 ### Removed
