@@ -53,10 +53,9 @@ bin/rails db:migrate
 
 New templates:
 
-1. **`add_registered_with_to_users`** — adds `registered_with` (`password` or `otp`) with a check constraint. Backfills existing rows to `password`. Skips if `authentication_method` is still present so the rename migration can run.
-2. **`rename_authentication_method_to_registered_with`** — renames `authentication_method` to `registered_with` when the old column exists. No-op on fresh installs.
-3. **`add_devise_confirmable_to_users`** — adds Devise confirmable columns. Backfills `confirmed_at` for existing users so password accounts stay signed-in.
-4. **`create_recording_studio_user_otp_challenges`** — stores hashed OTP codes, expiry, attempts, and encrypted delivery ciphertext.
+1. **`add_registered_with_to_users`** — adds `registered_with` (`password` or `otp`) with a check constraint. Backfills existing rows to `password`. If `authentication_method` is still present, it is renamed instead.
+2. **`add_devise_confirmable_to_users`** — adds Devise confirmable columns. Backfills `confirmed_at` for existing users so password accounts stay signed-in.
+3. **`create_recording_studio_user_otp_challenges`** — stores hashed OTP codes, expiry, attempts, and encrypted delivery ciphertext.
 
 Install and migrate the notifications gems before enabling OTP.
 

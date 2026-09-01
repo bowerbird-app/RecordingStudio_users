@@ -21,7 +21,6 @@ module RecordingStudioUser
         "create_recording_studio_user_people_and_profiles" => "create_recording_studio_user_people_and_profiles.rb.tt",
         "restore_recording_studio_user_identities" => "restore_recording_studio_user_identities.rb.tt",
         "add_registered_with_to_users" => "add_registered_with_to_users.rb.tt",
-        "rename_authentication_method_to_registered_with" => "rename_authentication_method_to_registered_with.rb.tt",
         "add_devise_confirmable_to_users" => "add_devise_confirmable_to_users.rb.tt",
         "create_recording_studio_user_otp_challenges" => "create_recording_studio_user_otp_challenges.rb.tt"
       }.freeze
