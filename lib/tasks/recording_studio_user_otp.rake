@@ -14,7 +14,7 @@ namespace :recording_studio_user do
 
     retention = RecordingStudioUser.config.unconfirmed_user_retention.ago
     user_class = RecordingStudioUser.config.user_class
-    user_class.where(authentication_method: "otp", confirmed_at: nil)
+    user_class.where(registered_with: "otp", confirmed_at: nil)
               .where("created_at < ?", retention)
               .find_each do |user|
       if defined?(RecordingStudioNotifications)
