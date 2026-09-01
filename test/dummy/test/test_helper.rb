@@ -6,6 +6,8 @@ require_relative "../config/environment"
 require "rails/test_help"
 require_relative "support/profile_image_test_helper"
 
+OmniAuth.config.test_mode = true
+
 module AccessGrantTestHelper
   def bootstrap_owner_access!(actor, recording)
     result = RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: actor)

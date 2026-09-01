@@ -76,8 +76,9 @@ module RecordingStudioUser
             "RecordingStudioAccessible.bootstrap_owner_access!. One profile image is an " \
             "Attachable child of the Profile recording.",
             :yellow
-        say "OmniAuth: set config.omniauth_providers and point devise_for callbacks at " \
-            "recording_studio_user/omniauth_callbacks. Secrets stay in credentials/ENV.",
+        say "OmniAuth: add provider keys under omniauth: in Rails credentials, then point " \
+            "devise_for callbacks at recording_studio_user/omniauth_callbacks. Blank or " \
+            "commented credential keys hide that Continue-with button.",
             :yellow
         say "Host apps that need uploads: bin/rails generate recording_studio_attachable:install " \
             "and recording_studio_attachable:migrations, plus Active Storage.",

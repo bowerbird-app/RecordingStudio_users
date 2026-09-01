@@ -22,10 +22,18 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "dummy OmniAuth secrets read credentials before ENV" do
+  test "dummy OmniAuth follows credentials and never enables OmniAuth test mode in the app" do
     source = File.read(Rails.root.join("config/initializers/recording_studio_user.rb"))
+    initializer_paths = Dir[Rails.root.join("config/initializers/*.rb")]
 
-    assert_includes source, "credentials.dig(:omniauth"
-    assert_includes source, 'env: "GOOGLE_CLIENT_ID"'
+    refute_includes source, "ENV["
+    refute_includes source, "OMNIAUTH_TEST_MODE"
+    refute_includes source, "OmniAuth.config.test_mode"
+    initializer_paths.each do |path|
+      contents = File.read(path)
+      refute_includes contents, "OMNIAUTH_TEST_MODE"
+      refute_includes contents, "OmniAuth.config.test_mode"
+    end
+    assert_includes source, "omniauth:"
   end
 end

@@ -42,6 +42,31 @@ module RecordingStudioUser
 
     module_function
 
+    def resolve_providers(assigned)
+      source = assigned.present? ? assigned : providers_from_credentials
+      usable_providers(source)
+    end
+
+    def providers_from_credentials(credentials = nil)
+      raw = credential_omniauth_hash(credentials || credentials_store)
+      return {} if raw.blank?
+
+      usable_providers(raw)
+    end
+
+    def usable_providers(providers)
+      return {} if providers.blank?
+
+      providers.each_with_object({}) do |(name, options), memo|
+        key = name.to_sym
+        opts = compact_provider_options(options)
+        next unless provider_ready?(key, opts)
+
+        opts[:client_secret] = opts[:client_secret].to_s if key == :apple && !opts.key?(:client_secret)
+        memo[key] = opts
+      end
+    end
+
     def register_providers!
       providers = RecordingStudioUser.config.omniauth_providers
       return if providers.blank?
@@ -89,6 +114,46 @@ module RecordingStudioUser
       config.omniauth(name.to_sym, client_id, client_secret, **strategy_opts)
     end
 
-    private_class_method :register_provider!
+    def credentials_store
+      return unless defined?(Rails) && Rails.respond_to?(:application) && Rails.application
+
+      Rails.application.credentials
+    rescue StandardError
+      nil
+    end
+
+    def credential_omniauth_hash(credentials)
+      return {} unless credentials
+
+      raw = credentials.dig(:omniauth) || credentials.dig("omniauth")
+      return {} unless raw.respond_to?(:to_h)
+
+      raw.to_h
+    end
+
+    def compact_provider_options(options)
+      return {} unless options.respond_to?(:to_h)
+
+      options.to_h.each_with_object({}) do |(key, value), memo|
+        compacted = value.is_a?(String) ? value.strip.presence : value
+        memo[key.to_sym] = compacted unless compacted.nil?
+      end
+    end
+
+    def provider_ready?(name, opts)
+      return false if opts[:client_id].blank?
+
+      return apple_ready?(opts) if name == :apple
+
+      opts[:client_secret].present?
+    end
+
+    def apple_ready?(opts)
+      opts[:client_secret].present? ||
+        (opts[:team_id].present? && opts[:key_id].present? && opts[:pem].present?)
+    end
+
+    private_class_method :register_provider!, :credentials_store, :credential_omniauth_hash,
+                         :compact_provider_options, :provider_ready?, :apple_ready?
   end
 end
