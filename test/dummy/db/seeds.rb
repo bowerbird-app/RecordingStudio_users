@@ -117,6 +117,16 @@ begin
   bootstrap_owner_access.call(user, admin_root_recording)
   bootstrap_owner_access.call(user, root_recording)
   bootstrap_owner_access.call(user, accessible_root_recording)
+
+  RecordingStudioNotifications.notify(
+    notification_type: :generic,
+    recipient: user,
+    title: "You're in",
+    body: "This is the dummy inbox. OTP codes still land in Letters.",
+    url: "/",
+    channels: [:in_app],
+    idempotency_key: "dummy-seed-welcome-#{user.id}"
+  )
 ensure
   Current.actor = previous_actor
 end

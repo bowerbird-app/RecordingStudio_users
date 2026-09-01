@@ -39,6 +39,8 @@ Rails.application.routes.draw do
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
   recording_studio_admin_for :admin, at: "/admin", root_section: :root
   mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users
+  mount RecordingStudioNotificationsPush::Engine, at: "/notifications/push"
+  mount RecordingStudioNotifications::Engine, at: "/notifications"
 
   get "up" => "rails/health#show", as: :rails_health_check
 

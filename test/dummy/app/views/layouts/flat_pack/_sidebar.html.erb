@@ -61,6 +61,27 @@
       <% end %>
 
       <% if user_signed_in? %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          text: "Notifications",
+          href: recording_studio_notifications.notifications_path,
+          icon: :bell,
+          active: notifications_inbox_nav?
+        ) %>
+
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          text: "Notification settings",
+          href: recording_studio_notifications.settings_path,
+          icon: :settings,
+          active: request.path.start_with?(recording_studio_notifications.settings_path)
+        ) %>
+
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          text: "Push devices",
+          href: recording_studio_notifications_push.devices_path,
+          icon: :device_phone_mobile,
+          active: request.path.start_with?("/notifications/push")
+        ) %>
+
         <% profile_path = recording_studio_users.profile_path %>
         <%= render FlatPack::Sidebar::Item::Component.new(
           text: "My profile",

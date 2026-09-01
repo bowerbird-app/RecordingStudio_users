@@ -20,7 +20,10 @@ module Dummy
         engine_path(RecordingStudio, "app/views"),
         engine_path(RecordingStudioUser, "app/views"),
         engine_path(RecordingStudioUser, "app/components"),
-        engine_path(RecordingStudioAttachable, "app/views")
+        engine_path(RecordingStudioAttachable, "app/views"),
+        engine_path(RecordingStudioNotifications, "app/views"),
+        engine_path(RecordingStudioNotificationsEmail, "app/views"),
+        engine_path(RecordingStudioNotificationsPush, "app/views")
       ].compact
     end
 
