@@ -4,7 +4,6 @@ require "recording_studio_notifications/version"
 require "recording_studio_notifications/engine"
 require "recording_studio_notifications/configuration"
 require "recording_studio_notifications/notification_type_registry"
-require "recording_studio_notifications/delivery_payload_registry"
 require "recording_studio_notifications/channel_registry"
 require "recording_studio_notifications/url_safety"
 require "recording_studio_notifications/menu_payload"
@@ -13,6 +12,7 @@ require "recording_studio_notifications/services/cadence_period"
 require "recording_studio_notifications/services/inbox_grouping"
 require "recording_studio_notifications/services/root_resolver"
 require "recording_studio_notifications/services/notification_authorization"
+require "recording_studio_notifications/delivery_payload_registry"
 
 if defined?(RecordingStudioAdmin)
   require "recording_studio_notifications/admin/all_notifications_screen"
@@ -49,12 +49,22 @@ module RecordingStudioNotifications
       channels.register(...)
     end
 
+    def notify(**attributes)
+      Services::Notify.call(**attributes)
+    end
+
+    def notify_each(recipients:, **attributes)
+      Array(recipients).map do |recipient|
+        notify(recipient: recipient, **attributes)
+      end
+    end
+
     def delivery_payload_resolvers
       @delivery_payload_resolvers ||= DeliveryPayloadRegistry.new
     end
 
-    def register_delivery_payload_resolver(type, &block)
-      delivery_payload_resolvers.register(type, &block)
+    def register_delivery_payload_resolver(type, &)
+      delivery_payload_resolvers.register(type, &)
     end
 
     def delivery_payload_for(notification:, delivery:)
@@ -64,16 +74,6 @@ module RecordingStudioNotifications
       normalize_delivery_payload(resolved)
     rescue StandardError
       raise DeliveryPayloadError, "delivery payload resolution failed"
-    end
-
-    def notify(**attributes)
-      Services::Notify.call(**attributes)
-    end
-
-    def notify_each(recipients:, **attributes)
-      Array(recipients).map do |recipient|
-        notify(recipient: recipient, **attributes)
-      end
     end
 
     private

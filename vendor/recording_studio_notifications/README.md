@@ -180,19 +180,25 @@ Every adapter must implement:
 deliver(notification:, delivery:)
 ```
 
-Adapters may optionally implement `available_for?(recipient:, notification: nil, delivery: nil)` to skip delivery when a channel does not apply (for example push with no registered devices). Optional channels are skipped; required channels that are inapplicable raise an error.
-
-### Transient delivery payloads
-
-Sensitive content such as OTP codes must not be stored in notification `title`, `body`, or `metadata`. Register a per-type resolver; email and push adapters call `RecordingStudioNotifications.delivery_payload_for(notification:, delivery:)` at send time:
+Adapters may optionally implement:
 
 ```ruby
-RecordingStudioNotifications.register_delivery_payload_resolver(:login_otp) do |notification:, delivery:|
-  { title: "Your sign-in code", body: "123456 is your code. It expires in 10 minutes." }
-end
+available_for?(recipient:, notification: nil, delivery: nil)
 ```
 
-Resolver output is never persisted. Types without a resolver continue using the notification's stored title, body, and url.
+Optional channels are skipped when `available_for?` returns false. Required channels that are not available raise an error.
+
+Sensitive content such as OTP codes must not be stored in persisted `title`, `body`, or `metadata`. Register a delivery payload resolver per notification type and call `delivery_payload_for` at send time:
+
+```ruby
+RecordingStudioNotifications.register_delivery_payload_resolver(:otp_sign_in) do |notification:, delivery:|
+  { title: "Your sign-in code", body: generate_otp_for(notification.recipient), url: nil }
+end
+
+payload = RecordingStudioNotifications.delivery_payload_for(notification: notification, delivery: delivery)
+```
+
+Types without a resolver keep using the stored `title`, `body`, and `url`.
 
 When `rollup_delivery_enabled` is true, adapters used with a non-individual cadence must additionally implement:
 

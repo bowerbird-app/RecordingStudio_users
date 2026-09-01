@@ -32,10 +32,7 @@ class RecordingStudioNotificationsPushTest < Minitest::Test
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.7.0"'
-    assert(
-      gemfile.include?('github: "bowerbird-app/RecordingStudio_notifications"') ||
-        gemfile.include?("RecordingStudio_notifications")
-    )
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_notifications"'
     assert_includes gemfile, "vendor/recording_studio_notifications_email"
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_PWA"'
     assert_includes gemfile, "cursor/pwa-service-worker-seam-453c"

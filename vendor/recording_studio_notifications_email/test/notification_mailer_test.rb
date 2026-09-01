@@ -61,34 +61,6 @@ class NotificationMailerTest < Minitest::Test
     refute_includes message.html_part.body.to_s, "<img"
   end
 
-  def test_resolved_delivery_payload_appears_in_mail_parts_without_persisting_code
-    notification = Notification.new(
-      id: "notification-otp",
-      notification_type: :login_otp,
-      title: "Safe title",
-      body: nil
-    )
-    delivery = Struct.new(:id).new("delivery-otp")
-
-    RecordingStudioNotifications.register_delivery_payload_resolver(:login_otp) do |notification:, delivery:|
-      { title: "Your sign-in code", body: "123456 is your sign-in code." }
-    end
-
-    event = RecordingStudioNotificationsEmail::Event.new(notification, delivery: delivery)
-    message = RecordingStudioNotificationsEmail::NotificationMailer.with(
-      event: event,
-      to: "person@example.test",
-      from: "notifications@example.test",
-      template_path: RecordingStudioNotificationsEmail::Configuration::DEFAULT_TEMPLATE,
-      correlation_reference: "signed-reference"
-    ).notification
-
-    assert_equal "Your sign-in code", message.subject
-    assert_includes message.html_part.body.to_s, "123456"
-    assert_includes message.text_part.body.to_s, "123456"
-    assert_nil notification.body
-  end
-
   def test_rollup_fallback_renders_each_event_in_html_and_text
     events = [
       RecordingStudioNotificationsEmail::Event.new(

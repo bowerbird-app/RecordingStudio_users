@@ -132,8 +132,8 @@ class FcmAdapterTest < Minitest::Test
         body: "Banner",
         url: "/pages/1",
         recipient: FakeRecipient.new(id: "user-1"),
-        notification_type: :generic,
-        metadata: { icon: "/push-icon-coral.png" }
+        metadata: { icon: "/push-icon-coral.png" },
+        notification_type: :generic
       ),
       delivery: Delivery.new("d-icon")
     )
@@ -149,15 +149,19 @@ class FcmAdapterTest < Minitest::Test
       installation_class: FakeInstallationClass.new([])
     )
 
-    refute adapter.available_for?(recipient: FakeRecipient.new(id: "user-1"))
-
     error = assert_raises(RecordingStudioNotificationsPush::DeliveryError) do
       adapter.deliver(
-        notification: Notification.new(id: "n1", title: "Hello", recipient: FakeRecipient.new(id: "user-1"), notification_type: :generic),
+        notification: Notification.new(
+          id: "n1",
+          title: "Hello",
+          recipient: FakeRecipient.new(id: "user-1"),
+          notification_type: :generic
+        ),
         delivery: Delivery.new("d1")
       )
     end
     assert_match(/no active push installations/, error.message)
+    refute adapter.available_for?(recipient: FakeRecipient.new(id: "user-1"))
   end
 
   def test_raises_when_all_sends_fail
@@ -171,7 +175,12 @@ class FcmAdapterTest < Minitest::Test
 
     error = assert_raises(RecordingStudioNotificationsPush::DeliveryError) do
       adapter.deliver(
-        notification: Notification.new(id: "n1", title: "Hello", recipient: FakeRecipient.new(id: "user-1"), notification_type: :generic),
+        notification: Notification.new(
+          id: "n1",
+          title: "Hello",
+          recipient: FakeRecipient.new(id: "user-1"),
+          notification_type: :generic
+        ),
         delivery: Delivery.new("d1")
       )
     end
@@ -189,7 +198,12 @@ class FcmAdapterTest < Minitest::Test
 
     error = assert_raises(RecordingStudioNotificationsPush::DeliveryError) do
       adapter.deliver(
-        notification: Notification.new(id: "n1", title: "Hello", recipient: FakeRecipient.new(id: "user-1"), notification_type: :generic),
+        notification: Notification.new(
+          id: "n1",
+          title: "Hello",
+          recipient: FakeRecipient.new(id: "user-1"),
+          notification_type: :generic
+        ),
         delivery: Delivery.new("d1")
       )
     end
@@ -214,6 +228,9 @@ class FcmAdapterTest < Minitest::Test
     delivery = Delivery.new("d-otp")
 
     RecordingStudioNotifications.register_delivery_payload_resolver(:login_otp) do |notification:, delivery:|
+      raise "unexpected notification" unless notification.id == "n-otp"
+      raise "unexpected delivery" unless delivery.id == "d-otp"
+
       { title: "Your sign-in code", body: "123456 is your code." }
     end
 

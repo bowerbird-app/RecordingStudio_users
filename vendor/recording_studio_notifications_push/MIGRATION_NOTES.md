@@ -1,5 +1,13 @@
 # Migration notes
 
+## 0.2.0
+
+### Host app steps
+
+1. Bump `recording_studio_notifications` to `0.3.0` (or later) first.
+2. Bump `recording_studio_notifications_push` to `0.2.0`. No configuration or
+   migration changes are required.
+
 ## 0.1.15
 
 ### Host app steps

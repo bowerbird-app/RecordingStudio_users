@@ -6,14 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.0] - 2026-09-01
 
-### Added
-- `Event` resolves title, body, and url from `RecordingStudioNotifications.delivery_payload_for` when a delivery is present, so OTP and other sensitive notification types can render transient codes in email without persisting them on the notification row.
-
 ### Changed
+
+- `Event` uses `delivery_payload_for` when a delivery is present.
 - Require `recording_studio_notifications` `>= 0.3.0`.
 
 ### Upgrade notes
-- Upgrade Notifications core to `0.3.0` or newer before installing this release.
+
+- Install `recording_studio_notifications` `0.3.0` first.
 
 ## [0.2.0] - 2026-09-01
 
@@ -46,6 +46,7 @@ All notable changes to this project will be documented in this file.
 - Expiring signed correlation references.
 - Recording Studio-backed normalized event facade.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_notifications_email/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_notifications_email/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bowerbird-app/RecordingStudio_notifications_email/releases/tag/v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_notifications_email/releases/tag/v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_notifications_email/releases/tag/v0.1.0

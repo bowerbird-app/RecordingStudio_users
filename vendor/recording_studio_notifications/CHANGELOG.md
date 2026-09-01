@@ -10,12 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2026-09-01
 
 ### Added
-- Delivery-payload resolver registry: `RecordingStudioNotifications.register_delivery_payload_resolver` and `RecordingStudioNotifications.delivery_payload_for`. Resolver output is transient and never persisted on notification or delivery rows.
-- Optional channel applicability: adapters may implement `available_for?(recipient:, notification: nil, delivery: nil)` so `Notify` skips inapplicable optional channels. Required channels that are inapplicable raise a clear error.
+- Delivery payload resolver API: `register_delivery_payload_resolver` and `delivery_payload_for`. Resolved output is transient and is never persisted on the notification or delivery.
+- Optional `available_for?(recipient:, notification: nil, delivery: nil)` on channel adapters. Inapplicable optional channels are skipped; inapplicable required channels raise.
+
+### Changed
+- README adapter docs now describe `available_for?` and delivery payload resolvers for sensitive content such as OTP codes.
 
 ### Upgrade notes
-- Email and push addons should call `RecordingStudioNotifications.delivery_payload_for` when rendering delivery content so OTP and other sensitive types can resolve codes at send time.
-- Adapters that should be skipped when unavailable (for example push with no installations) should implement `available_for?`.
+- Adapters may implement `available_for?(recipient:, notification: nil, delivery: nil)`. Optional channels are skipped when not applicable; required channels that are not applicable raise an error.
+- Sensitive content (for example OTP codes) must not be stored in persisted `title`, `body`, or `metadata`. Register a delivery payload resolver instead; email and push adapters should call `delivery_payload_for` at send time. Notification types without a resolver continue to use the stored `title`, `body`, and `url`.
 
 ## [0.2.6] - 2026-08-31
 

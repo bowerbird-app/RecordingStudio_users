@@ -2,17 +2,20 @@
 
 ## Unreleased
 
-## 0.2.0 - 2026-09-01
+## 0.2.0
 
 ### Added
-- `FcmAdapter#available_for?` returns false when the recipient has no active push installations so Notifications can skip optional push delivery cleanly.
-- Push `Event` resolves title, body, and url from `RecordingStudioNotifications.delivery_payload_for` when a delivery is present.
+- `FcmAdapter#available_for?` returns false when the recipient has no active push
+  installations.
 
 ### Changed
+- Push `Event` resolves title, body, and url via
+  `RecordingStudioNotifications.delivery_payload_for` when a delivery is present.
 - Require `recording_studio_notifications` `>= 0.3.0`.
 
 ### Upgrade notes
-- Upgrade Notifications core to `0.3.0` or newer before installing this release.
+- Install `recording_studio_notifications` `0.3.0` (or later) before bumping to
+  `0.2.0`.
 
 ## 0.1.15
 

@@ -30,8 +30,7 @@ module RecordingStudioNotificationsEmail
     end
 
     def title
-      value = resolved_delivery_payload&.title
-      value = attribute(:title) if value.blank?
+      value = presentation_attribute(:title)
       return sanitize_header_text(value) if value.present?
 
       fallback = [recordable_type_label, attribute(:action)].compact_blank.join(" ")
@@ -39,15 +38,11 @@ module RecordingStudioNotificationsEmail
     end
 
     def body
-      value = resolved_delivery_payload&.body
-      value = attribute(:body) if value.blank?
-      value.to_s.presence
+      presentation_attribute(:body).to_s.presence
     end
 
     def url
-      value = resolved_delivery_payload&.url
-      value = attribute(:url) if value.blank?
-      value = value.to_s.presence
+      value = presentation_attribute(:url).to_s.presence
       return unless value
       return if unsafe_url_characters?(value)
 
@@ -112,15 +107,28 @@ module RecordingStudioNotificationsEmail
 
     private
 
+    def presentation_attribute(name)
+      return attribute(name) unless delivery
+
+      payload = resolved_delivery_payload
+      return attribute(name) unless payload.respond_to?(name)
+
+      payload.public_send(name)
+    end
+
     def resolved_delivery_payload
       return @resolved_delivery_payload if defined?(@resolved_delivery_payload)
-      return @resolved_delivery_payload = nil unless delivery
-      return @resolved_delivery_payload = nil unless defined?(RecordingStudioNotifications)
 
-      @resolved_delivery_payload = RecordingStudioNotifications.delivery_payload_for(
-        notification: source,
-        delivery: delivery
-      )
+      @resolved_delivery_payload =
+        if delivery_payload_available?
+          RecordingStudioNotifications.delivery_payload_for(notification: source, delivery: delivery)
+        end
+    end
+
+    def delivery_payload_available?
+      delivery &&
+        defined?(RecordingStudioNotifications) &&
+        RecordingStudioNotifications.respond_to?(:delivery_payload_for)
     end
 
     def attribute(name)
