@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users,
              skip: %i[sessions registrations passwords],
-             controllers: { passwords: "recording_studio_user/auth/passwords" }
+             controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
 
   scope module: "recording_studio_user/auth", path: "users" do
     get "sign_up", to: "registrations#new", as: :new_user_registration

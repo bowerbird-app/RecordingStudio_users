@@ -4,4 +4,6 @@
     <%= render FlatPack::Button::Component.new(text: "Password", style: :secondary, href: otp_session_password_path) %>
     <%= render FlatPack::Button::Component.new(text: "Email OTP", style: :primary, href: otp_session_otp_path) %>
   </div>
+
+  <%= render "recording_studio_user/omniauth/continue_with_providers" %>
 </div>

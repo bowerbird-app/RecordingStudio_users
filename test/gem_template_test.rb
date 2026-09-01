@@ -8,6 +8,41 @@ class RecordingStudioUserTest < Minitest::Test
     assert_kind_of Class, RecordingStudioUser::Engine
   end
 
+  def test_omniauth_views_use_flatpack_without_restyling_profile_edit
+    continue_partial = File.read(
+      File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_providers.html.erb", __dir__)
+    )
+    sign_in_methods = File.read(
+      File.expand_path("../app/views/recording_studio_user/sign_in_methods/show.html.erb", __dir__)
+    )
+    profile_show = File.read(
+      File.expand_path("../app/views/recording_studio_user/profiles/show.html.erb", __dir__)
+    )
+    profile_edit = File.read(
+      File.expand_path("../app/views/recording_studio_user/profiles/edit.html.erb", __dir__)
+    )
+
+    assert_includes continue_partial, "recording_studio_user_omniauth_provider_names"
+    assert_includes continue_partial, "Continue with"
+    assert_includes continue_partial, "form_with"
+    assert_includes continue_partial, "FlatPack::Button::Component"
+    refute_includes continue_partial, "FlatPack::Divider::Component"
+    refute File.exist?(
+      File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_google.html.erb", __dir__)
+    )
+
+    assert_includes sign_in_methods, "FlatPack::List::Component"
+    assert_includes sign_in_methods, "FlatPack::Card::Component"
+    assert_includes sign_in_methods, 'text: "Connect"'
+    assert_includes sign_in_methods, 'text: "Disconnect"'
+    assert_includes sign_in_methods, "form_with"
+    assert_includes sign_in_methods, "!items-center"
+    assert_includes sign_in_methods, "inline-flex items-center"
+    assert_includes profile_show, "sign_in_methods_profile_path"
+    refute_includes profile_edit, "sign_in_methods_profile_path"
+    assert_includes profile_edit, "Change your name, time zone, or photo."
+  end
+
   def test_profile_pages_use_a_page_title_and_show_identity_card
     profile_views = %w[show edit].map do |name|
       File.read(File.expand_path("../app/views/recording_studio_user/profiles/#{name}.html.erb", __dir__))

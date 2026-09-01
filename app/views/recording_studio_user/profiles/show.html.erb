@@ -16,6 +16,13 @@
       href: edit_profile_path,
       style: :primary
     ) %>
+    <% if RecordingStudioUser.config.omniauth_configured? %>
+      <%= render FlatPack::Button::Component.new(
+        text: "Sign-in methods",
+        href: sign_in_methods_profile_path,
+        style: :secondary
+      ) %>
+    <% end %>
   <% end %>
 <% end %>
 

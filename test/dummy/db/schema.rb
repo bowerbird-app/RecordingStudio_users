@@ -196,6 +196,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_050001) do
     t.index ["root_recording_id"], name: "idx_rs_root_switchable_root_recording"
   end
 
+  create_table "recording_studio_user_identities", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "provider", null: false
+    t.string "uid", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["provider", "uid"], name: "index_recording_studio_user_identities_on_provider_and_uid", unique: true
+    t.index ["user_id", "provider"], name: "index_recording_studio_user_identities_on_user_id_and_provider", unique: true
+    t.index ["user_id"], name: "index_recording_studio_user_identities_on_user_id"
+  end
+
   create_table "recording_studio_user_otp_challenges", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "attempts_count", default: 0, null: false
     t.string "code_digest", null: false
@@ -259,6 +271,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_050001) do
   add_foreign_key "recording_studio_notifications_deliveries", "recording_studio_notifications_notifications", column: "notification_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
+  add_foreign_key "recording_studio_user_identities", "users"
   add_foreign_key "recording_studio_user_otp_challenges", "users"
   add_foreign_key "recording_studio_user_profiles", "users"
 end

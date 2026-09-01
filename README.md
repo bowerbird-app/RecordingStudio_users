@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.135), and `devise` are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.7), `recording_studio_attachable` (~> 0.5.0), `recording_studio_admin`, `flat_pack` (~> 0.1.141), `devise`, and the supported OmniAuth strategies are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People.
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 
@@ -67,6 +67,59 @@ recording_studio_users.profile_path
 recording_studio_users.edit_profile_path
 recording_studio_users.admin_path
 ```
+
+## Social sign-in
+
+The dummy app's Google client is **RecordingStudioUsers** in the [BowerBird Dev](https://console.cloud.google.com/auth/clients?project=key-buttress-507301-d2) GCP project ([client](https://console.cloud.google.com/auth/clients/332241240783-36h23frfv5ovlnqtkcc3cc1a96afqkji.apps.googleusercontent.com?project=key-buttress-507301-d2)). Redirect URI: `http://localhost:3000/users/auth/google_oauth2/callback`. See `test/dummy/README.md`.
+
+Continue-with buttons appear only for providers whose secrets are present in Rails credentials under `omniauth:`. An empty `omniauth_providers` hash (the default) reads those credentials. Commented-out or blank credential keys stay hidden. Do not use environment-variable fallbacks or OmniAuth test mode in the app.
+
+Add keys with `bin/rails credentials:edit` (or `--environment development`):
+
+```yaml
+omniauth:
+  google_oauth2:
+    client_id: your-google-client-id
+    client_secret: your-google-client-secret
+  # microsoft_graph:
+  #   client_id: your-microsoft-client-id
+  #   client_secret: your-microsoft-client-secret
+  # apple:
+  #   client_id: your-apple-client-id
+  #   client_secret: ""
+  #   team_id: your-apple-team-id
+  #   key_id: your-apple-key-id
+  #   pem: |
+  #     -----BEGIN PRIVATE KEY-----
+  #     ...
+  #     -----END PRIVATE KEY-----
+  # linkedin:
+  #   client_id: your-linkedin-client-id
+  #   client_secret: your-linkedin-client-secret
+  # instagram:
+  #   client_id: your-instagram-client-id
+  #   client_secret: your-instagram-client-secret
+```
+
+`config.omniauth_create_account` still controls whether an unknown provider email creates a User. An explicit non-empty `omniauth_providers` hash still overrides credentials. Apple also accepts `team_id`, `key_id`, `pem`, and `scope`. Point host Devise callbacks at the engine controller:
+
+```ruby
+devise_for :users, controllers: {
+  omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+}
+```
+
+Render `recording_studio_user/omniauth/continue_with_providers` in the host's Devise login and sign-up views. The engine adds `:omniauthable` only when providers are configured. Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` to restore the identities table; the 0.6.2 migration is safe whether a host retained or dropped the 0.6.0 table.
+
+On callback, Users first finds `provider` + `uid`. For a new identity, it normalizes the provider email and automatically links it to the existing User with that email. An email explicitly marked unverified by the provider is rejected. If the User supports Devise Confirmable, an unconfirmed existing email is also rejected. Hosts without Confirmable must otherwise verify email ownership during password registration before enabling automatic social-account linking. If no User matches, `omniauth_create_account` controls whether `Directory.create_user!` creates the User and Profile. Setting it to `false` fails closed for unknown emails. OAuth tokens are not stored.
+
+**Sign-in methods** lists only providers that are still configured. An identity for a provider whose credentials were removed is inert — no strategy or callback route exists for it — so it is hidden and does not count as a remaining sign-in method when disconnecting. Delete those rows with:
+
+```bash
+bin/rails recording_studio_user:prune_unconfigured_identities
+```
+
+First login requires an email. Instagram often returns none, and Apple may return an email only on first consent or use a private relay; those first logins fail closed when no email is available. A signed-in user can still connect such a provider from **My Profile → Sign-in methods**, because the provider identity can safely attach to the current User without inventing an email. Disconnect is blocked when it would remove the only sign-in method from a user without a password.
 
 ## User contract
 

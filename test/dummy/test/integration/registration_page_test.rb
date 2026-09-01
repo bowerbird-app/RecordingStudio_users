@@ -18,6 +18,10 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_select "input#user_email[type='email']"
     assert_select "input#user_password[type='password']"
     assert_select "input#user_password_confirmation[type='password']"
+    assert_select "button[type='submit']", text: "Sign up"
+    %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
+      assert_select "form[method='post'] button[type='submit']", text: "Continue with #{label}"
+    end
   end
 
   test "password sign up omits confirmation when the host turns the flag off" do

@@ -10,6 +10,12 @@ module RecordingStudioUser
       before_validation :fill_password_confirmation_when_optional
       validates :authentication_method, inclusion: { in: AUTHENTICATION_METHODS }, if: :authentication_method_column?
       after_create :confirm_password_account, if: :password_authentication_method?
+
+      has_many :identities,
+               class_name: "RecordingStudioUser::Identity",
+               foreign_key: :user_id,
+               dependent: :destroy,
+               inverse_of: :user
     end
 
     def display_name
@@ -30,6 +36,7 @@ module RecordingStudioUser
 
     def password_required?
       return false if otp_authentication_method?
+      return false if identities.exists? && password.blank? && password_confirmation.blank?
 
       super
     end
@@ -38,6 +45,19 @@ module RecordingStudioUser
       return false if otp_authentication_method? && !confirmed?
 
       super
+    end
+
+    def password_set?
+      RecordingStudioUser::Omniauth.password_set?(self)
+    end
+
+    # Only providers the host still configures can actually sign someone in.
+    def usable_identities
+      identities.for_configured_providers
+    end
+
+    def identity_for(provider)
+      identities.find_by(provider: provider.to_s)
     end
 
     private
@@ -57,6 +77,7 @@ module RecordingStudioUser
     def confirm_password_account
       return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
       return unless password_authentication_method?
+      return unless self.class.column_names.include?("confirmed_at")
       return if confirmed_at.present?
 
       update_column(:confirmed_at, Time.current)

@@ -36,7 +36,8 @@ module RecordingStudioUser
       otp_resend_cooldown: 60.seconds,
       otp_registration_channels: %i[email],
       otp_login_channels: %i[email push],
-      unconfirmed_user_retention: 7.days
+      unconfirmed_user_retention: 7.days,
+      omniauth_create_account: true
     }.freeze
 
     attr_accessor :user_class_name, :layout
@@ -66,6 +67,7 @@ module RecordingStudioUser
 
     def initialize
       DEFAULTS.each { |setting, value| instance_variable_set("@#{setting}", value) }
+      @omniauth_providers = {}
     end
 
     def otp_login_enabled=(value)
@@ -91,6 +93,41 @@ module RecordingStudioUser
 
     def password_registration_confirmation=(value)
       @password_registration_confirmation = value.to_sym
+    end
+
+    def omniauth_create_account=(value)
+      @omniauth_create_account = ActiveModel::Type::Boolean.new.cast(value)
+    end
+
+    def omniauth_create_account?
+      omniauth_create_account
+    end
+
+    def omniauth_providers=(value)
+      providers = value.respond_to?(:to_h) ? value.to_h : {}
+      @omniauth_providers = providers.each_with_object({}) do |(name, options), memo|
+        key = name.to_sym
+        opts = (options || {}).to_h.transform_keys(&:to_sym)
+        memo[key] = opts
+      end
+    end
+
+    # Buttons and Devise strategies follow credentials when this hash is empty.
+    # An explicit non-empty hash still wins, but blank client secrets are skipped.
+    def omniauth_providers
+      RecordingStudioUser::Omniauth.resolve_providers(@omniauth_providers)
+    end
+
+    def omniauth_provider_names
+      omniauth_providers.keys.map(&:to_sym)
+    end
+
+    def omniauth_configured?
+      omniauth_providers.any?
+    end
+
+    def omniauth_provider_configured?(provider)
+      omniauth_providers.key?(provider.to_sym)
     end
 
     def mount_path=(value)

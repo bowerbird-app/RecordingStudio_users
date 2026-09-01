@@ -10,4 +10,6 @@
   <%= render FlatPack::Link::Component.new(href: (respond_to?(:new_user_session_path) ? new_user_session_path : recording_studio_users.sign_in_path)) do %>
     Already have an account? Sign in
   <% end %>
+
+  <%= render "recording_studio_user/omniauth/continue_with_providers" %>
 </div>

@@ -23,7 +23,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrade notes
 - Requires `recording_studio_notifications` `>= 0.3.0` and `recording_studio_notifications_email` when OTP is enabled. Optional push uses `recording_studio_notifications_push` `>= 0.2.0` for login codes.
 - Run `rails generate recording_studio_user:migrations` and migrate before setting `config.otp_enabled = true`.
-- Map host Devise routes to `recording_studio_user/auth/*` controllers (see dummy `config/routes.rb`).
+- Map host Devise routes to `recording_studio_user/auth/*` controllers (see dummy `config/routes.rb`). Keep OmniAuth callbacks on `recording_studio_user/omniauth_callbacks`.
+
+## [0.6.2] - 2026-08-31
+
+### Added
+- Devise OmniAuth sign-in for Google, Microsoft, Apple, LinkedIn, and Instagram. Hosts leave `omniauth_providers` empty so buttons follow Rails credentials under `omniauth:`; an empty credentials hash leaves email/password sign-in unchanged.
+- Provider identities and an owner-only **Sign-in methods** page for connecting and disconnecting configured providers.
+- Automatic identity linking to an existing User with the same normalized email. Unknown emails create a User and Profile only when `omniauth_create_account` is enabled.
+- Credential-first, environment-variable fallback examples for every supported provider in the generated initializer. OAuth tokens are not stored.
+
+### Changed
+- Continue, Connect, and Disconnect actions submit real CSRF-protected forms so they work in Turbo-only hosts without rails-ujs.
+- The identities migration uses a new guarded migration version. It restores the table for hosts that followed the 0.6.1 drop instruction and repairs indexes and the foreign key on retained 0.6.0 tables.
+- Dummy home and `/docs/*` pages again use `flat_pack_sidebar` (Install, Config, diagnostics, Sign out, Root Switchable). Profile and other product surfaces stay on `recording_studio/default_layout`.
+- Continue-with buttons follow Rails credentials under `omniauth:`. An empty `omniauth_providers` hash reads those keys; blank or commented credential entries stay hidden. Dummy development credentials keep live Google secrets and commented examples for Microsoft, Apple, LinkedIn, and Instagram.
+- Sign-in methods lists only identities whose provider is still configured, and disconnect no longer counts an identity for a dropped provider as a remaining sign-in method. An identity for an unconfigured provider cannot sign anyone in, because no strategy or callback route exists for it.
+- Dummy never enables OmniAuth test mode or `OMNIAUTH_TEST_MODE`. Dummy tests set `OmniAuth.config.test_mode` in `test/test_helper.rb` only.
+- Dummy README, gem README, and dummy Config docs point at the BowerBird Dev GCP **RecordingStudioUsers** OAuth client used by `test/dummy`.
+
+### Upgrade notes
+- Bump to `0.6.2`, run `bin/rails generate recording_studio_user:migrations`, then `bin/rails db:migrate`.
+- If a provider was configured in `0.6.0` and is no longer in credentials, its identity rows are now hidden and inert. Delete them with `bin/rails recording_studio_user:prune_unconfigured_identities`.
+- Add provider secrets under `omniauth:` in Rails credentials. Leave `config.omniauth_providers` empty so buttons appear from those keys. Set `omniauth_create_account = false` to reject provider emails that do not match an existing User.
+- Route `devise_for :users` callbacks to `recording_studio_user/omniauth_callbacks`.
+- Render `recording_studio_user/omniauth/continue_with_providers` in host Devise login and sign-up views. Link the engine's **Sign-in methods** page from the profile if the host overrides the supplied profile view.
+- First login requires a provider email. Instagram may not provide one; Apple may return one only on first consent or use a private relay. Connecting from a signed-in profile does not require an email.
 
 ## [0.6.1] - 2026-08-31
 

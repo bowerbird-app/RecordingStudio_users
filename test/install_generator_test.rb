@@ -22,6 +22,17 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes initializer, "Route configuration must load before Rails draws routes."
     assert_includes initializer, "additional_profile_attributes"
     assert_includes initializer, "require_password_confirmation"
+    assert_includes initializer, "omniauth_providers"
+    assert_includes initializer, "omniauth_create_account"
+    assert_includes initializer, "recording_studio_user/omniauth_callbacks"
+    assert_includes initializer, "omniauth:"
+    assert_includes initializer, "otp_enabled"
+    assert_includes initializer, "google_oauth2:"
+    assert_includes initializer, "microsoft_graph:"
+    assert_includes initializer, "client_id: your-google-client-id"
+    refute_includes initializer, "ENV["
+    refute_includes initializer, "OMNIAUTH_TEST_MODE"
+    refute_includes initializer, "config.login_title"
     assert_includes initializer, 'config.mount_path = "/recording_studio_users"'
     assert_includes initializer, 'config.profile_route_path = "profile"'
     assert_includes initializer, 'config.admin_route_path = "admin"'

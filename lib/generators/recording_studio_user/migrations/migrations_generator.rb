@@ -10,7 +10,7 @@ module RecordingStudioUser
 
       source_root File.expand_path("templates", __dir__)
 
-      desc "Copies RecordingStudioUser migrations into the host application."
+      desc "Copies RecordingStudioUser People, Profile, Identity, and OTP tables into the host application."
 
       class_option :skip_existing,
                    type: :boolean,
@@ -19,6 +19,7 @@ module RecordingStudioUser
 
       MIGRATIONS = {
         "create_recording_studio_user_people_and_profiles" => "create_recording_studio_user_people_and_profiles.rb.tt",
+        "restore_recording_studio_user_identities" => "restore_recording_studio_user_identities.rb.tt",
         "add_authentication_method_to_users" => "add_authentication_method_to_users.rb.tt",
         "add_devise_confirmable_to_users" => "add_devise_confirmable_to_users.rb.tt",
         "create_recording_studio_user_otp_challenges" => "create_recording_studio_user_otp_challenges.rb.tt"
@@ -39,6 +40,14 @@ module RecordingStudioUser
 
       def migration_already_exists?(basename)
         Dir.glob(File.join(destination_root, "db/migrate", "*_#{basename}.rb")).any?
+      end
+
+      def people_profiles_migration_exists?
+        migration_already_exists?("create_recording_studio_user_people_and_profiles")
+      end
+
+      def identities_migration_exists?
+        migration_already_exists?("restore_recording_studio_user_identities")
       end
     end
   end

@@ -15,6 +15,7 @@ require "recording_studio_user/services/otp_rate_limiter"
 require "recording_studio_user/services/issue_otp"
 require "recording_studio_user/services/verify_otp"
 require "recording_studio_user/services/complete_registration"
+require "recording_studio_user/omniauth"
 
 module RecordingStudioUser
   class << self

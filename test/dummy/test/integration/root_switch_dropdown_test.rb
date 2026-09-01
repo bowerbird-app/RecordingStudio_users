@@ -21,6 +21,15 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: workspace.name, count: 1
+    assert_includes response.body, "flat-pack-sidebar-layout"
+    assert_select %(a[href="#{docs_install_path}"]), count: 1
+    assert_select %(a[href="#{docs_config_path}"]), count: 1
+    assert_select %(a[href="#{docs_methods_path}"]), count: 1
+    assert_select %(a[href="#{docs_recordable_types_path}"]), count: 1
+    assert_select %(a[href="#{docs_recordings_tree_path}"]), count: 1
+    assert_select %(a[href="#{docs_gem_views_path}"]), count: 1
+    assert_match(/Install/, response.body)
+    assert_match(/Diagnostics: Recordable types/, response.body)
     assert_select "#home-actions" do
       assert_select secondary_button_selector(recording_studio_users.profile_path), text: "My Profile", count: 1
       assert_select %(a[href="#{recording_studio_users.admin_path}"]), text: "Users Admin", count: 0

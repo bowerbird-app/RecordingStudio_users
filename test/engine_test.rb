@@ -7,13 +7,15 @@ class EngineTest < Minitest::Test
     assert_predicate RecordingStudioUser::Engine, :isolated?
   end
 
-  def test_engine_defines_only_profile_and_admin_routes
+  def test_engine_defines_profile_sign_in_methods_identities_and_admin_routes
     load File.expand_path("../config/routes.rb", __dir__)
 
     routes = RecordingStudioUser::Engine.routes.routes.map(&:name).compact
 
     assert_includes routes, "profile"
     assert_includes routes, "edit_profile"
+    assert_includes routes, "sign_in_methods_profile"
+    assert_includes routes, "profile_identity"
     refute_includes routes, "photo_profile"
     assert_includes routes, "admin"
     refute_includes routes, "admin_user"

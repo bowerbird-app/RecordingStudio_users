@@ -16,6 +16,9 @@ class ConfigurationTest < Minitest::Test
     assert_empty @configuration.additional_profile_attributes
     assert @configuration.require_password_confirmation
     assert_predicate @configuration, :require_password_confirmation?
+    assert_empty @configuration.omniauth_providers
+    assert_predicate @configuration, :omniauth_create_account?
+    refute_predicate @configuration, :omniauth_configured?
   end
 
   def test_require_password_confirmation_casts_like_other_flags
@@ -24,6 +27,28 @@ class ConfigurationTest < Minitest::Test
 
     @configuration.require_password_confirmation = "true"
     assert_predicate @configuration, :require_password_confirmation?
+  end
+
+  def test_omniauth_flags_and_providers
+    @configuration.omniauth_create_account = false
+    refute_predicate @configuration, :omniauth_create_account?
+
+    @configuration.omniauth_create_account = "true"
+    assert_predicate @configuration, :omniauth_create_account?
+
+    @configuration.omniauth_providers = {
+      "google_oauth2" => { "client_id" => "id", "client_secret" => "secret" },
+      "microsoft_graph" => { "client_id" => "", "client_secret" => "secret" }
+    }
+
+    assert_equal(
+      { google_oauth2: { client_id: "id", client_secret: "secret" } },
+      @configuration.omniauth_providers
+    )
+    assert_predicate @configuration, :omniauth_configured?
+    assert @configuration.omniauth_provider_configured?(:google_oauth2)
+    refute @configuration.omniauth_provider_configured?(:microsoft_graph)
+    refute @configuration.omniauth_provider_configured?(:apple)
   end
 
   def test_normalizes_configured_paths

@@ -38,6 +38,8 @@ test/dummy/public/assets/
 # Credentials
 test/dummy/config/master.key
 test/dummy/config/credentials/*.key
+!test/dummy/config/credentials/development.key
+!test/dummy/config/credentials/test.key
 
 # Build artifacts
 *.gem

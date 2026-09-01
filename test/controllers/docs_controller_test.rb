@@ -57,6 +57,10 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "email"
     assert_includes response.body, "timestamps"
     assert_includes response.body, "protected"
+    assert_includes response.body, "Dummy Google OAuth"
+    assert_includes response.body, "BowerBird Dev"
+    assert_includes response.body, "RecordingStudioUsers"
+    assert_includes response.body, "key-buttress-507301-d2"
     refute_includes response.body, "Replace this placeholder"
   end
 
@@ -139,21 +143,23 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "recordingstudio_addon.example_method"
   end
 
-  test "docs pages use default layout without sidebar chrome" do
+  test "docs pages use flat_pack_sidebar debug chrome" do
     get docs_install_path
 
     assert_response :success
-    assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
-    assert_select %(body[data-theme="rounded"]), count: 1
-    refute_includes response.body, "flat-pack-sidebar-layout"
-    refute_includes response.body, "Sign out"
-    refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
+    assert_includes response.body, "flat-pack-sidebar-layout"
+    assert_select %(html[data-theme="rounded"]), count: 1
+    assert_select %(a[href="#{docs_install_path}"]), count: 1
+    assert_select %(a[href="#{docs_config_path}"]), count: 1
+    assert_match(/Sign out/, response.body)
+    refute_includes response.body, 'data-recording-studio-default-layout="true"'
   end
 
   test "home page renders only the profile action without an admin root" do
     get root_path
 
     assert_response :success
+    assert_includes response.body, "flat-pack-sidebar-layout"
     assert_select "h1", text: "Workspace", count: 1
     assert_select "#home-actions" do
       assert_select %(a[href="#{recording_studio_users.profile_path}"][class*="--button-secondary-background-color"]),
