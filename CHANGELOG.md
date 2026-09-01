@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Login codes are available to **any** confirmed, active account, including password accounts. `authentication_method` now records how an account was created rather than restricting how it signs in. Registration codes are still OTP-account only, and OTP accounts still cannot sign in with a password.
+- Login notifications open a recipient-only code page while the challenge is active. The plaintext code remains absent from the notification row; used, revoked, expired, and over-attempted challenges show a request-new-code state.
 - Dummy vendors `recording_studio_notifications` `0.3.0`, `recording_studio_notifications_email` `0.3.0`, and `recording_studio_notifications_push` `0.2.0` from their merged `main` branches.
 - Dummy mounts the notifications inbox at `/notifications`, email as a channel (no screens), and push devices at `/notifications/push`. Debug chrome adds inbox, settings, and devices links plus the async notification menu.
 - Dummy development mail uses Letter Opener Web. The debug sidebar adds a **Letters** link to `/letter_opener`.

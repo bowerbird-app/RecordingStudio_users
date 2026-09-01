@@ -218,6 +218,16 @@ Mount the OTP auth routes from this gem's `config/routes.rb`. Password sign-up a
 
 Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing, so the form cannot be used to discover which addresses exist.
 
+Login notifications link to a protected code page under the Users mount. The
+page decrypts the code only while its challenge is active and only for the
+recipient; the plaintext code is never stored on the notification. Used,
+revoked, expired, and over-attempted challenges show a request-new-code state.
+
+Email and push resolve their title and body at delivery time through
+`RecordingStudioNotifications.register_delivery_payload_resolver`. Hosts can
+replace the `:registration_otp` or `:login_otp` resolver to customize channel
+copy without changing the persisted notification or the protected code page.
+
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 
 Flash notices come from the host layout. Profile show does not render `notice` again. When the host uses Recording Studio's default layout, that layout already draws `flash[:notice]` as a FlatPack alert.

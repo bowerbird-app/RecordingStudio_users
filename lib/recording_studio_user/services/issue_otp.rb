@@ -77,20 +77,31 @@ module RecordingStudioUser
       end
 
       def deliver!(challenge)
-        RecordingStudioNotifications.notify(
+        RecordingStudioNotifications.notify(**notification_attributes(challenge))
+        instrument!(:delivery_queued, challenge)
+      end
+
+      def notification_attributes(challenge)
+        {
           notification_type: NOTIFICATION_TYPES.fetch(@purpose),
           recipient: @user,
           title: TITLES.fetch(@purpose),
           body: nil,
+          url: notification_url(challenge),
           metadata: { "otp_challenge_id" => challenge.id },
           channels: requested_channels,
           idempotency_key: "otp/#{challenge.id}"
-        )
-        instrument!(:delivery_queued, challenge)
+        }
       end
 
       def requested_channels
         Array(@channels || default_channels).map(&:to_sym)
+      end
+
+      def notification_url(challenge)
+        return unless @purpose == "login"
+
+        "#{RecordingStudioUser.config.mount_path}/otp_codes/#{challenge.id}"
       end
 
       def default_channels

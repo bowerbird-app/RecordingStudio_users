@@ -243,6 +243,65 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     assert_equal "password", user.reload.authentication_method
   end
 
+  test "login notification opens a protected page with the active code" do
+    email = "notification-code-#{SecureRandom.hex(4)}@example.com"
+    user = RecordingStudioUser.create_user!(
+      email: email,
+      password: "Password123!",
+      first_name: "Notice",
+      last_name: "Code",
+      time_zone: "UTC"
+    )
+    sign_in user
+
+    result = RecordingStudioUser.issue_otp!(user: user, purpose: :login)
+    code = result.challenge.decrypt_delivery_code!
+    notification = RecordingStudioNotifications::Notification
+      .where(recipient: user, notification_type: "login_otp")
+      .order(:created_at)
+      .last!
+
+    assert_equal "/recording_studio_users/otp_codes/#{result.challenge.id}", notification.url
+
+    get notification.url
+
+    assert_response :success
+    assert_select "h1", text: "Your sign-in code"
+    assert_includes response.body, code
+
+    result.challenge.consume!
+    get notification.url
+
+    assert_response :success
+    assert_includes response.body, "This code is no longer valid"
+    refute_includes response.body, code
+  end
+
+  test "login code page does not expose another user's code" do
+    owner = RecordingStudioUser.create_user!(
+      email: "code-owner-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Code",
+      last_name: "Owner",
+      time_zone: "UTC"
+    )
+    viewer = RecordingStudioUser.create_user!(
+      email: "code-viewer-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Code",
+      last_name: "Viewer",
+      time_zone: "UTC"
+    )
+    challenge = RecordingStudioUser.issue_otp!(user: owner, purpose: :login).challenge
+    code = challenge.decrypt_delivery_code!
+    sign_in viewer
+
+    get recording_studio_users.otp_code_path(challenge)
+
+    assert_response :not_found
+    refute_includes response.body, code
+  end
+
   test "unconfirmed password account is not sent a login code" do
     email = "unconfirmed-password-#{SecureRandom.hex(4)}@example.com"
     user = User.create!(

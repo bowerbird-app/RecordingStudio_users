@@ -1,0 +1,27 @@
+<div class="mx-auto flex w-full max-w-2xl flex-col gap-6">
+  <%= render FlatPack::PageNav::Component.new(anchor_url: main_app.root_path) %>
+
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Your sign-in code",
+    subtitle: (@code.present? ? "Use this code to finish signing in." : nil),
+    variant: :h1
+  ) %>
+
+  <% if @code.present? %>
+    <%= render FlatPack::CodeBlock::Component.new(language: :text, code: @code) %>
+    <p class="text-sm text-(--surface-muted-content-color)">
+      This code expires <%= time_ago_in_words(@challenge.expires_at) %> from now.
+    </p>
+  <% else %>
+    <%= render FlatPack::Alert::Component.new(
+      title: "This code is no longer valid",
+      description: "Request a fresh code from sign in.",
+      style: :info
+    ) %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Request a new code",
+      href: main_app.new_user_session_path,
+      style: :primary
+    ) %>
+  <% end %>
+</div>
