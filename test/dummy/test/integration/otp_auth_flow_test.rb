@@ -68,7 +68,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "OTP user cannot password login and password user cannot get login OTP" do
+  test "OTP user cannot password login" do
     otp_email = "otp-only-#{SecureRandom.hex(4)}@example.com"
     start_otp_registration!(otp_email)
     user = User.find_by!(email: otp_email)
@@ -81,7 +81,9 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     post user_session_path, params: { user: { email: otp_email, password: "Password123!" } }
     assert_response :unprocessable_entity
     assert_includes response.body, "email codes"
+  end
 
+  test "password user can request a login OTP" do
     password_email = "password-only-#{SecureRandom.hex(4)}@example.com"
     RecordingStudioUser.create_user!(
       email: password_email,
@@ -93,8 +95,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
     post "#{new_user_session_path}/otp", params: { user: { email: password_email } }
     assert_redirected_to verify_user_session_path
-    assert_nil session[:otp_challenge_id]
-    assert_nil session[:otp_user_id]
+    assert session[:otp_challenge_id].present?
+    assert_equal User.find_by!(email: password_email).id, session[:otp_user_id]
   end
 
   test "OTP user password reset redirects with generic OTP guidance" do
@@ -170,16 +172,12 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "ineligible and eligible OTP login emails render the same verify page" do
-    password_email = "password-enum-#{SecureRandom.hex(4)}@example.com"
-    RecordingStudioUser.create_user!(
-      email: password_email,
-      password: "Password123!",
-      first_name: "Pass",
-      last_name: "Word",
-      time_zone: "UTC"
-    )
+    unconfirmed_email = "unconfirmed-enum-#{SecureRandom.hex(4)}@example.com"
+    start_otp_registration!(unconfirmed_email)
+    sign_out_user!
+    clear_otp_session!
 
-    post "#{new_user_session_path}/otp", params: { user: { email: password_email } }
+    post "#{new_user_session_path}/otp", params: { user: { email: unconfirmed_email } }
     follow_redirect!
     assert_response :success
     assert_select "input[name='code']"
@@ -195,6 +193,71 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name='code']"
     assert_includes response.body, "Enter your code"
+  end
+
+  test "password account can sign in with a login code" do
+    email = "password-otp-login-#{SecureRandom.hex(4)}@example.com"
+    RecordingStudioUser.create_user!(
+      email: email,
+      password: "Password123!",
+      first_name: "Pass",
+      last_name: "Word",
+      time_zone: "UTC"
+    )
+
+    post "#{new_user_session_path}/otp", params: { user: { email: email } }
+    follow_redirect!
+    assert_response :success
+
+    user = User.find_by!(email: email)
+    assert user.password_authentication_method?
+
+    code = current_otp_code(user, "login")
+    post verify_user_session_path, params: { code: code }
+    assert_redirected_to root_path
+
+    get recording_studio_users.profile_path
+    assert_response :success
+  end
+
+  test "password account keeps working with its password after using a login code" do
+    email = "password-both-#{SecureRandom.hex(4)}@example.com"
+    RecordingStudioUser.create_user!(
+      email: email,
+      password: "Password123!",
+      first_name: "Both",
+      last_name: "Ways",
+      time_zone: "UTC"
+    )
+
+    post "#{new_user_session_path}/otp", params: { user: { email: email } }
+    user = User.find_by!(email: email)
+    post verify_user_session_path, params: { code: current_otp_code(user, "login") }
+    assert_redirected_to root_path
+
+    sign_out_user!
+    clear_otp_session!
+
+    post user_session_path, params: { user: { email: email, password: "Password123!" } }
+    assert_redirected_to root_path
+    assert_equal "password", user.reload.authentication_method
+  end
+
+  test "unconfirmed password account is not sent a login code" do
+    email = "unconfirmed-password-#{SecureRandom.hex(4)}@example.com"
+    user = User.create!(
+      email: email,
+      password: "Password123!",
+      password_confirmation: "Password123!",
+      authentication_method: "password"
+    )
+    user.update_column(:confirmed_at, nil)
+
+    assert_no_difference -> { RecordingStudioUser::OtpChallenge.count } do
+      post "#{new_user_session_path}/otp", params: { user: { email: email } }
+    end
+
+    assert_redirected_to verify_user_session_path
   end
 
   test "confirmed OTP user can sign in with a login code" do

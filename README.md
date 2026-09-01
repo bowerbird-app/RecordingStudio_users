@@ -209,7 +209,14 @@ bin/rails generate recording_studio_user:migrations
 bin/rails db:migrate
 ```
 
-Mount the OTP auth routes from this gem's `config/routes.rb`. Password sign-up and sign-in keep working. OTP users have no usable password and sign in with email codes only. See `MIGRATION_NOTES.md` for backfill details and route mapping.
+Mount the OTP auth routes from this gem's `config/routes.rb`. Password sign-up and sign-in keep working. See `MIGRATION_NOTES.md` for backfill details and route mapping.
+
+`authentication_method` records how the account was created, not the only way it can sign in:
+
+- **Password accounts** can sign in with their password *or* request an email code. Having a password is a capability, not a restriction.
+- **OTP accounts** have no usable password, so they sign in with email codes only.
+
+Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing, so the form cannot be used to discover which addresses exist.
 
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Login codes are available to **any** confirmed, active account, including password accounts. `authentication_method` now records how an account was created rather than restricting how it signs in. Registration codes are still OTP-account only, and OTP accounts still cannot sign in with a password.
 - Dummy vendors `recording_studio_notifications` `0.3.0`, `recording_studio_notifications_email` `0.3.0`, and `recording_studio_notifications_push` `0.2.0` from their merged `main` branches.
 - Dummy mounts the notifications inbox at `/notifications`, email as a channel (no screens), and push devices at `/notifications/push`. Debug chrome adds inbox, settings, and devices links plus the async notification menu.
 - Dummy development mail uses Letter Opener Web. The debug sidebar adds a **Letters** link to `/letter_opener`.
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Password registration calls `skip_confirmation!` when `password_registration_confirmation` is `:existing_policy`.
 
 ### Upgrade notes
+- Hosts that relied on password accounts being refused login codes must set `otp_login_enabled = false` to keep that behaviour. Verify with: request a code for a confirmed password account and assert `RecordingStudioUser::OtpChallenge.where(user: user, purpose: "login")` is empty.
 - Requires `recording_studio_notifications` `>= 0.3.0` and `recording_studio_notifications_email` when OTP is enabled. Optional push uses `recording_studio_notifications_push` `>= 0.2.0` for login codes.
 - Run `rails generate recording_studio_user:migrations` and migrate before setting `config.otp_enabled = true`.
 - Map host Devise routes to `recording_studio_user/auth/*` controllers (see dummy `config/routes.rb`). Keep OmniAuth callbacks on `recording_studio_user/omniauth_callbacks`.

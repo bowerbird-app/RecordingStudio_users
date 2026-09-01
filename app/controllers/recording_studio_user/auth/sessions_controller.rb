@@ -83,8 +83,10 @@ module RecordingStudioUser
         )
       end
 
+      # Password accounts can request a login code too. Having a password is a
+      # capability, not a restriction on how you sign in.
       def eligible_for_sign_in?(user)
-        user&.otp_authentication_method? && user.confirmed? && user.active_for_authentication?
+        user&.confirmed? && user.active_for_authentication?
       end
 
       def render_password_failure(message)

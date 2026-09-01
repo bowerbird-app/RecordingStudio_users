@@ -45,12 +45,12 @@ module RecordingStudioUser
 
       def validate_user!
         raise ArgumentError, "unknown purpose" unless OtpChallenge::PURPOSES.include?(@purpose)
-        raise ArgumentError, "#{@purpose} OTP requires an OTP user" unless @user.otp_authentication_method?
 
         @purpose == "registration" ? validate_registration_user! : validate_login_user!
       end
 
       def validate_registration_user!
+        raise ArgumentError, "registration OTP requires an OTP user" unless @user.otp_authentication_method?
         raise ArgumentError, "registration OTP requires an unconfirmed user" if @user.confirmed?
       end
 
