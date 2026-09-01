@@ -274,6 +274,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "This code is no longer valid"
+    refute_includes response.body, "Request a new code"
     refute_includes response.body, code
   end
 

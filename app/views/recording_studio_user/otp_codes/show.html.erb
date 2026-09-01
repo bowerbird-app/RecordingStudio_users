@@ -25,11 +25,4 @@
     description: "Request a fresh code from sign in.",
     style: :info
   ) %>
-  <div class="mt-4">
-    <%= render FlatPack::Button::Component.new(
-      text: "Request a new code",
-      href: main_app.new_user_session_path,
-      style: :primary
-    ) %>
-  </div>
 <% end %>
