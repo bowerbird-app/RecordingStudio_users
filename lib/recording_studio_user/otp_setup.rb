@@ -7,6 +7,7 @@ module RecordingStudioUser
     REQUIRED_USER_COLUMNS = %w[
       authentication_method confirmation_token confirmed_at confirmation_sent_at unconfirmed_email
     ].freeze
+    OTP_CHALLENGES_TABLE = "recording_studio_user_otp_challenges"
 
     def validate_schema!
       missing = missing_schema
@@ -25,7 +26,7 @@ module RecordingStudioUser
       columns = user_class.connection.columns(table).map(&:name)
 
       missing = (REQUIRED_USER_COLUMNS - columns).map { |column| "#{column} on #{table}" }
-      missing << "recording_studio_user_otp_challenges table" unless OtpChallenge.table_exists?
+      missing << "#{OTP_CHALLENGES_TABLE} table" unless user_class.connection.data_source_exists?(OTP_CHALLENGES_TABLE)
       missing
     end
 
@@ -41,7 +42,7 @@ module RecordingStudioUser
       return unless RecordingStudioUser.config.otp_enabled?
 
       connection = ActiveRecord::Base.connection
-      return unless connection.data_source_exists?(OtpChallenge.table_name)
+      return unless connection.data_source_exists?(OTP_CHALLENGES_TABLE)
 
       validate_schema!
     rescue ActiveRecord::NoDatabaseError, ActiveRecord::ConnectionNotEstablished, ActiveRecord::StatementInvalid
