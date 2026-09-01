@@ -69,7 +69,8 @@ class MigrationsGeneratorTest < Minitest::Test
   def test_otp_challenges_migration_template
     template = File.read(
       File.expand_path(
-        "../lib/generators/recording_studio_user/migrations/templates/create_recording_studio_user_otp_challenges.rb.tt",
+        "../lib/generators/recording_studio_user/migrations/templates/" \
+        "create_recording_studio_user_otp_challenges.rb.tt",
         __dir__
       )
     )

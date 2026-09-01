@@ -13,35 +13,47 @@ module RecordingStudioUser
       end
 
       def call
+        validate!
+        return @user if completed?
+
+        confirm_and_provision!
+        instrument_completion!
+        @user
+      rescue StandardError
+        roll_back_confirmation!
+        raise
+      end
+
+      private
+
+      def validate!
         raise ArgumentError, "registration completion requires an OTP user" unless @user.otp_authentication_method?
         raise ArgumentError, "challenge purpose must be registration" unless @challenge.registration?
+      end
 
-        return @user if @user.confirmed? && RecordingStudioUser.profile_for(@user)
+      def completed?
+        @user.confirmed? && RecordingStudioUser.profile_for(@user).present?
+      end
 
+      def confirm_and_provision!
         ActiveRecord::Base.transaction do
           @user.confirm unless @user.confirmed?
-          RecordingStudioUser.record_profile!(@user, actor: @user, **default_profile_attributes)
+          RecordingStudioUser.record_profile!(@user, actor: @user, **Profile.default_attributes_for(@user))
         end
+      end
 
+      def instrument_completion!
         ActiveSupport::Notifications.instrument(
           "otp.registration_completed.recording_studio_user",
           user_id: @user.id,
           challenge_id: @challenge.id
         )
-
-        @user
-      rescue StandardError
-        @user.update_column(:confirmed_at, nil) if @user.confirmed? && RecordingStudioUser.profile_for(@user).nil?
-        raise
       end
 
-      def default_profile_attributes
-        local = @user.email.to_s.split("@").first.to_s
-        {
-          first_name: local.presence || "Account",
-          last_name: "Member",
-          time_zone: "UTC"
-        }
+      def roll_back_confirmation!
+        return unless @user.confirmed? && RecordingStudioUser.profile_for(@user).nil?
+
+        @user.update_column(:confirmed_at, nil)
       end
     end
   end

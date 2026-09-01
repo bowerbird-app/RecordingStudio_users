@@ -16,11 +16,13 @@ Style/StringLiterals:
 Layout/LineLength:
   Max: 120
 
-# Relax metrics for test files and generators
+# Relax metrics for test files and generators. Configuration is a settings
+# object: its length tracks the number of host settings, not complexity.
 Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
     - 'lib/gem_template/hooks.rb'
+    - 'lib/recording_studio_user/configuration.rb'
 
 Metrics/MethodLength:
   Exclude:
@@ -46,6 +48,11 @@ Lint/NestedMethodDefinition:
 Naming/VariableNumber:
   Exclude:
     - 'test/**/*'
+
+# Keyword arguments are order-independent and self-documenting, so they do not
+# carry the call-site risk this cop guards against.
+Metrics/ParameterLists:
+  CountKeywordArgs: false
 
 # Don't require super in service initialize methods
 Lint/MissingSuper:

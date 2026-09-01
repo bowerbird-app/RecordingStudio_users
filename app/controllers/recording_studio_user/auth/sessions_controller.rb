@@ -13,29 +13,20 @@ module RecordingStudioUser
 
       def create_password
         user = resource_class.find_for_database_authentication(email: sign_in_params[:email])
-        if user&.otp_authentication_method?
-          flash.now[:alert] = "This account signs in with email codes. Use the Email OTP tab."
-          return render :password, status: :unprocessable_entity
-        end
+        return render_password_failure("This account signs in with email codes. Use the Email OTP tab.") if
+          user&.otp_authentication_method?
+        return render_password_failure("Email or password did not match.") unless
+          user&.valid_password?(sign_in_params[:password])
 
-        if user&.valid_password?(sign_in_params[:password])
-          sign_in_user!(user)
-          redirect_to after_sign_in_path_for(user)
-        else
-          flash.now[:alert] = "Email or password did not match."
-          render :password, status: :unprocessable_entity
-        end
+        sign_in_user!(user)
+        redirect_to after_sign_in_path_for(user)
       end
 
-      def otp
-      end
+      def otp; end
 
       def create_otp
-        email = sign_in_params[:email].to_s.strip.downcase
-        user = resource_class.find_by(email: email)
-        if user&.otp_authentication_method? && user.confirmed? && user.active_for_authentication?
-          RecordingStudioUser.issue_otp!(user: user, purpose: :login, request: request, session: session)
-        end
+        user = resource_class.find_by(email: submitted_email)
+        issue_login_otp!(user)
         redirect_to otp_session_verify_path, notice: generic_login_notice
       rescue Services::OtpRateLimiter::RateLimited
         redirect_to otp_session_verify_path, notice: generic_login_notice
@@ -52,33 +43,15 @@ module RecordingStudioUser
           purpose: "login",
           session: session
         )
+        return render_verify_failure(result) unless result.success?
+        return render_verify_failure(nil) unless eligible_for_sign_in?(result.user)
 
-        unless result.success?
-          flash.now[:alert] = verify_failure_message(result.reason)
-          return render :verify, status: :unprocessable_entity
-        end
-
-        user = result.user
-        unless user.active_for_authentication? && user.otp_authentication_method?
-          flash.now[:alert] = "That code did not work."
-          return render :verify, status: :unprocessable_entity
-        end
-
-        sign_in_user!(user)
-        redirect_to after_sign_in_path_for(user)
+        sign_in_user!(result.user)
+        redirect_to after_sign_in_path_for(result.user)
       end
 
       def resend
-        user = user_for_otp_resend
-        if user&.otp_authentication_method? && user.confirmed? && user.active_for_authentication?
-          RecordingStudioUser.issue_otp!(
-            user: user,
-            purpose: :login,
-            request: request,
-            session: session,
-            rate_limit_scope: :resend
-          )
-        end
+        issue_login_otp!(user_for_otp_resend, rate_limit_scope: :resend)
         redirect_to otp_session_verify_path, notice: generic_login_notice
       rescue Services::OtpRateLimiter::RateLimited
         redirect_to otp_session_verify_path, notice: generic_login_notice
@@ -86,27 +59,42 @@ module RecordingStudioUser
 
       private
 
-      def resource_class
-        RecordingStudioUser.config.user_class
-      end
-
       def sign_in_params
         params.require(:user).permit(:email, :password, :remember_me)
+      end
+
+      def submitted_email
+        sign_in_params[:email].to_s.strip.downcase
       end
 
       def auth_options
         { scope: :user, recall: "#{controller_path}#password" }
       end
 
-      def verify_failure_message(reason)
-        {
-          invalid_code: "That code did not work. Try again.",
-          expired: "That code expired. Request a new one.",
-          consumed: "That code was already used.",
-          revoked: "That code is no longer valid.",
-          too_many_attempts: "Too many tries. Request a new code.",
-          session_mismatch: "Start over with a new code."
-        }.fetch(reason, "That code did not work.")
+      def issue_login_otp!(user, rate_limit_scope: :issue)
+        return unless eligible_for_sign_in?(user)
+
+        RecordingStudioUser.issue_otp!(
+          user: user,
+          purpose: :login,
+          request: request,
+          session: session,
+          rate_limit_scope: rate_limit_scope
+        )
+      end
+
+      def eligible_for_sign_in?(user)
+        user&.otp_authentication_method? && user.confirmed? && user.active_for_authentication?
+      end
+
+      def render_password_failure(message)
+        flash.now[:alert] = message
+        render :password, status: :unprocessable_entity
+      end
+
+      def render_verify_failure(result)
+        flash.now[:alert] = result ? verify_failure_message(result.reason) : "That code did not work."
+        render :verify, status: :unprocessable_entity
       end
     end
   end

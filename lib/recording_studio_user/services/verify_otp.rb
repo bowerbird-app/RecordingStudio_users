@@ -23,34 +23,43 @@ module RecordingStudioUser
       def call
         return failure(:session_mismatch) unless session_challenge_matches?
 
-        challenge = nil
-        success = false
-
-        OtpChallenge.transaction do
-          challenge = OtpChallenge.lock.find_by(id: @challenge_id)
-          return failure(:not_found) unless challenge
-          return failure(:wrong_purpose) unless challenge.purpose == @purpose
-          return failure(:expired) if challenge.expired?
-          return failure(:consumed) if challenge.consumed?
-          return failure(:revoked) if challenge.revoked?
-          return failure(:too_many_attempts) if challenge.attempts_count >= RecordingStudioUser.config.otp_max_attempts
-
-          if challenge.verify_code!(@code)
-            challenge.consume!
-            success = true
-          else
-            challenge.increment_attempts!
-            return failure(:invalid_code, challenge: challenge)
-          end
-        end
-
-        instrument!(:verified, challenge) if success
-        Result.new(success: true, reason: :verified, challenge: challenge, user: challenge.user)
+        result = consume_challenge
+        instrument!(:verified, result.challenge) if result.success?
+        result
       rescue ActiveRecord::RecordNotFound
         failure(:not_found)
       end
 
       private
+
+      def consume_challenge
+        OtpChallenge.transaction do
+          challenge = OtpChallenge.lock.find_by(id: @challenge_id)
+          return failure(:not_found) unless challenge
+
+          rejection = rejection_reason(challenge)
+          return failure(rejection, challenge: challenge) if rejection
+          return record_failed_attempt(challenge) unless challenge.verify_code!(@code)
+
+          challenge.consume!
+          Result.new(success: true, reason: :verified, challenge: challenge, user: challenge.user)
+        end
+      end
+
+      def record_failed_attempt(challenge)
+        challenge.increment_attempts!
+        failure(:invalid_code, challenge: challenge)
+      end
+
+      def rejection_reason(challenge)
+        return :wrong_purpose unless challenge.purpose == @purpose
+        return :expired if challenge.expired?
+        return :consumed if challenge.consumed?
+        return :revoked if challenge.revoked?
+        return :too_many_attempts if challenge.attempts_count >= RecordingStudioUser.config.otp_max_attempts
+
+        nil
+      end
 
       def session_challenge_matches?
         @session[:otp_challenge_id].to_s == @challenge_id.to_s &&

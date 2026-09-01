@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "recording_studio_user/version"
+require "recording_studio_user/route_path"
 require "recording_studio_user/configuration"
 require "recording_studio_user/engine"
 require "recording_studio_user/admin"

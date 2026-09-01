@@ -5,6 +5,9 @@ module RecordingStudioUser
     class IssueOtp
       Result = Struct.new(:challenge, :issued, keyword_init: true)
 
+      NOTIFICATION_TYPES = { "registration" => :registration_otp, "login" => :login_otp }.freeze
+      TITLES = { "registration" => "Verify your email", "login" => "Your sign-in code" }.freeze
+
       def self.call(...)
         new(...).call
       end
@@ -23,14 +26,9 @@ module RecordingStudioUser
         validate_user!
         apply_rate_limits!
 
-        challenge = nil
-        ActiveRecord::Base.transaction do
-          revoke_existing!
-          challenge = OtpChallenge.issue_for!(user: @user, purpose: @purpose)
-        end
-
+        challenge = issue_challenge!
         store_session!(challenge)
-        enqueue_notification_after_commit!(challenge)
+        deliver!(challenge)
         instrument!(:issued, challenge)
 
         Result.new(challenge: challenge, issued: true)
@@ -38,25 +36,31 @@ module RecordingStudioUser
 
       private
 
-      def validate_user!
-        raise ArgumentError, "unknown purpose" unless OtpChallenge::PURPOSES.include?(@purpose)
-
-        if @purpose == "registration"
-          raise ArgumentError, "registration OTP requires an OTP user" unless @user.otp_authentication_method?
-          raise ArgumentError, "registration OTP requires an unconfirmed user" if @user.confirmed?
-        elsif @purpose == "login"
-          raise ArgumentError, "login OTP requires an OTP user" unless @user.otp_authentication_method?
-          raise ArgumentError, "login OTP requires a confirmed user" unless @user.confirmed?
-          raise ArgumentError, "user is not active for authentication" unless @user.active_for_authentication?
+      def issue_challenge!
+        ActiveRecord::Base.transaction do
+          revoke_existing!
+          OtpChallenge.issue_for!(user: @user, purpose: @purpose)
         end
       end
 
+      def validate_user!
+        raise ArgumentError, "unknown purpose" unless OtpChallenge::PURPOSES.include?(@purpose)
+        raise ArgumentError, "#{@purpose} OTP requires an OTP user" unless @user.otp_authentication_method?
+
+        @purpose == "registration" ? validate_registration_user! : validate_login_user!
+      end
+
+      def validate_registration_user!
+        raise ArgumentError, "registration OTP requires an unconfirmed user" if @user.confirmed?
+      end
+
+      def validate_login_user!
+        raise ArgumentError, "login OTP requires a confirmed user" unless @user.confirmed?
+        raise ArgumentError, "user is not active for authentication" unless @user.active_for_authentication?
+      end
+
       def apply_rate_limits!
-        keys = [
-          normalized_email,
-          @request&.remote_ip,
-          @session&.id
-        ].compact_blank
+        keys = [normalized_email, @request&.remote_ip, @session&.id].compact_blank
         keys.each { |key| OtpRateLimiter.allow_request!(scope: @rate_limit_scope, key: key) }
       end
 
@@ -72,21 +76,21 @@ module RecordingStudioUser
         @session[:otp_user_id] = @user.id
       end
 
-      def enqueue_notification_after_commit!(challenge)
-        notification_type = @purpose == "registration" ? :registration_otp : :login_otp
-        selected_channels = Array(@channels || default_channels).map(&:to_sym)
-
+      def deliver!(challenge)
         RecordingStudioNotifications.notify(
-          notification_type: notification_type,
+          notification_type: NOTIFICATION_TYPES.fetch(@purpose),
           recipient: @user,
-          title: notification_title,
+          title: TITLES.fetch(@purpose),
           body: nil,
           metadata: { "otp_challenge_id" => challenge.id },
-          channels: selected_channels,
-          idempotency_key: "otp/#{challenge.id}",
-          deliver_later: nil
+          channels: requested_channels,
+          idempotency_key: "otp/#{challenge.id}"
         )
         instrument!(:delivery_queued, challenge)
+      end
+
+      def requested_channels
+        Array(@channels || default_channels).map(&:to_sym)
       end
 
       def default_channels
@@ -95,10 +99,6 @@ module RecordingStudioUser
         else
           RecordingStudioUser.config.otp_login_channels
         end
-      end
-
-      def notification_title
-        @purpose == "registration" ? "Verify your email" : "Your sign-in code"
       end
 
       def normalized_email

@@ -10,7 +10,24 @@ module RecordingStudioUser
 
       layout RecordingStudioUser.config.layout
 
+      VERIFY_FAILURE_MESSAGES = {
+        invalid_code: "That code did not work. Try again.",
+        expired: "That code expired. Request a new one.",
+        consumed: "That code was already used.",
+        revoked: "That code is no longer valid.",
+        too_many_attempts: "Too many tries. Request a new code.",
+        session_mismatch: "Start over with a new code."
+      }.freeze
+
       private
+
+      def resource_class
+        RecordingStudioUser.config.user_class
+      end
+
+      def verify_failure_message(reason)
+        VERIFY_FAILURE_MESSAGES.fetch(reason, "That code did not work.")
+      end
 
       def require_otp_enabled!
         return if RecordingStudioUser.config.otp_enabled?

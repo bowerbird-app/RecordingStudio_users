@@ -16,9 +16,7 @@ module RecordingStudioUser
         next unless RecordingStudioUser.config.otp_enabled?
 
         OtpSetup.ensure_notifications!
-        unless user_class.devise_modules.include?(:confirmable)
-          user_class.devise :confirmable
-        end
+        user_class.devise :confirmable unless user_class.devise_modules.include?(:confirmable)
         OtpNotifications.register!
         OtpSetup.validate_schema_when_ready!
       end

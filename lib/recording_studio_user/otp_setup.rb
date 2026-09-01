@@ -4,18 +4,12 @@ module RecordingStudioUser
   module OtpSetup
     module_function
 
+    REQUIRED_USER_COLUMNS = %w[
+      authentication_method confirmation_token confirmed_at confirmation_sent_at unconfirmed_email
+    ].freeze
+
     def validate_schema!
-      user_class = RecordingStudioUser.config.user_class
-      table = user_class.table_name
-      columns = user_class.connection.columns(table).map(&:name)
-
-      missing = []
-      missing << "authentication_method on #{table}" unless columns.include?("authentication_method")
-      %w[confirmation_token confirmed_at confirmation_sent_at unconfirmed_email].each do |column|
-        missing << "#{column} on #{table}" unless columns.include?(column)
-      end
-      missing << "recording_studio_user_otp_challenges table" unless OtpChallenge.table_exists?
-
+      missing = missing_schema
       return if missing.empty?
 
       raise(
@@ -23,6 +17,16 @@ module RecordingStudioUser
         "OTP is enabled but required schema is missing: #{missing.join(', ')}. " \
         "Run `rails generate recording_studio_user:migrations` and migrate."
       )
+    end
+
+    def missing_schema
+      user_class = RecordingStudioUser.config.user_class
+      table = user_class.table_name
+      columns = user_class.connection.columns(table).map(&:name)
+
+      missing = (REQUIRED_USER_COLUMNS - columns).map { |column| "#{column} on #{table}" }
+      missing << "recording_studio_user_otp_challenges table" unless OtpChallenge.table_exists?
+      missing
     end
 
     def ensure_notifications!

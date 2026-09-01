@@ -60,21 +60,29 @@ module RecordingStudioUser
     end
 
     def create_devise_user!(email, password, password_confirmation, attributes)
-      klass = RecordingStudioUser.config.user_class
-      attrs = attributes.stringify_keys
-      attrs["authentication_method"] = "password" if klass.column_names.include?("authentication_method")
-      user = klass.new(
+      user = RecordingStudioUser.config.user_class.new(
         email: email,
         password: password,
         password_confirmation: password_confirmation,
-        **attrs.symbolize_keys
+        **devise_user_attributes(attributes)
       )
-      if RecordingStudioUser.config.password_registration_confirmation == :existing_policy &&
-         user.respond_to?(:skip_confirmation!)
-        user.skip_confirmation!
-      end
+      skip_confirmation_for_password_account(user)
       user.save!
       user
+    end
+
+    def devise_user_attributes(attributes)
+      attrs = attributes.symbolize_keys
+      return attrs unless RecordingStudioUser.config.user_class.column_names.include?("authentication_method")
+
+      attrs.merge(authentication_method: "password")
+    end
+
+    def skip_confirmation_for_password_account(user)
+      return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
+      return unless user.respond_to?(:skip_confirmation!)
+
+      user.skip_confirmation!
     end
 
     def create_unconfirmed_user!(email:)
