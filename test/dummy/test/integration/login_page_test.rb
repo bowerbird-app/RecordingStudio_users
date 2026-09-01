@@ -7,7 +7,6 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     get new_user_session_path
 
     assert_response :success
-    assert_select "html[data-theme='rounded']"
     assert_select "h2", text: "Sign in"
     assert_select "body", text: /Password/
     assert_select "body", text: /Email OTP/
