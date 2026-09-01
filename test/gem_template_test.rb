@@ -204,12 +204,12 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes importmap, 'under: "controllers/recording_studio_attachable"'
   end
 
-  def test_dummy_loads_notifications_stimulus_controllers
+  def test_dummy_eagerly_loads_notifications_stimulus_controllers
     controllers = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
 
-    assert_includes controllers, 'lazyLoadControllersFrom("controllers/recording_studio_notifications", application)'
+    assert_includes controllers, 'eagerLoadControllersFrom("controllers/recording_studio_notifications", application)'
     assert_includes controllers,
-                    'lazyLoadControllersFrom("controllers/recording_studio_notifications_push", application)'
+                    'eagerLoadControllersFrom("controllers/recording_studio_notifications_push", application)'
   end
 
   def test_dummy_importmap_pins_flat_pack_controllers_for_stimulus

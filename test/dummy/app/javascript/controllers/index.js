@@ -5,5 +5,5 @@ import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 // Lazy load controllers from the host app and FlatPack engine on first use.
 lazyLoadControllersFrom("controllers", application)
 eagerLoadControllersFrom("controllers/recording_studio_attachable", application)
-lazyLoadControllersFrom("controllers/recording_studio_notifications", application)
-lazyLoadControllersFrom("controllers/recording_studio_notifications_push", application)
+eagerLoadControllersFrom("controllers/recording_studio_notifications", application)
+eagerLoadControllersFrom("controllers/recording_studio_notifications_push", application)
