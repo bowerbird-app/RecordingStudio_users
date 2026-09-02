@@ -570,6 +570,35 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "complete_registration raises when confirmation cannot be persisted" do
+    email = "confirm-fail-#{SecureRandom.hex(4)}@example.com"
+    start_otp_registration!(email)
+    user = User.find_by!(email: email)
+    code = current_otp_code(user, "registration")
+    challenge = active_challenge_for(user, "registration")
+
+    result = RecordingStudioUser.verify_otp!(
+      challenge_id: challenge.id,
+      code: code,
+      purpose: "registration",
+      session: { otp_challenge_id: challenge.id, otp_purpose: "registration" }
+    )
+
+    failing_user = result.user
+    failing_user.define_singleton_method(:confirm) do
+      self.confirmed_at = Time.current
+      false
+    end
+
+    assert_raises(ActiveRecord::RecordNotSaved) do
+      RecordingStudioUser.complete_registration!(user: failing_user, challenge: result.challenge)
+    end
+
+    user.reload
+    refute user.confirmed?
+    assert_nil RecordingStudioUser.profile_for(user)
+  end
+
   test "login challenge will not verify as registration" do
     user = confirm_otp_user!("purpose-#{SecureRandom.hex(4)}@example.com")
     sign_out_user!

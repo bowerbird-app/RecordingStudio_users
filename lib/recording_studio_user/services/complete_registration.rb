@@ -32,14 +32,29 @@ module RecordingStudioUser
       end
 
       def completed?
+        @user.reload
         @user.confirmed? && RecordingStudioUser.profile_for(@user).present?
       end
 
       def confirm_and_provision!
         ActiveRecord::Base.transaction do
-          @user.confirm unless @user.confirmed?
+          persist_confirmation!
           RecordingStudioUser.record_profile!(@user, actor: @user, **Profile.default_attributes_for(@user))
         end
+
+        @user.reload
+      end
+
+      def persist_confirmation!
+        return if @user.reload.confirmed?
+
+        raise ArgumentError, "OTP registration requires Devise confirmable" unless @user.respond_to?(:confirm)
+
+        @user.confirm
+        @user.reload
+        return if @user.confirmed?
+
+        raise ActiveRecord::RecordNotSaved, "OTP registration could not confirm user"
       end
 
       def instrument_completion!
@@ -51,6 +66,7 @@ module RecordingStudioUser
       end
 
       def roll_back_confirmation!
+        @user.reload
         return unless @user.confirmed? && RecordingStudioUser.profile_for(@user).nil?
 
         @user.update_column(:confirmed_at, nil)
