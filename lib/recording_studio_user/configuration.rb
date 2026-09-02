@@ -3,6 +3,8 @@
 require "active_support/core_ext/numeric/time"
 
 module RecordingStudioUser
+  DEFAULT_LOGIN_TITLE = "Welcome back"
+
   class Configuration
     PROTECTED_PROFILE_ATTRIBUTES = %w[
       id email password password_confirmation encrypted_password reset_password_token
@@ -25,7 +27,8 @@ module RecordingStudioUser
       admin_route_path: "admin",
       layout: "application",
       additional_profile_attributes: [],
-      require_password_confirmation: true,
+      require_password_confirmation: false,
+      login_title: DEFAULT_LOGIN_TITLE,
       otp_enabled: false,
       otp_login_enabled: true,
       otp_registration_enabled: true,
@@ -93,6 +96,10 @@ module RecordingStudioUser
 
     def password_registration_confirmation=(value)
       @password_registration_confirmation = value.to_sym
+    end
+
+    def login_title=(value)
+      @login_title = value.to_s.strip.presence || DEFAULT_LOGIN_TITLE
     end
 
     def omniauth_create_account=(value)

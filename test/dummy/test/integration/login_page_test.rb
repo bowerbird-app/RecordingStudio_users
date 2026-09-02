@@ -3,30 +3,70 @@
 require "test_helper"
 
 class LoginPageTest < ActionDispatch::IntegrationTest
-  test "sign in offers password, OTP, and provider forms" do
+  AUTH_SESSIONS_VIEW = RecordingStudioUser::Engine.root.join(
+    "app/views/recording_studio_user/auth/sessions/new.html.erb"
+  ).freeze
+
+  test "login paints Welcome back without Card or Remember me" do
     get new_user_session_path
 
     assert_response :success
-    assert_select "h2", text: "Sign in"
-    assert_select "body", text: /Password/
-    assert_select "body", text: /Email OTP/
+    assert_select "html[data-theme='rounded']"
+    assert_select "h2", text: "Welcome back"
+    assert_select "input[type='email'][name='user[email]']"
+    assert_select "input[type='password'][name='user[password]']"
+    assert_select "input[name='user[remember_me]']", count: 0
+    assert_select "button[type='submit']", text: "Sign in"
+    refute_includes response.body, "Remember me"
+    refute_includes response.body, "Email OTP"
+    refute_includes response.body, "Continue with password"
+    refute_includes response.body, "/sign_in/otp"
+    refute_includes response.body, "fixed inset-0"
+    refute_includes response.body, "place-content-center"
+    refute_includes response.body, "Default: admin@admin.com / Password"
+    source = File.read(AUTH_SESSIONS_VIEW)
+    refute_includes source, "FlatPack::Card::Component"
+    refute_includes source, "otp_session_otp_path"
+    assert_includes response.body, "min-h-dvh"
+    assert_includes response.body, "max-w-sm"
+    assert_includes response.body, "Don't have an account?"
+    assert_includes response.body, "text-center"
+    assert_match(/\bOr\b/, response.body)
 
     %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
       assert_select "form[method='post'] button[type='submit']", text: "Continue with #{label}"
     end
   end
 
-  test "password sign in paints Flatpack fields and provider forms" do
+  test "password sign in path renders the same primary form" do
     get "#{new_user_session_path}/password"
 
     assert_response :success
     assert_select "input[type='email'][name='user[email]']"
     assert_select "input[type='password'][name='user[password]']"
     assert_select "button[type='submit']", text: "Sign in"
+    refute_includes response.body, "Email OTP"
+  end
 
-    %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
-      assert_select "form[method='post'] button[type='submit']", text: "Continue with #{label}"
-    end
+  test "direct OTP sign in page renders email form without primary chooser" do
+    get "#{new_user_session_path}/otp"
+
+    assert_response :success
+    assert_select "input[name='user[email]']"
+    assert_select "button[type='submit']", text: "Send code"
+    refute_includes response.body, "Continue with password"
+  end
+
+  test "login title follows RecordingStudioUser.config.login_title" do
+    original = RecordingStudioUser.config.login_title
+    RecordingStudioUser.config.login_title = "Sign in to Acme"
+
+    get new_user_session_path
+
+    assert_response :success
+    assert_select "h2", text: "Sign in to Acme"
+  ensure
+    RecordingStudioUser.config.login_title = original
   end
 
   test "dummy OmniAuth follows credentials and never enables OmniAuth test mode in the app" do

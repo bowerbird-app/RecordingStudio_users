@@ -8,7 +8,7 @@ module RecordingStudioUser
 
       before_action :require_otp_enabled!
 
-      layout RecordingStudioUser.config.layout
+      layout "application"
 
       VERIFY_FAILURE_MESSAGES = {
         invalid_code: "That code did not work. Try again.",

@@ -8,12 +8,12 @@ module RecordingStudioUser
       def new; end
 
       def password
-        render :password
+        render :new
       end
 
       def create_password
         user = resource_class.find_for_database_authentication(email: sign_in_params[:email])
-        return render_password_failure("This account signs in with email codes. Use the Email OTP tab.") if
+        return render_password_failure("This account signs in with email codes.") if
           user&.registered_with_otp?
         return render_password_failure("Email or password did not match.") unless
           user&.valid_password?(sign_in_params[:password])
@@ -91,7 +91,7 @@ module RecordingStudioUser
 
       def render_password_failure(message)
         flash.now[:alert] = message
-        render :password, status: :unprocessable_entity
+        render :new, status: :unprocessable_entity
       end
 
       def render_verify_failure(result)

@@ -8,7 +8,9 @@ RecordingStudioUser.configure do |config|
   config.admin_route_path = "admin"
   config.layout = "application"
   config.additional_profile_attributes = []
-  config.require_password_confirmation = true
+  config.require_password_confirmation = false
+  # Devise login page heading (host sessions#new). Default "Welcome back".
+  # config.login_title = "Welcome back"
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
   # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in
