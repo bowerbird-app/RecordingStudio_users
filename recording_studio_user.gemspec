@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "devise", "~> 5.0"
-  spec.add_dependency "flat_pack", "~> 0.1.141"
+  spec.add_dependency "flat_pack", "~> 0.1.143"
   spec.add_dependency "omniauth", "~> 2.1"
   spec.add_dependency "omniauth-apple", "~> 1.3"
   spec.add_dependency "omniauth-google-oauth2", "~> 1.2"
