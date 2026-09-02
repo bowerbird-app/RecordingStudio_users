@@ -3,8 +3,6 @@
 require "active_support/core_ext/numeric/time"
 
 module RecordingStudioUser
-  DEFAULT_LOGIN_TITLE = "Welcome back"
-
   class Configuration
     PROTECTED_PROFILE_ATTRIBUTES = %w[
       id email password password_confirmation encrypted_password reset_password_token
@@ -43,7 +41,7 @@ module RecordingStudioUser
     }.freeze
 
     attr_accessor :user_class_name, :layout
-    attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]), :login_title)
+    attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]))
 
     BOOLEAN_SETTINGS.each do |setting|
       define_method("#{setting}=") do |value|
@@ -69,12 +67,7 @@ module RecordingStudioUser
 
     def initialize
       DEFAULTS.each { |setting, value| instance_variable_set("@#{setting}", value) }
-      @login_title = DEFAULT_LOGIN_TITLE
       @omniauth_providers = {}
-    end
-
-    def login_title=(value)
-      @login_title = value.to_s.strip.presence || DEFAULT_LOGIN_TITLE
     end
 
     def otp_login_enabled=(value)

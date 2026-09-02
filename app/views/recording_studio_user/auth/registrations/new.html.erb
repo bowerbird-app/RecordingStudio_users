@@ -1,74 +1,76 @@
-<div class="flex min-h-dvh items-center justify-center">
-  <div class="w-full max-w-sm space-y-6">
-    <%= render FlatPack::PageTitle::Component.new(
-      title: "Sign up",
-      variant: :h2,
-      class: "mb-0 pb-0 text-center"
-    ) %>
-
-    <% if flash[:alert].present? %>
-      <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
-    <% end %>
-
-    <%= form_with scope: :user, url: (respond_to?(:user_registration_path) ? user_registration_path : recording_studio_users.sign_up_path), method: :post do %>
-      <div class="space-y-4">
-        <% if @resource.errors.any? %>
-          <%= render FlatPack::Alert::Component.new(
-            title: "That sign up did not save",
-            description: @resource.errors.full_messages.join(", "),
-            style: :danger
+<div class="fixed inset-0 p-4">
+  <%= render FlatPack::Grid::Component.new(cols: 1, align: :center, class: "h-full w-full place-content-center justify-items-center") do %>
+    <%= render FlatPack::Card::Component.new(style: :default, class: "w-full max-w-md h-auto") do |card| %>
+      <% card.body do %>
+        <div class="space-y-6">
+          <%= render FlatPack::PageTitle::Component.new(
+            title: "Sign up",
+            variant: :h2,
+            class: "mb-0 pb-0"
           ) %>
-        <% end %>
 
-        <%= render FlatPack::EmailInput::Component.new(
-          name: "user[email]",
-          id: "user_email",
-          label: "Email",
-          value: @resource.email,
-          placeholder: "you@example.com",
-          required: true,
-          autocomplete: "email",
-          error: @resource.errors[:email].first
-        ) %>
+          <% if flash[:alert].present? %>
+            <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
+          <% end %>
 
-        <%= render FlatPack::PasswordInput::Component.new(
-          name: "user[password]",
-          id: "user_password",
-          label: "Password",
-          required: true,
-          autocomplete: "new-password",
-          help_text: "#{Devise.password_length.min} characters minimum",
-          error: @resource.errors[:password].first
-        ) %>
+          <%= form_with scope: :user, url: (respond_to?(:user_registration_path) ? user_registration_path : recording_studio_users.sign_up_path), method: :post do %>
+            <div class="space-y-4">
+              <% if @resource.errors.any? %>
+                <%= render FlatPack::Alert::Component.new(
+                  title: "That sign up did not save",
+                  description: @resource.errors.full_messages.join(", "),
+                  style: :danger
+                ) %>
+              <% end %>
 
-        <% if RecordingStudioUser.config.require_password_confirmation? %>
-          <%= render FlatPack::PasswordInput::Component.new(
-            name: "user[password_confirmation]",
-            id: "user_password_confirmation",
-            label: "Password confirmation",
-            required: true,
-            autocomplete: "new-password",
-            error: @resource.errors[:password_confirmation].first
-          ) %>
-        <% end %>
+              <%= render FlatPack::EmailInput::Component.new(
+                name: "user[email]",
+                id: "user_email",
+                label: "Email",
+                value: @resource.email,
+                placeholder: "you@example.com",
+                required: true,
+                autocomplete: "email",
+                error: @resource.errors[:email].first
+              ) %>
 
-        <%= render FlatPack::Button::Component.new(
-          text: "Sign up",
-          style: :primary,
-          size: :md,
-          type: "submit",
-          class: "w-full"
-        ) %>
-      </div>
-    <% end %>
+              <%= render FlatPack::PasswordInput::Component.new(
+                name: "user[password]",
+                id: "user_password",
+                label: "Password",
+                required: true,
+                autocomplete: "new-password",
+                help_text: "#{Devise.password_length.min} characters minimum",
+                error: @resource.errors[:password].first
+              ) %>
 
-    <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
-      Already have one?
-      <%= render FlatPack::Link::Component.new(href: (respond_to?(:new_user_session_path) ? new_user_session_path : recording_studio_users.sign_in_path)) do %>
-        Log in
+              <% if RecordingStudioUser.config.require_password_confirmation? %>
+                <%= render FlatPack::PasswordInput::Component.new(
+                  name: "user[password_confirmation]",
+                  id: "user_password_confirmation",
+                  label: "Password confirmation",
+                  required: true,
+                  autocomplete: "new-password",
+                  error: @resource.errors[:password_confirmation].first
+                ) %>
+              <% end %>
+
+              <%= render FlatPack::Button::Component.new(
+                text: "Sign up",
+                style: :primary,
+                size: :md,
+                type: "submit"
+              ) %>
+            </div>
+          <% end %>
+
+          <%= render FlatPack::Link::Component.new(href: (respond_to?(:new_user_session_path) ? new_user_session_path : recording_studio_users.sign_in_path)) do %>
+            Log in
+          <% end %>
+
+          <%= render "recording_studio_user/omniauth/continue_with_providers" %>
+        </div>
       <% end %>
-    </p>
-
-    <%= render "recording_studio_user/omniauth/continue_with_providers" %>
-  </div>
+    <% end %>
+  <% end %>
 </div>
