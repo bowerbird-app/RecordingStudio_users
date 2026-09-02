@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Primary sign-in and sign-up restore the `0.6.3` viewport-centered Flatpack chrome when OTP is enabled. Password forms live on `/users/sign_in` and `/users/sign_up`; email OTP stays on separate routes with no chooser or OTP link on the primary pages.
+- Email OTP request and verify screens use the same viewport-centered `max-w-sm` form as 0.6.3 sign-in.
 - Login codes are available to **any** confirmed, active account, including password accounts. `registered_with` records how an account was created rather than restricting how it signs in. Registration codes are still OTP-account only, and OTP accounts still cannot sign in with a password.
 - Renamed the users column `authentication_method` to `registered_with`. Predicates are `registered_with_otp?` and `registered_with_password?`. The generator ships `add_registered_with_to_users`, which creates the column or renames `authentication_method` when that leftover is still present.
 - Login notifications open a recipient-only code page while the challenge is active. The plaintext code remains absent from the notification row; used, revoked, expired, and over-attempted challenges show a request-new-code state.

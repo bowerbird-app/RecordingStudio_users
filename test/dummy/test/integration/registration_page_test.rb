@@ -60,6 +60,8 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name='user[email]']"
     assert_select "button[type='submit']", text: "Send code"
+    assert_includes response.body, "min-h-dvh"
+    assert_includes response.body, "max-w-sm"
     refute_includes response.body, "Continue with password"
   end
 
