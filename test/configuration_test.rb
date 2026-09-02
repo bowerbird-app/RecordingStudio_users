@@ -16,6 +16,7 @@ class ConfigurationTest < Minitest::Test
     assert_empty @configuration.additional_profile_attributes
     assert @configuration.require_password_confirmation
     assert_predicate @configuration, :require_password_confirmation?
+    assert_equal RecordingStudioUser::DEFAULT_LOGIN_TITLE, @configuration.login_title
     assert_empty @configuration.omniauth_providers
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?

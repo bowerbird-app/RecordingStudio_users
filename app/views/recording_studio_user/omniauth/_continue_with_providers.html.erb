@@ -1,6 +1,8 @@
-<%# Continue-with buttons for every configured OmniAuth provider. %>
+<%# Flatpack Or divider + Continue-with buttons for every configured OmniAuth provider. %>
 <% if recording_studio_user_omniauth_configured? %>
-  <div class="space-y-2">
+  <%= render FlatPack::Divider::Component.new(label: "Or", class: "my-4") %>
+
+  <div class="flex flex-col gap-2">
     <% recording_studio_user_omniauth_provider_names.each do |provider| %>
       <% authorize_path = recording_studio_user_omniauth_authorize_path(provider) %>
       <% next if authorize_path.blank? %>
@@ -19,3 +21,4 @@
     <% end %>
   </div>
 <% end %>
+
