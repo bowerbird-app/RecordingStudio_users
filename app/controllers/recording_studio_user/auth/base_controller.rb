@@ -8,7 +8,7 @@ module RecordingStudioUser
 
       before_action :require_otp_enabled!
 
-      layout :auth_layout
+      layout RecordingStudioUser.config.layout
 
       VERIFY_FAILURE_MESSAGES = {
         invalid_code: "That code did not work. Try again.",
@@ -20,14 +20,6 @@ module RecordingStudioUser
       }.freeze
 
       private
-
-      def auth_layout
-        if File.exist?(Rails.root.join("app/views/layouts/application.html.erb"))
-          "application"
-        else
-          RecordingStudioUser.config.layout
-        end
-      end
 
       def resource_class
         RecordingStudioUser.config.user_class

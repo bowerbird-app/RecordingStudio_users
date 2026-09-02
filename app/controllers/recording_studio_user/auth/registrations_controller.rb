@@ -19,7 +19,7 @@ module RecordingStudioUser
       def create_password
         build_password_resource(sign_up_params)
         return render_password_taken if otp_account?(submitted_email)
-        return render :new, status: :unprocessable_entity unless resource.save
+        return render :password, status: :unprocessable_entity unless resource.save
 
         provision_password_account!
         redirect_to after_sign_up_path_for(resource)
@@ -87,7 +87,7 @@ module RecordingStudioUser
 
       def render_password_taken
         flash.now[:alert] = EMAIL_TAKEN_MESSAGE
-        render :new, status: :unprocessable_entity
+        render :password, status: :unprocessable_entity
       end
 
       def provision_password_account!
