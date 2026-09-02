@@ -21,6 +21,7 @@ Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
     - 'lib/gem_template/hooks.rb'
+    - 'lib/recording_studio_user/configuration.rb'
 
 Metrics/MethodLength:
   Exclude:

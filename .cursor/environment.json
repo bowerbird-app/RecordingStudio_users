@@ -1,0 +1,4 @@
+{
+  "name": "recording-studio-users",
+  "install": ".cursor/fetch-skills.sh"
+}

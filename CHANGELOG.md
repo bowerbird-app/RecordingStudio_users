@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-09-02
+
+### Added
+- `RecordingStudioUser::Configuration#login_title` (default `"Welcome back"`) for the Devise login heading. Blank values fall back to the default. The install generator comments the option.
+
+### Changed
+- Dummy Devise login and sign-up restore the `0.6.0` chrome on top of live `0.6.2` OmniAuth. No Card, no Remember me, no seed Badge. Temporary Tailwind viewport centering on those Devise views only (`min-h-dvh` / inner `max-w-sm`). Centered `login_title` / **Sign up**, primary **Sign in** / **Sign up**, then a centered cross-link. Then `continue_with_providers`.
+- `continue_with_providers` again renders Flatpack Divider `label: "Or"` before the credential-gated Continue-with buttons. Buttons still submit CSRF-protected `form_with` POSTs from `0.6.2`. Dummy development credentials still show Google only.
+- `require_password_confirmation` default is `false` again. Dummy signup has no confirmation field unless the host sets the flag.
+- Users gemspec and dummy pin Flatpack `~> 0.1.143` (git tag `v0.1.143`, includes Divider).
+
+### Upgrade notes
+- Bump to `0.6.3`. Pin Flatpack `~> 0.1.143` (git tag `v0.1.143`).
+- Optional `config.login_title` (default `"Welcome back"`) for the Devise login heading.
+- `config.require_password_confirmation` now defaults to `false`. Set `true` if the host still wants a confirmation field on Devise sign-up.
+- Render `recording_studio_user/omniauth/continue_with_providers` in host Devise login and sign-up views. The partial includes the Or divider and one Continue button per configured provider. OmniAuth, identities, credentials gating, and Sign-in methods from `0.6.2` are unchanged.
+
 ## [0.6.2] - 2026-08-31
 
 ### Added
