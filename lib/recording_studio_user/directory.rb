@@ -60,12 +60,41 @@ module RecordingStudioUser
     end
 
     def create_devise_user!(email, password, password_confirmation, attributes)
-      RecordingStudioUser.config.user_class.create!(
+      user = RecordingStudioUser.config.user_class.new(
         email: email,
         password: password,
         password_confirmation: password_confirmation,
-        **attributes
+        **devise_user_attributes(attributes)
       )
+      skip_confirmation_for_password_account(user)
+      user.save!
+      user
+    end
+
+    def devise_user_attributes(attributes)
+      attrs = attributes.symbolize_keys
+      return attrs unless RecordingStudioUser.config.user_class.column_names.include?("registered_with")
+
+      attrs.merge(registered_with: "password")
+    end
+
+    def skip_confirmation_for_password_account(user)
+      return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
+      return unless user.respond_to?(:skip_confirmation!)
+
+      user.skip_confirmation!
+    end
+
+    def create_unconfirmed_user!(email:)
+      raise ArgumentError, "OTP is not enabled" unless RecordingStudioUser.config.otp_enabled?
+
+      user = RecordingStudioUser.config.user_class.new(
+        email: email,
+        registered_with: "otp"
+      )
+      user.skip_confirmation_notification! if user.respond_to?(:skip_confirmation_notification!)
+      user.save!
+      user
     end
 
     def write_profile_recording(user, actor, assignment)

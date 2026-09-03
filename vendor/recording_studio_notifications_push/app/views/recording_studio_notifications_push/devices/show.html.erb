@@ -1,0 +1,166 @@
+<%
+  installations_payload = @installations.map { |installation|
+    {
+      id: installation.id,
+      firebase_installation_id: installation.firebase_installation_id
+    }
+  }
+  secondary_actions = capture do
+%>
+      <% if @notifications_settings_path.present? %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Manage notifications",
+          style: :default,
+          size: :md,
+          href: @notifications_settings_path
+        ) %>
+      <% end %>
+      <%= render FlatPack::Button::Component.new(
+        text: "Not getting alerts?",
+        style: :ghost,
+        size: :md,
+        type: "button",
+        data: {
+          modal_id: "push-notification-help-modal"
+        }
+      ) %>
+<% end %>
+<div class="mx-auto flex w-full max-w-2xl flex-col gap-6"
+     data-controller="recording-studio-notifications-push--push-devices"
+     data-recording-studio-notifications-push--push-devices-register-url-value="<%= installations_path %>"
+     data-recording-studio-notifications-push--push-devices-unregister-url-template-value="<%= installations_path %>/:id"
+     data-recording-studio-notifications-push--push-devices-vapid-key-value="<%= @vapid_public_key.to_s %>"
+     data-recording-studio-notifications-push--push-devices-firebase-config-value="<%= (@firebase_web_config || {}).to_json %>"
+     data-recording-studio-notifications-push--push-devices-firebase-ready-value="<%= @firebase_ready %>"
+     data-recording-studio-notifications-push--push-devices-installations-value="<%= installations_payload.to_json %>"
+     <% if @service_worker_path.present? %>
+       data-recording-studio-notifications-push--push-devices-service-worker-path-value="<%= @service_worker_path %>"
+     <% end %>>
+
+  <%= render FlatPack::PageNav::Component.new(
+    anchor_url: main_app.root_path
+  ) %>
+
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Push Notifications",
+    subtitle: "Get notifications on your devices",
+    variant: :h1
+  ) %>
+
+  <% if @firebase_ready %>
+    <div class="flex flex-wrap items-center gap-3">
+      <div data-recording-studio-notifications-push--push-devices-target="enablePanel">
+        <%= render FlatPack::Button::Component.new(
+          text: "Enable on this browser",
+          style: :primary,
+          size: :md,
+          type: "button",
+          data: { push_enable: true }
+        ) %>
+      </div>
+      <%= secondary_actions %>
+    </div>
+  <% else %>
+    <%= render FlatPack::Alert::Component.new(
+      style: :info,
+      title: "Firebase is not configured yet",
+      description: "Set the FIREBASE_* environment variables to enable real browser registration. For local demos you can still paste a Firebase installation id below."
+    ) %>
+
+    <div class="flex flex-col gap-3">
+      <%= render FlatPack::TextInput::Component.new(
+        name: "manual_fid",
+        label: "Firebase installation id",
+        placeholder: "Paste a FID for local testing",
+        data: { recording_studio_notifications_push__push_devices_target: "manualFid" }
+      ) %>
+      <div class="flex flex-wrap items-center gap-3">
+        <%= render FlatPack::Button::Component.new(
+          text: "Register this id",
+          style: :primary,
+          size: :md,
+          type: "button",
+          data: { action: "recording-studio-notifications-push--push-devices#registerManualFid" }
+        ) %>
+        <%= secondary_actions %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= render FlatPack::Modal::Component.new(
+    id: "push-notification-help-modal",
+    title: "Not receiving push notifications?",
+    size: :md
+  ) do |modal| %>
+    <% modal.body do %>
+      <div class="flex flex-col gap-4">
+        <div>
+          <p class="mb-2 text-sm font-medium text-(--surface-content-color)">In this browser</p>
+          <ol data-recording-studio-notifications-push--push-devices-target="helpSiteSteps"
+              class="space-y-1 text-sm text-(--surface-muted-content-color)">
+            <li>1. Open this browser’s site settings for notifications</li>
+            <li>2. Find this site in the notification permissions</li>
+            <li>3. Choose Allow, then tap Enable again</li>
+          </ol>
+        </div>
+
+        <div>
+          <p class="mb-2 text-sm font-medium text-(--surface-content-color)">On this device</p>
+          <ol data-recording-studio-notifications-push--push-devices-target="helpOsSteps"
+              class="space-y-1 text-sm text-(--surface-muted-content-color)">
+            <li>1. Open your device notification settings</li>
+            <li>2. Find this browser in the application list</li>
+            <li>3. Allow notifications, then try a test alert</li>
+          </ol>
+        </div>
+      </div>
+    <% end %>
+    <% modal.footer do %>
+      <%= render FlatPack::Button::Component.new(
+        text: "Got it",
+        style: :primary,
+        size: :md,
+        type: "button",
+        data: { action: "flat-pack--modal#close" }
+      ) %>
+    <% end %>
+  <% end %>
+
+  <% if @installations.any? %>
+    <%= render FlatPack::List::Component.new(divider: true) do %>
+      <% @installations.each do |installation| %>
+        <% remove_button = capture do %>
+          <%= render FlatPack::Button::Component.new(
+            icon: "trash",
+            icon_only: true,
+            style: :ghost,
+            size: :sm,
+            href: device_path(installation),
+            aria: { label: "Remove device" },
+            data: {
+              turbo_method: :delete,
+              turbo_confirm: "Stop push alerts on this device?"
+            }
+          ) %>
+        <% end %>
+        <%= render FlatPack::List::Item.new(
+          icon: installation.list_icon,
+          trailing: remove_button
+        ) do %>
+          <div data-installation-id="<%= installation.id %>">
+            <p class="truncate text-sm font-medium text-(--surface-content-color)">
+              <%= installation.display_label %>
+              <span class="hidden text-xs font-normal text-(--surface-muted-content-color)"
+                    data-installation-current-label> · this device</span>
+            </p>
+            <% if installation.last_seen_at.present? %>
+              <p class="mt-1 text-xs text-(--surface-muted-content-color)">
+                Last seen <%= time_ago_in_words(installation.last_seen_at) %> ago
+              </p>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

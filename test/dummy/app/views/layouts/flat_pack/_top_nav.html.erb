@@ -22,6 +22,7 @@
   <% nav.right do %>
     <% if user_signed_in? %>
       <div class="flex items-center gap-3">
+        <%= recording_studio_notifications_async_menu(recipient: current_user, limit: 5) %>
         <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
 
         <%= render FlatPack::Avatar::Component.new(

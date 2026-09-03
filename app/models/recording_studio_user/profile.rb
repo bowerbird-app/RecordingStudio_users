@@ -24,6 +24,13 @@ module RecordingStudioUser
 
     before_create { self.created_at ||= Time.current }
 
+    # Registration asks for an email before any name, so a new profile starts
+    # from the email local part until the person edits it.
+    def self.default_attributes_for(user)
+      local = user.email.to_s.split("@").first.to_s
+      { first_name: local.presence || "Account", last_name: "Member", time_zone: "UTC" }
+    end
+
     def additional_profile_attributes
       super || {}
     end

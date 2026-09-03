@@ -1,10 +1,37 @@
 Rails.application.routes.draw do
-  devise_for :users, controllers: {
-    omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
-  }
+  devise_for :users,
+             skip: %i[sessions registrations passwords],
+             controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
+
+  scope module: "recording_studio_user/auth", path: "users" do
+    get "sign_up", to: "registrations#new", as: :new_user_registration
+    get "sign_up/password", to: "registrations#password"
+    post "sign_up", to: "registrations#create_password", as: :user_registration
+    post "sign_up/password", to: "registrations#create_password"
+    get "sign_up/otp", to: "registrations#otp"
+    post "sign_up/otp", to: "registrations#create_otp"
+    get "sign_up/verify", to: "registrations#verify", as: :verify_user_registration
+    post "sign_up/verify", to: "registrations#submit_verify"
+    post "sign_up/resend", to: "registrations#resend", as: :resend_user_registration
+
+    get "sign_in", to: "sessions#new", as: :new_user_session
+    get "sign_in/password", to: "sessions#password"
+    post "sign_in", to: "sessions#create_password", as: :user_session
+    post "sign_in/password", to: "sessions#create_password"
+    get "sign_in/otp", to: "sessions#otp"
+    post "sign_in/otp", to: "sessions#create_otp"
+    get "sign_in/verify", to: "sessions#verify", as: :verify_user_session
+    post "sign_in/verify", to: "sessions#submit_verify"
+    post "sign_in/resend", to: "sessions#resend", as: :resend_user_session
+  end
+
+  devise_scope :user do
+    delete "users/sign_out", to: "devise/sessions#destroy", as: :destroy_user_session
+    get "users/password/new", to: "recording_studio_user/auth/passwords#new", as: :new_user_password
+    post "users/password", to: "recording_studio_user/auth/passwords#create", as: :user_password
+  end
 
   # RecordingStudio engine is data/API-focused and has no browser root route.
-  # Keep legacy links working by redirecting the base path to the app home.
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioAccessible::Engine, at: "/recording_studio_accessible"
@@ -12,16 +39,12 @@ Rails.application.routes.draw do
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
   recording_studio_admin_for :admin, at: "/admin", root_section: :root
   mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users
+  mount RecordingStudioNotificationsPush::Engine, at: "/notifications/push"
+  mount RecordingStudioNotifications::Engine, at: "/notifications"
 
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if defined?(LetterOpenerWeb)
 
   get "docs/install", to: "docs#install", as: :docs_install
   get "docs/config", to: "docs#configuration", as: :docs_config
@@ -30,6 +53,5 @@ Rails.application.routes.draw do
   get "docs/gem_views", to: "docs#gem_views", as: :docs_gem_views
   get "docs/methods", to: "docs#methods", as: :docs_methods
 
-  # Defines the root path route ("/")
   root "home#index"
 end

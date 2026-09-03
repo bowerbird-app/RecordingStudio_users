@@ -5,6 +5,7 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 require_relative "support/profile_image_test_helper"
+require_relative "support/push_test_helper"
 
 OmniAuth.config.test_mode = true
 
@@ -44,4 +45,5 @@ end
 
 class ActionDispatch::IntegrationTest
   include AccessGrantTestHelper
+  include PushTestHelper
 end

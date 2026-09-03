@@ -3,6 +3,10 @@ source "https://rubygems.org"
 # Use the RecordingStudioUser engine
 gem "recording_studio_user", path: "../.."
 
+gem "recording_studio_notifications", path: "../../vendor/recording_studio_notifications"
+gem "recording_studio_notifications_email", path: "../../vendor/recording_studio_notifications_email"
+gem "recording_studio_notifications_push", path: "../../vendor/recording_studio_notifications_push"
+
 # RecordingStudio engine
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.7.0"
@@ -82,4 +86,5 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  gem "letter_opener_web"
 end

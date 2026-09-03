@@ -1,0 +1,18 @@
+<div class="flex min-h-dvh items-center justify-center">
+  <div class="w-full max-w-sm space-y-6">
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Email sign-in code",
+      variant: :h2,
+      class: "mb-0 pb-0 text-center"
+    ) %>
+    <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
+      We will email a code if your account is eligible.
+    </p>
+    <%= form_with scope: :user, url: otp_session_otp_path, method: :post do %>
+      <div class="space-y-4">
+        <%= render FlatPack::EmailInput::Component.new(name: "user[email]", label: "Email", required: true, autocomplete: "email") %>
+        <%= render FlatPack::Button::Component.new(text: "Send code", style: :primary, size: :md, type: "submit", class: "w-full") %>
+      </div>
+    <% end %>
+  </div>
+</div>

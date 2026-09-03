@@ -51,7 +51,39 @@
         icon: :eye
       ) %>
 
+      <% if defined?(LetterOpenerWeb) %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          text: "Letters",
+          href: letter_opener_web.letters_path,
+          icon: :envelope,
+          active: request.path.start_with?("/letter_opener")
+        ) %>
+      <% end %>
+
       <% if user_signed_in? %>
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          text: "Notifications",
+          href: recording_studio_notifications.notifications_path,
+          icon: :bell,
+          active: request.path.start_with?("/notifications") &&
+            !request.path.start_with?("/notifications/push") &&
+            !request.path.start_with?("/notifications/settings")
+        ) %>
+
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          text: "Notification settings",
+          href: recording_studio_notifications.settings_path,
+          icon: :settings,
+          active: request.path.start_with?(recording_studio_notifications.settings_path)
+        ) %>
+
+        <%= render FlatPack::Sidebar::Item::Component.new(
+          text: "Push devices",
+          href: recording_studio_notifications_push.devices_path,
+          icon: :device_phone_mobile,
+          active: request.path.start_with?("/notifications/push")
+        ) %>
+
         <% profile_path = recording_studio_users.profile_path %>
         <%= render FlatPack::Sidebar::Item::Component.new(
           text: "My profile",

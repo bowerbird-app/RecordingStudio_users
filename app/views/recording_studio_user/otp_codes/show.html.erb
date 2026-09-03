@@ -1,0 +1,28 @@
+<% content_for :title, "Your sign-in code | Recording Studio User" %>
+
+<% recording_studio_page_nav(
+  title: "Your sign-in code",
+  page_nav_anchor_url: main_app.root_path,
+  page_nav_anchor_label: "Close"
+) %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Your sign-in code",
+  subtitle: (@code.present? ? "Use this code to finish signing in." : nil),
+  variant: :h1
+) %>
+
+<% if @code.present? %>
+  <p class="select-all font-mono text-5xl font-semibold tracking-[0.25em] text-(--surface-content-color)">
+    <%= @code %>
+  </p>
+  <p class="mt-2 text-sm text-(--surface-muted-content-color)">
+    Expires in about <%= time_ago_in_words(@challenge.expires_at) %>.
+  </p>
+<% else %>
+  <%= render FlatPack::Alert::Component.new(
+    title: "This code is no longer valid",
+    description: "Request a fresh code from sign in.",
+    style: :info
+  ) %>
+<% end %>

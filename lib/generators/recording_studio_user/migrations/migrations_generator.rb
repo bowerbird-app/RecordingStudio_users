@@ -10,43 +10,44 @@ module RecordingStudioUser
 
       source_root File.expand_path("templates", __dir__)
 
-      desc "Copies RecordingStudioUser People, Profile, and Identity tables into the host application."
+      desc "Copies RecordingStudioUser People, Profile, Identity, and OTP tables into the host application."
 
       class_option :skip_existing,
                    type: :boolean,
                    default: true,
                    desc: "Do not create a second copy of an engine migration"
 
-      def copy_people_and_profiles_migration
-        if options[:skip_existing] && people_profiles_migration_exists?
-          say "skip create_recording_studio_user_people_and_profiles.rb (already exists)", :yellow
-        else
-          migration_template "create_recording_studio_user_people_and_profiles.rb.tt",
-                             "db/migrate/create_recording_studio_user_people_and_profiles.rb"
-        end
-      end
+      MIGRATIONS = {
+        "create_recording_studio_user_people_and_profiles" => "create_recording_studio_user_people_and_profiles.rb.tt",
+        "restore_recording_studio_user_identities" => "restore_recording_studio_user_identities.rb.tt",
+        "add_registered_with_to_users" => "add_registered_with_to_users.rb.tt",
+        "add_devise_confirmable_to_users" => "add_devise_confirmable_to_users.rb.tt",
+        "create_recording_studio_user_otp_challenges" => "create_recording_studio_user_otp_challenges.rb.tt"
+      }.freeze
 
-      def copy_identities_migration
-        if options[:skip_existing] && identities_migration_exists?
-          say "skip restore_recording_studio_user_identities.rb (already exists)", :yellow
-        else
-          migration_template "restore_recording_studio_user_identities.rb.tt",
-                             "db/migrate/restore_recording_studio_user_identities.rb"
+      def copy_migrations
+        MIGRATIONS.each do |basename, template|
+          if options[:skip_existing] && migration_already_exists?(basename)
+            say "skip #{basename}.rb (already exists)", :yellow
+            next
+          end
+
+          migration_template template, "db/migrate/#{basename}.rb"
         end
       end
 
       private
 
+      def migration_already_exists?(basename)
+        Dir.glob(File.join(destination_root, "db/migrate", "*_#{basename}.rb")).any?
+      end
+
       def people_profiles_migration_exists?
-        Dir.glob(
-          File.join(destination_root, "db/migrate", "*_create_recording_studio_user_people_and_profiles.rb")
-        ).any?
+        migration_already_exists?("create_recording_studio_user_people_and_profiles")
       end
 
       def identities_migration_exists?
-        Dir.glob(
-          File.join(destination_root, "db/migrate", "*_restore_recording_studio_user_identities.rb")
-        ).any?
+        migration_already_exists?("restore_recording_studio_user_identities")
       end
     end
   end

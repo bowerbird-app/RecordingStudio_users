@@ -35,6 +35,10 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
       assert_select "a, button", text: /Continue with #{Regexp.escape(label)}/
     end
+
+    get "#{new_user_session_path}/password"
+
+    assert_response :success
     assert_select "input[type='password']"
 
     get new_user_registration_path

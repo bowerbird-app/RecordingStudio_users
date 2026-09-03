@@ -192,6 +192,45 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `login_title` defaults to `"Welcome back"` for the host Devise login heading. Blank values fall back to that default.
 
+## Email OTP authentication (opt-in)
+
+OTP registration and login are **disabled by default**. Turn them on only after running the OTP migrations and installing `recording_studio_notifications` with the email channel gem (and push, if you want login codes on devices).
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.otp_enabled = true
+  config.otp_registration_enabled = true
+  config.otp_login_enabled = true
+  config.registration_authentication_methods = %i[password otp]
+  config.otp_registration_channels = %i[email]
+  config.otp_login_channels = %i[email push]
+end
+```
+
+```bash
+bin/rails generate recording_studio_user:migrations
+bin/rails db:migrate
+```
+
+Mount the OTP auth routes from this gem's `config/routes.rb`. Password sign-up and sign-in keep working. See `MIGRATION_NOTES.md` for backfill details and route mapping.
+
+`registered_with` records how the account was created, not the only way it can sign in:
+
+- **Password accounts** can sign in with their password *or* request an email code. Having a password is a capability, not a restriction.
+- **OTP accounts** have no usable password, so they sign in with email codes only.
+
+Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing, so the form cannot be used to discover which addresses exist.
+
+Login notifications link to a protected code page under the Users mount. The
+page decrypts the code only while its challenge is active and only for the
+recipient; the plaintext code is never stored on the notification. Used,
+revoked, expired, and over-attempted challenges show a request-new-code state.
+
+Email and push resolve their title and body at delivery time through
+`RecordingStudioNotifications.register_delivery_payload_resolver`. Hosts can
+replace the `:registration_otp` or `:login_otp` resolver to customize channel
+copy without changing the persisted notification or the protected code page.
+
 Mounted profile show/edit/update still authenticate with Devise, then authorize with `RecordingStudioAccessible.authorized?` on the current user's Profile recording. Do not add a `current_user`-only ACL, `can_access?`, or hand-built Access rows.
 
 Flash notices come from the host layout. Profile show does not render `notice` again. When the host uses Recording Studio's default layout, that layout already draws `flash[:notice]` as a FlatPack alert.
@@ -216,8 +255,9 @@ Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable
 | --- | --- |
 | `admin@admin.com` | `Password` |
 | `member@admin.com` | `Password` |
+| `otp@admin.com` | none — signs in with an email code |
 
-Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Workspace remains the host-owned bucket.
+Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Dummy mounts notifications at `/notifications` (inbox and settings), email as a delivery channel, and push at `/notifications/push`. Workspace remains the host-owned bucket.
 
 ## Development
 

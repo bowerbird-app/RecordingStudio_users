@@ -83,6 +83,39 @@ class ConfigurationTest < Minitest::Test
     assert_equal %i[locale preferred_name], @configuration.additional_profile_attributes
   end
 
+  def test_otp_defaults_and_validation
+    assert_equal false, @configuration.otp_enabled
+    assert @configuration.otp_login_enabled?
+    assert @configuration.otp_registration_enabled?
+    assert_equal %i[password otp], @configuration.registration_authentication_methods
+    assert_equal 10.minutes, @configuration.otp_expires_in
+    assert_equal 5, @configuration.otp_max_attempts
+    assert_equal 60.seconds, @configuration.otp_resend_cooldown
+    assert_equal %i[email], @configuration.otp_registration_channels
+    assert_equal %i[email push], @configuration.otp_login_channels
+    assert_equal 7.days, @configuration.unconfirmed_user_retention
+  end
+
+  def test_otp_login_disabled_with_otp_registration_raises
+    assert_raises(ArgumentError) { @configuration.otp_login_enabled = false }
+
+    fresh = RecordingStudioUser::Configuration.new
+    fresh.registration_authentication_methods = %i[password]
+    fresh.otp_login_enabled = false
+    assert_raises(ArgumentError) { fresh.registration_authentication_methods = %i[otp] }
+  end
+
+  def test_invalid_registration_authentication_methods_raise
+    assert_raises(ArgumentError) { @configuration.registration_authentication_methods = %i[sms] }
+  end
+
+  def test_non_positive_otp_settings_raise
+    assert_raises(ArgumentError) { @configuration.otp_expires_in = 0 }
+    assert_raises(ArgumentError) { @configuration.otp_max_attempts = 0 }
+    assert_raises(ArgumentError) { @configuration.otp_resend_cooldown = 0 }
+    assert_raises(ArgumentError) { @configuration.unconfirmed_user_retention = 0 }
+  end
+
   def test_mounted_admin_path_uses_configured_paths
     original_config = RecordingStudioUser.config
     RecordingStudioUser.instance_variable_set(:@config, @configuration)

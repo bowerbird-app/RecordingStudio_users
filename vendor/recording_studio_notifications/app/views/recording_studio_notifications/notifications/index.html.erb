@@ -1,0 +1,34 @@
+<style>
+  .rsn-rollup-accordion [class*="border-[var(--accordion-item-border-color)]"] {
+    border-color: transparent !important;
+    border-bottom-color: transparent !important;
+  }
+
+  .rsn-rollup-accordion .border-b {
+    border-bottom-color: transparent !important;
+  }
+</style>
+
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageNav::Component.new(
+    anchor_url: main_app.root_path
+  ) %>
+
+  <%= render partial: "recording_studio_notifications/notifications/title" %>
+
+  <% if @notification_sections.any? %>
+    <div id="notifications-list" class="flex flex-col">
+      <%= render partial: "recording_studio_notifications/notifications/page", locals: { notification_sections: @notification_sections } %>
+    </div>
+
+    <div class="pt-2">
+      <%= render partial: "recording_studio_notifications/notifications/next_page", locals: { page: @page, has_next_page: @has_next_page } %>
+    </div>
+  <% else %>
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.body do %>
+        <p class="text-sm text-(--surface-muted-content-color)">No notifications yet.</p>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

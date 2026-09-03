@@ -184,6 +184,14 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes sidebar, 'text: "My profile"'
     assert_includes sidebar, "recording_studio_users.profile_path"
     refute_includes sidebar, "recording_studio_users.admin_path"
+    assert_includes sidebar, 'text: "Letters"'
+    assert_includes sidebar, "letter_opener_web.letters_path"
+    assert_includes sidebar, 'text: "Notifications"'
+    assert_includes sidebar, "recording_studio_notifications.notifications_path"
+    assert_includes sidebar, 'text: "Notification settings"'
+    assert_includes sidebar, "recording_studio_notifications.settings_path"
+    assert_includes sidebar, 'text: "Push devices"'
+    assert_includes sidebar, "recording_studio_notifications_push.devices_path"
   end
 
   def test_dummy_importmap_pins_recording_studio_admin_controllers
@@ -194,6 +202,14 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes importmap, 'to: "recording_studio_admin/controllers"'
     assert_includes importmap, 'pin "@rails/activestorage"'
     assert_includes importmap, 'under: "controllers/recording_studio_attachable"'
+  end
+
+  def test_dummy_eagerly_loads_notifications_stimulus_controllers
+    controllers = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
+
+    assert_includes controllers, 'eagerLoadControllersFrom("controllers/recording_studio_notifications", application)'
+    assert_includes controllers,
+                    'eagerLoadControllersFrom("controllers/recording_studio_notifications_push", application)'
   end
 
   def test_dummy_importmap_pins_flat_pack_controllers_for_stimulus

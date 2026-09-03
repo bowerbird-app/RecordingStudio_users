@@ -40,6 +40,10 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 
+  # Preview OTP and other mail in the dummy at /letter_opener.
+  config.action_mailer.delivery_method = :letter_opener_web
+  config.action_mailer.perform_deliveries = true
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
@@ -81,6 +85,7 @@ Rails.application.configure do
   config.hosts << ".cursor.com"
   config.hosts << ".ngrok.io"
   config.hosts << ".ngrok-free.app"
+  config.hosts << ".trycloudflare.com"
 
   # Keep CSRF tokens enabled, but relax strict origin matching so
   # localhost-origin form posts work against forwarded preview URLs.

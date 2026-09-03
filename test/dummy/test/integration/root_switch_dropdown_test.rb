@@ -7,10 +7,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   test "workspace home shows only the profile action" do
-    user = User.find_or_create_by!(email: "root-switch-test@example.com") do |record|
-      record.password = "Password123!"
-      record.password_confirmation = "Password123!"
-    end
+    user = password_test_user("root-switch-test@example.com")
 
     sign_in user
 
@@ -40,10 +37,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
   end
 
   test "admin root home shows profile and users admin actions" do
-    user = User.find_or_create_by!(email: "root-switch-admin-test@example.com") do |record|
-      record.password = "Password123!"
-      record.password_confirmation = "Password123!"
-    end
+    user = password_test_user("root-switch-admin-test@example.com")
 
     sign_in user
 
@@ -135,6 +129,16 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def password_test_user(email)
+    user = User.find_or_initialize_by(email: email)
+    user.password = "Password123!"
+    user.password_confirmation = "Password123!"
+    user.registered_with = "password"
+    user.skip_confirmation! if user.respond_to?(:skip_confirmation!) && !user.confirmed?
+    user.save!
+    user
+  end
 
   def switch_to(root_recording)
     patch "/recording_studio_root_switchable/v1/root_switch", params: {

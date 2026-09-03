@@ -4,8 +4,12 @@ module RecordingStudioUser
   module ProfiledUser
     extend ActiveSupport::Concern
 
+    REGISTERED_WITH_VALUES = %w[password otp].freeze
+
     included do
       before_validation :fill_password_confirmation_when_optional
+      validates :registered_with, inclusion: { in: REGISTERED_WITH_VALUES }, if: :registered_with_column?
+      after_create :confirm_password_account, if: :registered_with_password?
 
       has_many :identities,
                class_name: "RecordingStudioUser::Identity",
@@ -22,8 +26,23 @@ module RecordingStudioUser
       RecordingStudioUser.profile_for(self)
     end
 
+    def registered_with_otp?
+      registered_with_column? && registered_with == "otp"
+    end
+
+    def registered_with_password?
+      !registered_with_column? || registered_with.blank? || registered_with == "password"
+    end
+
     def password_required?
+      return false if registered_with_otp?
       return false if identities.exists? && password.blank? && password_confirmation.blank?
+
+      super
+    end
+
+    def active_for_authentication?
+      return false if registered_with_otp? && !confirmed?
 
       super
     end
@@ -43,12 +62,25 @@ module RecordingStudioUser
 
     private
 
+    def registered_with_column?
+      self.class.column_names.include?("registered_with")
+    end
+
     def fill_password_confirmation_when_optional
       return if RecordingStudioUser.config.require_password_confirmation?
       return unless respond_to?(:password) && respond_to?(:password_confirmation=)
       return if password.blank?
 
       self.password_confirmation = password
+    end
+
+    def confirm_password_account
+      return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
+      return unless registered_with_password?
+      return unless self.class.column_names.include?("confirmed_at")
+      return if confirmed_at.present?
+
+      update_column(:confirmed_at, Time.current)
     end
   end
 end

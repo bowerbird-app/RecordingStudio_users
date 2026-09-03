@@ -61,8 +61,52 @@ class MigrationsGeneratorTest < Minitest::Test
       )
       generator.define_singleton_method(:destination_root) { dir }
 
+      assert generator.send(:migration_already_exists?, "create_recording_studio_user_people_and_profiles")
       assert generator.send(:people_profiles_migration_exists?)
       assert generator.send(:identities_migration_exists?)
     end
+  end
+
+  def test_registered_with_migration_template
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/add_registered_with_to_users.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "registered_with"
+    assert_includes template, "users_registered_with_check"
+    assert_includes template, "UPDATE users SET registered_with = 'password'"
+    assert_includes template, "rename_column :users, :authentication_method, :registered_with"
+    refute_includes template, "add_column :users, :authentication_method"
+  end
+
+  def test_confirmable_backfill_migration_template
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/add_devise_confirmable_to_users.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "confirmation_token"
+    assert_includes template, "confirmed_at"
+    assert_includes template, "UPDATE users SET confirmed_at = CURRENT_TIMESTAMP"
+  end
+
+  def test_otp_challenges_migration_template
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/" \
+        "create_recording_studio_user_otp_challenges.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "create_table :recording_studio_user_otp_challenges"
+    assert_includes template, "code_digest"
+    assert_includes template, "delivery_code_ciphertext"
+    assert_includes template, "expires_at"
   end
 end

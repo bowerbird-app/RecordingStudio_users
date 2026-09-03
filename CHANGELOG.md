@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Email OTP request and verify screens use the same viewport-centered `max-w-sm` form as 0.6.3 sign-in.
+- Login codes are available to **any** confirmed, active account, including password accounts. `registered_with` records how an account was created rather than restricting how it signs in. Registration codes are still OTP-account only, and OTP accounts still cannot sign in with a password.
+- Renamed the users column `authentication_method` to `registered_with`. Predicates are `registered_with_otp?` and `registered_with_password?`. The generator ships `add_registered_with_to_users`, which creates the column or renames `authentication_method` when that leftover is still present.
+- Login notifications open a recipient-only code page while the challenge is active. The plaintext code remains absent from the notification row; used, revoked, expired, and over-attempted challenges show a request-new-code state.
+- Dummy eagerly registers Notifications and Push Stimulus controllers so their loaders do not try to resolve Flatpack controllers inside notification namespaces.
+- Dummy vendors `recording_studio_notifications` `0.3.0`, `recording_studio_notifications_email` `0.3.0`, and `recording_studio_notifications_push` `0.2.0` from their merged `main` branches.
+- Dummy mounts the notifications inbox at `/notifications`, email as a channel (no screens), and push devices at `/notifications/push`. Debug chrome adds inbox, settings, and devices links plus the async notification menu.
+- Dummy development mail uses Letter Opener Web. The debug sidebar adds a **Letters** link to `/letter_opener`.
+- Dummy seeds a confirmed `otp@admin.com` account so email-code sign-in is testable. Password accounts do not receive login codes.
+
+### Upgrade notes
+- Hosts that generated `*_add_authentication_method_to_users.rb` and have not run it should delete that file, then generate and migrate `add_registered_with_to_users`. If the old column already exists, that same migration renames it. Verify with: `User.column_names.include?("registered_with")` and `!User.column_names.include?("authentication_method")`.
+
+## [0.7.0] - 2026-09-01
+
+### Added
+- Optional email OTP registration and login (`config.otp_enabled`, default `false`). Password and OTP are separate registration choices; `authentication_method` is persisted as `password` or `otp`.
+- `RecordingStudioUser.create_unconfirmed_user!`, `issue_otp!`, `verify_otp!`, `complete_registration!`, and `OtpDeliveryPayload` for secure notification delivery.
+- Migration generator templates for `authentication_method`, Devise confirmable columns, and `recording_studio_user_otp_challenges`.
+- Auth controllers and Flatpack views for password/OTP registration and login when OTP is enabled.
+- `recording_studio_user:cleanup_otp` task for expired challenges and abandoned unconfirmed OTP users.
+
+### Changed
+- When `otp_enabled`, the engine idempotently enables Devise `:confirmable` and registers `registration_otp` / `login_otp` notification types with delivery-payload resolvers.
+- Password registration calls `skip_confirmation!` when `password_registration_confirmation` is `:existing_policy`.
+
+### Upgrade notes
+- Hosts that relied on password accounts being refused login codes must set `otp_login_enabled = false` to keep that behaviour. Verify with: request a code for a confirmed password account and assert `RecordingStudioUser::OtpChallenge.where(user: user, purpose: "login")` is empty.
+- Requires `recording_studio_notifications` `>= 0.3.0` and `recording_studio_notifications_email` when OTP is enabled. Optional push uses `recording_studio_notifications_push` `>= 0.2.0` for login codes.
+- Run `rails generate recording_studio_user:migrations` and migrate before setting `config.otp_enabled = true`.
+- Map host Devise routes to `recording_studio_user/auth/*` controllers (see dummy `config/routes.rb`). Keep OmniAuth callbacks on `recording_studio_user/omniauth_callbacks`.
+
 ## [0.6.3] - 2026-09-02
 
 ### Added

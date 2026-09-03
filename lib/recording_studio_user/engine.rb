@@ -4,6 +4,10 @@ module RecordingStudioUser
   class Engine < ::Rails::Engine
     isolate_namespace RecordingStudioUser
 
+    config.before_initialize do
+      RecordingStudioUser.config.validate!
+    end
+
     initializer "recording_studio_user.omniauth", after: :load_config_initializers do
       RecordingStudioUser::Omniauth.register_providers!
     end
@@ -35,6 +39,10 @@ module RecordingStudioUser
       config.to_prepare { RecordingStudioUser::Admin.register! }
     end
 
+    initializer "recording_studio_user.filter_parameters" do |app|
+      app.config.filter_parameters += %i[otp code login_code]
+    end
+
     # Flatpack Button `icon:` is Heroicon-only; List::Item already accepts inline SVG.
     # Continue-with provider logos need the same SVG branch on Button.
     initializer "recording_studio_user.flatpack_button_svg_icon" do
@@ -56,8 +64,18 @@ module RecordingStudioUser
       user_class = load_user_class
       user_class.include RecordingStudioUser::ProfiledUser unless user_class < RecordingStudioUser::ProfiledUser
       RecordingStudioUser::Omniauth.ensure_omniauthable!(user_class)
+      apply_otp_setup!(user_class)
     rescue ArgumentError
       # Host user class may not be loadable during early boot in some hosts.
+    end
+
+    def self.apply_otp_setup!(user_class)
+      return unless RecordingStudioUser.config.otp_enabled?
+
+      OtpSetup.ensure_notifications!
+      user_class.devise :confirmable unless user_class.devise_modules.include?(:confirmable)
+      OtpNotifications.register!
+      OtpSetup.validate_schema_when_ready!
     end
 
     def self.load_user_class

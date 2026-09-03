@@ -49,6 +49,9 @@ RecordingStudioUser.configure do |config|
   config.omniauth_providers = {}
   # When false, unknown provider emails do not create a User (fail closed).
   config.omniauth_create_account = true
+  # Optional email OTP. Leave false unless the host has run OTP migrations
+  # and installed recording_studio_notifications.
+  config.otp_enabled = false
 end
 
 # Host Devise must route OmniAuth callbacks to Users when providers are configured:
