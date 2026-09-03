@@ -82,8 +82,8 @@ module RecordingStudioUser
             "Attachable on Profile only. create_user! / record_profile! use bootstrap_owner_access!.",
             :yellow
         say "OmniAuth credentials under omniauth:; callbacks at recording_studio_user/omniauth_callbacks. " \
-            "Skip sessions/registrations/passwords, then recording_studio_user_auth_for :users for gem " \
-            "login chrome (OTP when otp_enabled).", :yellow
+            "Skip sessions/registrations/passwords, then recording_studio_user_auth_for :users. " \
+            "Hosts get gem login chrome (OTP when otp_enabled).", :yellow
         say "Uploads: recording_studio_attachable:install, migrations, and Active Storage.", :yellow
       end
 
