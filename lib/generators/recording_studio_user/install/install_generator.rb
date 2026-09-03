@@ -21,6 +21,30 @@ module RecordingStudioUser
         end
       end
 
+      def mount_auth_routes
+        routes_path = Rails.root.join("config/routes.rb")
+        content = routes_path.read
+        return say "Users auth routes are already mounted.", :green if
+          content.include?("recording_studio_user_auth_for")
+
+        unless content.match?(/\bdevise_for\s+:users\b/)
+          return say "No devise_for :users found. Add recording_studio_user_auth_for :users after " \
+                     "skipping Devise sessions/registrations/passwords.",
+                     :yellow
+        end
+
+        inject_into_file routes_path, after: /devise_for\s+:users[^\n]*\n(?:[ \t]+[^\n]+\n)*/ do
+          <<~RUBY
+
+            recording_studio_user_auth_for :users
+          RUBY
+        end
+
+        say "Added recording_studio_user_auth_for :users. Skip Devise sessions, " \
+            "registrations, and passwords on devise_for so the gem owns those screens.",
+            :yellow
+      end
+
       def copy_initializer
         unless File.exist?(
           Rails.root.join("config/initializers/recording_studio_user.rb")
@@ -79,6 +103,10 @@ module RecordingStudioUser
         say "OmniAuth: add provider keys under omniauth: in Rails credentials, then point " \
             "devise_for callbacks at recording_studio_user/omniauth_callbacks. Blank or " \
             "commented credential keys hide that Continue-with button.",
+            :yellow
+        say "Auth screens: devise_for :users, skip: %i[sessions registrations passwords], then " \
+            "recording_studio_user_auth_for :users. Password login/sign-up use the gem chrome; " \
+            "OTP routes activate when config.otp_enabled is true.",
             :yellow
         say "Host apps that need uploads: bin/rails generate recording_studio_attachable:install " \
             "and recording_studio_attachable:migrations, plus Active Storage.",

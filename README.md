@@ -44,7 +44,21 @@ RecordingStudio.configure do |config|
 end
 ```
 
-Rerunning the installer is idempotent while the generated mount declaration remains intact. It mounts the engine with the `recording_studio_users` alias and creates `config/initializers/recording_studio_user.rb` only when that file does not already exist. The migrations generator copies the People and Profile tables. The installer does not generate a user model, users table, or Devise routes.
+Rerunning the installer is idempotent while the generated mount declaration remains intact. It mounts the engine with the `recording_studio_users` alias, injects `recording_studio_user_auth_for :users` when Devise is present, and creates `config/initializers/recording_studio_user.rb` only when that file does not already exist. The migrations generator copies the People and Profile tables. The installer does not generate a user model, users table, or Devise routes.
+
+## Auth screens
+
+The gem owns the default password login and sign-up chrome. Mount it after skipping Devise's own session screens:
+
+```ruby
+devise_for :users,
+           skip: %i[sessions registrations passwords],
+           controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
+
+recording_studio_user_auth_for :users
+```
+
+That draws `/users/sign_in` and `/users/sign_up` from `recording_studio_user/auth/*` — viewport-centered Flatpack forms (shared `_shell` partial), no Card, primary **Sign in** / **Sign up**, then `continue_with_providers`. Password screens work with `otp_enabled` still `false`. OTP routes (`/users/sign_in/otp`, `/users/sign_up/otp`, verify/resend) activate when OTP is on. Hosts override a view only when the product must differ; do not copy the gem templates into the app.
 
 Route configuration values for `mount_path`, `profile_route_path`, and `admin_route_path` must be available **before the host evaluates the engine mount and Rails draws routes**:
 
@@ -110,7 +124,7 @@ devise_for :users, controllers: {
 }
 ```
 
-Render `recording_studio_user/omniauth/continue_with_providers` in the host's Devise login and sign-up views. The partial draws a Flatpack Divider labeled Or, then one Continue-with button per configured provider. The engine adds `:omniauthable` only when providers are configured. Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` to restore the identities table; the 0.6.2 migration is safe whether a host retained or dropped the 0.6.0 table.
+Render is no longer required in host Devise views when you use `recording_studio_user_auth_for` — the gem auth screens already include `recording_studio_user/omniauth/continue_with_providers`. The partial draws a Flatpack Divider labeled Or, then one Continue-with button per configured provider. The engine adds `:omniauthable` only when providers are configured. Run `bin/rails generate recording_studio_user:migrations` and `bin/rails db:migrate` to restore the identities table; the 0.6.2 migration is safe whether a host retained or dropped the 0.6.0 table.
 
 On callback, Users first finds `provider` + `uid`. For a new identity, it normalizes the provider email and automatically links it to the existing User with that email. An email explicitly marked unverified by the provider is rejected. If the User supports Devise Confirmable, an unconfirmed existing email is also rejected. Hosts without Confirmable must otherwise verify email ownership during password registration before enabling automatic social-account linking. If no User matches, `omniauth_create_account` controls whether `Directory.create_user!` creates the User and Profile. Setting it to `false` fails closed for unknown emails. OAuth tokens are not stored.
 
@@ -212,7 +226,7 @@ bin/rails generate recording_studio_user:migrations
 bin/rails db:migrate
 ```
 
-Mount the OTP auth routes from this gem's `config/routes.rb`. Password sign-up and sign-in keep working. See `MIGRATION_NOTES.md` for backfill details and route mapping.
+Mount the auth screens with `recording_studio_user_auth_for :users` (see Auth screens above). Password sign-up and sign-in keep working with OTP off. See `MIGRATION_NOTES.md` for backfill details and route mapping.
 
 `registered_with` records how the account was created, not the only way it can sign in:
 
@@ -247,7 +261,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy keeps Devise login at `/users/sign_in` and sign up at `/users/sign_up`. Both viewport-center with ordinary Tailwind (`min-h-dvh flex items-center justify-center`, inner `max-w-sm w-full`). That wrap is only on these Devise views. It is not a Users layout system and not Flatpack Grid viewport-centering. There is no Card. Login uses `login_title` (default **Welcome back**), email, password, primary **Sign in**, then a centered **Don't have an account? Sign up** link. It omits Remember me and the seed credential Badge. Sign up is **Sign up**, email, password, primary **Sign up**, then a centered **Already have one? Log in** link. Password confirmation appears only when `require_password_confirmation` is true (the default is false). Both then render `continue_with_providers`: Flatpack Divider **Or**, then full-width **Continue with {Provider}** secondary buttons for every provider whose secrets are in credentials. Dummy development credentials keep Google live, so Continue with Google is the one you see. These are Devise views, not a Users product registration flow. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Devise pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.143`.
+The dummy mounts Users auth with `recording_studio_user_auth_for :users`. Login and sign up are the gem screens at `/users/sign_in` and `/users/sign_up` — viewport-centered Flatpack chrome via the shared auth `_shell` (`min-h-dvh` / `max-w-sm`), no Card, no Remember me, no seed Badge. Login uses `login_title` (default **Welcome back**). Sign-up confirmation appears only when `require_password_confirmation` is true. Both render `continue_with_providers`. Dummy development credentials keep Google live. Primary paths stay password forms; email OTP lives on `/users/sign_in/otp` and `/users/sign_up/otp`. Signed-in pages use core `recording_studio/default_layout` via `RecordingStudio::UsesDefaultLayout` (PageNav back/close). Auth pages keep `layouts/application` with `html data-theme="rounded"`. Dummy does not copy or override core's default layout. Core puts `data-theme="rounded"` on `body`; Flatpack named-theme tokens resolve on `html` / `:root`, so dummy's `recording_studio/_default_layout_head` sets `document.documentElement.dataset.theme` to `rounded` so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.143`.
 
 Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.143`) with Attachable's file button for Add/Change. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 

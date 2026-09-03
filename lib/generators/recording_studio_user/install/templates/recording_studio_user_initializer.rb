@@ -54,10 +54,13 @@ RecordingStudioUser.configure do |config|
   config.otp_enabled = false
 end
 
-# Host Devise must route OmniAuth callbacks to Users when providers are configured:
-#   devise_for :users, controllers: {
-#     omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
-#   }
+# Host Devise must skip sessions/registrations/passwords and mount Users auth:
+#   devise_for :users,
+#              skip: %i[sessions registrations passwords],
+#              controllers: {
+#                omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+#              }
+#   recording_studio_user_auth_for :users
 #
 # Register RecordingStudioUser::People and RecordingStudioUser::Profile in
 # RecordingStudio.configure { |c| c.recordable_types = [...] }, then run:
