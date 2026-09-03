@@ -24,6 +24,7 @@ fetch at Build.
 - `.cursor/environment.json` install hook is `.cursor/install.sh`.
 
 ### Upgrade notes
+- Bump to `0.8.1`.
 - No host or schema changes. Rebuild the Cloud Agent environment with Draft
   off so Build loads the pack.
 
