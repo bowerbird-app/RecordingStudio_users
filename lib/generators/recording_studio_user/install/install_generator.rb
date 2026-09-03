@@ -24,34 +24,27 @@ module RecordingStudioUser
       def mount_auth_routes
         routes_path = Rails.root.join("config/routes.rb")
         content = routes_path.read
-        return say "Users auth routes are already mounted.", :green if
-          content.include?("recording_studio_user_auth_for")
+        if content.include?("recording_studio_user_auth_for")
+          return say "Users auth routes are already mounted.",
+                     :green
+        end
 
         unless content.match?(/\bdevise_for\s+:users\b/)
           return say "No devise_for :users found. Add recording_studio_user_auth_for :users after " \
-                     "skipping Devise sessions/registrations/passwords.",
-                     :yellow
+                     "skipping Devise sessions/registrations/passwords.", :yellow
         end
 
         inject_into_file routes_path, after: /devise_for\s+:users[^\n]*\n(?:[ \t]+[^\n]+\n)*/ do
-          <<~RUBY
-
-            recording_studio_user_auth_for :users
-          RUBY
+          "\n  recording_studio_user_auth_for :users\n"
         end
-
-        say "Added recording_studio_user_auth_for :users. Skip Devise sessions, " \
-            "registrations, and passwords on devise_for so the gem owns those screens.",
-            :yellow
+        say "Added recording_studio_user_auth_for :users. Skip Devise sessions, registrations, and " \
+            "passwords on devise_for so the gem owns those screens.", :yellow
       end
 
       def copy_initializer
-        unless File.exist?(
-          Rails.root.join("config/initializers/recording_studio_user.rb")
-        )
-          copy_file "recording_studio_user_initializer.rb",
-                    "config/initializers/recording_studio_user.rb"
-        end
+        return if File.exist?(Rails.root.join("config/initializers/recording_studio_user.rb"))
+
+        copy_file "recording_studio_user_initializer.rb", "config/initializers/recording_studio_user.rb"
       end
 
       def add_tailwind_sources
@@ -62,55 +55,36 @@ module RecordingStudioUser
         end
 
         content = tailwind_path.read
-        return say "Tailwind sources already include RecordingStudioUser.", :green if tailwind_sources.all? do |line|
-          content.include?(line)
-        end
+        return say "Tailwind sources already include RecordingStudioUser.", :green if
+          tailwind_sources.all? { |line| content.include?(line) }
 
         unless content.include?('@import "tailwindcss"')
           return say "Could not find @import \"tailwindcss\"; add RecordingStudioUser sources manually.",
                      :yellow
         end
 
-        missing_sources = tailwind_sources.reject { |line| content.include?(line) }
+        missing = tailwind_sources.reject { |line| content.include?(line) }
         inject_into_file tailwind_path, after: "@import \"tailwindcss\";\n" do
-          "\n/* Include RecordingStudioUser and FlatPack component sources */\n#{missing_sources.join("\n")}\n"
+          "\n/* Include RecordingStudioUser and FlatPack component sources */\n#{missing.join("\n")}\n"
         end
       end
 
       def print_next_steps
-        profile_path = "#{RecordingStudioUser.config.mount_path}/" \
-                       "#{RecordingStudioUser.config.profile_route_path}"
-        say "Profile: #{profile_path}", :green
-        say "Users admin: #{RecordingStudioUser.config.mount_path}/#{RecordingStudioUser.config.admin_route_path}",
-            :green
-        say "Configure routes before they are drawn, then configure RecordingStudioAdmin access " \
-            "and site-admin recording resolvers.",
+        cfg = RecordingStudioUser.config
+        say "Profile: #{cfg.mount_path}/#{cfg.profile_route_path}", :green
+        say "Users admin: #{cfg.mount_path}/#{cfg.admin_route_path}", :green
+        say "Configure routes before they are drawn, then RecordingStudioAdmin access and resolvers.",
             :yellow
-        say "Enable section :users on the host-owned admin recordable. First staff: " \
-            "RecordingStudioAccessible.bootstrap_owner_access!; later invites: grant_access.",
+        say "Enable section :users on the host admin root. First staff: bootstrap_owner_access!; " \
+            "later: grant_access. Hosts create the admin root themselves.", :yellow
+        say "People + Profile + Identity: bin/rails generate recording_studio_user:migrations", :green
+        say "Register People and Profile in recordable_types, then db:migrate. Accessible and " \
+            "Attachable on Profile only. create_user! / record_profile! use bootstrap_owner_access!.",
             :yellow
-        say "The installer does not invoke recording_studio_user:admin. Host apps create the admin root, " \
-            "resolvers, access items, and grants themselves.",
-            :yellow
-        say "People + Profile + Identity tables: bin/rails generate recording_studio_user:migrations", :green
-        say "Register RecordingStudioUser::People and RecordingStudioUser::Profile in " \
-            "config.recordable_types, then run db:migrate. The gem enables Accessible and " \
-            "Attachable on Profile (not People). create_user! / record_profile! bootstrap the " \
-            "first owner on that Profile recording with " \
-            "RecordingStudioAccessible.bootstrap_owner_access!. One profile image is an " \
-            "Attachable child of the Profile recording.",
-            :yellow
-        say "OmniAuth: add provider keys under omniauth: in Rails credentials, then point " \
-            "devise_for callbacks at recording_studio_user/omniauth_callbacks. Blank or " \
-            "commented credential keys hide that Continue-with button.",
-            :yellow
-        say "Auth screens: devise_for :users, skip: %i[sessions registrations passwords], then " \
-            "recording_studio_user_auth_for :users. Password login/sign-up use the gem chrome; " \
-            "OTP routes activate when config.otp_enabled is true.",
-            :yellow
-        say "Host apps that need uploads: bin/rails generate recording_studio_attachable:install " \
-            "and recording_studio_attachable:migrations, plus Active Storage.",
-            :yellow
+        say "OmniAuth credentials under omniauth:; callbacks at recording_studio_user/omniauth_callbacks. " \
+            "Skip sessions/registrations/passwords, then recording_studio_user_auth_for :users for gem " \
+            "login chrome (OTP when otp_enabled).", :yellow
+        say "Uploads: recording_studio_attachable:install, migrations, and Active Storage.", :yellow
       end
 
       private

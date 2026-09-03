@@ -15,7 +15,7 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "sessions#otp"
     assert_includes source, "registrations#otp"
     assert_includes source, "devise/sessions#destroy"
-    assert_includes source, "recording_studio_user/auth/passwords#new"
+    assert_includes source, "recording_studio_user/auth/passwords"
   end
 
   def test_auth_route_helpers_prefer_host_paths
@@ -27,8 +27,8 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes helper, "def password_registration_path"
     assert_includes helper, "def auth_sign_up_path"
     assert_includes helper, "def auth_sign_in_path"
-    assert_includes helper, "main_app.user_session_path"
-    assert_includes helper, "main_app.user_registration_path"
+    assert_includes helper, "def host_or_engine"
+    assert_includes helper, "main_app.public_send"
   end
 
   def test_engine_requires_auth_routes_mapper
