@@ -6,8 +6,6 @@ module RecordingStudioUser
       include Devise::Controllers::Helpers
       include RecordingStudioUser::AuthRoutesHelper
 
-      before_action :require_otp_enabled!
-
       layout "application"
 
       VERIFY_FAILURE_MESSAGES = {
@@ -36,13 +34,15 @@ module RecordingStudioUser
       end
 
       def require_otp_registration_enabled!
-        return if RecordingStudioUser.config.otp_registration_enabled?
+        return if RecordingStudioUser.config.otp_enabled? &&
+                  RecordingStudioUser.config.otp_registration_enabled?
 
         raise ActionController::RoutingError, "OTP registration is not enabled"
       end
 
       def require_otp_login_enabled!
-        return if RecordingStudioUser.config.otp_login_enabled?
+        return if RecordingStudioUser.config.otp_enabled? &&
+                  RecordingStudioUser.config.otp_login_enabled?
 
         raise ActionController::RoutingError, "OTP login is not enabled"
       end

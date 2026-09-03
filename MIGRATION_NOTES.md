@@ -74,15 +74,24 @@ end
 
 ### Route mapping
 
-Mount OTP routes alongside existing Devise routes (see `config/routes.rb` in this gem):
+Mount password and OTP auth with the host helper (dummy and new installs use this):
+
+```ruby
+devise_for :users,
+           skip: %i[sessions registrations passwords],
+           controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
+recording_studio_user_auth_for :users
+```
 
 | Path | Purpose |
 | --- | --- |
-| `GET/POST sign_up/otp` | Start OTP registration |
-| `GET/POST sign_up/verify` | Enter registration code |
-| `POST sign_up/resend` | Resend registration code |
-| `GET/POST sign_in/otp` | Start login OTP |
-| `GET/POST sign_in/verify` | Enter login code |
-| `POST sign_in/resend` | Resend login code |
+| `GET/POST /users/sign_in` | Password login (works with OTP off) |
+| `GET/POST /users/sign_up` | Password registration (works with OTP off) |
+| `GET/POST /users/sign_up/otp` | Start OTP registration |
+| `GET/POST /users/sign_up/verify` | Enter registration code |
+| `POST /users/sign_up/resend` | Resend registration code |
+| `GET/POST /users/sign_in/otp` | Start login OTP |
+| `GET/POST /users/sign_in/verify` | Enter login code |
+| `POST /users/sign_in/resend` | Resend login code |
 
-Password sign-up (`sign_up/password`) and password sign-in (`sign_in/password`) remain available when OTP is enabled.
+Password sign-up (`sign_up/password`) and password sign-in (`sign_in/password`) remain available when OTP is enabled. OTP actions return not found while `otp_enabled` is false.

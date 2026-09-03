@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-03
+
+### Added
+- `recording_studio_user_auth_for :users` route helper mounts password and OTP sign-in / sign-up screens with Devise-compatible route names. Hosts skip Devise sessions, registrations, and passwords, then call the helper.
+- Shared auth chrome partial `recording_studio_user/auth/_shell` (viewport-centered `min-h-dvh` / `max-w-sm`) used by every gem auth screen so hosts get one layout.
+- Install generator injects `recording_studio_user_auth_for :users` when `devise_for :users` is present and the helper is not already mounted.
+
+### Changed
+- Password sign-in and sign-up controllers no longer require `otp_enabled`. OTP actions still require OTP to be on. Password chrome is the default reusable Users login for every host.
+- Dummy routes use `recording_studio_user_auth_for :users` and drop leftover host Devise session/registration views.
+
+### Upgrade notes
+- Bump to `0.8.0`.
+- Replace hand-copied auth routes with:
+
+```ruby
+devise_for :users,
+           skip: %i[sessions registrations passwords],
+           controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
+recording_studio_user_auth_for :users
+```
+
+- Remove host Devise session/registration views that only mirrored the dummy chrome. Gem views under `recording_studio_user/auth/` are the source of truth.
+- Password login works with `otp_enabled` still `false`. Turn OTP on only after migrations and notifications gems, as in `0.7.0`.
+- Verify with: `bin/rails routes | grep sign_in` shows gem auth routes, and `/users/sign_in` paints **Welcome back** without a Card.
+
 ## [0.7.0] - 2026-09-03
 
 ### Added

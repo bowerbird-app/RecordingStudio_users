@@ -25,8 +25,14 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "place-content-center"
     refute_includes response.body, "Default: admin@admin.com / Password"
     source = File.read(AUTH_SESSIONS_VIEW)
+    shell = File.read(
+      RecordingStudioUser::Engine.root.join("app/views/recording_studio_user/auth/_shell.html.erb")
+    )
     refute_includes source, "FlatPack::Card::Component"
     refute_includes source, "otp_session_otp_path"
+    assert_includes source, 'layout: "recording_studio_user/auth/shell"'
+    assert_includes shell, "min-h-dvh"
+    assert_includes shell, "max-w-sm"
     assert_includes response.body, "min-h-dvh"
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "Don't have an account?"
@@ -57,6 +63,28 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "min-h-dvh"
     assert_includes response.body, "max-w-sm"
     refute_includes response.body, "Continue with password"
+  end
+
+  test "password login stays available when OTP is turned off" do
+    original = RecordingStudioUser.config.otp_enabled
+    RecordingStudioUser.config.otp_enabled = false
+
+    get new_user_session_path
+    assert_response :success
+    assert_select "h2", text: "Welcome back"
+    assert_select "button[type='submit']", text: "Sign in"
+
+    get "#{new_user_session_path}/otp"
+    assert_response :not_found
+
+    get new_user_registration_path
+    assert_response :success
+    assert_select "button[type='submit']", text: "Sign up"
+
+    get "#{new_user_registration_path}/otp"
+    assert_response :not_found
+  ensure
+    RecordingStudioUser.config.otp_enabled = original
   end
 
   test "login title follows RecordingStudioUser.config.login_title" do
