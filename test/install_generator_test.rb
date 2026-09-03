@@ -55,7 +55,7 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes generator, "Attachable on Profile"
     assert_includes generator, "bootstrap_owner_access!"
     assert_includes generator, "recording_studio_attachable:install"
-    assert_includes generator, "Auth screens:"
+    assert_includes generator, "gem login chrome"
     refute_includes generator, "access_management_authorizer"
     refute_includes generator, "AccessCreationContext"
   end
