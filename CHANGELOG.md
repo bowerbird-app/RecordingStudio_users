@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-09-03
+
+Cloud Agent install no longer points at fetch-skills.sh alone. Skills still
+fetch at Build.
+
+### Added
+- `.cursor/install.sh` provisions a cold image and skips apt, ruby-build,
+  db:prepare, and tailwind when Ruby, bundle, and Postgres are already usable.
+  A skippable provision failure does not fail the Build. Fetch-skills always
+  runs last, not with `|| true`.
+- `.cursor/start.sh` starts PostgreSQL on each environment boot.
+- Dummy Cloud Agent terminals for the rails server and Tailwind watch.
+
+### Changed
+- `.cursor/environment.json` install hook is `.cursor/install.sh`.
+
+### Upgrade notes
+- Bump to `0.8.1`.
+- No host or schema changes. Rebuild the Cloud Agent environment with Draft
+  off so Build loads the pack.
+
 ## [0.8.0] - 2026-09-03
 
 ### Added
@@ -306,7 +327,9 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.8.1
+[0.8.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.7.0
 [0.6.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.6.3
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.6.2

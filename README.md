@@ -273,6 +273,15 @@ Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable
 
 Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Dummy mounts notifications at `/notifications` (inbox and settings), email as a delivery channel, and push at `/notifications/push`. Workspace remains the host-owned bucket.
 
+## Cloud Agent boot
+
+Cloud Agent Builds run `.cursor/install.sh`, then `.cursor/fetch-skills.sh`.
+The install hook provisions a cold image. On a warm snapshot it skips apt,
+ruby-build, db:prepare, and tailwind when Ruby, bundle, and Postgres are
+already usable. Fetch-skills always runs last. `.cursor/start.sh` starts
+PostgreSQL on each boot. Rebuild with Draft off to load a new pack. See
+[Cursor skills in Cloud Agents](docs/cursor-skills.md).
+
 ## Development
 
 Run the standard validation from the repository root:
