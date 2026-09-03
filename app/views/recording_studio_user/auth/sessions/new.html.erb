@@ -3,7 +3,7 @@
     <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
   <% end %>
 
-  <%= form_with scope: :user, url: (respond_to?(:user_session_path) ? user_session_path : recording_studio_users.sign_in_password_path), method: :post do %>
+  <%= form_with scope: :user, url: password_session_path, method: :post do %>
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",
@@ -31,7 +31,7 @@
 
   <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
     Don't have an account?
-    <%= render FlatPack::Link::Component.new(href: (respond_to?(:new_user_registration_path) ? new_user_registration_path : recording_studio_users.sign_up_path)) do %>
+    <%= render FlatPack::Link::Component.new(href: auth_sign_up_path) do %>
       Sign up
     <% end %>
   </p>

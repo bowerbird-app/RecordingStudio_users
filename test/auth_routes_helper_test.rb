@@ -18,6 +18,19 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "recording_studio_user/auth/passwords#new"
   end
 
+  def test_auth_route_helpers_prefer_host_paths
+    helper = File.read(
+      File.expand_path("../app/helpers/recording_studio_user/auth_routes_helper.rb", __dir__)
+    )
+
+    assert_includes helper, "def password_session_path"
+    assert_includes helper, "def password_registration_path"
+    assert_includes helper, "def auth_sign_up_path"
+    assert_includes helper, "def auth_sign_in_path"
+    assert_includes helper, "main_app.user_session_path"
+    assert_includes helper, "main_app.user_registration_path"
+  end
+
   def test_engine_requires_auth_routes_mapper
     lib = File.read(File.expand_path("../lib/recording_studio_user.rb", __dir__))
 

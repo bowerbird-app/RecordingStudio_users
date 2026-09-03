@@ -34,6 +34,8 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "text-center"
     assert_includes response.body, "Already have one?"
+    assert_includes response.body, 'href="/users/sign_in"'
+    refute_includes response.body, 'href="/recording_studio_users/auth/sign_in"'
     assert_match(/\bOr\b/, response.body)
 
     %w[Google Microsoft Apple LinkedIn Instagram].each do |label|

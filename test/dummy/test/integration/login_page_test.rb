@@ -37,6 +37,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "Don't have an account?"
     assert_includes response.body, "text-center"
+    assert_includes response.body, 'href="/users/sign_up"'
+    refute_includes response.body, 'href="/recording_studio_users/auth/sign_up"'
     assert_match(/\bOr\b/, response.body)
 
     %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
