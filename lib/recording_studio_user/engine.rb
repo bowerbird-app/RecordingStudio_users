@@ -19,9 +19,11 @@ module RecordingStudioUser
     initializer "recording_studio_user.helpers" do
       ActiveSupport.on_load(:action_controller) do
         helper RecordingStudioUser::OmniauthHelper if respond_to?(:helper)
+    helper RecordingStudioUser::AuthRoutesHelper if respond_to?(:helper)
       end
       ActiveSupport.on_load(:action_view) do
         include RecordingStudioUser::OmniauthHelper
+        include RecordingStudioUser::AuthRoutesHelper
       end
     end
 

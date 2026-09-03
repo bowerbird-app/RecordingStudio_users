@@ -66,6 +66,38 @@ module RecordingStudioUser
       end
     end
 
+    def password_session_path
+      if host_routes?(:user_session_path)
+        main_app.user_session_path
+      else
+        recording_studio_users.sign_in_password_path
+      end
+    end
+
+    def password_registration_path
+      if host_routes?(:user_registration_path)
+        main_app.user_registration_path
+      else
+        recording_studio_users.sign_up_password_path
+      end
+    end
+
+    def auth_sign_up_path
+      if host_routes?(:new_user_registration_path)
+        host_new_user_registration_path
+      else
+        recording_studio_users.sign_up_path
+      end
+    end
+
+    def auth_sign_in_path
+      if host_routes?(:new_user_session_path)
+        host_new_user_session_path
+      else
+        recording_studio_users.sign_in_path
+      end
+    end
+
     private
 
     def host_routes?(route_name)
