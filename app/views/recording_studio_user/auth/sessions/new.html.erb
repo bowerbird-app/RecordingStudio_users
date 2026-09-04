@@ -3,7 +3,7 @@
     <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
   <% end %>
 
-  <%= form_with scope: :user, url: password_session_path, method: :post do %>
+  <%= form_with scope: :user, url: auth_sign_in_path, method: :post do %>
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",
@@ -12,15 +12,8 @@
         autocomplete: "email"
       ) %>
 
-      <%= render FlatPack::PasswordInput::Component.new(
-        name: "user[password]",
-        label: "Password",
-        required: true,
-        autocomplete: "current-password"
-      ) %>
-
       <%= render FlatPack::Button::Component.new(
-        text: "Sign in",
+        text: "Continue with email",
         style: :primary,
         size: :md,
         type: "submit",

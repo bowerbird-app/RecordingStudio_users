@@ -13,7 +13,7 @@
       <img src="./assets/0.13.2/loading.gif" alt="loading"/>
     </div>
     <div id="wrapper" class="hide">
-      <div class="timestamp">Generated <abbr class="timeago" title="2026-09-04T03:02:22+00:00">2026-09-04T03:02:22+00:00</abbr></div>
+      <div class="timestamp">Generated <abbr class="timeago" title="2026-09-04T05:02:43+00:00">2026-09-04T05:02:43+00:00</abbr></div>
       <ul class="group_tabs"></ul>
 
       <div id="content">
@@ -22,14 +22,14 @@
     <span class="group_name">All Files</span>
     (<span class="covered_percent">
       <span class="red">
-  53.57%
+  55.18%
 </span>
 
      </span>
      covered at
      <span class="covered_strength">
        <span class="green">
-         1.36
+         1.58
        </span>
     </span> hits/line
     )
@@ -42,22 +42,22 @@
   </div>
 
   <div class="t-line-summary">
-    <b>911</b> relevant lines,
-    <span class="green"><b>488</b> lines covered</span> and
-    <span class="red"><b>423</b> lines missed. </span>
+    <b>946</b> relevant lines,
+    <span class="green"><b>522</b> lines covered</span> and
+    <span class="red"><b>424</b> lines missed. </span>
     (<span class="red">
-  53.57%
+  55.18%
 </span>
 )
   </div>
 
   
     <div class="t-branch-summary">
-      <span><b>274</b> total branches, </span>
-      <span class="green"><b>58</b> branches covered</span> and
-      <span class="red"><b>216</b> branches missed.</span>
+      <span><b>288</b> total branches, </span>
+      <span class="green"><b>73</b> branches covered</span> and
+      <span class="red"><b>215</b> branches missed.</span>
       (<span class="red">
-  21.17%
+  25.35%
 </span>
 )
     </div>
@@ -150,17 +150,17 @@
         
           <tr class="t-file">
             <td class="strong t-file__name"><a href="#f5b47f783136024dac004354c7cf4fb6e4da0ec6" class="src_link" title="lib/recording_studio_user/configuration.rb">lib/recording_studio_user/configuration.rb</a></td>
-            <td class="yellow strong cell--number t-file__coverage">85.71 %</td>
-            <td class="cell--number">205</td>
-            <td class="cell--number">98</td>
-            <td class="cell--number">84</td>
-            <td class="cell--number">14</td>
-            <td class="cell--number">5.08</td>
+            <td class="yellow strong cell--number t-file__coverage">88.72 %</td>
+            <td class="cell--number">259</td>
+            <td class="cell--number">133</td>
+            <td class="cell--number">118</td>
+            <td class="cell--number">15</td>
+            <td class="cell--number">5.62</td>
             
-              <td class="red strong cell--number t-file__branch-coverage">56.25 %</td>
-              <td class="cell--number">16</td>
-              <td class="cell--number">9</td>
-              <td class="cell--number">7</td>
+              <td class="red strong cell--number t-file__branch-coverage">80.00 %</td>
+              <td class="cell--number">30</td>
+              <td class="cell--number">24</td>
+              <td class="cell--number">6</td>
             
           </tr>
         
@@ -327,7 +327,7 @@
           <tr class="t-file">
             <td class="strong t-file__name"><a href="#725a1981f9a6e3a8d6645b4c91ab6f81bb55e55a" class="src_link" title="lib/recording_studio_user/rails/routes.rb">lib/recording_studio_user/rails/routes.rb</a></td>
             <td class="red strong cell--number t-file__coverage">23.08 %</td>
-            <td class="cell--number">65</td>
+            <td class="cell--number">66</td>
             <td class="cell--number">39</td>
             <td class="cell--number">9</td>
             <td class="cell--number">30</td>
@@ -5548,7 +5548,7 @@
     <h3>lib/recording_studio_user/configuration.rb</h3>
     <h4>
       <span class="yellow">
-  85.71%
+  88.72%
 </span>
 
       lines covered
@@ -5557,7 +5557,7 @@
     
       <h4>
         <span class="red">
-  56.25%
+  80.0%
 </span>
 
         branches covered
@@ -5565,16 +5565,16 @@
     
 
     <div class="t-line-summary">
-      <b>98</b> relevant lines.
-      <span class="green"><b>84</b> lines covered</span> and
-      <span class="red"><b>14</b> lines missed.</span>
+      <b>133</b> relevant lines.
+      <span class="green"><b>118</b> lines covered</span> and
+      <span class="red"><b>15</b> lines missed.</span>
     </div>
 
     
       <div class="t-branch-summary">
-          <span><b>16</b> total branches, </span>
-          <span class="green"><b>9</b> branches covered</span> and
-          <span class="red"><b>7</b> branches missed.</span>
+          <span><b>30</b> total branches, </span>
+          <span class="green"><b>24</b> branches covered</span> and
+          <span class="red"><b>6</b> branches missed.</span>
       </div>
     
 
@@ -5776,14 +5776,16 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="16">
+          <li class="covered" data-hits="1" data-linenumber="16">
+            
+              <span class="hits">1</span>
             
 
             
               
             
 
-            <code class="ruby"></code>
+            <code class="ruby">    PRIMARY_LOGIN_TYPES = %i[email otp].freeze</code>
           </li>
         </div>
       
@@ -5795,7 +5797,7 @@
               
             
 
-            <code class="ruby">    # otp_login_enabled has its own writer because it must stay compatible with</code>
+            <code class="ruby"></code>
           </li>
         </div>
       
@@ -5807,21 +5809,19 @@
               
             
 
-            <code class="ruby">    # the registration methods.</code>
+            <code class="ruby">    # otp_login_enabled has its own writer because it must stay compatible with</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="19">
-            
-              <span class="hits">1</span>
+          <li class="never" data-hits="" data-linenumber="19">
             
 
             
               
             
 
-            <code class="ruby">    BOOLEAN_SETTINGS = %i[require_password_confirmation otp_enabled otp_registration_enabled].freeze</code>
+            <code class="ruby">    # the registration methods.</code>
           </li>
         </div>
       
@@ -5835,7 +5835,7 @@
               
             
 
-            <code class="ruby">    DURATION_SETTINGS = %i[otp_expires_in otp_resend_cooldown unconfirmed_user_retention].freeze</code>
+            <code class="ruby">    BOOLEAN_SETTINGS = %i[require_password_confirmation otp_enabled otp_registration_enabled].freeze</code>
           </li>
         </div>
       
@@ -5849,19 +5849,21 @@
               
             
 
-            <code class="ruby">    CHANNEL_SETTINGS = %i[otp_registration_channels otp_login_channels].freeze</code>
+            <code class="ruby">    DURATION_SETTINGS = %i[otp_expires_in otp_resend_cooldown unconfirmed_user_retention].freeze</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="22">
+          <li class="covered" data-hits="1" data-linenumber="22">
+            
+              <span class="hits">1</span>
             
 
             
               
             
 
-            <code class="ruby"></code>
+            <code class="ruby">    CHANNEL_SETTINGS = %i[otp_registration_channels otp_login_channels].freeze</code>
           </li>
         </div>
       
@@ -5873,12 +5875,24 @@
               
             
 
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="24">
+            
+
+            
+              
+            
+
             <code class="ruby">    DEFAULTS = {</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="24">
+          <li class="covered" data-hits="1" data-linenumber="25">
             
               <span class="hits">1</span>
             
@@ -5892,7 +5906,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="25">
+          <li class="never" data-hits="" data-linenumber="26">
             
 
             
@@ -5904,7 +5918,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="26">
+          <li class="never" data-hits="" data-linenumber="27">
             
 
             
@@ -5916,7 +5930,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="27">
+          <li class="never" data-hits="" data-linenumber="28">
             
 
             
@@ -5928,7 +5942,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="28">
+          <li class="never" data-hits="" data-linenumber="29">
             
 
             
@@ -5940,7 +5954,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="29">
+          <li class="never" data-hits="" data-linenumber="30">
             
 
             
@@ -5952,7 +5966,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="30">
+          <li class="never" data-hits="" data-linenumber="31">
             
 
             
@@ -5964,7 +5978,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="31">
+          <li class="never" data-hits="" data-linenumber="32">
             
 
             
@@ -5976,18 +5990,6 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="32">
-            
-
-            
-              
-            
-
-            <code class="ruby">      otp_enabled: false,</code>
-          </li>
-        </div>
-      
-        <div>
           <li class="never" data-hits="" data-linenumber="33">
             
 
@@ -5995,7 +5997,7 @@
               
             
 
-            <code class="ruby">      otp_login_enabled: true,</code>
+            <code class="ruby">      primary_login_type: :email,</code>
           </li>
         </div>
       
@@ -6007,7 +6009,7 @@
               
             
 
-            <code class="ruby">      otp_registration_enabled: true,</code>
+            <code class="ruby">      otp_enabled: false,</code>
           </li>
         </div>
       
@@ -6019,7 +6021,7 @@
               
             
 
-            <code class="ruby">      registration_authentication_methods: %i[password otp],</code>
+            <code class="ruby">      otp_login_enabled: true,</code>
           </li>
         </div>
       
@@ -6031,7 +6033,7 @@
               
             
 
-            <code class="ruby">      password_registration_confirmation: :existing_policy,</code>
+            <code class="ruby">      otp_registration_enabled: true,</code>
           </li>
         </div>
       
@@ -6043,7 +6045,7 @@
               
             
 
-            <code class="ruby">      otp_expires_in: 10.minutes,</code>
+            <code class="ruby">      registration_authentication_methods: %i[password otp],</code>
           </li>
         </div>
       
@@ -6055,7 +6057,7 @@
               
             
 
-            <code class="ruby">      otp_max_attempts: 5,</code>
+            <code class="ruby">      password_registration_confirmation: :existing_policy,</code>
           </li>
         </div>
       
@@ -6067,7 +6069,7 @@
               
             
 
-            <code class="ruby">      otp_resend_cooldown: 60.seconds,</code>
+            <code class="ruby">      otp_expires_in: 10.minutes,</code>
           </li>
         </div>
       
@@ -6079,7 +6081,7 @@
               
             
 
-            <code class="ruby">      otp_registration_channels: %i[email],</code>
+            <code class="ruby">      otp_max_attempts: 5,</code>
           </li>
         </div>
       
@@ -6091,7 +6093,7 @@
               
             
 
-            <code class="ruby">      otp_login_channels: %i[email push],</code>
+            <code class="ruby">      otp_resend_cooldown: 60.seconds,</code>
           </li>
         </div>
       
@@ -6103,7 +6105,7 @@
               
             
 
-            <code class="ruby">      unconfirmed_user_retention: 7.days,</code>
+            <code class="ruby">      otp_registration_channels: %i[email],</code>
           </li>
         </div>
       
@@ -6115,7 +6117,7 @@
               
             
 
-            <code class="ruby">      omniauth_create_account: true</code>
+            <code class="ruby">      otp_login_channels: %i[email push],</code>
           </li>
         </div>
       
@@ -6127,7 +6129,7 @@
               
             
 
-            <code class="ruby">    }.freeze</code>
+            <code class="ruby">      unconfirmed_user_retention: 7.days,</code>
           </li>
         </div>
       
@@ -6139,12 +6141,36 @@
               
             
 
+            <code class="ruby">      omniauth_create_account: true</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="46">
+            
+
+            
+              
+            
+
+            <code class="ruby">    }.freeze</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="47">
+            
+
+            
+              
+            
+
             <code class="ruby"></code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="46">
+          <li class="covered" data-hits="1" data-linenumber="48">
             
               <span class="hits">1</span>
             
@@ -6158,7 +6184,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="47">
+          <li class="covered" data-hits="1" data-linenumber="49">
             
               <span class="hits">1</span>
             
@@ -6172,7 +6198,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="48">
+          <li class="never" data-hits="" data-linenumber="50">
             
 
             
@@ -6184,7 +6210,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="49">
+          <li class="covered" data-hits="1" data-linenumber="51">
             
               <span class="hits">1</span>
             
@@ -6198,7 +6224,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="50">
+          <li class="covered" data-hits="3" data-linenumber="52">
             
               <span class="hits">3</span>
             
@@ -6212,40 +6238,16 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="51">
+          <li class="covered" data-hits="7" data-linenumber="53">
             
-              <span class="hits">2</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">        instance_variable_set(&quot;@#{setting}&quot;, ActiveModel::Type::Boolean.new.cast(value))</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="52">
+              <span class="hits">7</span>
             
 
             
               
             
 
-            <code class="ruby">      end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="53">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
+            <code class="ruby">        previous = instance_variable_get(&quot;@#{setting}&quot;)</code>
           </li>
         </div>
       
@@ -6259,19 +6261,29 @@
               
             
 
-            <code class="ruby">      define_method(&quot;#{setting}?&quot;) { public_send(setting) }</code>
+            <code class="ruby">        instance_variable_set(&quot;@#{setting}&quot;, ActiveModel::Type::Boolean.new.cast(value))</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="55">
+          <li class="covered" data-hits="7" data-linenumber="55">
+            
+              <span class="hits">7</span>
             
 
             
               
+                <span class="hits" title="then branch hit 5 times">
+                  then: 5
+                </span>
+              
+                <span class="hits" title="else branch hit 2 times">
+                  else: 2
+                </span>
+              
             
 
-            <code class="ruby">    end</code>
+            <code class="ruby">        validate_primary_login_type! if %i[otp_enabled otp_registration_enabled].include?(setting)</code>
           </li>
         </div>
       
@@ -6283,7 +6295,7 @@
               
             
 
-            <code class="ruby"></code>
+            <code class="ruby">      rescue ArgumentError</code>
           </li>
         </div>
       
@@ -6297,12 +6309,102 @@
               
             
 
+            <code class="ruby">        instance_variable_set(&quot;@#{setting}&quot;, previous)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="58">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">        raise</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="59">
+            
+
+            
+              
+            
+
+            <code class="ruby">      end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="60">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="18" data-linenumber="61">
+            
+              <span class="hits">18</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      define_method(&quot;#{setting}?&quot;) { public_send(setting) }</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="62">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="63">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="64">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
             <code class="ruby">    DURATION_SETTINGS.each do |setting|</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="58">
+          <li class="covered" data-hits="3" data-linenumber="65">
             
               <span class="hits">3</span>
             
@@ -6316,7 +6418,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="59">
+          <li class="covered" data-hits="3" data-linenumber="66">
             
               <span class="hits">3</span>
             
@@ -6330,7 +6432,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="60">
+          <li class="covered" data-hits="3" data-linenumber="67">
             
               <span class="hits">3</span>
             
@@ -6344,7 +6446,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="61">
+          <li class="missed" data-hits="0" data-linenumber="68">
             
 
             
@@ -6356,7 +6458,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="62">
+          <li class="never" data-hits="" data-linenumber="69">
             
 
             
@@ -6368,7 +6470,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="63">
+          <li class="never" data-hits="" data-linenumber="70">
             
 
             
@@ -6380,7 +6482,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="64">
+          <li class="never" data-hits="" data-linenumber="71">
             
 
             
@@ -6392,7 +6494,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="65">
+          <li class="covered" data-hits="1" data-linenumber="72">
             
               <span class="hits">1</span>
             
@@ -6406,7 +6508,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="66">
+          <li class="covered" data-hits="2" data-linenumber="73">
             
               <span class="hits">2</span>
             
@@ -6420,7 +6522,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="67">
+          <li class="missed" data-hits="0" data-linenumber="74">
             
 
             
@@ -6432,7 +6534,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="68">
+          <li class="never" data-hits="" data-linenumber="75">
             
 
             
@@ -6444,7 +6546,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="69">
+          <li class="never" data-hits="" data-linenumber="76">
             
 
             
@@ -6456,7 +6558,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="70">
+          <li class="never" data-hits="" data-linenumber="77">
             
 
             
@@ -6468,7 +6570,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="71">
+          <li class="covered" data-hits="1" data-linenumber="78">
             
               <span class="hits">1</span>
             
@@ -6482,9 +6584,9 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="315" data-linenumber="72">
+          <li class="covered" data-hits="374" data-linenumber="79">
             
-              <span class="hits">315</span>
+              <span class="hits">374</span>
             
 
             
@@ -6496,9 +6598,9 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="15" data-linenumber="73">
+          <li class="covered" data-hits="17" data-linenumber="80">
             
-              <span class="hits">15</span>
+              <span class="hits">17</span>
             
 
             
@@ -6510,7 +6612,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="74">
+          <li class="never" data-hits="" data-linenumber="81">
             
 
             
@@ -6522,7 +6624,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="75">
+          <li class="never" data-hits="" data-linenumber="82">
             
 
             
@@ -6534,7 +6636,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="76">
+          <li class="covered" data-hits="1" data-linenumber="83">
             
               <span class="hits">1</span>
             
@@ -6548,9 +6650,23 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="77">
+          <li class="covered" data-hits="4" data-linenumber="84">
             
-              <span class="hits">2</span>
+              <span class="hits">4</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      previous = @otp_login_enabled</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="4" data-linenumber="85">
+            
+              <span class="hits">4</span>
             
 
             
@@ -6562,9 +6678,9 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="78">
+          <li class="covered" data-hits="4" data-linenumber="86">
             
-              <span class="hits">2</span>
+              <span class="hits">4</span>
             
 
             
@@ -6576,7 +6692,61 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="79">
+          <li class="covered" data-hits="3" data-linenumber="87">
+            
+              <span class="hits">3</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_primary_login_type!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="88">
+            
+
+            
+              
+            
+
+            <code class="ruby">    rescue ArgumentError</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="89">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      @otp_login_enabled = previous</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="90">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      raise</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="91">
             
 
             
@@ -6588,7 +6758,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="80">
+          <li class="never" data-hits="" data-linenumber="92">
             
 
             
@@ -6600,7 +6770,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="81">
+          <li class="covered" data-hits="1" data-linenumber="93">
             
               <span class="hits">1</span>
             
@@ -6614,9 +6784,9 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="82">
+          <li class="covered" data-hits="9" data-linenumber="94">
             
-              <span class="hits">3</span>
+              <span class="hits">9</span>
             
 
             
@@ -6624,164 +6794,6 @@
             
 
             <code class="ruby">      otp_login_enabled</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="83">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="84">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="85">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def otp_max_attempts=(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="86">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      attempts = value.to_i</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="87">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      validate_positive!(:otp_max_attempts, attempts)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="missed" data-hits="0" data-linenumber="88">
-            
-
-            
-              
-            
-
-            <code class="ruby">      @otp_max_attempts = attempts</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="89">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="90">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="91">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def registration_authentication_methods=(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="3" data-linenumber="92">
-            
-              <span class="hits">3</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      @registration_authentication_methods = Array(value).map(&amp;:to_sym).uniq</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="3" data-linenumber="93">
-            
-              <span class="hits">3</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      validate_registration_authentication_methods!</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="2" data-linenumber="94">
-            
-              <span class="hits">2</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      validate_otp_login_requirement!</code>
           </li>
         </div>
       
@@ -6819,24 +6831,94 @@
               
             
 
-            <code class="ruby">    def password_registration_confirmation=(value)</code>
+            <code class="ruby">    def primary_login_type=(value)</code>
           </li>
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="98">
+          <li class="covered" data-hits="8" data-linenumber="98">
+            
+              <span class="hits">8</span>
             
 
             
               
             
 
-            <code class="ruby">      @password_registration_confirmation = value.to_sym</code>
+            <code class="ruby">      previous = @primary_login_type</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="99">
+          <li class="covered" data-hits="8" data-linenumber="99">
+            
+              <span class="hits">8</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      @primary_login_type = value.to_sym</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="8" data-linenumber="100">
+            
+              <span class="hits">8</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_primary_login_type!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="101">
+            
+
+            
+              
+            
+
+            <code class="ruby">    rescue ArgumentError</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="102">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      @primary_login_type = previous</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="103">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      raise</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="104">
             
 
             
@@ -6848,7 +6930,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="100">
+          <li class="never" data-hits="" data-linenumber="105">
             
 
             
@@ -6860,7 +6942,387 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="101">
+          <li class="covered" data-hits="1" data-linenumber="106">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def primary_login_type_email?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="2" data-linenumber="107">
+            
+              <span class="hits">2</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      primary_login_type == :email</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="108">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="109">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="110">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def primary_login_type_otp?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="3" data-linenumber="111">
+            
+              <span class="hits">3</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      primary_login_type == :otp</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="112">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="113">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="114">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def otp_max_attempts=(value)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="115">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      attempts = value.to_i</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="116">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_positive!(:otp_max_attempts, attempts)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="117">
+            
+
+            
+              
+            
+
+            <code class="ruby">      @otp_max_attempts = attempts</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="118">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="119">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="120">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def registration_authentication_methods=(value)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="121">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      previous = @registration_authentication_methods</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="122">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      @registration_authentication_methods = Array(value).map(&amp;:to_sym).uniq</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="123">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_registration_authentication_methods!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="4" data-linenumber="124">
+            
+              <span class="hits">4</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_otp_login_requirement!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="3" data-linenumber="125">
+            
+              <span class="hits">3</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_primary_login_type!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="126">
+            
+
+            
+              
+            
+
+            <code class="ruby">    rescue ArgumentError</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="2" data-linenumber="127">
+            
+              <span class="hits">2</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      @registration_authentication_methods = previous</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="2" data-linenumber="128">
+            
+              <span class="hits">2</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      raise</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="129">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="130">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="131">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def password_registration_confirmation=(value)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="132">
+            
+
+            
+              
+            
+
+            <code class="ruby">      @password_registration_confirmation = value.to_sym</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="133">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="134">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="135">
             
               <span class="hits">1</span>
             
@@ -6874,7 +7336,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="102">
+          <li class="covered" data-hits="2" data-linenumber="136">
             
               <span class="hits">2</span>
             
@@ -6888,7 +7350,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="103">
+          <li class="never" data-hits="" data-linenumber="137">
             
 
             
@@ -6900,7 +7362,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="104">
+          <li class="never" data-hits="" data-linenumber="138">
             
 
             
@@ -6912,7 +7374,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="105">
+          <li class="covered" data-hits="1" data-linenumber="139">
             
               <span class="hits">1</span>
             
@@ -6926,7 +7388,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="106">
+          <li class="covered" data-hits="2" data-linenumber="140">
             
               <span class="hits">2</span>
             
@@ -6940,7 +7402,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="107">
+          <li class="never" data-hits="" data-linenumber="141">
             
 
             
@@ -6952,7 +7414,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="108">
+          <li class="never" data-hits="" data-linenumber="142">
             
 
             
@@ -6964,7 +7426,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="109">
+          <li class="covered" data-hits="1" data-linenumber="143">
             
               <span class="hits">1</span>
             
@@ -6978,7 +7440,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="110">
+          <li class="covered" data-hits="3" data-linenumber="144">
             
               <span class="hits">3</span>
             
@@ -6992,7 +7454,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="111">
+          <li class="never" data-hits="" data-linenumber="145">
             
 
             
@@ -7004,7 +7466,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="112">
+          <li class="never" data-hits="" data-linenumber="146">
             
 
             
@@ -7016,7 +7478,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="113">
+          <li class="covered" data-hits="1" data-linenumber="147">
             
               <span class="hits">1</span>
             
@@ -7030,7 +7492,7 @@
         </div>
       
         <div>
-          <li class="missed-branch" data-hits="2" data-linenumber="114">
+          <li class="missed-branch" data-hits="2" data-linenumber="148">
             
               <span class="hits">2</span>
             
@@ -7052,7 +7514,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="115">
+          <li class="covered" data-hits="2" data-linenumber="149">
             
               <span class="hits">2</span>
             
@@ -7066,7 +7528,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="116">
+          <li class="covered" data-hits="3" data-linenumber="150">
             
               <span class="hits">3</span>
             
@@ -7080,7 +7542,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="117">
+          <li class="covered" data-hits="3" data-linenumber="151">
             
               <span class="hits">3</span>
             
@@ -7094,7 +7556,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="118">
+          <li class="covered" data-hits="3" data-linenumber="152">
             
               <span class="hits">3</span>
             
@@ -7108,7 +7570,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="119">
+          <li class="never" data-hits="" data-linenumber="153">
             
 
             
@@ -7120,7 +7582,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="120">
+          <li class="never" data-hits="" data-linenumber="154">
             
 
             
@@ -7132,7 +7594,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="121">
+          <li class="never" data-hits="" data-linenumber="155">
             
 
             
@@ -7144,7 +7606,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="122">
+          <li class="never" data-hits="" data-linenumber="156">
             
 
             
@@ -7156,7 +7618,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="123">
+          <li class="never" data-hits="" data-linenumber="157">
             
 
             
@@ -7168,7 +7630,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="124">
+          <li class="covered" data-hits="1" data-linenumber="158">
             
               <span class="hits">1</span>
             
@@ -7182,7 +7644,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="9" data-linenumber="125">
+          <li class="covered" data-hits="9" data-linenumber="159">
             
               <span class="hits">9</span>
             
@@ -7192,456 +7654,6 @@
             
 
             <code class="ruby">      RecordingStudioUser::Omniauth.resolve_providers(@omniauth_providers)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="126">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="127">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="128">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def omniauth_provider_names</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="missed" data-hits="0" data-linenumber="129">
-            
-
-            
-              
-            
-
-            <code class="ruby">      omniauth_providers.keys.map(&amp;:to_sym)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="130">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="131">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="132">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def omniauth_configured?</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="2" data-linenumber="133">
-            
-              <span class="hits">2</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      omniauth_providers.any?</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="134">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="135">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="136">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def omniauth_provider_configured?(provider)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="4" data-linenumber="137">
-            
-              <span class="hits">4</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      omniauth_providers.key?(provider.to_sym)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="138">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="139">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="140">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def mount_path=(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="3" data-linenumber="141">
-            
-              <span class="hits">3</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      @mount_path = RoutePath.mount(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="142">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="143">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="144">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def profile_route_path=(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="2" data-linenumber="145">
-            
-              <span class="hits">2</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      @profile_route_path = RoutePath.relative(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="146">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="147">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="148">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def admin_route_path=(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="3" data-linenumber="149">
-            
-              <span class="hits">3</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      @admin_route_path = RoutePath.relative(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="150">
-            
-
-            
-              
-            
-
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="151">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="152">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def additional_profile_attributes=(value)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="10" data-linenumber="153">
-            
-              <span class="hits">10</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      attributes = Array(value).map { |attribute| attribute.to_s.strip }.reject(&amp;:blank?).uniq</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="4" data-linenumber="154">
-            
-              <span class="hits">4</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      protected_attributes = attributes &amp; PROTECTED_PROFILE_ATTRIBUTES</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="4" data-linenumber="155">
-            
-              <span class="hits">4</span>
-            
-
-            
-              
-                <span class="hits" title="then branch hit 1 times">
-                  then: 1
-                </span>
-              
-                <span class="hits" title="else branch hit 3 times">
-                  else: 3
-                </span>
-              
-            
-
-            <code class="ruby">      if protected_attributes.any?</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="156">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">        raise ArgumentError, &quot;Protected profile attributes cannot be configured: #{protected_attributes.join(&#39;, &#39;)}&quot;</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="157">
-            
-
-            
-              
-            
-
-            <code class="ruby">      end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="158">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="3" data-linenumber="159">
-            
-              <span class="hits">3</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      @additional_profile_attributes = attributes.map(&amp;:to_sym)</code>
           </li>
         </div>
       
@@ -7679,7 +7691,7 @@
               
             
 
-            <code class="ruby">    def user_class</code>
+            <code class="ruby">    def omniauth_provider_names</code>
           </li>
         </div>
       
@@ -7691,7 +7703,7 @@
               
             
 
-            <code class="ruby">      user_class_name.constantize</code>
+            <code class="ruby">      omniauth_providers.keys.map(&amp;:to_sym)</code>
           </li>
         </div>
       
@@ -7703,24 +7715,52 @@
               
             
 
-            <code class="ruby">    rescue NameError</code>
+            <code class="ruby">    end</code>
           </li>
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="165">
+          <li class="never" data-hits="" data-linenumber="165">
             
 
             
               
             
 
-            <code class="ruby">      raise ArgumentError, &quot;Configured user class #{user_class_name.inspect} is unavailable&quot;</code>
+            <code class="ruby"></code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="166">
+          <li class="covered" data-hits="1" data-linenumber="166">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def omniauth_configured?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="2" data-linenumber="167">
+            
+              <span class="hits">2</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      omniauth_providers.any?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="168">
             
 
             
@@ -7732,7 +7772,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="167">
+          <li class="never" data-hits="" data-linenumber="169">
             
 
             
@@ -7744,7 +7784,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="168">
+          <li class="covered" data-hits="1" data-linenumber="170">
             
               <span class="hits">1</span>
             
@@ -7753,32 +7793,38 @@
               
             
 
-            <code class="ruby">    def merge!(hash)</code>
+            <code class="ruby">    def omniauth_provider_configured?(provider)</code>
           </li>
         </div>
       
         <div>
-          <li class="missed-branch" data-hits="0" data-linenumber="169">
+          <li class="covered" data-hits="4" data-linenumber="171">
+            
+              <span class="hits">4</span>
             
 
             
               
-                <span class="hits" title="else branch hit 0 times">
-                  else: 0
-                </span>
-              
-                <span class="hits" title="then branch hit 0 times">
-                  then: 0
-                </span>
-              
             
 
-            <code class="ruby">      return unless hash.respond_to?(:each)</code>
+            <code class="ruby">      omniauth_providers.key?(provider.to_sym)</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="170">
+          <li class="never" data-hits="" data-linenumber="172">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="173">
             
 
             
@@ -7790,70 +7836,30 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="171">
+          <li class="covered" data-hits="1" data-linenumber="174">
+            
+              <span class="hits">1</span>
             
 
             
               
             
 
-            <code class="ruby">      hash.each do |key, value|</code>
+            <code class="ruby">    def mount_path=(value)</code>
           </li>
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="172">
+          <li class="covered" data-hits="3" data-linenumber="175">
+            
+              <span class="hits">3</span>
             
 
             
               
             
 
-            <code class="ruby">        setter = &quot;#{key}=&quot;</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="missed-branch" data-hits="0" data-linenumber="173">
-            
-
-            
-              
-                <span class="hits" title="then branch hit 0 times">
-                  then: 0
-                </span>
-              
-                <span class="hits" title="else branch hit 0 times">
-                  else: 0
-                </span>
-              
-            
-
-            <code class="ruby">        public_send(setter, value) if respond_to?(setter)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="174">
-            
-
-            
-              
-            
-
-            <code class="ruby">      end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="missed" data-hits="0" data-linenumber="175">
-            
-
-            
-              
-            
-
-            <code class="ruby">      validate!</code>
+            <code class="ruby">      @mount_path = RoutePath.mount(value)</code>
           </li>
         </div>
       
@@ -7891,31 +7897,33 @@
               
             
 
-            <code class="ruby">    def validate!</code>
+            <code class="ruby">    def profile_route_path=(value)</code>
           </li>
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="179">
+          <li class="covered" data-hits="2" data-linenumber="179">
+            
+              <span class="hits">2</span>
             
 
             
               
             
 
-            <code class="ruby">      validate_registration_authentication_methods!</code>
+            <code class="ruby">      @profile_route_path = RoutePath.relative(value)</code>
           </li>
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="180">
+          <li class="never" data-hits="" data-linenumber="180">
             
 
             
               
             
 
-            <code class="ruby">      validate_otp_login_requirement!</code>
+            <code class="ruby">    end</code>
           </li>
         </div>
       
@@ -7927,24 +7935,12 @@
               
             
 
-            <code class="ruby">    end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="182">
-            
-
-            
-              
-            
-
             <code class="ruby"></code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="183">
+          <li class="covered" data-hits="1" data-linenumber="182">
             
               <span class="hits">1</span>
             
@@ -7953,7 +7949,21 @@
               
             
 
-            <code class="ruby">    private</code>
+            <code class="ruby">    def admin_route_path=(value)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="3" data-linenumber="183">
+            
+              <span class="hits">3</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      @admin_route_path = RoutePath.relative(value)</code>
           </li>
         </div>
       
@@ -7965,95 +7975,97 @@
               
             
 
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="185">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">    def validate_registration_authentication_methods!</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="3" data-linenumber="186">
-            
-              <span class="hits">3</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      invalid = registration_authentication_methods - AUTHENTICATION_METHODS</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="3" data-linenumber="187">
-            
-              <span class="hits">3</span>
-            
-
-            
-              
-                <span class="hits" title="then branch hit 2 times">
-                  then: 2
-                </span>
-              
-                <span class="hits" title="else branch hit 1 times">
-                  else: 1
-                </span>
-              
-            
-
-            <code class="ruby">      return if invalid.empty?</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="188">
-            
-
-            
-              
-            
-
-            <code class="ruby"></code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="189">
-            
-              <span class="hits">1</span>
-            
-
-            
-              
-            
-
-            <code class="ruby">      raise ArgumentError, &quot;registration_authentication_methods must only contain password and otp&quot;</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="190">
-            
-
-            
-              
-            
-
             <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="185">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="186">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def additional_profile_attributes=(value)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="10" data-linenumber="187">
+            
+              <span class="hits">10</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      attributes = Array(value).map { |attribute| attribute.to_s.strip }.reject(&amp;:blank?).uniq</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="4" data-linenumber="188">
+            
+              <span class="hits">4</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      protected_attributes = attributes &amp; PROTECTED_PROFILE_ATTRIBUTES</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="4" data-linenumber="189">
+            
+              <span class="hits">4</span>
+            
+
+            
+              
+                <span class="hits" title="then branch hit 1 times">
+                  then: 1
+                </span>
+              
+                <span class="hits" title="else branch hit 3 times">
+                  else: 3
+                </span>
+              
+            
+
+            <code class="ruby">      if protected_attributes.any?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="190">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">        raise ArgumentError, &quot;Protected profile attributes cannot be configured: #{protected_attributes.join(&#39;, &#39;)}&quot;</code>
           </li>
         </div>
       
@@ -8065,65 +8077,45 @@
               
             
 
+            <code class="ruby">      end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="192">
+            
+
+            
+              
+            
+
             <code class="ruby"></code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="192">
+          <li class="covered" data-hits="3" data-linenumber="193">
             
-              <span class="hits">1</span>
+              <span class="hits">3</span>
             
 
             
               
             
 
-            <code class="ruby">    def validate_otp_login_requirement!</code>
+            <code class="ruby">      @additional_profile_attributes = attributes.map(&amp;:to_sym)</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="4" data-linenumber="193">
-            
-              <span class="hits">4</span>
+          <li class="never" data-hits="" data-linenumber="194">
             
 
             
               
-                <span class="hits" title="else branch hit 2 times">
-                  else: 2
-                </span>
-              
-                <span class="hits" title="then branch hit 2 times">
-                  then: 2
-                </span>
-              
             
 
-            <code class="ruby">      return unless registration_authentication_methods.include?(:otp)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="missed-branch" data-hits="2" data-linenumber="194">
-            
-              <span class="hits">2</span>
-            
-
-            
-              
-                <span class="hits" title="then branch hit 0 times">
-                  then: 0
-                </span>
-              
-                <span class="hits" title="else branch hit 2 times">
-                  else: 2
-                </span>
-              
-            
-
-            <code class="ruby">      return if otp_login_enabled?</code>
+            <code class="ruby">    end</code>
           </li>
         </div>
       
@@ -8140,7 +8132,489 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="196">
+          <li class="covered" data-hits="1" data-linenumber="196">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def user_class</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="197">
+            
+
+            
+              
+            
+
+            <code class="ruby">      user_class_name.constantize</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="198">
+            
+
+            
+              
+            
+
+            <code class="ruby">    rescue NameError</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="199">
+            
+
+            
+              
+            
+
+            <code class="ruby">      raise ArgumentError, &quot;Configured user class #{user_class_name.inspect} is unavailable&quot;</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="200">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="201">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="202">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def merge!(hash)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed-branch" data-hits="0" data-linenumber="203">
+            
+
+            
+              
+                <span class="hits" title="else branch hit 0 times">
+                  else: 0
+                </span>
+              
+                <span class="hits" title="then branch hit 0 times">
+                  then: 0
+                </span>
+              
+            
+
+            <code class="ruby">      return unless hash.respond_to?(:each)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="204">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="205">
+            
+
+            
+              
+            
+
+            <code class="ruby">      hash.each do |key, value|</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="206">
+            
+
+            
+              
+            
+
+            <code class="ruby">        setter = &quot;#{key}=&quot;</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed-branch" data-hits="0" data-linenumber="207">
+            
+
+            
+              
+                <span class="hits" title="then branch hit 0 times">
+                  then: 0
+                </span>
+              
+                <span class="hits" title="else branch hit 0 times">
+                  else: 0
+                </span>
+              
+            
+
+            <code class="ruby">        public_send(setter, value) if respond_to?(setter)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="208">
+            
+
+            
+              
+            
+
+            <code class="ruby">      end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="209">
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="210">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="211">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="212">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def validate!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="213">
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_registration_authentication_methods!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="214">
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_otp_login_requirement!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="215">
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_primary_login_type!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="216">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="217">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="218">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    private</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="219">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="220">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def validate_registration_authentication_methods!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="221">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      invalid = registration_authentication_methods - AUTHENTICATION_METHODS</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="222">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+                <span class="hits" title="then branch hit 4 times">
+                  then: 4
+                </span>
+              
+                <span class="hits" title="else branch hit 1 times">
+                  else: 1
+                </span>
+              
+            
+
+            <code class="ruby">      return if invalid.empty?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="223">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="224">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      raise ArgumentError, &quot;registration_authentication_methods must only contain password and otp&quot;</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="225">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="226">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="227">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def validate_otp_login_requirement!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="8" data-linenumber="228">
+            
+              <span class="hits">8</span>
+            
+
+            
+              
+                <span class="hits" title="else branch hit 3 times">
+                  else: 3
+                </span>
+              
+                <span class="hits" title="then branch hit 5 times">
+                  then: 5
+                </span>
+              
+            
+
+            <code class="ruby">      return unless registration_authentication_methods.include?(:otp)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="3" data-linenumber="229">
+            
+              <span class="hits">3</span>
+            
+
+            
+              
+                <span class="hits" title="then branch hit 1 times">
+                  then: 1
+                </span>
+              
+                <span class="hits" title="else branch hit 2 times">
+                  else: 2
+                </span>
+              
+            
+
+            <code class="ruby">      return if otp_login_enabled?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="230">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="2" data-linenumber="231">
             
               <span class="hits">2</span>
             
@@ -8154,7 +8628,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="197">
+          <li class="never" data-hits="" data-linenumber="232">
             
 
             
@@ -8166,7 +8640,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="198">
+          <li class="never" data-hits="" data-linenumber="233">
             
 
             
@@ -8178,7 +8652,305 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="199">
+          <li class="covered" data-hits="1" data-linenumber="234">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def validate_primary_login_type!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="19" data-linenumber="235">
+            
+              <span class="hits">19</span>
+            
+
+            
+              
+                <span class="hits" title="else branch hit 18 times">
+                  else: 18
+                </span>
+              
+                <span class="hits" title="then branch hit 1 times">
+                  then: 1
+                </span>
+              
+            
+
+            <code class="ruby">      unless PRIMARY_LOGIN_TYPES.include?(primary_login_type)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="236">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">        raise ArgumentError, &quot;primary_login_type must be :email or :otp&quot;</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="237">
+            
+
+            
+              
+            
+
+            <code class="ruby">      end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="18" data-linenumber="238">
+            
+              <span class="hits">18</span>
+            
+
+            
+              
+                <span class="hits" title="then branch hit 11 times">
+                  then: 11
+                </span>
+              
+                <span class="hits" title="else branch hit 7 times">
+                  else: 7
+                </span>
+              
+            
+
+            <code class="ruby">      return if primary_login_type == :email</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="239">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="7" data-linenumber="240">
+            
+              <span class="hits">7</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      validate_otp_primary_login_type!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="241">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="242">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="243">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">    def validate_otp_primary_login_type!</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="7" data-linenumber="244">
+            
+              <span class="hits">7</span>
+            
+
+            
+              
+                <span class="hits" title="else branch hit 5 times">
+                  else: 5
+                </span>
+              
+                <span class="hits" title="then branch hit 2 times">
+                  then: 2
+                </span>
+              
+            
+
+            <code class="ruby">      raise ArgumentError, &quot;primary_login_type :otp requires otp_enabled&quot; unless otp_enabled?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="5" data-linenumber="245">
+            
+              <span class="hits">5</span>
+            
+
+            
+              
+                <span class="hits" title="else branch hit 4 times">
+                  else: 4
+                </span>
+              
+                <span class="hits" title="then branch hit 1 times">
+                  then: 1
+                </span>
+              
+            
+
+            <code class="ruby">      raise ArgumentError, &quot;primary_login_type :otp requires otp_login_enabled&quot; unless otp_login_enabled?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="246">
+            
+
+            
+              
+                <span class="hits" title="else branch hit 3 times">
+                  else: 3
+                </span>
+              
+                <span class="hits" title="then branch hit 1 times">
+                  then: 1
+                </span>
+              
+            
+
+            <code class="ruby">      raise ArgumentError, &quot;primary_login_type :otp requires otp_registration_enabled&quot; unless</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="4" data-linenumber="247">
+            
+              <span class="hits">4</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">        otp_registration_enabled?</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="3" data-linenumber="248">
+            
+              <span class="hits">3</span>
+            
+
+            
+              
+                <span class="hits" title="then branch hit 2 times">
+                  then: 2
+                </span>
+              
+                <span class="hits" title="else branch hit 1 times">
+                  else: 1
+                </span>
+              
+            
+
+            <code class="ruby">      return if registration_authentication_methods.include?(:otp)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="249">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="250">
+            
+              <span class="hits">1</span>
+            
+
+            
+              
+            
+
+            <code class="ruby">      raise ArgumentError, &quot;primary_login_type :otp requires :otp in registration_authentication_methods&quot;</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="251">
+            
+
+            
+              
+            
+
+            <code class="ruby">    end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="252">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="253">
             
               <span class="hits">1</span>
             
@@ -8192,7 +8964,7 @@
         </div>
       
         <div>
-          <li class="missed-branch" data-hits="4" data-linenumber="200">
+          <li class="missed-branch" data-hits="4" data-linenumber="254">
             
               <span class="hits">4</span>
             
@@ -8214,7 +8986,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="201">
+          <li class="never" data-hits="" data-linenumber="255">
             
 
             
@@ -8226,7 +8998,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="4" data-linenumber="202">
+          <li class="covered" data-hits="4" data-linenumber="256">
             
               <span class="hits">4</span>
             
@@ -8240,7 +9012,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="203">
+          <li class="never" data-hits="" data-linenumber="257">
             
 
             
@@ -8252,7 +9024,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="204">
+          <li class="never" data-hits="" data-linenumber="258">
             
 
             
@@ -8264,7 +9036,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="205">
+          <li class="never" data-hits="" data-linenumber="259">
             
 
             
@@ -19640,12 +20412,24 @@
               
             
 
+            <code class="ruby">      # First screens are email-only. Password or OTP follows `primary_login_type`.</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="15">
+            
+
+            
+              
+            
+
             <code class="ruby">      # Password screens work with `otp_enabled` off. OTP actions stay gated.</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="15">
+          <li class="covered" data-hits="1" data-linenumber="16">
             
               <span class="hits">1</span>
             
@@ -19659,7 +20443,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="16">
+          <li class="missed" data-hits="0" data-linenumber="17">
             
 
             
@@ -19671,7 +20455,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="17">
+          <li class="missed" data-hits="0" data-linenumber="18">
             
 
             
@@ -19683,7 +20467,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="18">
+          <li class="missed" data-hits="0" data-linenumber="19">
             
 
             
@@ -19695,7 +20479,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="19">
+          <li class="missed" data-hits="0" data-linenumber="20">
             
 
             
@@ -19707,7 +20491,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="20">
+          <li class="never" data-hits="" data-linenumber="21">
             
 
             
@@ -19719,7 +20503,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="21">
+          <li class="never" data-hits="" data-linenumber="22">
             
 
             
@@ -19731,7 +20515,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="22">
+          <li class="covered" data-hits="1" data-linenumber="23">
             
               <span class="hits">1</span>
             
@@ -19745,7 +20529,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="23">
+          <li class="never" data-hits="" data-linenumber="24">
             
 
             
@@ -19757,7 +20541,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="24">
+          <li class="covered" data-hits="1" data-linenumber="25">
             
               <span class="hits">1</span>
             
@@ -19771,7 +20555,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="25">
+          <li class="missed" data-hits="0" data-linenumber="26">
             
 
             
@@ -19783,7 +20567,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="26">
+          <li class="missed" data-hits="0" data-linenumber="27">
             
 
             
@@ -19795,7 +20579,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="27">
+          <li class="missed" data-hits="0" data-linenumber="28">
             
 
             
@@ -19807,7 +20591,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="28">
+          <li class="never" data-hits="" data-linenumber="29">
             
 
             
@@ -19819,7 +20603,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="29">
+          <li class="never" data-hits="" data-linenumber="30">
             
 
             
@@ -19831,7 +20615,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="30">
+          <li class="never" data-hits="" data-linenumber="31">
             
 
             
@@ -19843,7 +20627,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="31">
+          <li class="covered" data-hits="1" data-linenumber="32">
             
               <span class="hits">1</span>
             
@@ -19857,7 +20641,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="32">
+          <li class="missed" data-hits="0" data-linenumber="33">
             
 
             
@@ -19869,18 +20653,6 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="33">
-            
-
-            
-              
-            
-
-            <code class="ruby">        get &quot;sign_up/password&quot;, to: &quot;registrations#password&quot;</code>
-          </li>
-        </div>
-      
-        <div>
           <li class="missed" data-hits="0" data-linenumber="34">
             
 
@@ -19888,7 +20660,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_up&quot;, to: &quot;registrations#create_password&quot;, as: :&quot;#{singular}_registration&quot;</code>
+            <code class="ruby">        post &quot;sign_up&quot;, to: &quot;registrations#continue&quot;</code>
           </li>
         </div>
       
@@ -19900,7 +20672,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_up/password&quot;, to: &quot;registrations#create_password&quot;</code>
+            <code class="ruby">        get &quot;sign_up/password&quot;, to: &quot;registrations#password&quot;</code>
           </li>
         </div>
       
@@ -19912,7 +20684,7 @@
               
             
 
-            <code class="ruby">        get &quot;sign_up/otp&quot;, to: &quot;registrations#otp&quot;</code>
+            <code class="ruby">        post &quot;sign_up/password&quot;, to: &quot;registrations#create_password&quot;, as: :&quot;#{singular}_registration&quot;</code>
           </li>
         </div>
       
@@ -19924,7 +20696,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_up/otp&quot;, to: &quot;registrations#create_otp&quot;</code>
+            <code class="ruby">        get &quot;sign_up/otp&quot;, to: &quot;registrations#otp&quot;</code>
           </li>
         </div>
       
@@ -19936,7 +20708,7 @@
               
             
 
-            <code class="ruby">        get &quot;sign_up/verify&quot;, to: &quot;registrations#verify&quot;, as: :&quot;verify_#{singular}_registration&quot;</code>
+            <code class="ruby">        post &quot;sign_up/otp&quot;, to: &quot;registrations#create_otp&quot;</code>
           </li>
         </div>
       
@@ -19948,7 +20720,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_up/verify&quot;, to: &quot;registrations#submit_verify&quot;</code>
+            <code class="ruby">        get &quot;sign_up/verify&quot;, to: &quot;registrations#verify&quot;, as: :&quot;verify_#{singular}_registration&quot;</code>
           </li>
         </div>
       
@@ -19960,19 +20732,19 @@
               
             
 
-            <code class="ruby">        post &quot;sign_up/resend&quot;, to: &quot;registrations#resend&quot;, as: :&quot;resend_#{singular}_registration&quot;</code>
+            <code class="ruby">        post &quot;sign_up/verify&quot;, to: &quot;registrations#submit_verify&quot;</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="41">
+          <li class="missed" data-hits="0" data-linenumber="41">
             
 
             
               
             
 
-            <code class="ruby">      end</code>
+            <code class="ruby">        post &quot;sign_up/resend&quot;, to: &quot;registrations#resend&quot;, as: :&quot;resend_#{singular}_registration&quot;</code>
           </li>
         </div>
       
@@ -19984,12 +20756,24 @@
               
             
 
+            <code class="ruby">      end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="43">
+            
+
+            
+              
+            
+
             <code class="ruby"></code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="43">
+          <li class="covered" data-hits="1" data-linenumber="44">
             
               <span class="hits">1</span>
             
@@ -20003,7 +20787,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="44">
+          <li class="missed" data-hits="0" data-linenumber="45">
             
 
             
@@ -20015,18 +20799,6 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="45">
-            
-
-            
-              
-            
-
-            <code class="ruby">        get &quot;sign_in/password&quot;, to: &quot;sessions#password&quot;</code>
-          </li>
-        </div>
-      
-        <div>
           <li class="missed" data-hits="0" data-linenumber="46">
             
 
@@ -20034,7 +20806,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_in&quot;, to: &quot;sessions#create_password&quot;, as: :&quot;#{singular}_session&quot;</code>
+            <code class="ruby">        post &quot;sign_in&quot;, to: &quot;sessions#continue&quot;</code>
           </li>
         </div>
       
@@ -20046,7 +20818,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_in/password&quot;, to: &quot;sessions#create_password&quot;</code>
+            <code class="ruby">        get &quot;sign_in/password&quot;, to: &quot;sessions#password&quot;</code>
           </li>
         </div>
       
@@ -20058,7 +20830,7 @@
               
             
 
-            <code class="ruby">        get &quot;sign_in/otp&quot;, to: &quot;sessions#otp&quot;</code>
+            <code class="ruby">        post &quot;sign_in/password&quot;, to: &quot;sessions#create_password&quot;, as: :&quot;#{singular}_session&quot;</code>
           </li>
         </div>
       
@@ -20070,7 +20842,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_in/otp&quot;, to: &quot;sessions#create_otp&quot;</code>
+            <code class="ruby">        get &quot;sign_in/otp&quot;, to: &quot;sessions#otp&quot;</code>
           </li>
         </div>
       
@@ -20082,7 +20854,7 @@
               
             
 
-            <code class="ruby">        get &quot;sign_in/verify&quot;, to: &quot;sessions#verify&quot;, as: :&quot;verify_#{singular}_session&quot;</code>
+            <code class="ruby">        post &quot;sign_in/otp&quot;, to: &quot;sessions#create_otp&quot;</code>
           </li>
         </div>
       
@@ -20094,7 +20866,7 @@
               
             
 
-            <code class="ruby">        post &quot;sign_in/verify&quot;, to: &quot;sessions#submit_verify&quot;</code>
+            <code class="ruby">        get &quot;sign_in/verify&quot;, to: &quot;sessions#verify&quot;, as: :&quot;verify_#{singular}_session&quot;</code>
           </li>
         </div>
       
@@ -20106,19 +20878,19 @@
               
             
 
-            <code class="ruby">        post &quot;sign_in/resend&quot;, to: &quot;sessions#resend&quot;, as: :&quot;resend_#{singular}_session&quot;</code>
+            <code class="ruby">        post &quot;sign_in/verify&quot;, to: &quot;sessions#submit_verify&quot;</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="53">
+          <li class="missed" data-hits="0" data-linenumber="53">
             
 
             
               
             
 
-            <code class="ruby">      end</code>
+            <code class="ruby">        post &quot;sign_in/resend&quot;, to: &quot;sessions#resend&quot;, as: :&quot;resend_#{singular}_session&quot;</code>
           </li>
         </div>
       
@@ -20130,12 +20902,24 @@
               
             
 
+            <code class="ruby">      end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="55">
+            
+
+            
+              
+            
+
             <code class="ruby"></code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="55">
+          <li class="covered" data-hits="1" data-linenumber="56">
             
               <span class="hits">1</span>
             
@@ -20149,7 +20933,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="56">
+          <li class="missed" data-hits="0" data-linenumber="57">
             
 
             
@@ -20161,7 +20945,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="57">
+          <li class="missed" data-hits="0" data-linenumber="58">
             
 
             
@@ -20173,7 +20957,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="58">
+          <li class="missed" data-hits="0" data-linenumber="59">
             
 
             
@@ -20185,7 +20969,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="59">
+          <li class="missed" data-hits="0" data-linenumber="60">
             
 
             
@@ -20197,7 +20981,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="60">
+          <li class="missed" data-hits="0" data-linenumber="61">
             
 
             
@@ -20209,7 +20993,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="61">
+          <li class="never" data-hits="" data-linenumber="62">
             
 
             
@@ -20221,7 +21005,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="62">
+          <li class="never" data-hits="" data-linenumber="63">
             
 
             
@@ -20233,7 +21017,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="63">
+          <li class="never" data-hits="" data-linenumber="64">
             
 
             
@@ -20245,7 +21029,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="64">
+          <li class="never" data-hits="" data-linenumber="65">
             
 
             
@@ -20257,7 +21041,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="65">
+          <li class="never" data-hits="" data-linenumber="66">
             
 
             

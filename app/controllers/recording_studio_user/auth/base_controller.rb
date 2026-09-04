@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
+require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/pending_email.rb"
+).to_s
+
 module RecordingStudioUser
   module Auth
     class BaseController < ApplicationController
       include Devise::Controllers::Helpers
       include RecordingStudioUser::AuthRoutesHelper
+      include RecordingStudioUser::Auth::PendingEmail
 
       layout "recording_studio_user/auth"
 

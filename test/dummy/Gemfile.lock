@@ -86,7 +86,7 @@ PATH
 PATH
   remote: ../..
   specs:
-    recording_studio_user (0.8.2)
+    recording_studio_user (0.9.0)
       devise (~> 5.0)
       flat_pack (~> 0.1.143)
       omniauth (~> 2.1)
@@ -371,8 +371,8 @@ GEM
     omniauth-apple (1.4.0)
       json-jwt
       omniauth-oauth2
-    omniauth-google-oauth2 (1.2.2)
-      jwt (>= 2.9.2)
+    omniauth-google-oauth2 (1.2.3)
+      jwt (>= 2.9.2, < 4)
       oauth2 (~> 2.0)
       omniauth (~> 2.0)
       omniauth-oauth2 (~> 1.8)
@@ -477,7 +477,7 @@ GEM
     regexp_parser (2.11.3)
     reline (0.7.0)
       io-console (~> 0.5)
-    responders (3.2.0)
+    responders (3.2.1)
       actionpack (>= 7.0)
       railties (>= 7.0)
     rexml (3.4.4)
@@ -740,7 +740,7 @@ CHECKSUMS
   oauth2 (2.0.25) sha256=2f736a2f93c2caa67c1b08dc3c9889bb907d62643f3183fefaa1723cba6a82ac
   omniauth (2.1.4) sha256=42a05b0496f0d22e1dd85d42aaf602f064e36bb47a6826a27ab55e5ba608763c
   omniauth-apple (1.4.0) sha256=f449ce4c206e784536cbaf64b7c36072ac5e7c73103b1a01ba3c1d9454bf6e24
-  omniauth-google-oauth2 (1.2.2) sha256=74c3f3d0221c048f938846092fb15a1f15237526f50a7c93d9793f9a4ff1be11
+  omniauth-google-oauth2 (1.2.3) sha256=bdbab67e64e50b7902eee2dcfc2225575cefba15ab89a3b6e92c8947987c1da9
   omniauth-instagram-api (0.1.0) sha256=b4f65cf9d01ef3e7c2a40f64e82a62d317b446a44ce1d76c764b2b5280c8d1ce
   omniauth-linkedin-openid (1.0.2) sha256=713fab1c1bbc52979d5c3911c39b8e3b820752c669c809ed02790e6e0cc38e16
   omniauth-microsoft_graph (2.2.0) sha256=2796ee45fa707d9d042cd34f26219b2dc78d053478b07c6d5e00f3b60487bd55
@@ -787,10 +787,10 @@ CHECKSUMS
   recording_studio_notifications_email (0.3.0)
   recording_studio_notifications_push (0.2.0)
   recording_studio_root_switchable (0.5.0)
-  recording_studio_user (0.8.2)
+  recording_studio_user (0.9.0)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
   reline (0.7.0) sha256=5b012d8e55dbf9d450f12bde2cf7d15ff546ae80b3f8f3b30e570d431815583d
-  responders (3.2.0) sha256=89c2d6ac0ae16f6458a11524cae4a8efdceba1a3baea164d28ee9046bd3df55a
+  responders (3.2.1) sha256=c2772970cbda654c0e772d852e5a851e82cd8e96f5fa958650861ba75b8ffa84
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   rubocop (1.81.7) sha256=6fb5cc298c731691e2a414fe0041a13eb1beed7bab23aec131da1bcc527af094
   rubocop-ast (1.48.0) sha256=22df9bbf3f7a6eccde0fad54e68547ae1e2a704bf8719e7c83813a99c05d2e76

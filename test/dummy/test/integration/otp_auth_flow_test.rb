@@ -637,17 +637,22 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
   test "disabled OTP registration returns not found" do
     original = RecordingStudioUser.config.otp_registration_enabled
+    original_primary = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :email
     RecordingStudioUser.config.otp_registration_enabled = false
 
     get "#{new_user_registration_path}/otp"
     assert_response :not_found
   ensure
     RecordingStudioUser.config.otp_registration_enabled = original
+    RecordingStudioUser.config.primary_login_type = original_primary
   end
 
   test "disabled OTP login returns not found" do
     original_login = RecordingStudioUser.config.otp_login_enabled
+    original_primary = RecordingStudioUser.config.primary_login_type
     original_methods = RecordingStudioUser.config.instance_variable_get(:@registration_authentication_methods)
+    RecordingStudioUser.config.primary_login_type = :email
     RecordingStudioUser.config.instance_variable_set(:@registration_authentication_methods, %i[password])
     RecordingStudioUser.config.instance_variable_set(:@otp_login_enabled, false)
 
@@ -656,6 +661,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
   ensure
     RecordingStudioUser.config.instance_variable_set(:@otp_login_enabled, original_login)
     RecordingStudioUser.config.instance_variable_set(:@registration_authentication_methods, original_methods)
+    RecordingStudioUser.config.primary_login_type = original_primary
   end
 
   private

@@ -7,8 +7,19 @@ module RecordingStudioUser
 
       def new; end
 
+      def continue
+        email = submitted_email_from_params
+        return render_continue_failure("Enter your email to continue.") if email.blank?
+
+        store_pending_auth_email!(email)
+        continue_with_primary_login!(email)
+      rescue Services::OtpRateLimiter::RateLimited
+        redirect_to otp_session_verify_path, notice: generic_login_notice
+      end
+
       def password
-        render :new
+        @email = pending_auth_email
+        redirect_to host_new_user_session_path, alert: "Start with your email." if @email.blank?
       end
 
       def create_password
@@ -18,15 +29,13 @@ module RecordingStudioUser
         return render_password_failure("Email or password did not match.") unless
           user&.valid_password?(sign_in_params[:password])
 
-        sign_in_user!(user)
-        redirect_to after_sign_in_path_for(user)
+        finish_sign_in!(user)
       end
 
       def otp; end
 
       def create_otp
-        user = resource_class.find_by(email: submitted_email)
-        issue_login_otp!(user)
+        issue_login_otp!(resource_class.find_by(email: submitted_email))
         redirect_to otp_session_verify_path, notice: generic_login_notice
       rescue Services::OtpRateLimiter::RateLimited
         redirect_to otp_session_verify_path, notice: generic_login_notice
@@ -37,17 +46,11 @@ module RecordingStudioUser
       end
 
       def submit_verify
-        result = RecordingStudioUser.verify_otp!(
-          challenge_id: session[:otp_challenge_id],
-          code: params[:code],
-          purpose: "login",
-          session: session
-        )
+        result = verify_login_otp
         return render_verify_failure(result) unless result.success?
         return render_verify_failure(nil) unless eligible_for_sign_in?(result.user)
 
-        sign_in_user!(result.user)
-        redirect_to after_sign_in_path_for(result.user)
+        finish_sign_in!(result.user)
       end
 
       def resend
@@ -58,6 +61,24 @@ module RecordingStudioUser
       end
 
       private
+
+      def continue_with_primary_login!(email)
+        return redirect_to otp_session_password_path unless
+          RecordingStudioUser.config.primary_login_type_otp?
+
+        require_otp_login_enabled!
+        issue_login_otp!(resource_class.find_by(email: email))
+        redirect_to otp_session_verify_path, notice: generic_login_notice
+      end
+
+      def verify_login_otp
+        RecordingStudioUser.verify_otp!(
+          challenge_id: session[:otp_challenge_id],
+          code: params[:code],
+          purpose: "login",
+          session: session
+        )
+      end
 
       def sign_in_params
         params.require(:user).permit(:email, :password, :remember_me)
@@ -89,9 +110,15 @@ module RecordingStudioUser
         user&.confirmed? && user.active_for_authentication?
       end
 
-      def render_password_failure(message)
+      def render_continue_failure(message)
         flash.now[:alert] = message
         render :new, status: :unprocessable_entity
+      end
+
+      def render_password_failure(message)
+        @email = sign_in_params[:email].to_s.strip.downcase.presence || pending_auth_email
+        flash.now[:alert] = message
+        render :password, status: :unprocessable_entity
       end
 
       def render_verify_failure(result)

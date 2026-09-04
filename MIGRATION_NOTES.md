@@ -85,13 +85,17 @@ recording_studio_user_auth_for :users
 
 | Path | Purpose |
 | --- | --- |
-| `GET/POST /users/sign_in` | Password login (works with OTP off) |
-| `GET/POST /users/sign_up` | Password registration (works with OTP off) |
-| `GET/POST /users/sign_up/otp` | Start OTP registration |
+| `GET /users/sign_in` | Email-only login entry (Continue with email) |
+| `POST /users/sign_in` | Continue: store email, then password or OTP verify per `primary_login_type` |
+| `GET/POST /users/sign_in/password` | Password screen / submit (`user_session`) |
+| `GET /users/sign_up` | Email-only registration entry |
+| `POST /users/sign_up` | Continue: store email, then password or OTP verify per `primary_login_type` |
+| `GET/POST /users/sign_up/password` | Password screen / submit (`user_registration`) |
+| `GET/POST /users/sign_up/otp` | Start OTP registration (deep link) |
 | `GET/POST /users/sign_up/verify` | Enter registration code |
 | `POST /users/sign_up/resend` | Resend registration code |
-| `GET/POST /users/sign_in/otp` | Start login OTP |
+| `GET/POST /users/sign_in/otp` | Start login OTP (deep link) |
 | `GET/POST /users/sign_in/verify` | Enter login code |
 | `POST /users/sign_in/resend` | Resend login code |
 
-Password sign-up (`sign_up/password`) and password sign-in (`sign_in/password`) remain available when OTP is enabled. OTP actions return not found while `otp_enabled` is false.
+`primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths return not found while `otp_enabled` is false.

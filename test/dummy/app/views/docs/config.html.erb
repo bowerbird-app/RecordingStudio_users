@@ -40,10 +40,16 @@
         config.additional_profile_attributes = %i[display_name]
         config.require_password_confirmation = false
         # config.login_title = "Welcome back"
+        # config.primary_login_type = :email # or :otp when OTP is enabled
       end
     CODE
   ) %>
 
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    <code>primary_login_type</code> chooses the second auth screen after email on login and registration:
+    <code>:email</code> (default) opens password; <code>:otp</code> issues a code and opens verify.
+    <code>:otp</code> requires OTP to be fully enabled.
+  </p>
   <p class="text-sm leading-6 text-(--surface-content-color)">
     Defaults are <code>User</code>, <code>application</code>, <code>/recording_studio_users</code>,
     <code>profile</code>, and <code>admin</code>. A conventional initializer runs too late to change an already

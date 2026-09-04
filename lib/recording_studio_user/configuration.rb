@@ -13,6 +13,7 @@ module RecordingStudioUser
     ].freeze
 
     AUTHENTICATION_METHODS = %i[password otp].freeze
+    PRIMARY_LOGIN_TYPES = %i[email otp].freeze
 
     # otp_login_enabled has its own writer because it must stay compatible with
     # the registration methods.
@@ -29,6 +30,7 @@ module RecordingStudioUser
       additional_profile_attributes: [],
       require_password_confirmation: false,
       login_title: DEFAULT_LOGIN_TITLE,
+      primary_login_type: :email,
       otp_enabled: false,
       otp_login_enabled: true,
       otp_registration_enabled: true,
@@ -48,7 +50,12 @@ module RecordingStudioUser
 
     BOOLEAN_SETTINGS.each do |setting|
       define_method("#{setting}=") do |value|
+        previous = instance_variable_get("@#{setting}")
         instance_variable_set("@#{setting}", ActiveModel::Type::Boolean.new.cast(value))
+        validate_primary_login_type! if %i[otp_enabled otp_registration_enabled].include?(setting)
+      rescue ArgumentError
+        instance_variable_set("@#{setting}", previous)
+        raise
       end
 
       define_method("#{setting}?") { public_send(setting) }
@@ -74,12 +81,34 @@ module RecordingStudioUser
     end
 
     def otp_login_enabled=(value)
+      previous = @otp_login_enabled
       @otp_login_enabled = ActiveModel::Type::Boolean.new.cast(value)
       validate_otp_login_requirement!
+      validate_primary_login_type!
+    rescue ArgumentError
+      @otp_login_enabled = previous
+      raise
     end
 
     def otp_login_enabled?
       otp_login_enabled
+    end
+
+    def primary_login_type=(value)
+      previous = @primary_login_type
+      @primary_login_type = value.to_sym
+      validate_primary_login_type!
+    rescue ArgumentError
+      @primary_login_type = previous
+      raise
+    end
+
+    def primary_login_type_email?
+      primary_login_type == :email
+    end
+
+    def primary_login_type_otp?
+      primary_login_type == :otp
     end
 
     def otp_max_attempts=(value)
@@ -89,9 +118,14 @@ module RecordingStudioUser
     end
 
     def registration_authentication_methods=(value)
+      previous = @registration_authentication_methods
       @registration_authentication_methods = Array(value).map(&:to_sym).uniq
       validate_registration_authentication_methods!
       validate_otp_login_requirement!
+      validate_primary_login_type!
+    rescue ArgumentError
+      @registration_authentication_methods = previous
+      raise
     end
 
     def password_registration_confirmation=(value)
@@ -178,6 +212,7 @@ module RecordingStudioUser
     def validate!
       validate_registration_authentication_methods!
       validate_otp_login_requirement!
+      validate_primary_login_type!
     end
 
     private
@@ -194,6 +229,25 @@ module RecordingStudioUser
       return if otp_login_enabled?
 
       raise ArgumentError, "otp_login_enabled must be true when :otp is in registration_authentication_methods"
+    end
+
+    def validate_primary_login_type!
+      unless PRIMARY_LOGIN_TYPES.include?(primary_login_type)
+        raise ArgumentError, "primary_login_type must be :email or :otp"
+      end
+      return if primary_login_type == :email
+
+      validate_otp_primary_login_type!
+    end
+
+    def validate_otp_primary_login_type!
+      raise ArgumentError, "primary_login_type :otp requires otp_enabled" unless otp_enabled?
+      raise ArgumentError, "primary_login_type :otp requires otp_login_enabled" unless otp_login_enabled?
+      raise ArgumentError, "primary_login_type :otp requires otp_registration_enabled" unless
+        otp_registration_enabled?
+      return if registration_authentication_methods.include?(:otp)
+
+      raise ArgumentError, "primary_login_type :otp requires :otp in registration_authentication_methods"
     end
 
     def validate_positive!(name, value)

@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
+require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/registration_otp.rb"
+).to_s
+
 module RecordingStudioUser
   module Auth
     class RegistrationsController < BaseController
-      EMAIL_TAKEN_MESSAGE = "That email already has an account. Try signing in."
+      include RegistrationOtp
 
       before_action :require_otp_registration_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
@@ -11,32 +15,34 @@ module RecordingStudioUser
         @resource = resource_class.new
       end
 
+      def continue
+        email = submitted_email_from_params
+        return render_continue_failure("Enter your email to continue.") if email.blank?
+
+        store_pending_auth_email!(email)
+        continue_with_primary_registration!(email)
+      end
+
       def password
-        build_password_resource
-        render :new
+        email = pending_auth_email
+        return redirect_to host_new_user_registration_path, alert: "Start with your email." if email.blank?
+
+        build_password_resource(email: email)
       end
 
       def create_password
         build_password_resource(sign_up_params)
         return render_password_taken if otp_account?(submitted_email)
-        return render :new, status: :unprocessable_entity unless resource.save
+        return render :password, status: :unprocessable_entity unless resource.save
 
         provision_password_account!
-        redirect_to after_sign_up_path_for(resource)
+        finish_sign_up!(resource)
       end
 
       def otp; end
 
       def create_otp
-        existing = resource_class.find_by(email: submitted_email)
-        return redirect_to_sign_in_for(existing) if existing_account_blocks_otp?(existing)
-
-        user = existing || RecordingStudioUser.create_unconfirmed_user!(email: submitted_email)
-        RecordingStudioUser.issue_otp!(user: user, purpose: :registration, request: request, session: session)
-        redirect_to otp_registration_verify_path
-      rescue Services::OtpRateLimiter::RateLimited
-        flash.now[:alert] = "Give it a minute, then try again."
-        render :otp, status: :too_many_requests
+        start_otp_registration!(submitted_email)
       end
 
       def verify
@@ -44,17 +50,11 @@ module RecordingStudioUser
       end
 
       def submit_verify
-        result = RecordingStudioUser.verify_otp!(
-          challenge_id: session[:otp_challenge_id],
-          code: params[:code],
-          purpose: "registration",
-          session: session
-        )
+        result = verify_registration_otp
         return render_verify_failure(result) unless result.success?
 
         user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
-        sign_in_user!(user)
-        redirect_to after_sign_up_path_for(user)
+        finish_sign_up!(user)
       end
 
       def resend
@@ -67,6 +67,23 @@ module RecordingStudioUser
       private
 
       attr_reader :resource
+
+      def continue_with_primary_registration!(email)
+        return redirect_to otp_registration_password_path unless
+          RecordingStudioUser.config.primary_login_type_otp?
+
+        require_otp_registration_enabled!
+        start_otp_registration!(email)
+      end
+
+      def verify_registration_otp
+        RecordingStudioUser.verify_otp!(
+          challenge_id: session[:otp_challenge_id],
+          code: params[:code],
+          purpose: "registration",
+          session: session
+        )
+      end
 
       def build_password_resource(attrs = {})
         @resource = resource_class.new(attrs)
@@ -85,15 +102,20 @@ module RecordingStudioUser
         resource_class.find_by(email: email)&.registered_with_otp?
       end
 
+      def render_continue_failure(message)
+        @resource = resource_class.new(email: submitted_email_from_params)
+        flash.now[:alert] = message
+        render :new, status: :unprocessable_entity
+      end
+
       def render_password_taken
         flash.now[:alert] = EMAIL_TAKEN_MESSAGE
-        render :new, status: :unprocessable_entity
+        render :password, status: :unprocessable_entity
       end
 
       def provision_password_account!
         confirm_password_account!
         RecordingStudioUser.record_profile!(resource, actor: resource, **Profile.default_attributes_for(resource))
-        sign_in_user!(resource)
       end
 
       def confirm_password_account!
@@ -101,28 +123,6 @@ module RecordingStudioUser
         return unless resource.registered_with_password? && resource.confirmed_at.nil?
 
         resource.update_column(:confirmed_at, Time.current)
-      end
-
-      def existing_account_blocks_otp?(existing)
-        existing&.confirmed? || existing&.registered_with_password?
-      end
-
-      def redirect_to_sign_in_for(existing)
-        flash[existing.confirmed? ? :notice : :alert] = EMAIL_TAKEN_MESSAGE
-        redirect_to host_new_user_session_path
-      end
-
-      def issue_registration_resend!
-        user = user_for_otp_resend
-        return unless user&.registered_with_otp? && !user.confirmed?
-
-        RecordingStudioUser.issue_otp!(
-          user: user,
-          purpose: :registration,
-          request: request,
-          session: session,
-          rate_limit_scope: :resend
-        )
       end
 
       def render_verify_failure(result)

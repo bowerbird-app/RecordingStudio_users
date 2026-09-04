@@ -11,7 +11,9 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "def recording_studio_user_auth_for"
     assert_includes source, 'module: "recording_studio_user/auth"'
     assert_includes source, "sessions#new"
+    assert_includes source, "sessions#continue"
     assert_includes source, "registrations#new"
+    assert_includes source, "registrations#continue"
     assert_includes source, "sessions#otp"
     assert_includes source, "registrations#otp"
     assert_includes source, "devise/sessions#destroy"
@@ -27,6 +29,8 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes helper, "def password_registration_path"
     assert_includes helper, "def auth_sign_up_path"
     assert_includes helper, "def auth_sign_in_path"
+    assert_includes helper, "def continue_session_path"
+    assert_includes helper, "def continue_registration_path"
     assert_includes helper, "def host_or_engine"
     assert_includes helper, "main_app.public_send"
   end
@@ -60,9 +64,11 @@ class AuthRoutesHelperTest < Minitest::Test
     )
     %w[
       sessions/new
+      sessions/password
       sessions/otp
       sessions/verify
       registrations/new
+      registrations/password
       registrations/otp
       registrations/verify
     ].each do |view|
