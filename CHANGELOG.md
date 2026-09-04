@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-04
+
+### Added
+- `config.primary_login_type` (`:email` default, or `:otp`) nominates the second
+  auth screen after email on both login and registration.
+- Email-only first screens with **Continue with email**, then password or OTP
+  verify. Password screens are `sessions/password` and `registrations/password`.
+- `POST /users/sign_in` and `POST /users/sign_up` continue actions store
+  `session[:auth_email]` and route by `primary_login_type`.
+
+### Changed
+- Primary `/users/sign_in` and `/users/sign_up` no longer collect password on
+  the first screen. Password submits stay on `/users/sign_in/password` and
+  `/users/sign_up/password` (`user_session` / `user_registration` route names).
+- Install initializer documents `primary_login_type`.
+
+### Upgrade notes
+- Bump to `0.9.0`.
+- Set `config.primary_login_type = :email` (default) or `:otp`. `:otp` requires
+  `otp_enabled`, `otp_login_enabled`, `otp_registration_enabled`, and `:otp` in
+  `registration_authentication_methods`.
+- Hosts that posted email + password to `POST /users/sign_in` or
+  `POST /users/sign_up` should post password to `/password` (or use the continue
+  then password flow). Direct OTP deep links are unchanged.
+- Verify with: `/users/sign_in` shows email and **Continue with email** with no
+  password field; continue with `:email` opens the password screen; with `:otp`
+  opens verify.
+
 ## [0.8.1] - 2026-09-03
 
 Cloud Agent install no longer points at fetch-skills.sh alone. Skills still

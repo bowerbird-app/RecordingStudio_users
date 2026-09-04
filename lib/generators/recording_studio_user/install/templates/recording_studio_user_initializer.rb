@@ -11,6 +11,9 @@ RecordingStudioUser.configure do |config|
   config.require_password_confirmation = false
   # Devise login page heading (host sessions#new). Default "Welcome back".
   # config.login_title = "Welcome back"
+  # First auth screen is always email. Next screen follows this setting:
+  # :email → password, :otp → email code (requires otp_enabled and OTP flags).
+  # config.primary_login_type = :email
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
   # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in
@@ -50,7 +53,8 @@ RecordingStudioUser.configure do |config|
   # When false, unknown provider emails do not create a User (fail closed).
   config.omniauth_create_account = true
   # Optional email OTP. Leave false unless the host has run OTP migrations
-  # and installed recording_studio_notifications.
+  # and installed recording_studio_notifications. Set primary_login_type = :otp
+  # only when OTP login and registration are on.
   config.otp_enabled = false
 end
 

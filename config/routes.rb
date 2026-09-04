@@ -11,6 +11,7 @@ RecordingStudioUser::Engine.routes.draw do
 
   scope module: :auth, path: "auth" do
     get "sign_up", to: "registrations#new", as: :sign_up
+    post "sign_up", to: "registrations#continue"
     get "sign_up/password", to: "registrations#password", as: :sign_up_password
     post "sign_up/password", to: "registrations#create_password"
     get "sign_up/otp", to: "registrations#otp", as: :sign_up_otp
@@ -20,6 +21,7 @@ RecordingStudioUser::Engine.routes.draw do
     post "sign_up/resend", to: "registrations#resend", as: :sign_up_resend
 
     get "sign_in", to: "sessions#new", as: :sign_in
+    post "sign_in", to: "sessions#continue"
     get "sign_in/password", to: "sessions#password", as: :sign_in_password
     post "sign_in/password", to: "sessions#create_password"
     get "sign_in/otp", to: "sessions#otp", as: :sign_in_otp

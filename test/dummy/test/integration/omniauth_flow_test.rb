@@ -36,7 +36,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       assert_select "a, button", text: /Continue with #{Regexp.escape(label)}/
     end
 
-    get "#{new_user_session_path}/password"
+    post new_user_session_path, params: { user: { email: "oauth-check@example.com" } }
+    follow_redirect!
 
     assert_response :success
     assert_select "input[type='password']"

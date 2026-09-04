@@ -11,6 +11,7 @@ module ActionDispatch
       #   recording_studio_user_auth_for :users
       #
       # Draws `/users/sign_in`, `/users/sign_up`, password reset, and OTP routes.
+      # First screens are email-only. Password or OTP follows `primary_login_type`.
       # Password screens work with `otp_enabled` off. OTP actions stay gated.
       def recording_studio_user_auth_for(name = :users, path: nil, **)
         singular = name.to_s.singularize
@@ -30,9 +31,9 @@ module ActionDispatch
 
       def draw_recording_studio_user_registration_routes(singular)
         get "sign_up", to: "registrations#new", as: :"new_#{singular}_registration"
+        post "sign_up", to: "registrations#continue"
         get "sign_up/password", to: "registrations#password"
-        post "sign_up", to: "registrations#create_password", as: :"#{singular}_registration"
-        post "sign_up/password", to: "registrations#create_password"
+        post "sign_up/password", to: "registrations#create_password", as: :"#{singular}_registration"
         get "sign_up/otp", to: "registrations#otp"
         post "sign_up/otp", to: "registrations#create_otp"
         get "sign_up/verify", to: "registrations#verify", as: :"verify_#{singular}_registration"
@@ -42,9 +43,9 @@ module ActionDispatch
 
       def draw_recording_studio_user_session_routes(singular)
         get "sign_in", to: "sessions#new", as: :"new_#{singular}_session"
+        post "sign_in", to: "sessions#continue"
         get "sign_in/password", to: "sessions#password"
-        post "sign_in", to: "sessions#create_password", as: :"#{singular}_session"
-        post "sign_in/password", to: "sessions#create_password"
+        post "sign_in/password", to: "sessions#create_password", as: :"#{singular}_session"
         get "sign_in/otp", to: "sessions#otp"
         post "sign_in/otp", to: "sessions#create_otp"
         get "sign_in/verify", to: "sessions#verify", as: :"verify_#{singular}_session"

@@ -6,17 +6,20 @@ class LoginPageTest < ActionDispatch::IntegrationTest
   AUTH_SESSIONS_VIEW = RecordingStudioUser::Engine.root.join(
     "app/views/recording_studio_user/auth/sessions/new.html.erb"
   ).freeze
+  AUTH_PASSWORD_VIEW = RecordingStudioUser::Engine.root.join(
+    "app/views/recording_studio_user/auth/sessions/password.html.erb"
+  ).freeze
 
-  test "login paints Welcome back without Card or Remember me" do
+  test "login paints Welcome back with email only, no Card or Remember me" do
     get new_user_session_path
 
     assert_response :success
     assert_select "html[data-theme='rounded']"
     assert_select "h2", text: "Welcome back"
     assert_select "input[type='email'][name='user[email]']"
-    assert_select "input[type='password'][name='user[password]']"
+    assert_select "input[type='password'][name='user[password]']", count: 0
     assert_select "input[name='user[remember_me]']", count: 0
-    assert_select "button[type='submit']", text: "Sign in"
+    assert_select "button[type='submit']", text: "Continue with email"
     refute_includes response.body, "Remember me"
     refute_includes response.body, "Email OTP"
     refute_includes response.body, "Continue with password"
@@ -46,14 +49,28 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "password sign in path renders the same primary form" do
-    get "#{new_user_session_path}/password"
+  test "continue with email primary opens password screen" do
+    post new_user_session_path, params: { user: { email: "member@admin.com" } }
+
+    assert_redirected_to "#{new_user_session_path}/password"
+    follow_redirect!
 
     assert_response :success
-    assert_select "input[type='email'][name='user[email]']"
     assert_select "input[type='password'][name='user[password]']"
+    assert_select "input[type='hidden'][name='user[email]'][value='member@admin.com']"
+    assert_select "input[type='email']", count: 0
     assert_select "button[type='submit']", text: "Sign in"
-    refute_includes response.body, "Email OTP"
+    refute_includes response.body, "Don't have an account?"
+    refute_includes response.body, "Continue with Google"
+    password_source = File.read(AUTH_PASSWORD_VIEW)
+    refute_includes password_source, "FlatPack::Card::Component"
+    assert_includes password_source, 'layout: "recording_studio_user/auth/shell"'
+  end
+
+  test "password sign in path without email sends you back to start" do
+    get "#{new_user_session_path}/password"
+
+    assert_redirected_to new_user_session_path
   end
 
   test "direct OTP sign in page renders email form without primary chooser" do
@@ -74,19 +91,38 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     get new_user_session_path
     assert_response :success
     assert_select "h2", text: "Welcome back"
-    assert_select "button[type='submit']", text: "Sign in"
+    assert_select "button[type='submit']", text: "Continue with email"
+
+    post new_user_session_path, params: { user: { email: "member@admin.com" } }
+    assert_redirected_to "#{new_user_session_path}/password"
 
     get "#{new_user_session_path}/otp"
     assert_response :not_found
 
     get new_user_registration_path
     assert_response :success
-    assert_select "button[type='submit']", text: "Sign up"
+    assert_select "button[type='submit']", text: "Continue with email"
 
     get "#{new_user_registration_path}/otp"
     assert_response :not_found
   ensure
     RecordingStudioUser.config.otp_enabled = original
+  end
+
+  test "primary otp continue issues a code and opens verify" do
+    original = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :otp
+
+    post new_user_session_path, params: { user: { email: "otp@admin.com" } }
+
+    assert_redirected_to verify_user_session_path
+    assert_match(/eligible account/i, flash[:notice])
+    follow_redirect!
+    assert_response :success
+    assert_select "input[name='code']"
+    assert_includes response.body, "Enter your code"
+  ensure
+    RecordingStudioUser.config.primary_login_type = original
   end
 
   test "login title follows RecordingStudioUser.config.login_title" do

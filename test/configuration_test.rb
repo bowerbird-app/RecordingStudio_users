@@ -17,6 +17,9 @@ class ConfigurationTest < Minitest::Test
     refute @configuration.require_password_confirmation
     refute_predicate @configuration, :require_password_confirmation?
     assert_equal "Welcome back", @configuration.login_title
+    assert_equal :email, @configuration.primary_login_type
+    assert_predicate @configuration, :primary_login_type_email?
+    refute_predicate @configuration, :primary_login_type_otp?
     assert_empty @configuration.omniauth_providers
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?
@@ -94,6 +97,38 @@ class ConfigurationTest < Minitest::Test
     assert_equal %i[email], @configuration.otp_registration_channels
     assert_equal %i[email push], @configuration.otp_login_channels
     assert_equal 7.days, @configuration.unconfirmed_user_retention
+  end
+
+  def test_primary_login_type_email_and_otp
+    @configuration.primary_login_type = :email
+    assert_predicate @configuration, :primary_login_type_email?
+
+    assert_raises(ArgumentError) { @configuration.primary_login_type = :otp }
+
+    @configuration.otp_enabled = true
+    @configuration.primary_login_type = :otp
+    assert_predicate @configuration, :primary_login_type_otp?
+
+    assert_raises(ArgumentError) { @configuration.primary_login_type = :sms }
+    assert_raises(ArgumentError) { @configuration.otp_enabled = false }
+  end
+
+  def test_primary_login_type_otp_requires_login_and_registration_flags
+    @configuration.otp_enabled = true
+    @configuration.otp_registration_enabled = false
+    assert_raises(ArgumentError) { @configuration.primary_login_type = :otp }
+
+    @configuration.otp_registration_enabled = true
+    @configuration.registration_authentication_methods = %i[password]
+    @configuration.otp_login_enabled = false
+    assert_raises(ArgumentError) { @configuration.primary_login_type = :otp }
+
+    @configuration.otp_login_enabled = true
+    assert_raises(ArgumentError) { @configuration.primary_login_type = :otp }
+
+    @configuration.registration_authentication_methods = %i[password otp]
+    @configuration.primary_login_type = :otp
+    assert_predicate @configuration, :primary_login_type_otp?
   end
 
   def test_otp_login_disabled_with_otp_registration_raises

@@ -5,10 +5,30 @@ module RecordingStudioUser
     class SessionsController < BaseController
       before_action :require_otp_login_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
+      AUTH_EMAIL_KEY = :auth_email
+
       def new; end
 
+      def continue
+        email = submitted_email_from_params
+        return render_continue_failure("Enter your email to continue.") if email.blank?
+
+        session[AUTH_EMAIL_KEY] = email
+
+        if RecordingStudioUser.config.primary_login_type_otp?
+          require_otp_login_enabled!
+          issue_login_otp!(resource_class.find_by(email: email))
+          redirect_to otp_session_verify_path, notice: generic_login_notice
+        else
+          redirect_to otp_session_password_path
+        end
+      rescue Services::OtpRateLimiter::RateLimited
+        redirect_to otp_session_verify_path, notice: generic_login_notice
+      end
+
       def password
-        render :new
+        @email = pending_auth_email
+        return redirect_to host_new_user_session_path, alert: "Start with your email." if @email.blank?
       end
 
       def create_password
@@ -18,6 +38,7 @@ module RecordingStudioUser
         return render_password_failure("Email or password did not match.") unless
           user&.valid_password?(sign_in_params[:password])
 
+        clear_pending_auth_email!
         sign_in_user!(user)
         redirect_to after_sign_in_path_for(user)
       end
@@ -46,6 +67,7 @@ module RecordingStudioUser
         return render_verify_failure(result) unless result.success?
         return render_verify_failure(nil) unless eligible_for_sign_in?(result.user)
 
+        clear_pending_auth_email!
         sign_in_user!(result.user)
         redirect_to after_sign_in_path_for(result.user)
       end
@@ -65,6 +87,18 @@ module RecordingStudioUser
 
       def submitted_email
         sign_in_params[:email].to_s.strip.downcase
+      end
+
+      def submitted_email_from_params
+        params.dig(:user, :email).to_s.strip.downcase
+      end
+
+      def pending_auth_email
+        session[AUTH_EMAIL_KEY].presence || submitted_email_from_params.presence
+      end
+
+      def clear_pending_auth_email!
+        session.delete(AUTH_EMAIL_KEY)
       end
 
       def auth_options
@@ -89,9 +123,15 @@ module RecordingStudioUser
         user&.confirmed? && user.active_for_authentication?
       end
 
-      def render_password_failure(message)
+      def render_continue_failure(message)
         flash.now[:alert] = message
         render :new, status: :unprocessable_entity
+      end
+
+      def render_password_failure(message)
+        @email = sign_in_params[:email].to_s.strip.downcase.presence || pending_auth_email
+        flash.now[:alert] = message
+        render :password, status: :unprocessable_entity
       end
 
       def render_verify_failure(result)

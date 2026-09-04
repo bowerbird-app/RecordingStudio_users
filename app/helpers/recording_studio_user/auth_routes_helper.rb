@@ -50,6 +50,14 @@ module RecordingStudioUser
       host_or_engine(:new_user_session_path, :sign_in_path)
     end
 
+    def continue_session_path
+      auth_sign_in_path
+    end
+
+    def continue_registration_path
+      auth_sign_up_path
+    end
+
     private
 
     def host_routes?(route_name)
