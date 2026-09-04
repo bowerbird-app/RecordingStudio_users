@@ -29,6 +29,9 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "login and sign up show Continue with each configured provider" do
+    original = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :email
+
     get new_user_session_path
 
     assert_response :success
@@ -47,6 +50,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a, button", text: /Continue with Google/
     assert_select "a, button", text: /Continue with Microsoft/
+  ensure
+    RecordingStudioUser.config.primary_login_type = original
   end
 
   test "new Google account creates User Profile and Identity then signs in" do
