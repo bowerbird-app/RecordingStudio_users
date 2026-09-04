@@ -12,20 +12,14 @@ module RecordingStudioUser
       return unless defined?(RecordingStudioSiteSettings)
 
       root = auth_site_root_recording
-      return unless root
-
-      logo = RecordingStudioSiteSettings.square_logo_for(root, variant: variant)
-      return if logo.blank?
-
-      src = auth_site_logo_public_src(logo)
+      src = auth_site_logo_src_for(root, variant: variant)
       return if src.blank?
 
-      name = RecordingStudioSiteSettings.name_for(root)
       render FlatPack::Avatar::Component.new(
         src: src,
         size: size,
         shape: :square,
-        alt: name.presence || "Logo"
+        alt: auth_site_logo_alt(root)
       )
     end
 
@@ -37,6 +31,19 @@ module RecordingStudioUser
     end
 
     private
+
+    def auth_site_logo_src_for(root, variant:)
+      return if root.blank?
+
+      logo = RecordingStudioSiteSettings.square_logo_for(root, variant: variant)
+      return if logo.blank?
+
+      auth_site_logo_public_src(logo)
+    end
+
+    def auth_site_logo_alt(root)
+      RecordingStudioSiteSettings.name_for(root).presence || "Logo"
+    end
 
     def auth_site_logo_public_src(logo)
       attachment = logo.recording&.recordable
