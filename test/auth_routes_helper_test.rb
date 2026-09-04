@@ -78,8 +78,24 @@ class AuthRoutesHelperTest < Minitest::Test
       assert_includes source, 'layout: "recording_studio_user/auth/shell"'
     end
 
-    assert_includes shell, "min-h-dvh"
+    refute_includes shell, "min-h-dvh"
+    assert_includes shell, "w-full"
     assert_includes shell, "max-w-sm"
     assert_includes shell, "FlatPack::PageTitle::Component"
+  end
+
+  def test_auth_layout_owns_viewport_centering
+    layout = File.read(
+      File.expand_path("../app/views/layouts/recording_studio_user/auth.html.erb", __dir__)
+    )
+    base = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/auth/base_controller.rb", __dir__)
+    )
+
+    assert_includes base, 'layout "recording_studio_user/auth"'
+    refute_includes base, 'layout "application"'
+    assert_includes layout, "min-h-dvh"
+    assert_includes layout, "items-center"
+    assert_equal 1, layout.scan("min-h-dvh").length
   end
 end

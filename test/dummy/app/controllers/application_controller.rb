@@ -8,7 +8,9 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  # Devise keeps layouts/application. Every other host page uses core default layout.
+  # Devise-owned screens (password reset) keep layouts/application. Sign in and
+  # sign up come from the gem and bring their own layout. Everything else uses
+  # core default layout.
   layout :application_layout
 
   before_action :authenticate_user!

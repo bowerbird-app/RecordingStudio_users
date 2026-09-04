@@ -34,10 +34,10 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     refute_includes source, "FlatPack::Card::Component"
     refute_includes source, "otp_session_otp_path"
     assert_includes source, 'layout: "recording_studio_user/auth/shell"'
-    assert_includes shell, "min-h-dvh"
+    refute_includes shell, "min-h-dvh"
     assert_includes shell, "max-w-sm"
     assert_includes shell, "text-left"
-    assert_includes response.body, "min-h-dvh"
+    assert_equal 1, response.body.scan("min-h-dvh").length
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "Don't have an account?"
     assert_includes response.body, "text-center"
@@ -86,7 +86,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name='user[email]']"
     assert_select "button[type='submit']", text: "Send code"
-    assert_includes response.body, "min-h-dvh"
+    assert_equal 1, response.body.scan("min-h-dvh").length
     assert_includes response.body, "max-w-sm"
     refute_includes response.body, "Continue with password"
   end

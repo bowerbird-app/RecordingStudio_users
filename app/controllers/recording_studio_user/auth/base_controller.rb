@@ -11,7 +11,7 @@ module RecordingStudioUser
       include RecordingStudioUser::AuthRoutesHelper
       include RecordingStudioUser::Auth::PendingEmail
 
-      layout "application"
+      layout "recording_studio_user/auth"
 
       VERIFY_FAILURE_MESSAGES = {
         invalid_code: "That code did not work. Try again.",

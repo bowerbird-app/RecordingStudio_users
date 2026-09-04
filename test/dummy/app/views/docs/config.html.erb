@@ -57,6 +57,12 @@
   </p>
 
   <p class="text-sm leading-6 text-(--surface-content-color)">
+    <code>layout</code> covers the engine's signed-in screens. Sign in and sign up render in the gem's own
+    <code>recording_studio_user/auth</code> layout, which centers the form in the viewport. Override that layout
+    to change their chrome.
+  </p>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
     Mount paths gain one leading slash and omit a trailing slash. Profile and admin paths omit both leading and
     trailing slashes. Paths must be non-empty, contain only letters, numbers, underscores, slashes, and hyphens,
     and cannot contain a double slash.

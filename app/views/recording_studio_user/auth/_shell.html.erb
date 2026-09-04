@@ -1,15 +1,14 @@
-<div class="flex min-h-dvh items-center justify-center">
-  <div class="w-full max-w-sm space-y-6">
-    <%= render FlatPack::PageTitle::Component.new(
-      title: title,
-      variant: :h2,
-      class: "mb-0 pb-0 text-left"
-    ) %>
-    <% if local_assigns[:subtitle].present? %>
-      <p class="text-left text-sm text-[var(--surface-muted-content-color)]">
-        <%= subtitle %>
-      </p>
-    <% end %>
-    <%= yield %>
-  </div>
+<% content_for :title, title %>
+<div class="w-full max-w-sm space-y-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: title,
+    variant: :h2,
+    class: "mb-0 pb-0 text-left"
+  ) %>
+  <% if local_assigns[:subtitle].present? %>
+    <p class="text-left text-sm text-[var(--surface-muted-content-color)]">
+      <%= subtitle %>
+    </p>
+  <% end %>
+  <%= yield %>
 </div>
