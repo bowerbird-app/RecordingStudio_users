@@ -6,10 +6,12 @@ RecordingStudioUser.configure do |config|
   config.mount_path = "/recording_studio_users"
   config.profile_route_path = "profile"
   config.admin_route_path = "admin"
+  # Layout for the engine's signed-in screens. Sign in and sign up keep the
+  # gem's own centered layout, "recording_studio_user/auth".
   config.layout = "application"
   config.additional_profile_attributes = []
   config.require_password_confirmation = false
-  # Devise login page heading (host sessions#new). Default "Welcome back".
+  # Sign-in page heading. Default "Welcome back".
   # config.login_title = "Welcome back"
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
