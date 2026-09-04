@@ -50,8 +50,14 @@ module RecordingStudioUser
 
     BOOLEAN_SETTINGS.each do |setting|
       define_method("#{setting}=") do |value|
+        previous = instance_variable_get("@#{setting}")
         instance_variable_set("@#{setting}", ActiveModel::Type::Boolean.new.cast(value))
-        validate_primary_login_type! if setting == :otp_enabled || setting == :otp_registration_enabled
+        if setting == :otp_enabled || setting == :otp_registration_enabled
+          validate_primary_login_type!
+        end
+      rescue ArgumentError
+        instance_variable_set("@#{setting}", previous)
+        raise
       end
 
       define_method("#{setting}?") { public_send(setting) }
@@ -77,9 +83,13 @@ module RecordingStudioUser
     end
 
     def otp_login_enabled=(value)
+      previous = @otp_login_enabled
       @otp_login_enabled = ActiveModel::Type::Boolean.new.cast(value)
       validate_otp_login_requirement!
       validate_primary_login_type!
+    rescue ArgumentError
+      @otp_login_enabled = previous
+      raise
     end
 
     def otp_login_enabled?
@@ -87,8 +97,12 @@ module RecordingStudioUser
     end
 
     def primary_login_type=(value)
+      previous = @primary_login_type
       @primary_login_type = value.to_sym
       validate_primary_login_type!
+    rescue ArgumentError
+      @primary_login_type = previous
+      raise
     end
 
     def primary_login_type_email?
@@ -106,10 +120,14 @@ module RecordingStudioUser
     end
 
     def registration_authentication_methods=(value)
+      previous = @registration_authentication_methods
       @registration_authentication_methods = Array(value).map(&:to_sym).uniq
       validate_registration_authentication_methods!
       validate_otp_login_requirement!
       validate_primary_login_type!
+    rescue ArgumentError
+      @registration_authentication_methods = previous
+      raise
     end
 
     def password_registration_confirmation=(value)
