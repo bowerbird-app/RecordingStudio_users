@@ -45,7 +45,7 @@ module RecordingStudioUser
       omniauth_create_account: true
     }.freeze
 
-    attr_accessor :user_class_name, :layout
+    attr_accessor :user_class_name, :layout, :auth_site_root_resolver
     attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]))
 
     BOOLEAN_SETTINGS.each do |setting|
@@ -78,6 +78,7 @@ module RecordingStudioUser
     def initialize
       DEFAULTS.each { |setting, value| instance_variable_set("@#{setting}", value) }
       @omniauth_providers = {}
+      @auth_site_root_resolver = nil
     end
 
     def otp_login_enabled=(value)

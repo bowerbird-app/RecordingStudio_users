@@ -10,8 +10,9 @@ Rails.application.routes.draw do
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioAccessible::Engine, at: "/recording_studio_accessible"
   mount RecordingStudioAttachable::Engine, at: "/recording_studio_attachable"
+  mount RecordingStudioSiteSettings::Engine, at: "/recording_studio_site_settings"
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
-  recording_studio_admin_for :admin, at: "/admin", root_section: :root
+  recording_studio_admin_for :admin, at: "/admin", root_section: :site_settings
   mount RecordingStudioUser::Engine => RecordingStudioUser.config.mount_path, as: :recording_studio_users
   mount RecordingStudioNotificationsPush::Engine, at: "/notifications/push"
   mount RecordingStudioNotifications::Engine, at: "/notifications"

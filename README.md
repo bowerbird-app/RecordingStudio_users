@@ -58,7 +58,7 @@ devise_for :users,
 recording_studio_user_auth_for :users
 ```
 
-That draws `/users/sign_in` and `/users/sign_up` from `recording_studio_user/auth/*` — viewport-centered Flatpack forms, no Card. The first screen is email only (**Continue with email**), then social providers. Password or OTP is the second screen, driven by `primary_login_type` (default `:email`).
+That draws `/users/sign_in` and `/users/sign_up` from `recording_studio_user/auth/*` — viewport-centered Flatpack forms, no Card. The first screen is email only (**Continue with email**), then social providers. Password or OTP is the second screen, driven by `primary_login_type` (default `:email`). When `recording_studio_site_settings` is installed, the square site logo appears above the title via `auth_site_logo` (optional `config.auth_site_root_resolver`).
 
 Auth screens render inside the gem layout `layouts/recording_studio_user/auth`, not the host `layouts/application`. That layout is the one full-viewport centered auth chrome (`min-h-dvh` on its own `main`), loads `tailwind` and the Flatpack stylesheets, and puts `data-theme` on `html` (`rounded` unless the page sets `content_for :body_theme`). The shared `_shell` partial is content only (`w-full max-w-sm`, left-aligned title, optional subtitle, form), so it never nests a second viewport inside a padded host `main`. A host that needs its own auth chrome overrides `app/views/layouts/recording_studio_user/auth.html.erb` and owns the centering there — `_shell` will not add height. Password screens work with `otp_enabled` still `false`. OTP routes (`/users/sign_in/otp`, `/users/sign_up/otp`, verify/resend) activate when OTP is on. Hosts override a view only when the product must differ; do not copy the gem templates into the app.
 

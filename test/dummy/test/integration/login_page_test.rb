@@ -37,6 +37,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     refute_includes shell, "min-h-dvh"
     assert_includes shell, "max-w-sm"
     assert_includes shell, "text-left"
+    assert_includes shell, "auth_site_logo"
     assert_equal 1, response.body.scan("min-h-dvh").length
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "Don't have an account?"
@@ -49,6 +50,38 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
       assert_select "form[method='post'] button[type='submit']", text: "Continue with #{label}"
     end
+  end
+
+  test "login shows site square logo above the title when Site Settings has one" do
+    skip "recording_studio_site_settings not loaded" unless defined?(RecordingStudioSiteSettings)
+
+    admin_user = User.find_or_initialize_by(email: "admin@admin.com")
+    if admin_user.new_record?
+      admin_user.password = admin_user.password_confirmation = "Password"
+      admin_user.save!
+    end
+    admin_root = AdminRoot.find_or_create_by!(name: "Admin")
+    admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+    bootstrap_owner_access!(admin_user, admin_root_recording)
+
+    square = Rails.root.join("db/seeds/square-logo.png")
+    assert square.exist?, "dummy seed square logo missing"
+    File.open(square, "rb") do |io|
+      RecordingStudioSiteSettings.update!(
+        admin_root_recording,
+        name: "Studio",
+        actor: admin_user,
+        square_logo_io: io,
+        square_logo_filename: "square-logo.png",
+        square_logo_content_type: "image/png"
+      )
+    end
+
+    get new_user_session_path
+
+    assert_response :success
+    assert_select "img[alt='Studio'][src*='active_storage']"
+    assert_match %r{max-w-sm[\s\S]*active_storage[\s\S]*Welcome back}, response.body
   end
 
   test "continue with email primary opens password screen" do

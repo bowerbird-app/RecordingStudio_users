@@ -6,10 +6,11 @@ gem "recording_studio_user", path: "../.."
 gem "recording_studio_notifications", path: "../../vendor/recording_studio_notifications"
 gem "recording_studio_notifications_email", path: "../../vendor/recording_studio_notifications_email"
 gem "recording_studio_notifications_push", path: "../../vendor/recording_studio_notifications_push"
+gem "recording_studio_site_settings", path: "../../vendor/recording_studio_site_settings"
 
 # RecordingStudio engine
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.7.0"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.9.1"
 gem "recording_studio_admin",
     github: "bowerbird-app/RecordingStudio_admin",
     ref: "d68f0e41e48a3266c77dd544acf6d0fc97d2b0cf"
@@ -44,7 +45,7 @@ gem "jbuilder"
 gem "tailwindcss-rails"
 
 # FlatPack UI component library [https://github.com/bowerbird-app/flatpack]
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.143"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.147"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
