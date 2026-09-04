@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Requires `recording_studio_accessible` `~> 0.8` and Flatpack `>= 0.1.144`.
+- Auth email fields use placeholder `you@company.com` and hide the Email label
+  (aria-label keeps the field named for assistive tech).
+- Auth site logo is centered above the title.
 
 ### Upgrade notes
 - Bump to `0.10.0`.

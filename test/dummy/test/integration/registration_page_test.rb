@@ -18,7 +18,8 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "html[data-theme='rounded']"
-    assert_select "input#user_email[type='email']"
+    assert_select "input#user_email[type='email'][placeholder='you@company.com']"
+    assert_select "label", text: "Email", count: 0
     assert_select "input#user_password[type='password']", count: 0
     assert_select "input#user_password_confirmation", count: 0
     assert_select "button[type='submit']", text: "Continue with email"

@@ -16,7 +16,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "html[data-theme='rounded']"
     assert_select "h2", text: "Welcome back"
-    assert_select "input[type='email'][name='user[email]']"
+    assert_select "input[type='email'][name='user[email]'][placeholder='you@company.com']"
+    assert_select "label", text: "Email", count: 0
     assert_select "input[type='password'][name='user[password]']", count: 0
     assert_select "input[name='user[remember_me]']", count: 0
     assert_select "button[type='submit']", text: "Continue with email"
