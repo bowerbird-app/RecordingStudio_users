@@ -5,6 +5,7 @@ module RecordingStudioUser
     class BaseController < ApplicationController
       include Devise::Controllers::Helpers
       include RecordingStudioUser::AuthRoutesHelper
+      include RecordingStudioUser::Auth::PendingEmail
 
       layout "application"
 

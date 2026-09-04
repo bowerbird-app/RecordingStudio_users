@@ -52,9 +52,7 @@ module RecordingStudioUser
       define_method("#{setting}=") do |value|
         previous = instance_variable_get("@#{setting}")
         instance_variable_set("@#{setting}", ActiveModel::Type::Boolean.new.cast(value))
-        if setting == :otp_enabled || setting == :otp_registration_enabled
-          validate_primary_login_type!
-        end
+        validate_primary_login_type! if %i[otp_enabled otp_registration_enabled].include?(setting)
       rescue ArgumentError
         instance_variable_set("@#{setting}", previous)
         raise
@@ -239,11 +237,14 @@ module RecordingStudioUser
       end
       return if primary_login_type == :email
 
+      validate_otp_primary_login_type!
+    end
+
+    def validate_otp_primary_login_type!
       raise ArgumentError, "primary_login_type :otp requires otp_enabled" unless otp_enabled?
       raise ArgumentError, "primary_login_type :otp requires otp_login_enabled" unless otp_login_enabled?
-      unless otp_registration_enabled?
-        raise ArgumentError, "primary_login_type :otp requires otp_registration_enabled"
-      end
+      raise ArgumentError, "primary_login_type :otp requires otp_registration_enabled" unless
+        otp_registration_enabled?
       return if registration_authentication_methods.include?(:otp)
 
       raise ArgumentError, "primary_login_type :otp requires :otp in registration_authentication_methods"

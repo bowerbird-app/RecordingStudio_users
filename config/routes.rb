@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-RecordingStudioUser::Engine.routes.draw do
+# Auth mount lists many paired GET/POST routes; keep them in one draw block.
+RecordingStudioUser::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :otp_codes, only: :show
 
   resource :profile, only: %i[show edit update], path: RecordingStudioUser.config.profile_route_path do
@@ -30,4 +31,4 @@ RecordingStudioUser::Engine.routes.draw do
     post "sign_in/verify", to: "sessions#submit_verify"
     post "sign_in/resend", to: "sessions#resend", as: :sign_in_resend
   end
-end
+end # rubocop:enable Metrics/BlockLength

@@ -5,30 +5,21 @@ module RecordingStudioUser
     class SessionsController < BaseController
       before_action :require_otp_login_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
-      AUTH_EMAIL_KEY = :auth_email
-
       def new; end
 
       def continue
         email = submitted_email_from_params
         return render_continue_failure("Enter your email to continue.") if email.blank?
 
-        session[AUTH_EMAIL_KEY] = email
-
-        if RecordingStudioUser.config.primary_login_type_otp?
-          require_otp_login_enabled!
-          issue_login_otp!(resource_class.find_by(email: email))
-          redirect_to otp_session_verify_path, notice: generic_login_notice
-        else
-          redirect_to otp_session_password_path
-        end
+        store_pending_auth_email!(email)
+        continue_with_primary_login!(email)
       rescue Services::OtpRateLimiter::RateLimited
         redirect_to otp_session_verify_path, notice: generic_login_notice
       end
 
       def password
         @email = pending_auth_email
-        return redirect_to host_new_user_session_path, alert: "Start with your email." if @email.blank?
+        redirect_to host_new_user_session_path, alert: "Start with your email." if @email.blank?
       end
 
       def create_password
@@ -38,16 +29,13 @@ module RecordingStudioUser
         return render_password_failure("Email or password did not match.") unless
           user&.valid_password?(sign_in_params[:password])
 
-        clear_pending_auth_email!
-        sign_in_user!(user)
-        redirect_to after_sign_in_path_for(user)
+        finish_sign_in!(user)
       end
 
       def otp; end
 
       def create_otp
-        user = resource_class.find_by(email: submitted_email)
-        issue_login_otp!(user)
+        issue_login_otp!(resource_class.find_by(email: submitted_email))
         redirect_to otp_session_verify_path, notice: generic_login_notice
       rescue Services::OtpRateLimiter::RateLimited
         redirect_to otp_session_verify_path, notice: generic_login_notice
@@ -58,18 +46,11 @@ module RecordingStudioUser
       end
 
       def submit_verify
-        result = RecordingStudioUser.verify_otp!(
-          challenge_id: session[:otp_challenge_id],
-          code: params[:code],
-          purpose: "login",
-          session: session
-        )
+        result = verify_login_otp
         return render_verify_failure(result) unless result.success?
         return render_verify_failure(nil) unless eligible_for_sign_in?(result.user)
 
-        clear_pending_auth_email!
-        sign_in_user!(result.user)
-        redirect_to after_sign_in_path_for(result.user)
+        finish_sign_in!(result.user)
       end
 
       def resend
@@ -81,24 +62,30 @@ module RecordingStudioUser
 
       private
 
+      def continue_with_primary_login!(email)
+        return redirect_to otp_session_password_path unless
+          RecordingStudioUser.config.primary_login_type_otp?
+
+        require_otp_login_enabled!
+        issue_login_otp!(resource_class.find_by(email: email))
+        redirect_to otp_session_verify_path, notice: generic_login_notice
+      end
+
+      def verify_login_otp
+        RecordingStudioUser.verify_otp!(
+          challenge_id: session[:otp_challenge_id],
+          code: params[:code],
+          purpose: "login",
+          session: session
+        )
+      end
+
       def sign_in_params
         params.require(:user).permit(:email, :password, :remember_me)
       end
 
       def submitted_email
         sign_in_params[:email].to_s.strip.downcase
-      end
-
-      def submitted_email_from_params
-        params.dig(:user, :email).to_s.strip.downcase
-      end
-
-      def pending_auth_email
-        session[AUTH_EMAIL_KEY].presence || submitted_email_from_params.presence
-      end
-
-      def clear_pending_auth_email!
-        session.delete(AUTH_EMAIL_KEY)
       end
 
       def auth_options
