@@ -3,10 +3,10 @@
     <%= render FlatPack::PageTitle::Component.new(
       title: title,
       variant: :h2,
-      class: "mb-0 pb-0 text-center"
+      class: "mb-0 pb-0 text-left"
     ) %>
     <% if local_assigns[:subtitle].present? %>
-      <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
+      <p class="text-left text-sm text-[var(--surface-muted-content-color)]">
         <%= subtitle %>
       </p>
     <% end %>

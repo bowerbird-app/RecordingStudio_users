@@ -36,10 +36,12 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_includes source, 'layout: "recording_studio_user/auth/shell"'
     assert_includes shell, "min-h-dvh"
     assert_includes shell, "max-w-sm"
+    assert_includes shell, "text-left"
     assert_includes response.body, "min-h-dvh"
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "Don't have an account?"
     assert_includes response.body, "text-center"
+    assert_includes response.body, "text-left"
     assert_includes response.body, 'href="/users/sign_up"'
     refute_includes response.body, 'href="/recording_studio_users/auth/sign_up"'
     assert_match(/\bOr\b/, response.body)
@@ -50,6 +52,9 @@ class LoginPageTest < ActionDispatch::IntegrationTest
   end
 
   test "continue with email primary opens password screen" do
+    original = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :email
+
     post new_user_session_path, params: { user: { email: "member@admin.com" } }
 
     assert_redirected_to "#{new_user_session_path}/password"
@@ -65,6 +70,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     password_source = File.read(AUTH_PASSWORD_VIEW)
     refute_includes password_source, "FlatPack::Card::Component"
     assert_includes password_source, 'layout: "recording_studio_user/auth/shell"'
+  ensure
+    RecordingStudioUser.config.primary_login_type = original
   end
 
   test "password sign in path without email sends you back to start" do
@@ -85,7 +92,9 @@ class LoginPageTest < ActionDispatch::IntegrationTest
   end
 
   test "password login stays available when OTP is turned off" do
-    original = RecordingStudioUser.config.otp_enabled
+    original_otp = RecordingStudioUser.config.otp_enabled
+    original_primary = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :email
     RecordingStudioUser.config.otp_enabled = false
 
     get new_user_session_path
@@ -106,7 +115,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     get "#{new_user_registration_path}/otp"
     assert_response :not_found
   ensure
-    RecordingStudioUser.config.otp_enabled = original
+    RecordingStudioUser.config.otp_enabled = original_otp
+    RecordingStudioUser.config.primary_login_type = original_primary
   end
 
   test "primary otp continue issues a code and opens verify" do

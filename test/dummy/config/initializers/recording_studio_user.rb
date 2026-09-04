@@ -7,6 +7,7 @@ RecordingStudioUser.configure do |config|
   config.otp_login_enabled = true
   config.otp_registration_enabled = true
   config.registration_authentication_methods = %i[password otp]
+  config.primary_login_type = :otp
   config.password_registration_confirmation = :existing_policy
   # OmniAuth buttons follow Rails credentials under `omniauth:`. Leave this hash
   # empty so a filled client_id / client_secret shows that provider, and a

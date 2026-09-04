@@ -11,6 +11,9 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
   ).freeze
 
   test "sign up paints Flatpack email only without confirmation by default" do
+    original = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :email
+
     get new_user_registration_path
 
     assert_response :success
@@ -33,9 +36,11 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_includes source, 'layout: "recording_studio_user/auth/shell"'
     assert_includes shell, "min-h-dvh"
     assert_includes shell, "max-w-sm"
+    assert_includes shell, "text-left"
     assert_includes response.body, "min-h-dvh"
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "text-center"
+    assert_includes response.body, "text-left"
     assert_includes response.body, "Already have one?"
     assert_includes response.body, 'href="/users/sign_in"'
     refute_includes response.body, 'href="/recording_studio_users/auth/sign_in"'
@@ -60,9 +65,13 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
         }
       }
     end
+  ensure
+    RecordingStudioUser.config.primary_login_type = original
   end
 
   test "continue with email primary opens password screen" do
+    original = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :email
     email = "reg-step-#{SecureRandom.hex(4)}@example.com"
     post new_user_registration_path, params: { user: { email: email } }
 
@@ -79,6 +88,8 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     password_source = File.read(AUTH_PASSWORD_VIEW)
     refute_includes password_source, "FlatPack::Card::Component"
     assert_includes password_source, 'layout: "recording_studio_user/auth/shell"'
+  ensure
+    RecordingStudioUser.config.primary_login_type = original
   end
 
   test "password sign up path without email sends you back to start" do
@@ -116,8 +127,10 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
   end
 
   test "sign up shows confirmation when the host turns the flag on" do
-    original = RecordingStudioUser.config.require_password_confirmation
+    original_confirm = RecordingStudioUser.config.require_password_confirmation
+    original_primary = RecordingStudioUser.config.primary_login_type
     RecordingStudioUser.config.require_password_confirmation = true
+    RecordingStudioUser.config.primary_login_type = :email
     email = "confirm-flag-#{SecureRandom.hex(4)}@example.com"
 
     post new_user_registration_path, params: { user: { email: email } }
@@ -129,6 +142,7 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_select "input#user_password_confirmation[type='password']"
     assert_select "button[type='submit']", text: "Sign up"
   ensure
-    RecordingStudioUser.config.require_password_confirmation = original
+    RecordingStudioUser.config.require_password_confirmation = original_confirm
+    RecordingStudioUser.config.primary_login_type = original_primary
   end
 end

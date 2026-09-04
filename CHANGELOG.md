@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Primary `/users/sign_in` and `/users/sign_up` no longer collect password on
   the first screen. Password submits stay on `/users/sign_in/password` and
   `/users/sign_up/password` (`user_session` / `user_registration` route names).
+- Auth shell titles and subtitles are left-aligned (`Welcome back`, `Sign up`,
+  `Check your email`, `Enter your code`).
 - Install initializer documents `primary_login_type`.
 
 ### Upgrade notes
