@@ -8,11 +8,11 @@
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",
         id: "user_email",
-        label: "Email",
         value: @resource&.email,
-        placeholder: "you@example.com",
+        placeholder: "you@company.com",
         required: true,
         autocomplete: "email",
+        aria: { label: "Email" },
         error: @resource&.errors&.[](:email)&.first
       ) %>
 

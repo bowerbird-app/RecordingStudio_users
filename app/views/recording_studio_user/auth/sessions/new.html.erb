@@ -7,9 +7,10 @@
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",
-        label: "Email",
+        placeholder: "you@company.com",
         required: true,
-        autocomplete: "email"
+        autocomplete: "email",
+        aria: { label: "Email" }
       ) %>
 
       <%= render FlatPack::Button::Component.new(

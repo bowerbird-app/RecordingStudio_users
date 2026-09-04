@@ -8,10 +8,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_accessible.git
-  revision: b76a6932918985aee56ffbc1b5230522a3820406
-  tag: v0.7.0
+  revision: bdff3ee3ace5cf3bfe33ba40476c1522cf1b6d61
+  tag: v0.9.1
   specs:
-    recording_studio_accessible (0.7.0)
+    recording_studio_accessible (0.9.1)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
 
@@ -37,10 +37,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/flatpack.git
-  revision: 3654913a87f3d72556223b81e0d8140a292e3c2e
-  tag: v0.1.143
+  revision: 9483f539d638a0bdb73279bd217a575b8083c6fd
+  tag: v0.1.147
   specs:
-    flat_pack (0.1.143)
+    flat_pack (0.1.147)
       pagy (~> 9.0)
       rails (>= 7.1, < 9)
       tailwind_merge (~> 0.13)
@@ -49,9 +49,9 @@ GIT
 PATH
   remote: .
   specs:
-    recording_studio_user (0.9.0)
+    recording_studio_user (0.10.0)
       devise (~> 5.0)
-      flat_pack (~> 0.1.143)
+      flat_pack (>= 0.1.144)
       omniauth (~> 2.1)
       omniauth-apple (~> 1.3)
       omniauth-google-oauth2 (~> 1.2)
@@ -61,7 +61,7 @@ PATH
       omniauth-rails_csrf_protection (~> 1.0)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
-      recording_studio_accessible (~> 0.7)
+      recording_studio_accessible (~> 0.8)
       recording_studio_admin (~> 2.0)
       recording_studio_attachable (~> 0.5.0)
 
@@ -490,7 +490,7 @@ CHECKSUMS
   faraday (2.14.3) sha256=1882247e6766615c8220b4392bf1d27f6ebb63d8e28267587cef1fb0bf37f278
   faraday-follow_redirects (0.5.0) sha256=5cde93c894b30943a5d2b93c2fe9284216a6b756f7af406a1e55f211d97d10ad
   faraday-net_http (3.4.4) sha256=0e78af151747ed1b00f33e25973b4bc220d7f16c00c39676817c8b12331eb588
-  flat_pack (0.1.143)
+  flat_pack (0.1.147)
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   hashie (5.1.0) sha256=c266471896f323c446ea8207f8ffac985d2718df0a0ba98651a3057096ca3870
   i18n (1.15.2) sha256=00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5
@@ -554,10 +554,10 @@ CHECKSUMS
   rbs (4.2.0) sha256=51f7b886dcc05bc09e10b901daa6a81829f6adc03101d6ca9ea4aac6103e0674
   rdoc (8.0.0) sha256=03bf8c08a9639658855a0cfd77c0abca8325c227693f7f33f82957811348c469
   recording_studio (4.2.0)
-  recording_studio_accessible (0.7.0)
+  recording_studio_accessible (0.9.1)
   recording_studio_admin (2.0.1)
   recording_studio_attachable (0.5.0)
-  recording_studio_user (0.9.0)
+  recording_studio_user (0.10.0)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
   reline (0.7.0) sha256=5b012d8e55dbf9d450f12bde2cf7d15ff546ae80b3f8f3b30e570d431815583d
   responders (3.2.1) sha256=c2772970cbda654c0e772d852e5a851e82cd8e96f5fa958650861ba75b8ffa84

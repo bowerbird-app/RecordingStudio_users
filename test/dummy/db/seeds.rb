@@ -146,6 +146,36 @@ begin
   bootstrap_owner_access.call(user, root_recording)
   bootstrap_owner_access.call(user, accessible_root_recording)
 
+  if defined?(RecordingStudioSiteSettings)
+    RecordingStudioSiteSettings.update!(admin_root_recording, name: "Studio", actor: user)
+    square = Rails.root.join("db/seeds/square-logo.png")
+    wide = Rails.root.join("db/seeds/wide-logo.png")
+    if square.exist? && RecordingStudioSiteSettings.square_logo_for(admin_root_recording).blank?
+      File.open(square, "rb") do |io|
+        RecordingStudioSiteSettings.update!(
+          admin_root_recording,
+          name: "Studio",
+          actor: user,
+          square_logo_io: io,
+          square_logo_filename: "square-logo.png",
+          square_logo_content_type: "image/png"
+        )
+      end
+    end
+    if wide.exist? && RecordingStudioSiteSettings.wide_logo_for(admin_root_recording).blank?
+      File.open(wide, "rb") do |io|
+        RecordingStudioSiteSettings.update!(
+          admin_root_recording,
+          name: "Studio",
+          actor: user,
+          wide_logo_io: io,
+          wide_logo_filename: "wide-logo.png",
+          wide_logo_content_type: "image/png"
+        )
+      end
+    end
+  end
+
   RecordingStudioNotifications.notify(
     notification_type: :generic,
     recipient: user,
@@ -169,3 +199,4 @@ puts "Seeded: Workspace '#{private_workspace.name}' without admin access and roo
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
 puts "Seeded: shared People root with Profile snapshots for seeded users"
 puts "Seeded: Avery Admin profile photo on their Profile recording"
+puts "Seeded: Site settings name and logos on Admin root" if defined?(RecordingStudioSiteSettings)

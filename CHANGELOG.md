@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-04
+
+### Added
+- Optional site logo above auth titles when `recording_studio_site_settings` is
+  installed. Auth `_shell` renders the square mark via `auth_site_logo`.
+- `config.auth_site_root_resolver` to pick the site root recording for that mark.
+  Default looks up `AdminRoot` named Admin, then the first AdminRoot.
+- Dummy vendors and mounts `recording_studio_site_settings`, seeds square and
+  wide logos on the Admin root, and opens Admin on the Site section.
+
+### Changed
+- Requires `recording_studio_accessible` `~> 0.8` and Flatpack `>= 0.1.144`.
+- Auth email fields use placeholder `you@company.com` and hide the Email label
+  (aria-label keeps the field named for assistive tech).
+- Auth site logo and title (and subtitle) are centered above the form.
+
+### Upgrade notes
+- Bump to `0.10.0`.
+- Bump `recording_studio_accessible` to `>= 0.8` and run its migrations (adds
+  `depends_on_recording_id` when missing).
+- Bump Flatpack to `>= 0.1.144`.
+- To show a logo on sign in / sign up, install `recording_studio_site_settings`,
+  seed a square logo on a site root, and optionally set
+  `config.auth_site_root_resolver`. Without that gem auth screens are unchanged.
+- Verify with: `/users/sign_in` shows the square logo above **Welcome back** when
+  Site Settings has a square mark for the resolved root.
+
 ## [0.9.0] - 2026-09-04
 
 ### Added

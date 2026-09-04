@@ -4,7 +4,14 @@
 } do %>
   <%= form_with scope: :user, url: otp_registration_otp_path, method: :post do %>
     <div class="space-y-4">
-      <%= render FlatPack::EmailInput::Component.new(name: "user[email]", id: "user_email", label: "Email", required: true, autocomplete: "email") %>
+      <%= render FlatPack::EmailInput::Component.new(
+        name: "user[email]",
+        id: "user_email",
+        placeholder: "you@company.com",
+        required: true,
+        autocomplete: "email",
+        aria: { label: "Email" }
+      ) %>
       <%= render FlatPack::Button::Component.new(text: "Send code", style: :primary, size: :md, type: "submit", class: "w-full") %>
     </div>
   <% end %>
