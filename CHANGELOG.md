@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-09-04
+
+Auth screens stopped nesting a full-viewport shell inside the host layout, which
+made sign in and sign up taller than the viewport and clipped the form.
+
+### Added
+- Layout `layouts/recording_studio_user/auth` is the one full-viewport centered
+  auth chrome. It owns `min-h-dvh`, loads `tailwind` plus the Flatpack
+  stylesheets, and sets `data-theme` on `html` (`rounded` unless a page sets
+  `content_for :body_theme`).
+
+### Changed
+- `RecordingStudioUser::Auth::BaseController` renders `recording_studio_user/auth`
+  instead of the host `layout "application"`. Sessions and registrations
+  (password and OTP steps) follow.
+- Auth `_shell` partial is content only (`w-full max-w-sm`, title, optional
+  subtitle, form). It no longer adds `min-h-dvh`, so a padded host `main` can no
+  longer push the form off screen. The shell also sets `content_for :title`.
+
+### Upgrade notes
+- Bump to `0.8.2`.
+- No schema, route, or config changes.
+- Gem auth screens no longer render inside the host `layouts/application`.
+  Hosts that put shared chrome (nav, banners) in that layout and need it on sign
+  in and sign up must override `app/views/layouts/recording_studio_user/auth.html.erb`.
+  That override owns the vertical centering; `_shell` adds width only.
+- Hosts must serve `tailwind`, `flat_pack/variables`, and `flat_pack/rich_text`
+  stylesheets, the same set core's `recording_studio/default_layout` links.
+- Remove any host CSS that compensated for the old double-viewport auth height.
+
 ## [0.8.1] - 2026-09-03
 
 Cloud Agent install no longer points at fetch-skills.sh alone. Skills still

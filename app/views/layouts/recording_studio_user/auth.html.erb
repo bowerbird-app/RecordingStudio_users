@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<%# Flatpack named-theme tokens resolve on html/:root, so the theme lives here. %>
+<html data-theme="<%= content_for(:body_theme).presence || "rounded" %>">
+  <head>
+    <title><%= content_for(:title).presence || "Sign in" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "flat_pack/variables", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "flat_pack/rich_text", "data-turbo-track": "reload" %>
+    <%= yield :head %>
+    <%= javascript_importmap_tags if respond_to?(:javascript_importmap_tags) %>
+  </head>
+
+  <body class="bg-[var(--surface-page-background-color)] text-[var(--surface-content-color)]">
+    <main class="flex min-h-dvh items-center justify-center p-6">
+      <%= yield %>
+    </main>
+  </body>
+</html>
