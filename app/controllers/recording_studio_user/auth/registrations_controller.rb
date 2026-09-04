@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/registration_otp.rb"
+).to_s
+
 module RecordingStudioUser
   module Auth
     class RegistrationsController < BaseController
