@@ -37,11 +37,10 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_includes source, 'layout: "recording_studio_user/auth/shell"'
     refute_includes shell, "min-h-dvh"
     assert_includes shell, "max-w-sm"
-    assert_includes shell, "text-left"
+    assert_includes shell, "text-center"
     assert_equal 1, response.body.scan("min-h-dvh").length
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "text-center"
-    assert_includes response.body, "text-left"
     assert_includes response.body, "Already have one?"
     assert_includes response.body, 'href="/users/sign_in"'
     refute_includes response.body, 'href="/recording_studio_users/auth/sign_in"'
