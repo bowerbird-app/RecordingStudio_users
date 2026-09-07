@@ -40,7 +40,14 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
   end
 
   test "a valid reset token saves the new password" do
-    user = User.find_by!(email: "member@admin.com")
+    user = User.new(
+      email: "password-reset-page@example.com",
+      password: "CurrentPassword123!",
+      password_confirmation: "CurrentPassword123!"
+    )
+    user.registered_with = "password" if user.respond_to?(:registered_with=)
+    user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
+    user.save!
     raw_token, encrypted_token = Devise.token_generator.generate(User, :reset_password_token)
     user.update_columns(reset_password_token: encrypted_token, reset_password_sent_at: Time.current)
 

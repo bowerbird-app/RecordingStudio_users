@@ -27,6 +27,14 @@ module RecordingStudioUser
       def host_new_user_session_path
         main_app.new_user_session_path
       end
+
+      def after_resetting_password_path_for(_resource)
+        main_app.root_path
+      end
+
+      def after_sending_reset_password_instructions_path_for(_resource_name)
+        auth_sign_in_path
+      end
     end
   end
 end
