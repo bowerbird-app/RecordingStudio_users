@@ -26,7 +26,9 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
   end
 
   test "requesting a reset returns to sign in with confirmation" do
-    post user_password_path, params: { user: { email: "missing@example.com" } }
+    user = create_password_user("password-reset-request@example.com")
+
+    post user_password_path, params: { user: { email: user.email } }
 
     assert_redirected_to new_user_session_path
     assert_predicate flash[:notice], :present?
@@ -52,14 +54,7 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
   end
 
   test "a valid reset token saves the new password" do
-    user = User.new(
-      email: "password-reset-page@example.com",
-      password: "CurrentPassword123!",
-      password_confirmation: "CurrentPassword123!"
-    )
-    user.registered_with = "password" if user.respond_to?(:registered_with=)
-    user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
-    user.save!
+    user = create_password_user("password-reset-page@example.com")
     raw_token, encrypted_token = Devise.token_generator.generate(User, :reset_password_token)
     user.update_columns(reset_password_token: encrypted_token, reset_password_sent_at: Time.current)
 
@@ -85,5 +80,19 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
     assert_select "button[type='submit']", text: "Resend confirmation"
     assert_equal 1, response.body.scan("min-h-dvh").length
     assert_includes response.body, "max-w-sm"
+  end
+
+  private
+
+  def create_password_user(email)
+    User.new(
+      email: email,
+      password: "CurrentPassword123!",
+      password_confirmation: "CurrentPassword123!"
+    ).tap do |user|
+      user.registered_with = "password" if user.respond_to?(:registered_with=)
+      user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
+      user.save!
+    end
   end
 end
