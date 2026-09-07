@@ -25,6 +25,18 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
     refute_includes File.read(PASSWORD_NEW_VIEW), "FlatPack::Card::Component"
   end
 
+  test "requesting a reset returns to sign in with confirmation" do
+    post user_password_path, params: { user: { email: "missing@example.com" } }
+
+    assert_redirected_to new_user_session_path
+    assert_predicate flash[:notice], :present?
+    notice = flash[:notice]
+
+    follow_redirect!
+    assert_response :success
+    assert_includes response.body, notice
+  end
+
   test "reset link renders the Flatpack new password form" do
     get edit_user_password_path(reset_password_token: "reset-token")
 
