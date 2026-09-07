@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-07
+
+### Added
+- Flatpack password reset request and new-password screens using the shared
+  viewport-centered auth layout and shell.
+- Password reset edit/update routes, completing the reset link flow owned by
+  `recording_studio_user_auth_for`.
+- A Flatpack resend-confirmation screen and auth-layout Devise confirmations
+  controller for hosts using `:confirmable`.
+- A **Forgot your password?** link on the password sign-in step.
+
+### Changed
+- Password reset no longer renders through the host `layouts/application`.
+
+### Upgrade notes
+- Bump to `0.11.0`.
+- Map Devise confirmations to
+  `recording_studio_user/auth/confirmations` alongside the existing OmniAuth
+  callback controller. Password routes remain owned by
+  `recording_studio_user_auth_for`.
+- Remove host password-reset view overrides to use the gem's Flatpack screens.
+- Verify `/users/password/new`, a reset link at `/users/password/edit`, and
+  `/users/confirmation/new` use the same auth chrome as sign in.
+
 ## [0.10.0] - 2026-09-04
 
 ### Added

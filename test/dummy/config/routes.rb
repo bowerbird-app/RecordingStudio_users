@@ -1,7 +1,10 @@
 Rails.application.routes.draw do
   devise_for :users,
              skip: %i[sessions registrations passwords],
-             controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
+             controllers: {
+               confirmations: "recording_studio_user/auth/confirmations",
+               omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+             }
 
   recording_studio_user_auth_for :users
 

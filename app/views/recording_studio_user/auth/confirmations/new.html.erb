@@ -1,0 +1,39 @@
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: { title: "Resend confirmation", subtitle: "We'll send a fresh link to your inbox." } do %>
+  <% if resource.errors.any? %>
+    <%= render FlatPack::Alert::Component.new(
+      title: "We couldn't send that link",
+      description: resource.errors.full_messages.join(", "),
+      style: :danger
+    ) %>
+  <% end %>
+
+  <%= form_with scope: resource_name, url: confirmation_path(resource_name), method: :post do %>
+    <div class="space-y-4">
+      <%= render FlatPack::EmailInput::Component.new(
+        name: "#{resource_name}[email]",
+        id: "#{resource_name}_email",
+        value: resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email,
+        placeholder: "you@company.com",
+        required: true,
+        autocomplete: "email",
+        aria: { label: "Email" },
+        error: resource.errors[:email].first
+      ) %>
+
+      <%= render FlatPack::Button::Component.new(
+        text: "Resend confirmation",
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
+    </div>
+  <% end %>
+
+  <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
+    <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
+      Back to sign in
+    <% end %>
+  </p>
+<% end %>

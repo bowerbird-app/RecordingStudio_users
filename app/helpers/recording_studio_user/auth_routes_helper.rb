@@ -50,6 +50,18 @@ module RecordingStudioUser
       host_or_engine(:new_user_session_path, :sign_in_path)
     end
 
+    def auth_new_password_path
+      host_or_engine(:new_user_password_path, :new_password_path)
+    end
+
+    def auth_password_path
+      host_or_engine(:user_password_path, :password_path)
+    end
+
+    def auth_edit_password_path
+      host_or_engine(:edit_user_password_path, :edit_password_path)
+    end
+
     def continue_session_path
       auth_sign_in_path
     end

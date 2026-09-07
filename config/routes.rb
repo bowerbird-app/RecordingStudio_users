@@ -30,5 +30,10 @@ RecordingStudioUser::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
     get "sign_in/verify", to: "sessions#verify", as: :sign_in_verify
     post "sign_in/verify", to: "sessions#submit_verify"
     post "sign_in/resend", to: "sessions#resend", as: :sign_in_resend
+
+    get "password/new", to: "passwords#new", as: :new_password
+    get "password/edit", to: "passwords#edit", as: :edit_password
+    post "password", to: "passwords#create", as: :password
+    match "password", to: "passwords#update", via: %i[put patch]
   end
 end # rubocop:enable Metrics/BlockLength
