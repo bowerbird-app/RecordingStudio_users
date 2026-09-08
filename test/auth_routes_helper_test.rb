@@ -18,6 +18,8 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "registrations#otp"
     assert_includes source, "devise/sessions#destroy"
     assert_includes source, "recording_studio_user/auth/passwords"
+    assert_includes source, '"edit_#{singular}_password"'
+    assert_includes source, "\#{passwords}#update"
   end
 
   def test_auth_route_helpers_prefer_host_paths
@@ -29,6 +31,9 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes helper, "def password_registration_path"
     assert_includes helper, "def auth_sign_up_path"
     assert_includes helper, "def auth_sign_in_path"
+    assert_includes helper, "def auth_new_password_path"
+    assert_includes helper, "def auth_password_path"
+    assert_includes helper, "def auth_edit_password_path"
     assert_includes helper, "def continue_session_path"
     assert_includes helper, "def continue_registration_path"
     assert_includes helper, "def host_or_engine"
@@ -71,6 +76,9 @@ class AuthRoutesHelperTest < Minitest::Test
       registrations/password
       registrations/otp
       registrations/verify
+      passwords/new
+      passwords/edit
+      confirmations/new
     ].each do |view|
       source = File.read(
         File.expand_path("../app/views/recording_studio_user/auth/#{view}.html.erb", __dir__)

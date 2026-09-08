@@ -79,7 +79,10 @@ Mount password and OTP auth with the host helper (dummy and new installs use thi
 ```ruby
 devise_for :users,
            skip: %i[sessions registrations passwords],
-           controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
+           controllers: {
+             confirmations: "recording_studio_user/auth/confirmations",
+             omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+           }
 recording_studio_user_auth_for :users
 ```
 
@@ -97,5 +100,11 @@ recording_studio_user_auth_for :users
 | `GET/POST /users/sign_in/otp` | Start login OTP (deep link) |
 | `GET/POST /users/sign_in/verify` | Enter login code |
 | `POST /users/sign_in/resend` | Resend login code |
+| `GET/POST /users/password` | Request a password reset |
+| `GET /users/password/edit` | Choose a new password from the emailed reset link |
+| `PUT/PATCH /users/password` | Save the new password |
+
+Hosts using Devise `:confirmable` should map confirmations as shown so the
+resend-confirmation screen shares the Users auth chrome.
 
 `primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths return not found while `otp_enabled` is false.

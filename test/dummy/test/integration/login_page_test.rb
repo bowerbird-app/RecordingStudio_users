@@ -98,6 +98,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_select "input[type='hidden'][name='user[email]'][value='member@admin.com']"
     assert_select "input[type='email']", count: 0
     assert_select "button[type='submit']", text: "Sign in"
+    assert_select "a[href='#{new_user_password_path}']", text: "Forgot your password?"
     refute_includes response.body, "Don't have an account?"
     refute_includes response.body, "Continue with Google"
     password_source = File.read(AUTH_PASSWORD_VIEW)

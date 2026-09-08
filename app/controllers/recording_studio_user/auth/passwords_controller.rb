@@ -4,6 +4,9 @@ module RecordingStudioUser
   module Auth
     class PasswordsController < Devise::PasswordsController
       include Rails.application.routes.mounted_helpers
+      include RecordingStudioUser::AuthRoutesHelper
+
+      layout "recording_studio_user/auth"
 
       def create
         user = resource_class.find_by(email: resource_params[:email].to_s.strip.downcase)
@@ -23,6 +26,14 @@ module RecordingStudioUser
 
       def host_new_user_session_path
         main_app.new_user_session_path
+      end
+
+      def after_resetting_password_path_for(_resource)
+        main_app.root_path
+      end
+
+      def after_sending_reset_password_instructions_path_for(_resource_name)
+        auth_sign_in_path
       end
     end
   end

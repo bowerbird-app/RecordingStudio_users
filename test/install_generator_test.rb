@@ -27,6 +27,7 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes initializer, "omniauth_providers"
     assert_includes initializer, "omniauth_create_account"
     assert_includes initializer, "recording_studio_user/omniauth_callbacks"
+    assert_includes initializer, "recording_studio_user/auth/confirmations"
     assert_includes initializer, "recording_studio_user_auth_for"
     assert_includes initializer, "omniauth:"
     assert_includes initializer, "otp_enabled"

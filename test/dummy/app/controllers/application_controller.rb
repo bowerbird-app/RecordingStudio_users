@@ -8,9 +8,8 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  # Devise-owned screens (password reset) keep layouts/application. Sign in and
-  # sign up come from the gem and bring their own layout. Everything else uses
-  # core default layout.
+  # Users auth controllers bring their own layout. Any other Devise screen keeps
+  # layouts/application. Everything else uses core default layout.
   layout :application_layout
 
   before_action :authenticate_user!

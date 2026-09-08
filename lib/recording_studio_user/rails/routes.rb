@@ -7,7 +7,10 @@ module ActionDispatch
       #
       #   devise_for :users,
       #              skip: %i[sessions registrations passwords],
-      #              controllers: { omniauth_callbacks: "recording_studio_user/omniauth_callbacks" }
+      #              controllers: {
+      #                confirmations: "recording_studio_user/auth/confirmations",
+      #                omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+      #              }
       #   recording_studio_user_auth_for :users
       #
       # Draws `/users/sign_in`, `/users/sign_up`, password reset, and OTP routes.
@@ -58,7 +61,9 @@ module ActionDispatch
         devise_scope singular.to_sym do
           delete "#{mount_path}/sign_out", to: "devise/sessions#destroy", as: :"destroy_#{singular}_session"
           get "#{mount_path}/password/new", to: "#{passwords}#new", as: :"new_#{singular}_password"
+          get "#{mount_path}/password/edit", to: "#{passwords}#edit", as: :"edit_#{singular}_password"
           post "#{mount_path}/password", to: "#{passwords}#create", as: :"#{singular}_password"
+          match "#{mount_path}/password", to: "#{passwords}#update", via: %i[put patch]
         end
       end
     end
