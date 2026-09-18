@@ -71,7 +71,8 @@ same chrome when `:confirmable` is enabled. When
 the title via `auth_site_logo` (optional `config.auth_site_root_resolver`).
 `config.auth_logo` is `:square` by default (Flatpack Avatar). Set
 `config.auth_logo = :wide` for the wide mark as a centered `<img>` with an
-unsigned Active Storage blob path. If the wide file is missing, the mark is
+unsigned Active Storage blob path. That img uses `max-h-16`, the same height
+as square Avatar `:xl`. If the wide file is missing, the mark is
 omitted. Do not copy `_shell` to switch shapes. Dummy keeps the square
 default. `doc/review/users_sign_in_wide.png` and
 `doc/review/users_sign_up_wide.png` are a temporary `:wide` flip against the

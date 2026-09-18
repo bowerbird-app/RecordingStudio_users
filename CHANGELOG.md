@@ -16,9 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - When `auth_logo` is `:wide`, `auth_site_logo` renders a proportioned `<img>`
   from `wide_logo_for` using the same unsigned Active Storage blob path as the
-  square Avatar. A blank wide slot omits the mark. There is no broken image and
-  no square fallback. Dummy keeps the square default. Wide review shots are
-  `doc/review/users_sign_in_wide.png` and `doc/review/users_sign_up_wide.png`.
+  square Avatar. The wide `<img>` uses `max-h-16` (64px, same height as square
+  Avatar `:xl` `h-16`). A blank wide slot omits the mark. There is no broken
+  image and no square fallback. Dummy keeps the square default. Wide review
+  shots are `doc/review/users_sign_in_wide.png` and
+  `doc/review/users_sign_up_wide.png`.
 
 ### Upgrade notes
 - Bump to `0.12.0`.

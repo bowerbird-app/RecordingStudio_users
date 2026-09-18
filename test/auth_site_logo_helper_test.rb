@@ -17,7 +17,7 @@ class AuthSiteLogoHelperTest < Minitest::Test
     refute_includes helper, "preview_url"
     refute_includes helper, "recording_studio_site_wide_logo"
     refute_includes helper, "recording_studio_site_square_logo"
-    assert_includes wide, "max-h-12"
+    assert_includes wide, "max-h-16"
     assert_includes wide, "max-w-full"
   end
 end

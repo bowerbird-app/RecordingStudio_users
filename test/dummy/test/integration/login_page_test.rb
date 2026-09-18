@@ -98,14 +98,14 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     get new_user_session_path
 
     assert_response :success
-    assert_select "img[alt='Studio'][src*='active_storage'][class*='max-h-12']"
+    assert_select "img[alt='Studio'][src*='active_storage'][class*='max-h-16']"
     refute_includes response.body, "object-cover"
     refute_includes response.body, "attachment_preview"
     assert_match %r{max-w-sm[\s\S]*active_storage[\s\S]*Welcome back}, response.body
 
     get new_user_registration_path
     assert_response :success
-    assert_select "img[alt='Studio'][src*='active_storage'][class*='max-h-12']"
+    assert_select "img[alt='Studio'][src*='active_storage'][class*='max-h-16']"
   ensure
     RecordingStudioUser.config.auth_logo = original
     RecordingStudioUser.config.auth_site_root_resolver = original_resolver
