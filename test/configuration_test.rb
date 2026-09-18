@@ -102,14 +102,20 @@ class ConfigurationTest < Minitest::Test
     assert_equal 7.days, @configuration.unconfirmed_user_retention
   end
 
-  def test_auth_logo_square_and_wide
+  def test_auth_logo_defaults_to_square
+    assert_equal :square, @configuration.auth_logo
+    assert_predicate @configuration, :auth_logo_square?
+    refute_predicate @configuration, :auth_logo_wide?
+  end
+
+  def test_auth_logo_accepts_wide
     @configuration.auth_logo = :wide
+    assert_equal :wide, @configuration.auth_logo
     assert_predicate @configuration, :auth_logo_wide?
     refute_predicate @configuration, :auth_logo_square?
+  end
 
-    @configuration.auth_logo = "square"
-    assert_predicate @configuration, :auth_logo_square?
-
+  def test_auth_logo_rejects_invalid_values
     @configuration.auth_logo = :wide
     error = assert_raises(ArgumentError) { @configuration.auth_logo = :banner }
     assert_equal "auth_logo must be :square or :wide", error.message

@@ -2,7 +2,7 @@
 
 module RecordingStudioUser
   # Optional Site Settings mark on auth screens. Hosts that load
-  # recording_studio_site_settings get the configured mark above the title when a
+  # recording_studio_site_settings get the site logo above the title when a
   # site root can be resolved. Without that gem this helper is a no-op.
   #
   # Attachable preview routes require a signed-in actor, so auth pages use an
@@ -14,7 +14,8 @@ module RecordingStudioUser
       root = auth_site_root_recording
       return if root.blank?
 
-      if RecordingStudioUser.config.auth_logo_wide?
+      case RecordingStudioUser.config.auth_logo
+      when :wide
         render_auth_wide_logo(root)
       else
         render_auth_square_logo(root, size: size, variant: variant)
@@ -31,9 +32,8 @@ module RecordingStudioUser
     private
 
     def render_auth_square_logo(root, size:, variant:)
-      src = auth_site_logo_public_src(
-        RecordingStudioSiteSettings.square_logo_for(root, variant: variant)
-      )
+      logo = RecordingStudioSiteSettings.square_logo_for(root, variant: variant)
+      src = auth_site_logo_public_src(logo)
       return if src.blank?
 
       render FlatPack::Avatar::Component.new(
@@ -45,15 +45,11 @@ module RecordingStudioUser
     end
 
     def render_auth_wide_logo(root)
-      src = auth_site_logo_public_src(
-        RecordingStudioSiteSettings.wide_logo_for(root, variant: :small)
-      )
+      logo = RecordingStudioSiteSettings.wide_logo_for(root, variant: :small)
+      src = auth_site_logo_public_src(logo)
       return if src.blank?
 
-      render partial: "recording_studio_user/auth/wide_logo", locals: {
-        src: src,
-        alt: auth_site_logo_alt(root)
-      }
+      tag.img(src: src, alt: auth_site_logo_alt(root), class: "h-auto max-h-12 max-w-full")
     end
 
     def auth_site_logo_alt(root)
