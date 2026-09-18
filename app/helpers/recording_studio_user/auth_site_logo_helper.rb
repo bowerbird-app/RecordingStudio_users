@@ -49,7 +49,10 @@ module RecordingStudioUser
       src = auth_site_logo_public_src(logo)
       return if src.blank?
 
-      tag.img(src: src, alt: auth_site_logo_alt(root), class: "h-auto max-h-12 max-w-full")
+      render partial: "recording_studio_user/auth/wide_logo", locals: {
+        src: src,
+        alt: auth_site_logo_alt(root)
+      }
     end
 
     def auth_site_logo_alt(root)

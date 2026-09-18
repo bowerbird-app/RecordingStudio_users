@@ -113,6 +113,9 @@ class ConfigurationTest < Minitest::Test
     assert_equal :wide, @configuration.auth_logo
     assert_predicate @configuration, :auth_logo_wide?
     refute_predicate @configuration, :auth_logo_square?
+
+    @configuration.auth_logo = "square"
+    assert_predicate @configuration, :auth_logo_square?
   end
 
   def test_auth_logo_rejects_invalid_values
