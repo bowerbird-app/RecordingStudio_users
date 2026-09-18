@@ -14,6 +14,7 @@ module RecordingStudioUser
 
     AUTHENTICATION_METHODS = %i[password otp].freeze
     PRIMARY_LOGIN_TYPES = %i[email otp].freeze
+    AUTH_LOGO_TYPES = %i[square wide].freeze
 
     # otp_login_enabled has its own writer because it must stay compatible with
     # the registration methods.
@@ -31,6 +32,7 @@ module RecordingStudioUser
       require_password_confirmation: false,
       login_title: DEFAULT_LOGIN_TITLE,
       primary_login_type: :email,
+      auth_logo: :square,
       otp_enabled: false,
       otp_login_enabled: true,
       otp_registration_enabled: true,
@@ -110,6 +112,23 @@ module RecordingStudioUser
 
     def primary_login_type_otp?
       primary_login_type == :otp
+    end
+
+    def auth_logo=(value)
+      previous = @auth_logo
+      @auth_logo = value.to_sym
+      validate_auth_logo!
+    rescue ArgumentError
+      @auth_logo = previous
+      raise
+    end
+
+    def auth_logo_square?
+      auth_logo == :square
+    end
+
+    def auth_logo_wide?
+      auth_logo == :wide
     end
 
     def otp_max_attempts=(value)
@@ -214,6 +233,7 @@ module RecordingStudioUser
       validate_registration_authentication_methods!
       validate_otp_login_requirement!
       validate_primary_login_type!
+      validate_auth_logo!
     end
 
     private
@@ -249,6 +269,12 @@ module RecordingStudioUser
       return if registration_authentication_methods.include?(:otp)
 
       raise ArgumentError, "primary_login_type :otp requires :otp in registration_authentication_methods"
+    end
+
+    def validate_auth_logo!
+      return if AUTH_LOGO_TYPES.include?(auth_logo)
+
+      raise ArgumentError, "auth_logo must be :square or :wide"
     end
 
     def validate_positive!(name, value)

@@ -67,9 +67,16 @@ Card. The first screen is email only (**Continue with email**), then social
 providers. Password or OTP is the second screen, driven by `primary_login_type`
 (default `:email`). The confirmations mapping gives Devise's resend screen the
 same chrome when `:confirmable` is enabled. When
-`recording_studio_site_settings` is installed, the square site logo appears
-above the title via `auth_site_logo` (optional
-`config.auth_site_root_resolver`).
+`recording_studio_site_settings` is installed, the site mark appears above
+the title via `auth_site_logo` (optional `config.auth_site_root_resolver`).
+`config.auth_logo` is `:square` by default (Flatpack Avatar). Set
+`config.auth_logo = :wide` for the wide mark as a centered `<img>` with an
+unsigned Active Storage blob path. That img uses `max-h-16`, the same height
+as square Avatar `:xl`. If the wide file is missing, the mark is
+omitted. Do not copy `_shell` to switch shapes. Dummy keeps the square
+default. `doc/review/users_sign_in_wide.png` and
+`doc/review/users_sign_up_wide.png` are a temporary `:wide` flip against the
+seeded wordmark.
 
 Auth screens render inside the gem layout `layouts/recording_studio_user/auth`, not the host `layouts/application`. That layout is the one full-viewport centered auth chrome (`min-h-dvh` on its own `main`), loads `tailwind` and the Flatpack stylesheets, and puts `data-theme` on `html` (`rounded` unless the page sets `content_for :body_theme`). The shared `_shell` partial is content only (`w-full max-w-sm`, centered title, optional subtitle, form), so it never nests a second viewport inside a padded host `main`. A host that needs its own auth chrome overrides `app/views/layouts/recording_studio_user/auth.html.erb` and owns the centering there — `_shell` will not add height. Password screens work with `otp_enabled` still `false`. OTP routes (`/users/sign_in/otp`, `/users/sign_up/otp`, verify/resend) activate when OTP is on. Hosts override a view only when the product must differ; do not copy the gem templates into the app.
 
@@ -86,6 +93,7 @@ RecordingStudioUser.configure do |config|
   config.require_password_confirmation = false
   # config.login_title = "Welcome back"
   # config.primary_login_type = :email # or :otp when OTP is enabled
+  # config.auth_logo = :square # or :wide
 end
 ```
 
@@ -93,6 +101,11 @@ end
 
 - `:email` (default) — next screen is password
 - `:otp` — issues a code and opens the verify screen (requires `otp_enabled`, `otp_login_enabled`, `otp_registration_enabled`, and `:otp` in `registration_authentication_methods`)
+
+`auth_logo` nominates the Site Settings mark on those unsigned screens:
+
+- `:square` (default) — app icon as a Flatpack Avatar
+- `:wide` — wide mark as a proportioned `<img>`. Missing wide file omits the mark.
 
 Host code uses the mounted-engine proxy:
 

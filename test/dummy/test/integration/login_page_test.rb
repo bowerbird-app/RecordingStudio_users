@@ -82,6 +82,53 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "img[alt='Studio'][src*='active_storage']"
     assert_match %r{max-w-sm[\s\S]*active_storage[\s\S]*Welcome back}, response.body
+    refute_includes response.body, "attachment_preview"
+  end
+
+  test "login shows wide site logo when auth_logo is wide" do
+    skip "recording_studio_site_settings not loaded" unless defined?(RecordingStudioSiteSettings)
+
+    original = RecordingStudioUser.config.auth_logo
+    original_resolver = RecordingStudioUser.config.auth_site_root_resolver
+    RecordingStudioUser.config.auth_logo = :wide
+    admin_root_recording, actor = prepare_admin_site_root(name: "Auth Logo Wide")
+    RecordingStudioUser.config.auth_site_root_resolver = ->(_view) { admin_root_recording }
+    attach_site_logo!(admin_root_recording, actor, slot: :wide)
+
+    get new_user_session_path
+
+    assert_response :success
+    assert_select "img[alt='Studio'][src*='active_storage'][class*='max-h-16']"
+    refute_includes response.body, "object-cover"
+    refute_includes response.body, "attachment_preview"
+    assert_match %r{max-w-sm[\s\S]*active_storage[\s\S]*Welcome back}, response.body
+
+    get new_user_registration_path
+    assert_response :success
+    assert_select "img[alt='Studio'][src*='active_storage'][class*='max-h-16']"
+  ensure
+    RecordingStudioUser.config.auth_logo = original
+    RecordingStudioUser.config.auth_site_root_resolver = original_resolver
+  end
+
+  test "login omits the mark when auth_logo is wide and wide is blank" do
+    skip "recording_studio_site_settings not loaded" unless defined?(RecordingStudioSiteSettings)
+
+    original = RecordingStudioUser.config.auth_logo
+    original_resolver = RecordingStudioUser.config.auth_site_root_resolver
+    RecordingStudioUser.config.auth_logo = :wide
+    admin_root_recording, actor = prepare_admin_site_root(name: "Auth Logo Omit")
+    RecordingStudioUser.config.auth_site_root_resolver = ->(_view) { admin_root_recording }
+    attach_site_logo!(admin_root_recording, actor, slot: :square)
+
+    get new_user_session_path
+
+    assert_response :success
+    assert RecordingStudioSiteSettings.wide_logo_for(admin_root_recording).blank?
+    assert_select "img[src*='active_storage']", count: 0
+  ensure
+    RecordingStudioUser.config.auth_logo = original
+    RecordingStudioUser.config.auth_site_root_resolver = original_resolver
   end
 
   test "continue with email primary opens password screen" do
@@ -194,5 +241,32 @@ class LoginPageTest < ActionDispatch::IntegrationTest
       refute_includes contents, "OmniAuth.config.test_mode"
     end
     assert_includes source, "omniauth:"
+  end
+
+  def prepare_admin_site_root(name: "Admin")
+    admin_user = User.find_or_initialize_by(email: "admin@admin.com")
+    if admin_user.new_record?
+      admin_user.password = admin_user.password_confirmation = "Password"
+      admin_user.save!
+    end
+    admin_root = AdminRoot.find_or_create_by!(name: name)
+    admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+    bootstrap_owner_access!(admin_user, admin_root_recording)
+    [admin_root_recording, admin_user]
+  end
+
+  def attach_site_logo!(root_recording, actor, slot:)
+    file = Rails.root.join("db/seeds/#{slot}-logo.png")
+    assert file.exist?, "dummy seed #{slot} logo missing"
+    File.open(file, "rb") do |io|
+      RecordingStudioSiteSettings.update!(
+        root_recording,
+        name: "Studio",
+        actor: actor,
+        "#{slot}_logo_io": io,
+        "#{slot}_logo_filename": "#{slot}-logo.png",
+        "#{slot}_logo_content_type": "image/png"
+      )
+    end
   end
 end
