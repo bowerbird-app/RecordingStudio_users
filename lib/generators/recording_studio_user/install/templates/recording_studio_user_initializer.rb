@@ -16,6 +16,9 @@ RecordingStudioUser.configure do |config|
   # First auth screen is always email. Next screen follows this setting:
   # :email → password, :otp → email code (requires otp_enabled and OTP flags).
   # config.primary_login_type = :email
+  # Site mark on unsigned auth screens. :square (default) or :wide.
+  # Blank wide omits the mark. Do not copy _shell to switch shapes.
+  # config.auth_logo = :square
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
   # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in

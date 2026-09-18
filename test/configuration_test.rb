@@ -20,6 +20,9 @@ class ConfigurationTest < Minitest::Test
     assert_equal :email, @configuration.primary_login_type
     assert_predicate @configuration, :primary_login_type_email?
     refute_predicate @configuration, :primary_login_type_otp?
+    assert_equal :square, @configuration.auth_logo
+    assert_predicate @configuration, :auth_logo_square?
+    refute_predicate @configuration, :auth_logo_wide?
     assert_empty @configuration.omniauth_providers
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?
@@ -97,6 +100,20 @@ class ConfigurationTest < Minitest::Test
     assert_equal %i[email], @configuration.otp_registration_channels
     assert_equal %i[email push], @configuration.otp_login_channels
     assert_equal 7.days, @configuration.unconfirmed_user_retention
+  end
+
+  def test_auth_logo_square_and_wide
+    @configuration.auth_logo = :wide
+    assert_predicate @configuration, :auth_logo_wide?
+    refute_predicate @configuration, :auth_logo_square?
+
+    @configuration.auth_logo = "square"
+    assert_predicate @configuration, :auth_logo_square?
+
+    @configuration.auth_logo = :wide
+    error = assert_raises(ArgumentError) { @configuration.auth_logo = :banner }
+    assert_equal "auth_logo must be :square or :wide", error.message
+    assert_equal :wide, @configuration.auth_logo
   end
 
   def test_primary_login_type_email_and_otp

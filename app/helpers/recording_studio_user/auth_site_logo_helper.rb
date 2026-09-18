@@ -2,7 +2,7 @@
 
 module RecordingStudioUser
   # Optional Site Settings mark on auth screens. Hosts that load
-  # recording_studio_site_settings get the square logo above the title when a
+  # recording_studio_site_settings get the configured mark above the title when a
   # site root can be resolved. Without that gem this helper is a no-op.
   #
   # Attachable preview routes require a signed-in actor, so auth pages use an
@@ -12,15 +12,13 @@ module RecordingStudioUser
       return unless defined?(RecordingStudioSiteSettings)
 
       root = auth_site_root_recording
-      src = auth_site_logo_src_for(root, variant: variant)
-      return if src.blank?
+      return if root.blank?
 
-      render FlatPack::Avatar::Component.new(
-        src: src,
-        size: size,
-        shape: :square,
-        alt: auth_site_logo_alt(root)
-      )
+      if RecordingStudioUser.config.auth_logo_wide?
+        render_auth_wide_logo(root)
+      else
+        render_auth_square_logo(root, size: size, variant: variant)
+      end
     end
 
     def auth_site_root_recording
@@ -32,13 +30,30 @@ module RecordingStudioUser
 
     private
 
-    def auth_site_logo_src_for(root, variant:)
-      return if root.blank?
+    def render_auth_square_logo(root, size:, variant:)
+      src = auth_site_logo_public_src(
+        RecordingStudioSiteSettings.square_logo_for(root, variant: variant)
+      )
+      return if src.blank?
 
-      logo = RecordingStudioSiteSettings.square_logo_for(root, variant: variant)
-      return if logo.blank?
+      render FlatPack::Avatar::Component.new(
+        src: src,
+        size: size,
+        shape: :square,
+        alt: auth_site_logo_alt(root)
+      )
+    end
 
-      auth_site_logo_public_src(logo)
+    def render_auth_wide_logo(root)
+      src = auth_site_logo_public_src(
+        RecordingStudioSiteSettings.wide_logo_for(root, variant: :small)
+      )
+      return if src.blank?
+
+      render partial: "recording_studio_user/auth/wide_logo", locals: {
+        src: src,
+        alt: auth_site_logo_alt(root)
+      }
     end
 
     def auth_site_logo_alt(root)
@@ -46,6 +61,8 @@ module RecordingStudioUser
     end
 
     def auth_site_logo_public_src(logo)
+      return if logo.blank?
+
       attachment = logo.recording&.recordable
       return unless attachment.respond_to?(:file) && attachment.file.attached?
 

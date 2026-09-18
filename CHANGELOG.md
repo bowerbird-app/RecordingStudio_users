@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-17
+
+### Added
+- `config.auth_logo` (`:square` default, or `:wide`) chooses the Site Settings
+  slot on unsigned sign-in and sign-up screens.
+
+### Changed
+- When `auth_logo` is `:wide`, `auth_site_logo` renders a proportioned `<img>`
+  from `wide_logo_for` using the same unsigned Active Storage blob path as the
+  square Avatar. A blank wide slot omits the mark. There is no broken image and
+  no square fallback. Dummy review shots stay on the square default. Wide is
+  covered in tests.
+
+### Upgrade notes
+- Bump to `0.12.0`.
+- Default remains `:square`. No host change is required.
+- To show the wide mark on sign-in and sign-up, set `config.auth_logo = :wide`
+  and seed a wide logo on the site root resolved by `auth_site_root_resolver`.
+- Verify `/users/sign_in` and `/users/sign_up`. When wide is blank, expect no
+  logo even if a square mark exists. Do not copy `_shell`.
+
 ## [0.11.0] - 2026-09-07
 
 ### Added
