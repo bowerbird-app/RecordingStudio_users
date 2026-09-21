@@ -9,6 +9,9 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
   AUTH_PASSWORD_VIEW = RecordingStudioUser::Engine.root.join(
     "app/views/recording_studio_user/auth/registrations/password.html.erb"
   ).freeze
+  AUTH_EXTRA_FIELDS_PARTIAL = RecordingStudioUser::Engine.root.join(
+    "app/views/recording_studio_user/auth/registrations/_extra_fields.html.erb"
+  ).freeze
 
   test "sign up paints Flatpack email only without confirmation by default" do
     original = RecordingStudioUser.config.primary_login_type
@@ -88,6 +91,28 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     password_source = File.read(AUTH_PASSWORD_VIEW)
     refute_includes password_source, "FlatPack::Card::Component"
     assert_includes password_source, 'layout: "recording_studio_user/auth/shell"'
+  ensure
+    RecordingStudioUser.config.primary_login_type = original
+  end
+
+  test "create-password step renders with the blank extra_fields slot" do
+    original = RecordingStudioUser.config.primary_login_type
+    RecordingStudioUser.config.primary_login_type = :email
+    email = "extra-fields-#{SecureRandom.hex(4)}@example.com"
+
+    post new_user_registration_path, params: { user: { email: email } }
+    follow_redirect!
+
+    assert_response :success
+    assert_select "form" do
+      assert_select "input#user_password[type='password']"
+      assert_select "button[type='submit']", text: "Sign up"
+    end
+    password_source = File.read(AUTH_PASSWORD_VIEW)
+    extra_fields = File.read(AUTH_EXTRA_FIELDS_PARTIAL)
+    assert_includes password_source, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
+    refute_match(/terms_and_conditions|continue-notice|agree/i, extra_fields)
+    assert extra_fields.strip.empty?
   ensure
     RecordingStudioUser.config.primary_login_type = original
   end
