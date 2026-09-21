@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-09-21
+
+### Added
+- Blank `recording_studio_user/auth/registrations/extra_fields` slot on the
+  create-password step. Addons may override that partial to inject fields
+  before Sign up. The default partial is empty. Users does not render terms
+  markup or depend on `recording_studio_terms_and_conditions`.
+
+### Upgrade notes
+- Bump to `0.12.1`.
+- No host change is required. The create-password form is unchanged unless
+  you override `recording_studio_user/auth/registrations/extra_fields`.
+
 ## [0.12.0] - 2026-09-17
 
 ### Added
