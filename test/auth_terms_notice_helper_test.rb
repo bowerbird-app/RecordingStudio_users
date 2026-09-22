@@ -82,9 +82,10 @@ class AuthTermsNoticeHelperTest < Minitest::Test
 
   def stub_tnc(pending: nil, pending_by_root: nil, fallback_root: nil)
     tnc = Module.new
-    pending_lookup = pending_by_root || Hash.new { |_hash, _key| pending }
     tnc.define_singleton_method(:pending_published_list) do |_actor, root, **_kwargs|
-      pending_lookup.fetch(root) { pending_lookup.fetch(root.to_s.to_sym, []) }
+      next pending unless pending_by_root
+
+      pending_by_root[root] || pending_by_root[root.to_s.to_sym] || []
     end
     if fallback_root
       gate = Module.new

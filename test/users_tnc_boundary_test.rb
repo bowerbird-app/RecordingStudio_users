@@ -30,6 +30,7 @@ class UsersTncBoundaryTest < Minitest::Test
     concern = File.read(
       File.expand_path("../app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb", __dir__)
     )
+    assert_includes controller, "prefer_users_signup_extra_fields"
     assert_includes controller, "include SignupTermsAcceptance"
     assert_includes controller, "accept_pending_terms_on_signup!(resource)"
     assert_includes concern, "defined?(RecordingStudioTermsAndConditions::Gate)"

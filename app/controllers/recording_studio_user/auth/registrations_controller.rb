@@ -13,6 +13,7 @@ module RecordingStudioUser
       include RegistrationOtp
       include SignupTermsAcceptance
 
+      before_action :prefer_users_signup_extra_fields
       before_action :require_otp_registration_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
       def new
@@ -71,6 +72,10 @@ module RecordingStudioUser
       private
 
       attr_reader :resource
+
+      def prefer_users_signup_extra_fields
+        prepend_view_path(RecordingStudioUser::Engine.root.join("app/views"))
+      end
 
       def continue_with_primary_registration!(email)
         return redirect_to otp_registration_password_path unless

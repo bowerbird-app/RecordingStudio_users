@@ -2,10 +2,8 @@
 
 require "cgi"
 require "test_helper"
-require "devise/test/integration_helpers"
 
 class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
-  include Devise::Test::IntegrationHelpers
   setup do
     @workspace = Workspace.find_or_create_by!(name: Dummy::SignupTerms::WORKSPACE_NAME)
     @root = RecordingStudio.root_recording_for(@workspace)
@@ -66,29 +64,17 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
   end
 
   test "create-password still shows the notice when the current workspace has no live Terms" do
-    wanderer = User.create!(
-      email: "wander-#{SecureRandom.hex(4)}@example.com",
-      password: "Password123!",
-      password_confirmation: "Password123!"
-    )
     empty = Workspace.create!(name: "No terms #{SecureRandom.hex(4)}")
-    empty_root = RecordingStudio.root_recording_for(empty)
-    bootstrap_owner_access!(wanderer, empty_root)
-
-    sign_in wanderer
-    patch "/recording_studio_root_switchable/v1/root_switch", params: {
-      scope: "roots",
-      root_switch: { root_recording_id: empty_root.id, return_to: "/" }
-    }
-    sign_out :user
-
     email = "signup-fallback-#{SecureRandom.hex(4)}@example.com"
-    post new_user_registration_path, params: { user: { email: email } }
-    follow_redirect!
 
-    assert_response :success
-    assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
-    assert_select "button[type=submit]", text: "Sign up"
+    with_signup_root(empty) do
+      post new_user_registration_path, params: { user: { email: email } }
+      follow_redirect!
+
+      assert_response :success
+      assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+      assert_select "button[type=submit]", text: "Sign up"
+    end
   end
 
   test "create-password stays blank when no live Terms are pending" do
@@ -111,6 +97,21 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
 
     recording = record_terms(@root, title: "Signup Terms", body: "Be kind on the way in.")
     publish_terms!(recording, slug: "signup-terms-#{SecureRandom.hex(4)}")
+  end
+
+  def with_signup_root(root)
+    gate = RecordingStudioTermsAndConditions::Gate
+    singleton = gate.singleton_class
+    singleton.class_eval do
+      alias_method :root_for_signup_without_empty, :root_for_signup
+      define_method(:root_for_signup) { |*_args, **_kwargs| root }
+    end
+    yield
+  ensure
+    singleton.class_eval do
+      alias_method :root_for_signup, :root_for_signup_without_empty
+      remove_method :root_for_signup_without_empty
+    end
   end
 
   def empty_pending_published_list

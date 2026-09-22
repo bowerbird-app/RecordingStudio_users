@@ -84,11 +84,12 @@ class SignupTermsAcceptanceTest < Minitest::Test
     gate.define_singleton_method(:root_for_signup) { |*_args, **_kwargs| root }
     gate.define_singleton_method(:first_root_with_live_terms) { fallback_root } if fallback_root
     accepted = []
-    pending_lookup = pending_by_root || Hash.new { |_hash, _key| pending }
     tnc.const_set(:NotLive, not_live)
     tnc.const_set(:Gate, gate)
     tnc.define_singleton_method(:pending_published_list) do |_actor, lookup_root, **_kwargs|
-      pending_lookup.fetch(lookup_root) { pending_lookup.fetch(lookup_root.to_s.to_sym, pending) }
+      next pending unless pending_by_root
+
+      pending_by_root[lookup_root] || pending_by_root[lookup_root.to_s.to_sym] || []
     end
     tnc.define_singleton_method(:accepted) { accepted }
     tnc.define_singleton_method(:accept!) do |actor, terms, provenance|
