@@ -30,9 +30,9 @@ class SignupTermsAcceptanceTest < Minitest::Test
 
   def test_acceptance_is_noop_without_an_actor
     stub_tnc
-    refute RecordingStudioTermsAndConditions.accepted
 
     assert_nil Controller.new.accept(nil)
+    assert_empty RecordingStudioTermsAndConditions.accepted
   end
 
   def test_acceptance_is_noop_without_a_signup_root
