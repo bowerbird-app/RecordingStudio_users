@@ -154,13 +154,13 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"flat_pack", ">= 0.1.144"'
   end
 
-  def test_dummy_gemfile_pins_flatpack_v0186_for_tnc
+  def test_dummy_gemfile_pins_flatpack_v0195_for_tnc
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.186"'
-    assert_includes lock, "tag: v0.1.186"
-    assert_includes lock, "flat_pack (0.1.186)"
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.195"'
+    assert_includes lock, "tag: v0.1.195"
+    assert_includes lock, "flat_pack (0.1.195)"
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
