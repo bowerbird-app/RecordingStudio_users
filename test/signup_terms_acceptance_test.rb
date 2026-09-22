@@ -50,8 +50,10 @@ class SignupTermsAcceptanceTest < Minitest::Test
 
     Controller.new.accept(actor)
 
-    assert_equal [[actor, terms, { "source" => "continue_notice" }]],
+    assert_equal(
+      [[actor, terms, { "source" => "continue_notice" }]],
       RecordingStudioTermsAndConditions.accepted
+    )
   end
 
   def test_not_live_does_not_raise

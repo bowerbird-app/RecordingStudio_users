@@ -22,8 +22,7 @@ module RecordingStudioUser
       end
 
       def terms_acceptance_available?
-        defined?(RecordingStudioTermsAndConditions) &&
-          defined?(RecordingStudioTermsAndConditions::Gate) &&
+        defined?(RecordingStudioTermsAndConditions::Gate) &&
           RecordingStudioTermsAndConditions.respond_to?(:pending_published_list) &&
           RecordingStudioTermsAndConditions.respond_to?(:accept!)
       end
