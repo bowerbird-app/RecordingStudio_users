@@ -2,8 +2,10 @@
 
 require "cgi"
 require "test_helper"
+require "devise/test/integration_helpers"
 
 class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
   setup do
     @workspace = Workspace.find_or_create_by!(name: Dummy::SignupTerms::WORKSPACE_NAME)
     @root = RecordingStudio.root_recording_for(@workspace)
@@ -61,6 +63,32 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     assert_equal({ "source" => "continue_notice" }, receipt.provenance)
     assert_equal user.id, receipt.actor_id
     assert_equal "User", receipt.actor_type
+  end
+
+  test "create-password still shows the notice when the current workspace has no live Terms" do
+    wanderer = User.create!(
+      email: "wander-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+    empty = Workspace.create!(name: "No terms #{SecureRandom.hex(4)}")
+    empty_root = RecordingStudio.root_recording_for(empty)
+    bootstrap_owner_access!(wanderer, empty_root)
+
+    sign_in wanderer
+    patch "/recording_studio_root_switchable/v1/root_switch", params: {
+      scope: "roots",
+      root_switch: { root_recording_id: empty_root.id, return_to: "/" }
+    }
+    sign_out :user
+
+    email = "signup-fallback-#{SecureRandom.hex(4)}@example.com"
+    post new_user_registration_path, params: { user: { email: email } }
+    follow_redirect!
+
+    assert_response :success
+    assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+    assert_select "button[type=submit]", text: "Sign up"
   end
 
   test "create-password stays blank when no live Terms are pending" do

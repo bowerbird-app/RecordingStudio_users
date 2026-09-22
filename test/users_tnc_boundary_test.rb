@@ -17,7 +17,10 @@ class UsersTncBoundaryTest < Minitest::Test
     assert_includes extra_fields, "recording_studio_user_signup_terms_notice"
     assert_includes helper, "defined?(RecordingStudioTermsAndConditions)"
     assert_includes helper, "pending_published_list"
+    assert_includes helper, "first_root_with_live_terms"
     assert_includes helper, "recording_studio_terms_continue_notice"
+    engine = File.read(File.expand_path("../lib/recording_studio_user/engine.rb", __dir__))
+    assert_includes engine, "prepend_signup_view_path!"
     refute_match(/By continuing|agreed|checkbox/i, extra_fields)
     assert_includes password, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
 

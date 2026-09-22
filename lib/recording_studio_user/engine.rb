@@ -45,6 +45,16 @@ module RecordingStudioUser
       config.to_prepare { RecordingStudioUser::Admin.register! }
     end
 
+    # TnC prepends its extra_fields override. Keep Users last so the
+    # soft-detect helper (and live-Terms fallback) is what create-password
+    # renders when both gems are loaded.
+    initializer "recording_studio_user.signup_view_path" do
+      ActiveSupport.on_load(:action_controller_base) do
+        RecordingStudioUser::Engine.prepend_signup_view_path!
+      end
+      config.to_prepare { RecordingStudioUser::Engine.prepend_signup_view_path! }
+    end
+
     initializer "recording_studio_user.filter_parameters" do |app|
       app.config.filter_parameters += %i[otp code login_code]
     end
@@ -53,6 +63,15 @@ module RecordingStudioUser
     # Continue-with provider logos need the same SVG branch on Button.
     initializer "recording_studio_user.flatpack_button_svg_icon" do
       config.to_prepare { RecordingStudioUser::Engine.apply_flatpack_button_svg_icon! }
+    end
+
+    def self.prepend_signup_view_path!
+      return unless defined?(ActionController::Base)
+
+      views = root.join("app/views").to_s
+      return if ActionController::Base.view_paths.first.to_s == views
+
+      ActionController::Base.prepend_view_path(views)
     end
 
     def self.apply_flatpack_button_svg_icon!
