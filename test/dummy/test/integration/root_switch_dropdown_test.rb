@@ -153,6 +153,6 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
   end
 
   def secondary_button_selector(path)
-    %(a[href="#{path}"][class*="--button-secondary-background-color"])
+    %(a[href="#{path}"][data-fp-style="secondary"])
   end
 end
