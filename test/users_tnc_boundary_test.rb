@@ -3,17 +3,34 @@
 require "test_helper"
 
 class UsersTncBoundaryTest < Minitest::Test
-  def test_users_gem_extra_fields_stays_blank_without_tnc_markup
+  def test_users_gem_extra_fields_soft_detects_tnc_without_depending_on_it
     extra_fields = File.read(
       File.expand_path("../app/views/recording_studio_user/auth/registrations/_extra_fields.html.erb", __dir__)
+    )
+    helper = File.read(
+      File.expand_path("../app/helpers/recording_studio_user/auth_terms_notice_helper.rb", __dir__)
     )
     password = File.read(
       File.expand_path("../app/views/recording_studio_user/auth/registrations/password.html.erb", __dir__)
     )
 
-    assert extra_fields.strip.empty?
-    refute_match(/terms_and_conditions|continue-notice|agree/i, extra_fields)
+    assert_includes extra_fields, "recording_studio_user_signup_terms_notice"
+    assert_includes helper, "defined?(RecordingStudioTermsAndConditions)"
+    assert_includes helper, "pending_published_list"
+    assert_includes helper, "recording_studio_terms_continue_notice"
+    refute_match(/By continuing|agreed|checkbox/i, extra_fields)
     assert_includes password, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
+
+    controller = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/auth/registrations_controller.rb", __dir__)
+    )
+    concern = File.read(
+      File.expand_path("../app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb", __dir__)
+    )
+    assert_includes controller, "include SignupTermsAcceptance"
+    assert_includes controller, "accept_pending_terms_on_signup!(resource)"
+    assert_includes concern, "defined?(RecordingStudioTermsAndConditions)"
+    assert_includes concern, '"source" => "continue_notice"'
   end
 
   def test_production_users_does_not_depend_on_tnc

@@ -10,18 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.12.2] - 2026-09-22
 
 ### Added
+- Create-password soft-detects `recording_studio_terms_and_conditions`. When
+  that gem is installed and live Terms are pending, `extra_fields` renders
+  the continue-notice and Sign up writes an Acceptance with provenance
+  `continue_notice`. Without TnC the helper and accept hook are no-ops.
+  Users does not add a gemspec or root Gemfile dependency on TnC.
 - Dummy app installs released `recording_studio_terms_and_conditions` `v0.6.1`
-  as an end-to-end signup demo. Create-password shows the TnC continue-notice
-  and writes an Acceptance receipt with provenance `continue_notice`.
-  Production Users stays independent of TnC.
+  as an end-to-end signup demo of that automatic wiring.
 
 ### Upgrade notes
 - Bump to `0.12.2`.
-- No host change. The Users gem still ships a blank `extra_fields` slot and
-  does not depend on Terms and Conditions.
-- Dummy-only: add TnC `v0.6.1` and Publishable `v0.3.1` in `test/dummy`, run
-  their install/migrations, register `Terms` plus `Publishable`, mount the
-  engines, and publish one live Terms record under the signup workspace.
+- No host change. Install TnC, publish live Terms on the signup workspace,
+  and create-password shows the notice. Do not copy `extra_fields`.
+- Dummy-only pin: TnC `v0.6.1` and Publishable `v0.3.1` in `test/dummy`.
 
 ## [0.12.1] - 2026-09-21
 

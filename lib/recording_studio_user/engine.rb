@@ -21,11 +21,13 @@ module RecordingStudioUser
         helper RecordingStudioUser::OmniauthHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthRoutesHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthSiteLogoHelper if respond_to?(:helper)
+        helper RecordingStudioUser::AuthTermsNoticeHelper if respond_to?(:helper)
       end
       ActiveSupport.on_load(:action_view) do
         include RecordingStudioUser::OmniauthHelper
         include RecordingStudioUser::AuthRoutesHelper
         include RecordingStudioUser::AuthSiteLogoHelper
+        include RecordingStudioUser::AuthTermsNoticeHelper
       end
     end
 

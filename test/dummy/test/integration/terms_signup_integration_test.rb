@@ -40,7 +40,7 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
         "app/views/recording_studio_user/auth/registrations/_extra_fields.html.erb"
       )
     )
-    assert users_extra_fields.strip.empty?
+    assert_includes users_extra_fields, "recording_studio_user_signup_terms_notice"
     refute File.exist?(Rails.root.join("app/views/recording_studio_user/auth/registrations/_extra_fields.html.erb"))
   end
 
