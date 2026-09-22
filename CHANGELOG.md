@@ -15,14 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the continue-notice and Sign up writes an Acceptance with provenance
   `continue_notice`. Without TnC the helper and accept hook are no-ops.
   Users does not add a gemspec or root Gemfile dependency on TnC.
-- Dummy app installs released `recording_studio_terms_and_conditions` `v0.6.1`
+- Dummy app installs released `recording_studio_terms_and_conditions` `v0.6.2`
   as an end-to-end signup demo of that automatic wiring.
 
 ### Upgrade notes
 - Bump to `0.12.2`.
 - No host change. Install TnC, publish live Terms on the signup workspace,
   and create-password shows the notice. Do not copy `extra_fields`.
-- Dummy-only pin: TnC `v0.6.1` and Publishable `v0.3.1` in `test/dummy`.
+- Dummy-only pin: TnC `v0.6.2` and Publishable `v0.3.1` in `test/dummy`.
 
 ## [0.12.1] - 2026-09-21
 

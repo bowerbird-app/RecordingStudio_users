@@ -10,7 +10,7 @@ PR: https://github.com/bowerbird-app/RecordingStudio_users/pull/27
 
 PR: https://github.com/bowerbird-app/RecordingStudio_users/pull/28
 
-Dummy installs released `recording_studio_terms_and_conditions` `v0.6.1`. Users detects that gem and pending live Terms on create-password. Production Users stays independent of a gemspec pin.
+Dummy installs released `recording_studio_terms_and_conditions` `v0.6.2`. Users detects that gem and pending live Terms on create-password. Production Users stays independent of a gemspec pin.
 
 - `signup-password-tnc-notice-closed.png` — `/users/sign_up/password` with the xs muted “By continuing…” notice and Terms & Conditions link. Modal closed.
 - `signup-password-tnc-modal-open.png` — the same page with the Flatpack Modal open on the standalone Terms document (`Terms and Conditions v1.0`).
