@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-09-22
+
+### Added
+- Dummy app installs released `recording_studio_terms_and_conditions` `v0.6.1`
+  as an end-to-end signup demo. Create-password shows the TnC continue-notice
+  and writes an Acceptance receipt with provenance `continue_notice`.
+  Production Users stays independent of TnC.
+
+### Upgrade notes
+- Bump to `0.12.2`.
+- No host change. The Users gem still ships a blank `extra_fields` slot and
+  does not depend on Terms and Conditions.
+- Dummy-only: add TnC `v0.6.1` and Publishable `v0.3.1` in `test/dummy`, run
+  their install/migrations, register `Terms` plus `Publishable`, mount the
+  engines, and publish one live Terms record under the signup workspace.
+
 ## [0.12.1] - 2026-09-21
 
 ### Added
@@ -474,7 +490,9 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.2...HEAD
+[0.12.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.2
+[0.12.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.1
 [0.8.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.8.1
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.7.0

@@ -21,3 +21,8 @@ pin_all_from RecordingStudioAttachable::Engine.root.join("app/javascript/control
   to: "controllers/recording_studio_attachable"
 pin "recording_studio_attachable/tiptap/attachment_image_addon",
   to: "recording_studio_attachable/tiptap/attachment_image_addon.js"
+
+pin_all_from RecordingStudioTermsAndConditions::Engine.root.join(
+  "app/javascript/recording_studio_terms_and_conditions/controllers"
+), under: "controllers/recording_studio_terms_and_conditions",
+   to: "recording_studio_terms_and_conditions/controllers", preload: false

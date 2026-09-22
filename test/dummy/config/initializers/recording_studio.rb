@@ -10,7 +10,9 @@ RecordingStudio.configure do |config|
     "RecordingStudioUser::People",
     "RecordingStudioUser::Profile",
     "RecordingStudioAttachable::Attachment",
-    "RecordingStudioSiteSettings::SiteSetting"
+    "RecordingStudioSiteSettings::SiteSetting",
+    "RecordingStudioTermsAndConditions::Terms",
+    "RecordingStudioPublishable::Publishable"
   ]
 
   # Require each configured ActiveRecord type to call recording_studio_recordable.

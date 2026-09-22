@@ -51,4 +51,17 @@
     <code>create_user!</code> and <code>record_profile!</code> grant RecordingStudioAccessible access on the Profile recording.
     RecordingStudioUser does not create admin roots.
   </p>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Terms demo in this dummy app",
+    subtitle: "An integration pin only. Production Users does not depend on Terms and Conditions.",
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    This reference app installs released
+    <code>recording_studio_terms_and_conditions</code> <code>v0.6.1</code> so create-password
+    can show the live continue-notice. Do not add that gem to a Users production Gemfile
+    unless the host product wants Terms. The Users gem still ships a blank
+    <code>extra_fields</code> slot.
+  </p>
 </div>

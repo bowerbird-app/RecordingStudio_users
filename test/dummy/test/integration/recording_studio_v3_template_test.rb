@@ -78,6 +78,13 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
       end
     end
     assert_equal 200, User.where("email LIKE 'dummy_user_%@example.com'").count
+    live = RecordingStudioTermsAndConditions.current_published_for(workspace)
+    assert live.present?
+    assert_equal RecordingStudioTermsAndConditions::SampleTerms::TITLE, live.title
+    admin = User.find_by!(email: "admin@admin.com")
+    assert RecordingStudioTermsAndConditions.accepted?(admin, workspace)
+    receipt = RecordingStudioTermsAndConditions::Acceptance.find_by!(actor: admin, terms_id: live.id)
+    assert_equal({ "source" => "seed" }, receipt.provenance)
     assert_nil Current.actor
   ensure
     Current.actor = nil

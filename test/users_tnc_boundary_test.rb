@@ -1,0 +1,44 @@
+# frozen_string_literal: true
+
+require "test_helper"
+
+class UsersTncBoundaryTest < Minitest::Test
+  def test_users_gem_extra_fields_stays_blank_without_tnc_markup
+    extra_fields = File.read(
+      File.expand_path("../app/views/recording_studio_user/auth/registrations/_extra_fields.html.erb", __dir__)
+    )
+    password = File.read(
+      File.expand_path("../app/views/recording_studio_user/auth/registrations/password.html.erb", __dir__)
+    )
+
+    assert extra_fields.strip.empty?
+    refute_match(/terms_and_conditions|continue-notice|agree/i, extra_fields)
+    assert_includes password, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
+  end
+
+  def test_production_users_does_not_depend_on_tnc
+    gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
+    root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
+    root_lock = File.read(File.expand_path("../Gemfile.lock", __dir__))
+
+    refute_includes gemspec, "recording_studio_terms_and_conditions"
+    refute_includes gemspec, "recording_studio_publishable"
+    refute_includes root_gemfile, "recording_studio_terms_and_conditions"
+    refute_includes root_lock, "recording_studio_terms_and_conditions"
+  end
+
+  def test_dummy_pins_released_tnc_tag
+    dummy_gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+    dummy_lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
+
+    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_terms_and_conditions"'
+    assert_includes dummy_gemfile, 'tag: "v0.6.1"'
+    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_publishable"'
+    assert_includes dummy_gemfile, 'tag: "v0.3.1"'
+    refute_match(/recording_studio_terms_and_conditions.*ref:/, dummy_gemfile)
+    assert_includes dummy_lock, "tag: v0.6.1"
+    assert_includes dummy_lock, "recording_studio_terms_and_conditions (0.6.1)"
+    assert_includes dummy_lock, "tag: v0.3.1"
+    assert_includes dummy_lock, "recording_studio_publishable (0.3.1)"
+  end
+end

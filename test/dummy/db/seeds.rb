@@ -1,3 +1,5 @@
+require_relative "../lib/dummy/signup_terms"
+
 # This file should ensure the existence of records required to run the application in every environment (production,
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
@@ -176,6 +178,11 @@ begin
     end
   end
 
+  Dummy::SignupTerms.ensure_live!(actor: user)
+  User.where(email: %w[admin@admin.com member@admin.com otp@admin.com]).find_each do |seeded|
+    Dummy::SignupTerms.accept_seeded!(seeded)
+  end
+
   RecordingStudioNotifications.notify(
     notification_type: :generic,
     recipient: user,
@@ -200,3 +207,4 @@ puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
 puts "Seeded: shared People root with Profile snapshots for seeded users"
 puts "Seeded: Avery Admin profile photo on their Profile recording"
 puts "Seeded: Site settings name and logos on Admin root" if defined?(RecordingStudioSiteSettings)
+puts "Seeded: live Terms under '#{workspace.name}' with receipts for named seed accounts"

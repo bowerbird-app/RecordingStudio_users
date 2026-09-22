@@ -141,20 +141,26 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_attachable", "~> 0.5.0"'
   end
 
-  def test_gemfiles_pin_flatpack_v0147
-    [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
-      assert_includes File.read(gemfile), 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.147"'
-    end
+  def test_root_gemfile_pins_flatpack_v0147
+    gemfile = File.read(File.expand_path("../Gemfile", __dir__))
+    lock = File.read(File.expand_path("../Gemfile.lock", __dir__))
 
-    [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
-      lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.1.147"
-      assert_includes lock, "flat_pack (0.1.147)"
-      assert_includes lock, "9483f539d638a0bdb73279bd217a575b8083c6fd"
-    end
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.147"'
+    assert_includes lock, "tag: v0.1.147"
+    assert_includes lock, "flat_pack (0.1.147)"
+    assert_includes lock, "9483f539d638a0bdb73279bd217a575b8083c6fd"
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
     assert_includes gemspec, '"flat_pack", ">= 0.1.144"'
+  end
+
+  def test_dummy_gemfile_pins_flatpack_v0186_for_tnc
+    gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+    lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
+
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.186"'
+    assert_includes lock, "tag: v0.1.186"
+    assert_includes lock, "flat_pack (0.1.186)"
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
@@ -202,6 +208,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes importmap, 'to: "recording_studio_admin/controllers"'
     assert_includes importmap, 'pin "@rails/activestorage"'
     assert_includes importmap, 'under: "controllers/recording_studio_attachable"'
+    assert_includes importmap, "RecordingStudioTermsAndConditions::Engine.root.join"
+    assert_includes importmap, 'under: "controllers/recording_studio_terms_and_conditions"'
   end
 
   def test_dummy_eagerly_loads_notifications_stimulus_controllers
