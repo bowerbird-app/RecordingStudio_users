@@ -48,24 +48,6 @@ class AuthTermsNoticeHelperTest < Minitest::Test
     assert_equal "NOTICE", html
   end
 
-  def test_notice_falls_back_to_first_root_with_live_terms
-    live_terms = [Object.new]
-    stub_tnc(pending_by_root: { root: [], live_root: live_terms }, fallback_root: :live_root)
-    view = view_with_tnc_helpers
-
-    html = view.recording_studio_user_signup_terms_notice
-
-    assert_equal({ actor: :actor, root: :live_root, pending: live_terms }, view.last_notice)
-    assert_equal "NOTICE", html
-  end
-
-  def test_notice_stays_blank_when_fallback_root_also_has_no_pending_terms
-    stub_tnc(pending_by_root: { root: [], live_root: [] }, fallback_root: :live_root)
-    view = view_with_tnc_helpers
-
-    assert_nil view.recording_studio_user_signup_terms_notice
-  end
-
   private
 
   def view_with_tnc_helpers
@@ -80,18 +62,9 @@ class AuthTermsNoticeHelperTest < Minitest::Test
     view
   end
 
-  def stub_tnc(pending: nil, pending_by_root: nil, fallback_root: nil)
+  def stub_tnc(pending:)
     tnc = Module.new
-    tnc.define_singleton_method(:pending_published_list) do |_actor, root, **_kwargs|
-      next pending unless pending_by_root
-
-      pending_by_root[root] || pending_by_root[root.to_s.to_sym] || []
-    end
-    if fallback_root
-      gate = Module.new
-      gate.define_singleton_method(:first_root_with_live_terms) { fallback_root }
-      tnc.const_set(:Gate, gate)
-    end
+    tnc.define_singleton_method(:pending_published_list) { |*_args, **_kwargs| pending }
     Object.const_set(:RecordingStudioTermsAndConditions, tnc)
   end
 

@@ -22,22 +22,21 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     switch_to(@workspace)
   end
 
-  test "first-time Agree has no Terms updated alert and uses tight checkbox spacing" do
+  test "Accept screen shows continue notice and Continue without Terms updated" do
     get recording_studio_terms_and_conditions.acceptance_path
 
     assert_response :success
     assert_includes response.body, "Studio Terms"
-    assert_includes response.body, "I agree to these terms"
-    assert_select "button[type=submit]", text: "Agree"
+    assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+    assert_select "button[type=submit]", text: "Continue"
+    assert_select "input[type=checkbox][name=agreed]", count: 0
     refute_includes response.body, "Terms updated"
+    refute_includes response.body, "Agree again"
     refute_includes CGI.unescapeHTML(response.body), "These terms changed. Agree again to stay in."
-    assert_select "div.space-y-4"
-    assert_select "div.pt-2"
-    assert_select "div.py-5", count: 0
   end
 
-  test "re-accept Agree drops Terms updated and keeps Agree again" do
-    RecordingStudioTermsAndConditions.accept!(@user, @recording, { "source" => "clickwrap" })
+  test "re-gate Accept keeps continue notice and Continue without Terms updated" do
+    RecordingStudioTermsAndConditions.accept!(@user, @recording, { "source" => "continue_notice" })
     revised = @root.revise(@recording) do |terms|
       terms.body = "Be kinder than last time."
     end
@@ -48,10 +47,10 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert RecordingStudioTermsAndConditions.reaccepting?(@user, @workspace)
     refute_includes response.body, "Terms updated"
-    refute_includes CGI.unescapeHTML(response.body), "These terms changed. Agree again to stay in."
-    assert_select "button[type=submit]", text: "Agree again"
-    assert_select "div.pt-2"
-    assert_select "div.py-5", count: 0
+    refute_includes response.body, "Agree again"
+    assert_select "button[type=submit]", text: "Continue"
+    assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+    assert_select "input[type=checkbox][name=agreed]", count: 0
   end
 
   private

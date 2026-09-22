@@ -67,7 +67,7 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     empty = Workspace.create!(name: "No terms #{SecureRandom.hex(4)}")
     email = "signup-fallback-#{SecureRandom.hex(4)}@example.com"
 
-    with_signup_root(empty) do
+    with_current_root(empty) do
       post new_user_registration_path, params: { user: { email: email } }
       follow_redirect!
 
@@ -99,18 +99,18 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     publish_terms!(recording, slug: "signup-terms-#{SecureRandom.hex(4)}")
   end
 
-  def with_signup_root(root)
+  def with_current_root(root)
     gate = RecordingStudioTermsAndConditions::Gate
     singleton = gate.singleton_class
     singleton.class_eval do
-      alias_method :root_for_signup_without_empty, :root_for_signup
-      define_method(:root_for_signup) { |*_args, **_kwargs| root }
+      alias_method :root_for_without_empty, :root_for
+      define_method(:root_for) { |*_args, **_kwargs| root }
     end
     yield
   ensure
     singleton.class_eval do
-      alias_method :root_for_signup, :root_for_signup_without_empty
-      remove_method :root_for_signup_without_empty
+      alias_method :root_for, :root_for_without_empty
+      remove_method :root_for_without_empty
     end
   end
 

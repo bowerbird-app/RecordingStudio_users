@@ -62,35 +62,17 @@ class SignupTermsAcceptanceTest < Minitest::Test
     assert_nil Controller.new.accept(Object.new)
   end
 
-  def test_acceptance_falls_back_to_first_root_with_live_terms
-    terms = Object.new
-    stub_tnc(pending_by_root: { root: [], live_root: [terms] }, fallback_root: :live_root)
-    actor = Object.new
-
-    Controller.new.accept(actor)
-
-    assert_equal(
-      [[actor, terms, { "source" => "continue_notice" }]],
-      RecordingStudioTermsAndConditions.accepted
-    )
-  end
-
   private
 
-  def stub_tnc(pending: [], root: :root, raise_not_live: false, pending_by_root: nil, fallback_root: nil)
+  def stub_tnc(pending: [], root: :root, raise_not_live: false)
     tnc = Module.new
     not_live = Class.new(StandardError)
     gate = Module.new
     gate.define_singleton_method(:root_for_signup) { |*_args, **_kwargs| root }
-    gate.define_singleton_method(:first_root_with_live_terms) { fallback_root } if fallback_root
     accepted = []
     tnc.const_set(:NotLive, not_live)
     tnc.const_set(:Gate, gate)
-    tnc.define_singleton_method(:pending_published_list) do |_actor, lookup_root, **_kwargs|
-      next pending unless pending_by_root
-
-      pending_by_root[lookup_root] || pending_by_root[lookup_root.to_s.to_sym] || []
-    end
+    tnc.define_singleton_method(:pending_published_list) { |*_args, **_kwargs| pending }
     tnc.define_singleton_method(:accepted) { accepted }
     tnc.define_singleton_method(:accept!) do |actor, terms, provenance|
       raise not_live, "not live" if raise_not_live

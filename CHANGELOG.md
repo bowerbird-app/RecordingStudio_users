@@ -15,22 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the continue-notice and Sign up writes an Acceptance with provenance
   `continue_notice`. Without TnC the helper and accept hook are no-ops.
   Users does not add a gemspec or root Gemfile dependency on TnC.
-- Dummy app installs released `recording_studio_terms_and_conditions` `v0.6.2`
-  as an end-to-end signup demo of that automatic wiring.
-- Create-password still shows the continue-notice when the current workspace
-  has no live Terms, by falling back to the first root that does. Users
-  prepends its `extra_fields` after TnC so that helper is what renders.
-- Dummy Agree screen drops the on-page “Terms updated” alert and tightens
-  checkbox spacing. Re-accept still uses **Agree again** and the gate flash
-  “Terms changed. Agree again.”
+- Dummy app installs released `recording_studio_terms_and_conditions` `v0.6.3`
+  (and Flatpack `v0.1.195`) as an end-to-end signup demo of that automatic
+  wiring. TnC `Gate.root_for_signup` falls back when the current workspace
+  has no live Terms. Dummy does not override the Accept screen.
 
 ### Upgrade notes
 - Bump to `0.12.2`.
-- No host change. Install TnC and publish live Terms. Create-password shows
-  the notice even when the current workspace is not the one with live Terms.
-  Do not copy `extra_fields`. Dummy hosts that want the tighter Agree page
-  can override `acceptances/show` the same way.
-- Dummy-only pin: TnC `v0.6.2` and Publishable `v0.3.1` in `test/dummy`.
+- No host change. Install TnC `0.6.3+` and publish live Terms. Create-password
+  shows the notice even when the current workspace is not the one with live
+  Terms. Do not copy `extra_fields` or `acceptances/show`.
+- Dummy-only pin: TnC `v0.6.3`, Flatpack `v0.1.195`, and Publishable `v0.3.1`
+  in `test/dummy`.
 
 ## [0.12.1] - 2026-09-21
 
