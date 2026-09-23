@@ -26,8 +26,11 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     get recording_studio_terms_and_conditions.acceptance_path
 
     assert_response :success
+    assert_includes CGI.unescapeHTML(response.body), "We have updated our terms and conditions."
     assert_includes response.body, "Studio Terms"
     assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+    assert_includes CGI.unescapeHTML(response.body), "Terms & Conditions"
+    assert_select "a", text: "Terms & Conditions", count: 0
     assert_select "button[type=submit]", text: "Continue"
     assert_select 'button[type=submit][data-fp-style="primary"]', text: "Continue"
     assert_select "input[type=checkbox][name=agreed]", count: 0
@@ -54,6 +57,7 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     assert_select "button[type=submit]", text: "Continue"
     assert_select 'button[type=submit][data-fp-style="primary"]', text: "Continue"
     assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+    assert_select "a", text: "Terms & Conditions", count: 0
     assert_select "input[type=checkbox][name=agreed]", count: 0
     assert_match %r{flat_pack/application}, response.body
   end
