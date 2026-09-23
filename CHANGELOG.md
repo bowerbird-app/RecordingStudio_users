@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `continue_notice`. Without TnC the helper and accept hook are no-ops.
   Users does not add a gemspec or root Gemfile dependency on TnC.
 - Dummy app installs released `recording_studio_terms_and_conditions` `v0.6.4`
-  (and Flatpack `v0.1.195`) as an end-to-end signup demo of that automatic
+  (and Flatpack `v0.1.196`) as an end-to-end signup demo of that automatic
   wiring. TnC `Gate.root_for_signup` falls back when the current workspace
   has no live Terms. Dummy does not override the Accept screen.
 - Auth layout and dummy layouts link `flat_pack/application` so Flatpack
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Terms. Do not copy `extra_fields` or `acceptances/show`.
 - Serve `flat_pack/application` on auth and product layouts (alongside
   `flat_pack/variables` and `flat_pack/rich_text`) so primary CTAs fill.
-- Dummy-only pin: TnC `v0.6.4`, Flatpack `v0.1.195`, and Publishable `v0.3.1`
+- Dummy-only pin: TnC `v0.6.4`, Flatpack `v0.1.196`, and Publishable `v0.3.1`
   in `test/dummy`.
 
 ## [0.12.1] - 2026-09-21

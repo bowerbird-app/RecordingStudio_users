@@ -158,9 +158,9 @@ class RecordingStudioUserTest < Minitest::Test
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.195"'
-    assert_includes lock, "tag: v0.1.195"
-    assert_includes lock, "flat_pack (0.1.195)"
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.196"'
+    assert_includes lock, "tag: v0.1.196"
+    assert_includes lock, "flat_pack (0.1.196)"
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
