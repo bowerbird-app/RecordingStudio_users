@@ -53,14 +53,14 @@ class UsersTncBoundaryTest < Minitest::Test
     dummy_lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
     assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_terms_and_conditions"'
-    assert_includes dummy_gemfile, 'tag: "v0.6.3"'
+    assert_includes dummy_gemfile, 'tag: "v0.6.4"'
     assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_publishable"'
     assert_includes dummy_gemfile, 'tag: "v0.3.1"'
     assert_includes dummy_gemfile, 'tag: "v0.1.195"'
     refute_match(/recording_studio_terms_and_conditions.*ref:/, dummy_gemfile)
-    assert_includes dummy_lock, "tag: v0.6.3"
-    assert_includes dummy_lock, "recording_studio_terms_and_conditions (0.6.3)"
-    assert_includes dummy_lock, "a22408943f68bb4f39e30f4cbcec460bb5ae0383"
+    assert_includes dummy_lock, "tag: v0.6.4"
+    assert_includes dummy_lock, "recording_studio_terms_and_conditions (0.6.4)"
+    assert_includes dummy_lock, "4f011bb31502e484cdda795086247987033c7eb0"
     assert_includes dummy_lock, "tag: v0.3.1"
     assert_includes dummy_lock, "recording_studio_publishable (0.3.1)"
     assert_includes dummy_lock, "flat_pack (0.1.195)"

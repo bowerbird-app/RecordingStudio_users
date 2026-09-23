@@ -50,9 +50,12 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     assert RecordingStudioTermsAndConditions.reaccepting?(@user, @workspace)
     refute_includes response.body, "Terms updated"
     refute_includes response.body, "Agree again"
+    assert_includes CGI.unescapeHTML(response.body), "We have updated our terms and conditions."
     assert_select "button[type=submit]", text: "Continue"
+    assert_select 'button[type=submit][data-fp-style="primary"]', text: "Continue"
     assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
     assert_select "input[type=checkbox][name=agreed]", count: 0
+    assert_match %r{flat_pack/application}, response.body
   end
 
   private
