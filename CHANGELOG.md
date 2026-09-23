@@ -19,12 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (and Flatpack `v0.1.195`) as an end-to-end signup demo of that automatic
   wiring. TnC `Gate.root_for_signup` falls back when the current workspace
   has no live Terms. Dummy does not override the Accept screen.
+- Auth layout and dummy layouts link `flat_pack/application` so Flatpack
+  primary buttons (Sign up, Accept Continue) paint as filled CTAs.
 
 ### Upgrade notes
 - Bump to `0.12.2`.
 - No host change. Install TnC `0.6.3+` and publish live Terms. Create-password
   shows the notice even when the current workspace is not the one with live
   Terms. Do not copy `extra_fields` or `acceptances/show`.
+- Serve `flat_pack/application` on auth and product layouts (alongside
+  `flat_pack/variables` and `flat_pack/rich_text`) so primary CTAs fill.
 - Dummy-only pin: TnC `v0.6.3`, Flatpack `v0.1.195`, and Publishable `v0.3.1`
   in `test/dummy`.
 

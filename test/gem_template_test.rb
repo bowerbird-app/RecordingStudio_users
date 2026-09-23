@@ -167,6 +167,7 @@ class RecordingStudioUserTest < Minitest::Test
     head = File.read(File.expand_path("dummy/app/views/recording_studio/_default_layout_head.html.erb", __dir__))
 
     assert_includes head, 'document.documentElement.setAttribute("data-theme", "rounded")'
+    assert_includes head, 'stylesheet_link_tag "flat_pack/application"'
     refute_includes head, "recording_studio/default_layout"
   end
 

@@ -105,5 +105,6 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes layout, "min-h-dvh"
     assert_includes layout, "items-center"
     assert_equal 1, layout.scan("min-h-dvh").length
+    assert_includes layout, 'stylesheet_link_tag "flat_pack/application"'
   end
 end

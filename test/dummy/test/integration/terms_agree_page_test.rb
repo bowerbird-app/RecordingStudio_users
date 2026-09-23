@@ -29,10 +29,12 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Studio Terms"
     assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
     assert_select "button[type=submit]", text: "Continue"
+    assert_select 'button[type=submit][data-fp-style="primary"]', text: "Continue"
     assert_select "input[type=checkbox][name=agreed]", count: 0
     refute_includes response.body, "Terms updated"
     refute_includes response.body, "Agree again"
     refute_includes CGI.unescapeHTML(response.body), "These terms changed. Agree again to stay in."
+    assert_match %r{flat_pack/application}, response.body
   end
 
   test "re-gate Accept keeps continue notice and Continue without Terms updated" do

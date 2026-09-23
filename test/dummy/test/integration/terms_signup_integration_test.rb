@@ -28,6 +28,8 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     assert_select "a.flat-pack-link[data-modal-id]", text: "Terms & Conditions"
     assert_includes response.body, "text-[var(--color-primary)]"
     assert_includes response.body, "underline"
+    assert_match %r{flat_pack/application}, response.body
+    assert_select 'button[type=submit][data-fp-style="primary"]', text: "Sign up"
     assert_select "[data-controller='flat-pack--modal']", minimum: 1
     assert_includes response.body, "page-title"
     assert_includes response.body, "fp-content"
