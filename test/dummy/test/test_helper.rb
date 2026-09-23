@@ -43,7 +43,24 @@ module AccessGrantTestHelper
   end
 end
 
+module SignupTermsTestHelper
+  def record_terms(root_recording, title:, body:)
+    root_recording.record(RecordingStudioTermsAndConditions::Terms) do |terms|
+      terms.title = title
+      terms.body = body
+    end
+  end
+
+  def publish_terms!(recording, slug:, status: "published")
+    RecordingStudioPublishable::Services::Publishables::Update.call(
+      parent_recording: recording,
+      attributes: { slug: slug, status: status }
+    ).value!
+  end
+end
+
 class ActionDispatch::IntegrationTest
   include AccessGrantTestHelper
   include PushTestHelper
+  include SignupTermsTestHelper
 end

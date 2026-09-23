@@ -162,7 +162,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "flat-pack-sidebar-layout"
     assert_select "h1", text: "Workspace", count: 1
     assert_select "#home-actions" do
-      assert_select %(a[href="#{recording_studio_users.profile_path}"][class*="--button-secondary-background-color"]),
+      assert_select %(a[href="#{recording_studio_users.profile_path}"][data-fp-style="secondary"]),
                     text: "My Profile", count: 1
       assert_select %(a[href="#{recording_studio_users.admin_path}"]), text: "Users Admin", count: 0
     end

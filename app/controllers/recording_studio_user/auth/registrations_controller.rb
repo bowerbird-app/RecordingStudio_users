@@ -3,12 +3,17 @@
 require_dependency RecordingStudioUser::Engine.root.join(
   "app/controllers/concerns/recording_studio_user/auth/registration_otp.rb"
 ).to_s
+require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb"
+).to_s
 
 module RecordingStudioUser
   module Auth
     class RegistrationsController < BaseController
       include RegistrationOtp
+      include SignupTermsAcceptance
 
+      before_action :prefer_users_signup_extra_fields
       before_action :require_otp_registration_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
       def new
@@ -68,6 +73,10 @@ module RecordingStudioUser
 
       attr_reader :resource
 
+      def prefer_users_signup_extra_fields
+        prepend_view_path(RecordingStudioUser::Engine.root.join("app/views"))
+      end
+
       def continue_with_primary_registration!(email)
         return redirect_to otp_registration_password_path unless
           RecordingStudioUser.config.primary_login_type_otp?
@@ -116,6 +125,7 @@ module RecordingStudioUser
       def provision_password_account!
         confirm_password_account!
         RecordingStudioUser.record_profile!(resource, actor: resource, **Profile.default_attributes_for(resource))
+        accept_pending_terms_on_signup!(resource)
       end
 
       def confirm_password_account!

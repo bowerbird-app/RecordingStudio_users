@@ -95,7 +95,7 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     RecordingStudioUser.config.primary_login_type = original
   end
 
-  test "create-password step renders with the blank extra_fields slot" do
+  test "create-password extra_fields soft-detects a live Terms notice" do
     original = RecordingStudioUser.config.primary_login_type
     RecordingStudioUser.config.primary_login_type = :email
     email = "extra-fields-#{SecureRandom.hex(4)}@example.com"
@@ -111,8 +111,8 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     password_source = File.read(AUTH_PASSWORD_VIEW)
     extra_fields = File.read(AUTH_EXTRA_FIELDS_PARTIAL)
     assert_includes password_source, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
-    refute_match(/terms_and_conditions|continue-notice|agree/i, extra_fields)
-    assert extra_fields.strip.empty?
+    assert_includes extra_fields, "recording_studio_user_signup_terms_notice"
+    refute_match(/By continuing|agreed|checkbox/i, extra_fields)
   ensure
     RecordingStudioUser.config.primary_login_type = original
   end

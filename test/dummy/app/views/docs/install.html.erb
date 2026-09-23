@@ -51,4 +51,19 @@
     <code>create_user!</code> and <code>record_profile!</code> grant RecordingStudioAccessible access on the Profile recording.
     RecordingStudioUser does not create admin roots.
   </p>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Terms demo in this dummy app",
+    subtitle: "An integration pin only. Production Users does not depend on Terms and Conditions.",
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    This reference app installs released
+    <code>recording_studio_terms_and_conditions</code> <code>v0.7.0</code> so create-password
+    can show the live continue-notice. Users detects that gem and pending live
+    Terms — any host that installs both gets the notice, even if the current
+    workspace is not the one with live Terms. Dummy uses the gem Accept
+    screen. Do not add TnC to a Users production Gemfile unless the host
+    product wants Terms.
+  </p>
 </div>
