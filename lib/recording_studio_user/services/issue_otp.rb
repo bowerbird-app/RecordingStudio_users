@@ -3,11 +3,7 @@
 module RecordingStudioUser
   module Services
     class IssueOtp
-      Result = Struct.new(:challenge, :issued, keyword_init: true) do
-        def challenge_id
-          challenge&.id
-        end
-      end
+      Result = Struct.new(:challenge, :issued, keyword_init: true) { def challenge_id = challenge&.id }
 
       NOTIFICATION_TYPES = { "registration" => :registration_otp, "login" => :login_otp }.freeze
       TITLES = { "registration" => "Verify your email", "login" => "Your sign-in code" }.freeze
@@ -63,7 +59,8 @@ module RecordingStudioUser
       end
 
       def apply_rate_limits!
-        keys = [normalized_email, @request&.remote_ip, @session&.id].compact_blank
+        session_key = @session.id if @session.respond_to?(:id) && !@session.is_a?(Hash)
+        keys = [normalized_email, @request&.remote_ip, session_key].compact_blank
         keys.each { |key| OtpRateLimiter.allow_request!(scope: @rate_limit_scope, key: key) }
       end
 

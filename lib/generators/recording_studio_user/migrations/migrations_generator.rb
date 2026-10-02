@@ -10,7 +10,7 @@ module RecordingStudioUser
 
       source_root File.expand_path("templates", __dir__)
 
-      desc "Copies RecordingStudioUser People, Profile, Identity, OTP, and profile-nullability tables into the host application."
+      desc "Copies RecordingStudioUser People, Profile, Identity, and OTP tables into the host application."
 
       class_option :skip_existing,
                    type: :boolean,
