@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Development and dummy Gemfiles pin `recording_studio` to git tag `v4.2.2`
+  (commit `036686aa4eaf4f945f920cf4b11be4e842de0aac`). The gem version at that tag
+  is `4.2.1`. The gemspec still requires `recording_studio ~> 4.2`.
+
 ## [0.12.3] - 2026-10-02
 
 Hosts that prove an email address outside Users screens call the public OTP
