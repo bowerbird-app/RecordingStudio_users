@@ -141,26 +141,27 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_attachable", "~> 0.5.0"'
   end
 
-  def test_root_gemfile_pins_flatpack_v0147
+  def test_root_gemfile_pins_flatpack_v0198
     gemfile = File.read(File.expand_path("../Gemfile", __dir__))
     lock = File.read(File.expand_path("../Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.147"'
-    assert_includes lock, "tag: v0.1.147"
-    assert_includes lock, "flat_pack (0.1.147)"
-    assert_includes lock, "9483f539d638a0bdb73279bd217a575b8083c6fd"
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.198"'
+    assert_includes lock, "tag: v0.1.198"
+    assert_includes lock, "flat_pack (0.1.198)"
+    # Annotated tag object; peels to commit 83a866fc3399c888614d7140ec63dd37f2d9bc35
+    assert_includes lock, "20a17d7dcb76686ea5e5964dd6483a455b2a32d6"
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
     assert_includes gemspec, '"flat_pack", ">= 0.1.144"'
   end
 
-  def test_dummy_gemfile_pins_flatpack_v0195_for_tnc
+  def test_dummy_gemfile_pins_flatpack_v0198
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.196"'
-    assert_includes lock, "tag: v0.1.196"
-    assert_includes lock, "flat_pack (0.1.196)"
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.198"'
+    assert_includes lock, "tag: v0.1.198"
+    assert_includes lock, "flat_pack (0.1.198)"
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
