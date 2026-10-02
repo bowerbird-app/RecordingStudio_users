@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.3] - 2026-10-02
+
+Hosts that prove an email address outside Users screens call the public OTP
+methods. Recording Studio Messages public contact is the first caller.
+
+### Added
+- `RecordingStudioUser.resend_otp!` re-issues a code with the resend cooldown
+  and returns the same result as `issue_otp!`, including `challenge_id`.
+- `RecordingStudioUser.otp_proof(challenge_id)` returns an object with `.purpose`
+  for a live challenge, or `nil` when the challenge is missing, consumed, or
+  revoked. It does not expose the digest or ciphertext.
+- `RecordingStudioUser.otp_message(challenge_id)` returns the delivery hash
+  (`:title`, `:body`, `:url`) so a host test or notification path can read the
+  code copy without loading `OtpChallenge`.
+- `RecordingStudioUser.complete_email_proof!(user:, challenge_id:,
+  profile_attributes:)` after a successful `verify_otp!`. It confirms the
+  account without changing `registered_with` or the password. A new profile
+  stores the submitted `first_name` / `last_name`. A one-word name has no
+  surname. Time zone stays unset. An existing profile is left alone.
+- Migration `allow_blank_profile_surname_and_time_zone` lets Profile
+  `last_name` and `time_zone` be null.
+- `RecordingStudioUser::RateLimited` is the rate-limit error hosts rescue.
+  It is the same class as `Services::OtpRateLimiter::RateLimited`.
+
+### Changed
+- `issue_otp!` results respond to `challenge_id` as well as `challenge`.
+- Registration OTP can be issued for any unconfirmed account, including an
+  unconfirmed password account. Users sign-up screens still send those
+  addresses to sign in. `complete_registration!` still requires an OTP
+  account and still fills a default surname and UTC.
+
+### Upgrade notes
+- Bump to `0.12.3`.
+- Run `bin/rails generate recording_studio_user:migrations` and migrate.
+  Hosts that already have People/Profile tables receive
+  `allow_blank_profile_surname_and_time_zone`.
+- Callers that prove email outside Users screens should use `issue_otp!`,
+  `verify_otp!`, `resend_otp!`, `otp_proof`, `otp_message`, and
+  `complete_email_proof!`. Do not read `OtpChallenge` or the rate limiter.
+- Rescue `RecordingStudioUser::RateLimited` when a code request is too soon.
+  Rescue `ArgumentError` from `complete_email_proof!` when the challenge was
+  not verified first.
+
 ## [0.12.2] - 2026-09-22
 
 ### Added
@@ -501,7 +544,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.3...HEAD
+[0.12.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.3
 [0.12.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.2
 [0.12.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.1
 [0.8.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.8.1

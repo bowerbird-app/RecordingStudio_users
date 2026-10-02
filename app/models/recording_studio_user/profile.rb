@@ -19,8 +19,9 @@ module RecordingStudioUser
 
     belongs_to :user, class_name: "User", inverse_of: false
 
-    validates :first_name, :last_name, :time_zone, presence: true
-    validates :time_zone, inclusion: { in: ->(_record) { ActiveSupport::TimeZone.all.map(&:name) } }
+    validates :first_name, presence: true
+    validates :time_zone, inclusion: { in: ->(_record) { ActiveSupport::TimeZone.all.map(&:name) } },
+                          allow_blank: true
 
     before_create { self.created_at ||= Time.current }
 

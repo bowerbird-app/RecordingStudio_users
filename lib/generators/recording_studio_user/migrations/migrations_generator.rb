@@ -22,7 +22,8 @@ module RecordingStudioUser
         "restore_recording_studio_user_identities" => "restore_recording_studio_user_identities.rb.tt",
         "add_registered_with_to_users" => "add_registered_with_to_users.rb.tt",
         "add_devise_confirmable_to_users" => "add_devise_confirmable_to_users.rb.tt",
-        "create_recording_studio_user_otp_challenges" => "create_recording_studio_user_otp_challenges.rb.tt"
+        "create_recording_studio_user_otp_challenges" => "create_recording_studio_user_otp_challenges.rb.tt",
+        "allow_blank_profile_surname_and_time_zone" => "allow_blank_profile_surname_and_time_zone.rb.tt"
       }.freeze
 
       def copy_migrations

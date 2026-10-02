@@ -121,7 +121,7 @@ module RecordingStudioUser
         profile.user_id = user.id
         profile.first_name = attrs[:first_name]
         profile.last_name = attrs[:last_name]
-        profile.time_zone = attrs[:time_zone].presence || "UTC"
+        profile.time_zone = attrs.key?(:time_zone) ? attrs[:time_zone] : "UTC"
         profile.additional_profile_attributes = attrs[:additional_profile_attributes] || {}
       end
     end
