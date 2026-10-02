@@ -109,4 +109,18 @@ class MigrationsGeneratorTest < Minitest::Test
     assert_includes template, "delivery_code_ciphertext"
     assert_includes template, "expires_at"
   end
+
+  def test_blank_profile_surname_and_time_zone_migration_template
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/" \
+        "allow_blank_profile_surname_and_time_zone.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "class AllowBlankProfileSurnameAndTimeZone"
+    assert_includes template, "change_column_null :recording_studio_user_profiles, :last_name, true"
+    assert_includes template, "change_column_null :recording_studio_user_profiles, :time_zone, true"
+  end
 end

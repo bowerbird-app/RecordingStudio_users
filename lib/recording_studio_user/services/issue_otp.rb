@@ -3,7 +3,11 @@
 module RecordingStudioUser
   module Services
     class IssueOtp
-      Result = Struct.new(:challenge, :issued, keyword_init: true)
+      Result = Struct.new(:challenge, :issued, keyword_init: true) do
+        def challenge_id
+          challenge&.id
+        end
+      end
 
       NOTIFICATION_TYPES = { "registration" => :registration_otp, "login" => :login_otp }.freeze
       TITLES = { "registration" => "Verify your email", "login" => "Your sign-in code" }.freeze
@@ -50,7 +54,6 @@ module RecordingStudioUser
       end
 
       def validate_registration_user!
-        raise ArgumentError, "registration OTP requires an OTP user" unless @user.registered_with_otp?
         raise ArgumentError, "registration OTP requires an unconfirmed user" if @user.confirmed?
       end
 

@@ -56,6 +56,7 @@ New templates:
 1. **`add_registered_with_to_users`** — adds `registered_with` (`password` or `otp`) with a check constraint. Backfills existing rows to `password`. If `authentication_method` is still present, it is renamed instead.
 2. **`add_devise_confirmable_to_users`** — adds Devise confirmable columns. Backfills `confirmed_at` for existing users so password accounts stay signed-in.
 3. **`create_recording_studio_user_otp_challenges`** — stores hashed OTP codes, expiry, attempts, and encrypted delivery ciphertext.
+4. **`allow_blank_profile_surname_and_time_zone`** — lets Profile `last_name` and `time_zone` be null so a one-word name can be stored without inventing a surname or time zone.
 
 Install and migrate the notifications gems before enabling OTP.
 

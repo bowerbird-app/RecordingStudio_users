@@ -6,6 +6,12 @@ module RecordingStudioUser
       new(challenge_id: challenge_id, delivery: delivery).call
     end
 
+    def self.public_message(challenge_id)
+      call(challenge_id: challenge_id, delivery: nil)
+    rescue RecordingStudioNotifications::DeliveryPayloadError
+      nil
+    end
+
     def initialize(challenge_id:, delivery:)
       @challenge_id = challenge_id
       @delivery = delivery

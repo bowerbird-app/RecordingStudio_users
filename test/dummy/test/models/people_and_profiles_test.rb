@@ -134,4 +134,26 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
       role: :admin
     )
   end
+
+  test "a profile can be recorded without a surname or time zone" do
+    user = User.create!(
+      email: "one-name-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      password_confirmation: "Password123!"
+    )
+
+    recording = RecordingStudioUser.record_profile!(
+      user,
+      actor: user,
+      first_name: "Madonna",
+      last_name: nil,
+      time_zone: nil
+    )
+
+    profile = recording.recordable
+    assert_equal "Madonna", profile.first_name
+    assert_nil profile.last_name
+    assert_nil profile.time_zone
+    assert_equal "Madonna", user.display_name
+  end
 end

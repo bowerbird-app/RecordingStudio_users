@@ -268,6 +268,52 @@ bin/rails db:migrate
 
 Mount the auth screens with `recording_studio_user_auth_for :users` (see Auth screens above). Password sign-up and sign-in keep working with OTP off. See `MIGRATION_NOTES.md` for backfill details and route mapping.
 
+Hosts that prove an email address from another gem call these methods. They never load `OtpChallenge` or the rate limiter.
+
+```ruby
+issued = RecordingStudioUser.issue_otp!(
+  user: user,
+  purpose: :registration, # or :login
+  request: request,
+  session: session,
+  rate_limit_scope: :issue
+)
+issued.challenge_id
+issued.challenge # existing callers
+
+proof = RecordingStudioUser.otp_proof(issued.challenge_id)
+# proof.purpose is "registration" or "login"; missing/consumed/revoked is nil
+
+RecordingStudioUser.otp_message(issued.challenge_id)
+# { title:, body:, url: } while the challenge is deliverable, otherwise nil
+
+result = RecordingStudioUser.verify_otp!(
+  challenge_id: issued.challenge_id,
+  code: code,
+  purpose: proof.purpose,
+  session: session
+)
+result.success?
+result.user
+
+RecordingStudioUser.complete_email_proof!(
+  user: result.user,
+  challenge_id: issued.challenge_id,
+  profile_attributes: { first_name: "Ada", last_name: "Lovelace" }
+)
+
+RecordingStudioUser.resend_otp!(
+  user: user,
+  purpose: proof.purpose,
+  request: request,
+  session: session
+)
+```
+
+`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. Rescue `RecordingStudioUser::RateLimited` when a code request is too soon.
+
+`complete_registration!` is the Users sign-up path. It still requires an OTP account and still fills a default surname and UTC.
+
 `registered_with` records how the account was created, not the only way it can sign in:
 
 - **Password accounts** can sign in with their password *or* request an email code. Having a password is a capability, not a restriction.

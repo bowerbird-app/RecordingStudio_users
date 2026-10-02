@@ -16,9 +16,13 @@ require "recording_studio_user/services/otp_rate_limiter"
 require "recording_studio_user/services/issue_otp"
 require "recording_studio_user/services/verify_otp"
 require "recording_studio_user/services/complete_registration"
+require "recording_studio_user/services/complete_email_proof"
 require "recording_studio_user/omniauth"
 
 module RecordingStudioUser
+  RateLimited = Services::OtpRateLimiter::RateLimited
+  OtpProof = Struct.new(:purpose, keyword_init: true)
+
   class << self
     def config
       @config ||= Configuration.new
@@ -90,8 +94,33 @@ module RecordingStudioUser
       Services::VerifyOtp.call(...)
     end
 
+    def resend_otp!(user:, purpose:, request: nil, session: nil)
+      Services::IssueOtp.call(
+        user: user,
+        purpose: purpose,
+        request: request,
+        session: session,
+        rate_limit_scope: :resend
+      )
+    end
+
+    def otp_proof(challenge_id)
+      challenge = OtpChallenge.find_by(id: challenge_id)
+      return if challenge.blank? || challenge.consumed? || challenge.revoked?
+
+      OtpProof.new(purpose: challenge.purpose)
+    end
+
+    def otp_message(challenge_id)
+      OtpDeliveryPayload.public_message(challenge_id)
+    end
+
     def complete_registration!(...)
       Services::CompleteRegistration.call(...)
+    end
+
+    def complete_email_proof!(...)
+      Services::CompleteEmailProof.call(...)
     end
 
     private
