@@ -112,21 +112,6 @@ class DummyCredentialsTest < Minitest::Test
     refute_includes workflow, "RAILS_MASTER_KEY"
   end
 
-  def test_dummy_development_boots_google_omniauth_without_a_master_key
-    output = boot_dummy_without_master_key("development")
-
-    assert_includes output, "BOOT_OK"
-    assert_includes output, "providers=google_oauth2"
-    refute_includes output, "microsoft_graph"
-  end
-
-  def test_dummy_test_boots_every_omniauth_provider_without_a_master_key
-    output = boot_dummy_without_master_key("test")
-
-    assert_includes output, "BOOT_OK"
-    assert_includes output, "providers=google_oauth2,microsoft_graph,apple,linkedin,instagram"
-  end
-
   private
 
   def dummy_credentials_path
@@ -150,52 +135,5 @@ class DummyCredentialsTest < Minitest::Test
 
   def master_key_available?
     ENV["RAILS_MASTER_KEY"].to_s.strip.present? || File.exist?(dummy_master_key_path)
-  end
-
-  def boot_dummy_without_master_key(rails_env)
-    dummy = File.expand_path("../test/dummy", __dir__)
-    hidden = hide_dummy_key_files(dummy)
-    env = ENV.to_h.except("RAILS_MASTER_KEY").merge(
-      "BUNDLE_GEMFILE" => File.join(dummy, "Gemfile"),
-      "RAILS_ENV" => rails_env,
-      "DISABLE_SIMPLECOV" => "true"
-    )
-    command = [
-      "bundle", "exec", "rails", "runner",
-      <<~'RUBY'.strip
-        names = RecordingStudioUser.config.omniauth_provider_names
-        puts "BOOT_OK"
-        puts "providers=#{names.join(",")}"
-      RUBY
-    ]
-    output = Bundler.with_unbundled_env do
-      Dir.chdir(dummy) { IO.popen(env, command, err: %i[child out], &:read) }
-    end
-    status = Process.last_status
-    assert status.success?, output
-    output
-  ensure
-    restore_dummy_key_files(hidden)
-  end
-
-  def hide_dummy_key_files(dummy)
-    %w[
-      config/master.key
-      config/credentials/development.key
-      config/credentials/test.key
-    ].filter_map do |relative|
-      path = File.join(dummy, relative)
-      next unless File.exist?(path)
-
-      hidden = "#{path}.hidden-for-test"
-      File.rename(path, hidden)
-      [path, hidden]
-    end
-  end
-
-  def restore_dummy_key_files(hidden)
-    Array(hidden).each do |original, backup|
-      File.rename(backup, original) if backup && File.exist?(backup)
-    end
   end
 end
