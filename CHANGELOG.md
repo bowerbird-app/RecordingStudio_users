@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Development and dummy Gemfiles pin RecordingStudioAccessible `v0.11.1`,
+  RecordingStudioAdmin `v2.0.4`, and RecordingStudioAttachable `v0.7.1`. Dummy
+  also pins RecordingStudioRootSwitchable `v0.5.3`. `recording_studio` stays on
+  git tag `v4.2.2`.
+- Gemspec Accessible constraint widens from `~> 0.8` to `~> 0.11`. Attachable
+  widens from `~> 0.5.0` to `~> 0.7`. Admin stays `~> 2.0`.
+- Dummy copies Accessible 0.8–0.11 migrations (`depends_on_recording_id` was
+  already present; access invitations and string `role` are new) plus Attachable
+  0.6–0.7 columns (`root_recording_id`, caption/credit/alt_text). Seeds and
+  tests already grant through `bootstrap_owner_access!` and `grant_access`.
+
+### Upgrade notes
+- Use Accessible `0.11.x` (tag `v0.11.1`), Admin tag `v2.0.4`, and Attachable
+  `0.7.x` (tag `v0.7.1`) with this development pin set.
+- Hosts upgrading Accessible should run
+  `bin/rails generate recording_studio_accessible:migrations` then
+  `bin/rails db:migrate` so `recording_studio_accesses.role` is a string and the
+  invitations table exists. Grant through Accessible public services;
+  `RecordingStudio::Access` is readonly.
+- Hosts upgrading Attachable should run
+  `bin/rails generate recording_studio_attachable:migrations` then migrate.
 - Development and dummy Gemfiles pin `recording_studio` to git tag `v4.2.2`
   (commit `036686aa4eaf4f945f920cf4b11be4e842de0aac`). The gem version at that tag
   is `4.2.1`. The gemspec still requires `recording_studio ~> 4.2`.
