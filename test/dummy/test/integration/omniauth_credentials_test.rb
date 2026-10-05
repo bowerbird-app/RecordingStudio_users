@@ -4,12 +4,11 @@ require "test_helper"
 
 class OmniauthCredentialsTest < ActiveSupport::TestCase
   test "dummy test credentials enable every supported provider" do
-    skip "Set RAILS_MASTER_KEY or test/dummy/config/master.key to the shared dummy key" unless master_key_available?
-
     assert_equal(
       %i[google_oauth2 microsoft_graph apple linkedin instagram],
       RecordingStudioUser.config.omniauth_provider_names
     )
+    assert_includes User.devise_modules, :omniauthable
   end
 
   test "development credentials keep commented examples for unused providers" do
