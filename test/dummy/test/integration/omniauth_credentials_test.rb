@@ -4,6 +4,8 @@ require "test_helper"
 
 class OmniauthCredentialsTest < ActiveSupport::TestCase
   test "dummy test credentials enable every supported provider" do
+    skip "Set RAILS_MASTER_KEY or test/dummy/config/master.key to the shared dummy key" unless master_key_available?
+
     assert_equal(
       %i[google_oauth2 microsoft_graph apple linkedin instagram],
       RecordingStudioUser.config.omniauth_provider_names
@@ -11,6 +13,8 @@ class OmniauthCredentialsTest < ActiveSupport::TestCase
   end
 
   test "development credentials keep commented examples for unused providers" do
+    skip "Set RAILS_MASTER_KEY or test/dummy/config/master.key to the shared dummy key" unless master_key_available?
+
     encrypted = Rails.application.encrypted(
       Rails.root.join("config/credentials/development.yml.enc"),
       key_path: Rails.root.join("config/credentials/development.key")
@@ -32,5 +36,13 @@ class OmniauthCredentialsTest < ActiveSupport::TestCase
     refute omniauth.key?("apple")
     refute omniauth.key?("linkedin")
     refute omniauth.key?("instagram")
+  end
+
+  private
+
+  def master_key_available?
+    ENV["RAILS_MASTER_KEY"].to_s.strip.present? ||
+      File.exist?(Rails.root.join("config/master.key")) ||
+      File.exist?(Rails.root.join("config/credentials/development.key"))
   end
 end

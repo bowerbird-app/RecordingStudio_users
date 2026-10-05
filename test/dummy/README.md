@@ -15,7 +15,7 @@ This Rails application demonstrates RecordingStudioUser in a host application.
 - Development mail goes to Letter Opener Web. Open **Letters** in the sidebar, or visit `/letter_opener`, to read OTP codes and other dummy mail. The inbox is not behind sign-in.
 - Profile show/edit are PageNav back/close only. The right slot stays empty. There is no Access control, sidebar Sign out, or Root Switchable on those screens. Show puts Edit in the page title and one elevated identity Card. A two-column Grid wraps the Card only (desktop width cap). Inside the card, Avatar sits above unlabeled name, email, and time zone in one column. Empty photos show Avatar's person icon. Edit hosts a `profile-photo` Turbo frame with Flatpack Avatar (`attachment_preview_url`, `size: :"2xl"`) plus Attachable `render_attachment_file_button` for Add/Change. Dummy pins Flatpack `v0.1.196`. An `mb-8` wrapper around the frame separates the photo row from First name. Edit puts the form in one cell of a two-column Flatpack Grid (the other cell stays empty) so fields do not stretch full-bleed on a wide screen. Each field is still its own full-width row. Update profile and Cancel are separate Flatpack buttons, not a ButtonGroup.
 - Dummy still overrides Attachable's leftover attachment show so that gem's in-view PageNav is not stacked on top of core's. Profile screens do not link there.
-- Dummy OmniAuth reads filled `omniauth:` keys from Rails credentials. Encrypted development credentials live in `config/credentials/development.yml.enc` (Google is live; Microsoft, Apple, LinkedIn, and Instagram are commented examples). Encrypted test credentials live in `config/credentials/test.yml.enc` so the dummy suite can cover every provider. `development.key` and `test.key` are committed for this reference app. The dummy app never sets `OmniAuth.config.test_mode` or `OMNIAUTH_TEST_MODE`.
+- Dummy OmniAuth reads filled `omniauth:` keys from Rails credentials. Encrypted development credentials live in `config/credentials/development.yml.enc` (Google is the active provider slot; Microsoft, Apple, LinkedIn, and Instagram are commented examples). Encrypted test credentials live in `config/credentials/test.yml.enc` so the dummy suite can cover every provider. Those files use the shared RecordingStudio_* development master key — set `RAILS_MASTER_KEY` or write gitignored `config/master.key` / `config/credentials/*.key`. Do not commit key files or mint a per-repo key. Committed values are `dev_placeholder`; put real OAuth secrets locally with `credentials:edit`. The dummy app never sets `OmniAuth.config.test_mode` or `OMNIAUTH_TEST_MODE`.
 
 ## Google OAuth in development
 
@@ -32,7 +32,7 @@ http://localhost:3000/users/auth/google_oauth2/callback
 
 Also register `http://127.0.0.1:3000/users/auth/google_oauth2/callback` if you open the dummy as `127.0.0.1`. Google treats `localhost` and `127.0.0.1` as different URIs. After saving the client, wait a few minutes before retrying.
 
-Encrypted dummy credentials already hold this client's id and secret. To point a fork at a different client, or to add Microsoft, Apple, LinkedIn, or Instagram:
+Committed dummy credentials use `dev_placeholder` values under the shared master key. To point development at this client's id and secret (or to add Microsoft, Apple, LinkedIn, or Instagram), set `RAILS_MASTER_KEY` first, then edit:
 
 ```bash
 cd test/dummy
