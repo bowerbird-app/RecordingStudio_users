@@ -1,6 +1,6 @@
 > **Architecture Documentation**
 > *   **Canonical Source:** [bowerbird-app/gem_template](https://github.com/bowerbird-app/gem_template/tree/main/docs/gem_template)
-> *   **Last Updated:** May 5, 2026
+> *   **Last Updated:** October 5, 2026
 >
 > *Maintainers: Please update the date above when modifying this file.*
 
@@ -65,6 +65,8 @@ Files updated include:
 - Documentation files (`README.md`, `CHANGELOG.md`, etc.)
 - Test files and test helper
 - Dummy app configuration (`test/dummy/Gemfile`, `test/dummy/config/routes.rb`)
+
+Dummy credentials (`test/dummy/config/credentials.yml.enc` and `test/dummy/config/credentials/*.yml.enc`) stay as the shared Recording Studio dummy files. After rename, set `RAILS_MASTER_KEY` (or the gitignored dummy key files) to the shared development key. Do not mint a new master key.
 
 ## What Does NOT Get Renamed
 

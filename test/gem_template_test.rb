@@ -248,4 +248,22 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes css, '@import "./gem_sources.css"'
     assert_includes procfile, "tailwindcss:watch[always]"
   end
+
+  def test_dummy_omniauth_placeholders_do_not_require_a_master_key
+    initializer = File.read(
+      File.expand_path("dummy/config/initializers/recording_studio_user.rb", __dir__)
+    )
+
+    assert_includes initializer, "providers_from_credentials"
+    assert_includes initializer, "Dummy::OmniauthFallbacks.providers"
+    assert_includes initializer, "google_oauth2:"
+    assert_includes initializer, "microsoft_graph:"
+    assert_includes initializer, "apple:"
+    assert_includes initializer, "linkedin:"
+    assert_includes initializer, "instagram:"
+    assert_includes initializer, "client_id: PLACEHOLDER"
+    assert_includes initializer, "Rails.env.test?"
+    refute_includes initializer, "ENV["
+    refute_includes initializer, "config.omniauth_providers = {}"
+  end
 end
