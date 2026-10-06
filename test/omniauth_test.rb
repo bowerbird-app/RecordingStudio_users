@@ -35,6 +35,8 @@ class OmniauthTest < Minitest::Test
   end
 
   def test_csrf_protection_does_not_include_deprecated_configurable
+    require "omniauth/rails_csrf_protection"
+
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
     csrf = Gem.loaded_specs.fetch("omniauth-rails_csrf_protection")
 

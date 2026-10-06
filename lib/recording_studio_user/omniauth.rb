@@ -6,7 +6,6 @@ require "omniauth_microsoft_graph"
 require "omniauth-apple"
 require "omniauth-linkedin-openid"
 require "omniauth-instagram-api"
-require "omniauth/rails_csrf_protection"
 require_relative "omniauth/provider_logos"
 require_relative "omniauth/identity_flow"
 

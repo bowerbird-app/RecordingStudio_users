@@ -8,15 +8,8 @@ module RecordingStudioUser
       RecordingStudioUser.config.validate!
     end
 
-    initializer "recording_studio_user.omniauth", after: :load_config_initializers do
-      RecordingStudioUser::Omniauth.register_providers!
-    end
-
-    rake_tasks do
-      load RecordingStudioUser::Engine.root.join("lib/tasks/recording_studio_user_identities.rake")
-    end
-
-    initializer "recording_studio_user.helpers" do
+    initializer "recording_studio_user.helpers", after: :set_autoload_paths do
+      RecordingStudioUser::Engine.load_view_helpers!
       ActiveSupport.on_load(:action_controller) do
         helper RecordingStudioUser::OmniauthHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthRoutesHelper if respond_to?(:helper)
@@ -29,6 +22,19 @@ module RecordingStudioUser
         include RecordingStudioUser::AuthSiteLogoHelper
         include RecordingStudioUser::AuthTermsNoticeHelper
       end
+    end
+
+    initializer "recording_studio_user.omniauth", after: :load_config_initializers do
+      RecordingStudioUser::Omniauth.register_providers!
+    end
+
+    config.after_initialize do
+      require "omniauth/rails_csrf_protection"
+      OmniAuth.config.request_validation_phase = OmniAuth::RailsCsrfProtection::TokenVerifier.new
+    end
+
+    rake_tasks do
+      load RecordingStudioUser::Engine.root.join("lib/tasks/recording_studio_user_identities.rake")
     end
 
     # Include ProfiledUser and :omniauthable before routes draw so devise_for
@@ -63,6 +69,17 @@ module RecordingStudioUser
     # Continue-with provider logos need the same SVG branch on Button.
     initializer "recording_studio_user.flatpack_button_svg_icon" do
       config.to_prepare { RecordingStudioUser::Engine.apply_flatpack_button_svg_icon! }
+    end
+
+    def self.load_view_helpers!
+      %w[
+        omniauth_helper
+        auth_routes_helper
+        auth_site_logo_helper
+        auth_terms_notice_helper
+      ].each do |name|
+        require root.join("app/helpers/recording_studio_user/#{name}").to_s
+      end
     end
 
     def self.prepend_signup_view_path!
