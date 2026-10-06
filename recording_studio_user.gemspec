@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "omniauth-instagram-api", "~> 0.1"
   spec.add_dependency "omniauth-linkedin-openid", "~> 1.0"
   spec.add_dependency "omniauth-microsoft_graph", "~> 2.0"
-  spec.add_dependency "omniauth-rails_csrf_protection", "~> 1.0"
+  spec.add_dependency "omniauth-rails_csrf_protection", "~> 2.0"
   spec.add_dependency "rails", "~> 8.1.0"
   spec.add_dependency "recording_studio", "~> 4.2"
   spec.add_dependency "recording_studio_accessible", "~> 0.11"

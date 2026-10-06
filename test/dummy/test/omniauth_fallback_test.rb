@@ -26,4 +26,11 @@ class OmniauthFallbackTest < ActiveSupport::TestCase
     )
     assert_includes User.devise_modules, :omniauthable
   end
+
+  test "OmniAuth CSRF protection boots without ActiveSupport::Configurable" do
+    refute_includes OmniAuth::RailsCsrfProtection::TokenVerifier.ancestors.map(&:name),
+                    "ActiveSupport::Configurable"
+    assert_kind_of OmniAuth::RailsCsrfProtection::TokenVerifier,
+                   OmniAuth.config.request_validation_phase
+  end
 end
