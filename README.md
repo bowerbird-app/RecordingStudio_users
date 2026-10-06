@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.11), `recording_studio_attachable` (~> 0.7), `recording_studio_admin` (~> 2.0), `flat_pack` (>= 0.1.144), `devise`, and the supported OmniAuth strategies are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People. Hosts upgrading Accessible to 0.11 need string roles, Accessible’s 0.8–0.11 migrations, and grants through `bootstrap_owner_access!` / `grant_access` (`RecordingStudio::Access` is readonly).
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.11), `recording_studio_attachable` (~> 0.7), `recording_studio_admin` (~> 2.0), `flat_pack` (>= 0.1.144), `devise`, the supported OmniAuth strategies, and `omniauth-rails_csrf_protection` (~> 2.0) are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People. Hosts upgrading Accessible to 0.11 need string roles, Accessible’s 0.8–0.11 migrations, and grants through `bootstrap_owner_access!` / `grant_access` (`RecordingStudio::Access` is readonly).
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 

@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.7] - 2026-10-06
+
+Requiring OmniAuth no longer loads deprecated `ActiveSupport::Configurable`.
+
 ### Changed
+- `omniauth-rails_csrf_protection` moves from `~> 1.0` to `~> 2.0`. Version
+  `1.0.2` included `ActiveSupport::Configurable` on its token verifier, which
+  Rails 8.1 deprecates and Rails 8.2 removes. The warning pointed at
+  `lib/recording_studio_user/omniauth.rb` because that file requires the gem.
+  2.x keeps the same Railtie and middleware. On Rails 8.1+ it delegates CSRF
+  config to `ActionController::Base.config` instead of including Configurable.
+  Host OmniAuth config (`config.omniauth_providers`, credentials, callbacks) is
+  unchanged.
 - Development and dummy Gemfiles pin RecordingStudioAccessible `v0.11.1`,
   RecordingStudioAdmin `v2.0.4`, and RecordingStudioAttachable `v0.7.1`. Dummy
   also pins RecordingStudioRootSwitchable `v0.5.3`. `recording_studio` stays on
@@ -20,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tests already grant through `bootstrap_owner_access!` and `grant_access`.
 
 ### Upgrade notes
+- Bump to `0.12.7`. Bundler resolves `omniauth-rails_csrf_protection` 2.x with
+  this gem. Do not pin the CSRF gem to 1.x. No host OmniAuth initializer change.
 - Use Accessible `0.11.x` (tag `v0.11.1`), Admin tag `v2.0.4`, and Attachable
   `0.7.x` (tag `v0.7.1`) with this development pin set.
 - Hosts upgrading Accessible should run
@@ -570,7 +584,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.7...HEAD
+[0.12.7]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.7
 [0.12.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.3
 [0.12.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.2
 [0.12.1]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.1
