@@ -6,6 +6,8 @@ class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
     assert_equal "0.12.7", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
+    RecordingStudioUser::Engine.load_view_helpers!
+    assert defined?(RecordingStudioUser::OmniauthHelper)
   end
 
   def test_omniauth_views_use_flatpack_without_restyling_profile_edit

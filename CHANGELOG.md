@@ -15,11 +15,13 @@ Requiring OmniAuth no longer loads deprecated `ActiveSupport::Configurable`.
 - `omniauth-rails_csrf_protection` moves from `~> 1.0` to `~> 2.0`. Version
   `1.0.2` included `ActiveSupport::Configurable` on its token verifier, which
   Rails 8.1 deprecates and Rails 8.2 removes. The warning pointed at
-  `lib/recording_studio_user/omniauth.rb` because that file requires the gem.
-  2.x keeps the same Railtie and middleware. On Rails 8.1+ it delegates CSRF
-  config to `ActionController::Base.config` instead of including Configurable.
-  Host OmniAuth config (`config.omniauth_providers`, credentials, callbacks) is
-  unchanged.
+  `lib/recording_studio_user/omniauth.rb` because that file used to require
+  the gem at load time. 2.x keeps the same middleware. On Rails 8.1+ it
+  delegates CSRF config to `ActionController::Base.config` instead of
+  including Configurable. Users requires the gem after initialize so other
+  engines can register helpers before that load. CSRF request validation
+  still uses TokenVerifier. Host OmniAuth config (`config.omniauth_providers`,
+  credentials, callbacks) is unchanged.
 - Development and dummy Gemfiles pin RecordingStudioAccessible `v0.11.1`,
   RecordingStudioAdmin `v2.0.4`, and RecordingStudioAttachable `v0.7.1`. Dummy
   also pins RecordingStudioRootSwitchable `v0.5.3`. `recording_studio` stays on
