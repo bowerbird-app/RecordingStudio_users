@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RecordingStudioUser
-  class Engine < ::Rails::Engine
+  class Engine < ::Rails::Engine # rubocop:disable Metrics/ClassLength
     isolate_namespace RecordingStudioUser
 
     config.before_initialize do
@@ -49,6 +49,10 @@ module RecordingStudioUser
 
     initializer "recording_studio_user.admin_definitions" do
       config.to_prepare { RecordingStudioUser::Admin.register! }
+    end
+
+    initializer "recording_studio_user.api" do
+      config.to_prepare { RecordingStudioUser::Api.register! }
     end
 
     # TnC prepends its extra_fields override. Keep Users last so the

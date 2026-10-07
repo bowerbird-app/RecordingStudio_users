@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Soft Recording Studio API registration for `user_count` on the named
+  `:operations` API (`GET users/count`). The handler returns
+  `{ count: RecordingStudioUser.config.user_class.count }`, the same source as
+  the admin Total users widget. Registration runs only when
+  `RecordingStudioApi.respond_to?(:register_endpoint)`. This gem does not
+  depend on `recording_studio_api` and does not define `config.api :operations`.
+
 ## [0.12.7] - 2026-10-06
 
 Requiring OmniAuth no longer loads deprecated `ActiveSupport::Configurable`.

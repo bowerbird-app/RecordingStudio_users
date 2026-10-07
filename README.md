@@ -343,6 +343,8 @@ Show puts **Edit** in the PageTitle actions slot (not in the card) and one Flatp
 
 The engine still registers a reusable `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The read-only screen lists name, email, and created-at. The gem does not add user editing, deletion, impersonation, password operations, or admin/role columns.
 
+When Recording Studio API is present, the engine also registers a `user_count` endpoint on the host's named `:operations` API (`GET users/count`). The payload is `{ count: }` from `RecordingStudioUser.config.user_class.count`. Hosts that already define `config.api :operations` (for example featured_in) do not need a second named-API block in this gem. MCP tools follow the endpoint name; this gem does not change RecordingStudio_MCP. The gemspec does not depend on `recording_studio_api`.
+
 The host owns administration and must create its admin recordable/root, mount RecordingStudioAdmin, and grant first-owner `:admin` access on the empty owned admin root with `RecordingStudioAccessible.bootstrap_owner_access!`.
 
 ## Dummy app
