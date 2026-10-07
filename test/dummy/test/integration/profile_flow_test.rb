@@ -191,7 +191,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Default English"
     assert_includes response.body, "English"
     assert_includes response.body, "Français"
-    assert_includes response.body, "日本語"
+    refute_includes response.body, "日本語"
     refute_includes response.body, "Tidy up"
     refute_includes response.body, "The photo lives here too."
     assert_equal 1, response.body.scan("md:grid-cols-2").size

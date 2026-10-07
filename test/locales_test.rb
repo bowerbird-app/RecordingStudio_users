@@ -4,39 +4,50 @@ require "test_helper"
 require "yaml"
 
 class LocalesTest < Minitest::Test
-  def test_french_locale_has_every_english_key
-    english = flatten_keys(locale_tree("en.yml"))
-    french = flatten_keys(locale_tree("fr.yml"))
+  def test_engine_ships_only_english_locale_files
+    files = Dir[File.join(engine_locales_dir, "*")].map { |path| File.basename(path) }
+
+    assert_equal ["en.yml"], files.sort
+  end
+
+  def test_dummy_french_covers_every_engine_english_key
+    english = flatten_keys(locale_tree(File.join(engine_locales_dir, "en.yml"), "en"))
+    french = flatten_keys(locale_tree(File.join(dummy_locales_dir, "fr.yml"), "fr"))
     missing = english - french
 
-    assert_empty missing, "fr.yml is missing keys present in en.yml: #{missing.join(', ')}"
+    assert_empty missing, "dummy fr.yml is missing keys present in engine en.yml: #{missing.join(', ')}"
   end
 
-  def test_unnamed_user_key_still_resolves
+  def test_english_default_copy_is_unchanged
     I18n.with_locale(:en) do
       assert_equal "User", I18n.t("recording_studio_user.profile.unnamed_user")
-    end
-    I18n.with_locale(:fr) do
-      assert_equal "Utilisateur", I18n.t("recording_studio_user.profile.unnamed_user")
+      assert_equal "Welcome back", I18n.t("recording_studio_user.auth.login_title")
+      assert_equal "Profile updated.", I18n.t("recording_studio_user.profile.updated")
+      assert_equal "My Profile", I18n.t("recording_studio_user.profile.my_profile")
     end
   end
 
-  def test_login_title_follows_locale_until_the_host_overrides
+  def test_login_title_follows_english_until_the_host_overrides
     configuration = RecordingStudioUser::Configuration.new
 
     I18n.with_locale(:en) { assert_equal "Welcome back", configuration.login_title }
-    I18n.with_locale(:fr) { assert_equal "Heureux de vous revoir", configuration.login_title }
 
     configuration.login_title = "Sign in to Acme"
-    I18n.with_locale(:fr) { assert_equal "Sign in to Acme", configuration.login_title }
+    I18n.with_locale(:en) { assert_equal "Sign in to Acme", configuration.login_title }
   end
 
   private
 
-  def locale_tree(filename)
-    path = File.expand_path("../config/locales/#{filename}", __dir__)
+  def engine_locales_dir
+    File.expand_path("../config/locales", __dir__)
+  end
+
+  def dummy_locales_dir
+    File.expand_path("dummy/config/locales", __dir__)
+  end
+
+  def locale_tree(path, locale)
     yaml = YAML.safe_load_file(path, aliases: true)
-    locale = File.basename(filename, ".yml")
     yaml.fetch(locale).fetch("recording_studio_user")
   end
 

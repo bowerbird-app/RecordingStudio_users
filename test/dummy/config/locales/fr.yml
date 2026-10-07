@@ -1,3 +1,6 @@
+# Dummy-only host translations for recording_studio_user.*. The engine ships
+# English defaults; other languages belong to the host. This file keeps the
+# dummy Language switch (?locale=fr, saved profile locale) working.
 fr:
   recording_studio_user:
     profile:

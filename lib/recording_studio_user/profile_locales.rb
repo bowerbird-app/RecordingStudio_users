@@ -2,15 +2,16 @@
 
 module RecordingStudioUser
   # Language choices for Profile extras["locale"]. Internationalization stores the
-  # same key. When that gem is loaded, use its available locales; otherwise offer
-  # the common starting set it documents (en / fr / ja).
+  # same key. When that gem is loaded, use its available locales; otherwise follow
+  # the host's I18n.available_locales. Native names below are display labels only.
   module ProfileLocales
     PROFILE_KEY = "locale"
-    STARTING_SET = [
-      %w[English en],
-      %w[Français fr],
-      %w[日本語 ja]
-    ].freeze
+    NATIVE_NAMES = {
+      "en" => "English",
+      "fr" => "Français",
+      "ja" => "日本語"
+    }.freeze
+    private_constant :NATIVE_NAMES
 
     module_function
 
@@ -19,11 +20,11 @@ module RecordingStudioUser
     end
 
     def options(current = nil)
-      list = from_internationalization.presence || STARTING_SET
+      list = from_internationalization.presence || from_available_locales
       code = current.to_s
       return list if code.blank? || list.any? { |_name, value| value.to_s == code }
 
-      list + [[code, code]]
+      list + [[native_name(code), code]]
     end
 
     def select_options(current = nil)
@@ -55,8 +56,22 @@ module RecordingStudioUser
       nil
     end
 
+    def from_available_locales
+      Array(I18n.available_locales).filter_map do |locale|
+        code = extract_locale_code(locale)
+        next if code.blank?
+
+        [native_name(code), code]
+      end.uniq { |_name, value| value.to_s }
+    end
+
     def blank_option_label
       I18n.t("recording_studio_user.profile.use_site_default", language: site_default_language_name)
+    end
+
+    def native_name(code)
+      string = code.to_s
+      NATIVE_NAMES.fetch(string, string)
     end
 
     def extract_locale_code(value)
