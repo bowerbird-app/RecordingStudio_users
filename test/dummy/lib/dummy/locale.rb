@@ -6,12 +6,13 @@ module Dummy
   # should use that gem instead of copying this.
   module Locale
     AVAILABLE = %i[en fr].freeze
+    COOKIE = "dummy_locale"
 
     module_function
 
     def from_request(request)
       query = Rack::Utils.parse_nested_query(request.env["QUERY_STRING"].to_s)
-      requested = query["locale"].presence || profile_locale(request)
+      requested = query["locale"].presence || request.cookies[COOKIE].presence || profile_locale(request)
       sanitize(requested)
     end
 
@@ -37,7 +38,25 @@ module Dummy
 
     def call(env)
       request = ActionDispatch::Request.new(env)
-      I18n.with_locale(Dummy::Locale.from_request(request)) { @app.call(env) }
+      locale = Dummy::Locale.from_request(request)
+      status, headers, body = I18n.with_locale(locale) { @app.call(env) }
+      persist_query_locale(request, headers, locale)
+      [status, headers, body]
+    end
+
+    private
+
+    def persist_query_locale(request, headers, locale)
+      query = Rack::Utils.parse_nested_query(request.env["QUERY_STRING"].to_s)
+      return if query["locale"].blank?
+
+      Rack::Utils.set_cookie_header!(
+        headers,
+        Dummy::Locale::COOKIE,
+        value: locale.to_s,
+        path: "/",
+        same_site: :lax
+      )
     end
   end
 end

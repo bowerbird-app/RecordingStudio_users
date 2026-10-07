@@ -255,7 +255,7 @@ Hosts that still assign `config.additional_profile_attributes = []` hide Languag
 
 The engine ships `config/locales/en.yml` and `config/locales/fr.yml` under the `recording_studio_user.*` namespace and adds them to the host I18n load path. Auth screens, profile screens, flashes, OTP mail copy, and OmniAuth alerts resolve those keys at request time. `recording_studio_user.profile.unnamed_user` remains the fallback display name when a person has no email and no profile name.
 
-Hosts that want another language add the same keys (for example `config/locales/ja.yml`) and include that locale in `config.i18n.available_locales`. Recording Studio Internationalization can still read and write the signed-in `locale` extra; this gem does not switch the request locale on its own. The dummy app does, via `?locale=fr` or a saved profile locale, so screens can be reviewed in both languages.
+Hosts that want another language add the same keys (for example `config/locales/ja.yml`) and include that locale in `config.i18n.available_locales`. Recording Studio Internationalization can still read and write the signed-in `locale` extra; this gem does not switch the request locale on its own. The dummy app does, via `?locale=fr` (kept on a `dummy_locale` cookie so POST and redirects stay in French) or a saved profile locale, so screens can be reviewed in both languages. English and French review shots live in `docs/review/` as `en-*.png` and `fr-*.png`.
 
 `primary_login_type` defaults to `:email`. Set `:otp` only when OTP is fully enabled; the config fails closed if OTP flags are off.
 

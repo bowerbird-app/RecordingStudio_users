@@ -59,6 +59,20 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Use the site default"
   end
 
+  test "a French query cookie keeps the verify screen after OTP post" do
+    get "#{new_user_session_path}/otp", params: { locale: "fr" }
+
+    assert_response :success
+    assert_includes response.body, "Envoyer le code"
+
+    post "#{new_user_session_path}/otp", params: { user: { email: "otp@admin.com" } }
+
+    assert_redirected_to verify_user_session_path
+    follow_redirect!
+    assert_includes response.body, "Entrez votre code"
+    assert_includes response.body, "Si un compte admissible existe"
+  end
+
   test "profile updated flash renders in French" do
     sign_in @user
     patch "#{recording_studio_users.profile_path}?locale=fr", params: {
