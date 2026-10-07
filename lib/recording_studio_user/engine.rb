@@ -51,6 +51,10 @@ module RecordingStudioUser
       config.to_prepare { RecordingStudioUser::Admin.register! }
     end
 
+    initializer "recording_studio_user.api" do
+      config.to_prepare { RecordingStudioUser::Api.register! }
+    end
+
     # TnC prepends its extra_fields override. Keep Users last so the
     # soft-detect helper (and live-Terms fallback) is what create-password
     # renders when both gems are loaded.
