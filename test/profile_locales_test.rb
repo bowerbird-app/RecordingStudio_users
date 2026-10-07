@@ -32,7 +32,7 @@ class ProfileLocalesTest < Minitest::Test
   def test_options_include_only_the_host_locales
     I18n.available_locales = %i[en de]
 
-    assert_equal [["English", "en"], ["de", "de"]], RecordingStudioUser::ProfileLocales.options
+    assert_equal [%w[English en], %w[de de]], RecordingStudioUser::ProfileLocales.options
   end
 
   def test_select_options_lead_with_default_language_name

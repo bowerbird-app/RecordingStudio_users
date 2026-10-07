@@ -57,12 +57,13 @@ module RecordingStudioUser
     end
 
     def from_available_locales
-      Array(I18n.available_locales).filter_map do |locale|
+      locales = Array(I18n.available_locales).filter_map do |locale|
         code = extract_locale_code(locale)
         next if code.blank?
 
         [native_name(code), code]
-      end.uniq { |_name, value| value.to_s }
+      end
+      locales.uniq { |_name, value| value.to_s }
     end
 
     def blank_option_label
