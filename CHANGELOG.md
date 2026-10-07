@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.8] - 2026-10-07
+
+Ops API endpoint `user_count` on `:operations` (PR #37).
+
 ### Added
 - Soft Recording Studio API registration for `user_count` on the named
   `:operations` API (`GET users/count`). The handler returns
@@ -14,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the admin Total users widget. Registration runs only when
   `RecordingStudioApi.respond_to?(:register_endpoint)`. This gem does not
   depend on `recording_studio_api` and does not define `config.api :operations`.
+
+### Upgrade notes
+- Bump to `0.12.8`. Hosts that mount the named `:operations` API get
+  `GET users/count` when `recording_studio_api` is present.
 
 ## [0.12.7] - 2026-10-06
 
@@ -594,7 +602,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.7...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.8...HEAD
+[0.12.8]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.8
 [0.12.7]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.7
 [0.12.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.3
 [0.12.2]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.2
