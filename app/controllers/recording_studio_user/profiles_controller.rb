@@ -16,7 +16,7 @@ module RecordingStudioUser
         actor: current_user,
         **profile_write_attributes
       )
-      redirect_to profile_path, notice: I18n.t("recording_studio_user.profile.updated")
+      redirect_to profile_path, notice: updated_notice
     rescue ActiveRecord::RecordInvalid => e
       @profile = e.record
       render :edit, status: :unprocessable_entity
@@ -56,6 +56,20 @@ module RecordingStudioUser
       attrs = profile_params.to_h.symbolize_keys
       extras = attrs.extract!(*RecordingStudioUser.config.additional_profile_attributes)
       attrs.merge(additional_profile_attributes: extras)
+    end
+
+    def updated_notice
+      I18n.with_locale(locale_for_notice) { I18n.t("recording_studio_user.profile.updated") }
+    end
+
+    def locale_for_notice
+      return I18n.locale unless params[:user]&.key?(:locale)
+
+      code = params[:user][:locale].to_s.strip
+      return I18n.default_locale if code.blank?
+
+      available = Array(I18n.available_locales).map(&:to_s)
+      available.include?(code) ? code : I18n.locale
     end
   end
 end

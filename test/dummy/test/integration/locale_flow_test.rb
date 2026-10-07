@@ -84,4 +84,22 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_includes response.body, "Profil enregistré."
   end
+
+  test "saving French on the profile flashes French even after an English cookie" do
+    sign_in @user
+    get recording_studio_users.edit_profile_path, params: { locale: "en" }
+
+    assert_response :success
+    assert_includes response.body, "Default English"
+
+    patch recording_studio_users.profile_path, params: {
+      user: { first_name: "Locale", last_name: "Flow", time_zone: "UTC", locale: "fr" }
+    }
+
+    assert_redirected_to recording_studio_users.profile_path
+    follow_redirect!
+    assert_includes response.body, "Profil enregistré."
+    assert_includes response.body, "Mon profil"
+    refute_includes response.body, "Profile updated."
+  end
 end

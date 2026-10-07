@@ -34,6 +34,9 @@ now ship in English and French.
 - Auth, profile, OTP, OmniAuth, and helper copy resolve through I18n at call
   time. `config.login_title` still wins when the host sets it; the default
   follows the current locale (`Welcome back` / `Heureux de vous revoir`).
+- Saving a Language on Edit Profile translates the “Profile updated.” flash in
+  that locale (`Profil enregistré.` for French). Dummy prefers the submitted
+  or saved profile locale over a leftover `?locale=` cookie.
 
 ### Upgrade notes
 - Bump to `0.13.0`. No migration.

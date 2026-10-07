@@ -11,14 +11,30 @@ module Dummy
     module_function
 
     def from_request(request)
-      query = Rack::Utils.parse_nested_query(request.env["QUERY_STRING"].to_s)
-      requested = query["locale"].presence || request.cookies[COOKIE].presence || profile_locale(request)
-      sanitize(requested)
+      sanitize(
+        query_locale(request) ||
+          posted_locale(request) ||
+          profile_locale(request) ||
+          request.cookies[COOKIE]
+      )
     end
 
     def sanitize(value)
       code = value.to_s.strip.to_sym
       AVAILABLE.include?(code) ? code : I18n.default_locale
+    end
+
+    def query_locale(request)
+      Rack::Utils.parse_nested_query(request.env["QUERY_STRING"].to_s)["locale"].presence
+    end
+
+    def posted_locale(request)
+      return unless %w[POST PUT PATCH].include?(request.request_method)
+
+      value = request.params.dig("user", "locale")
+      return if value.nil?
+
+      value.to_s.strip.presence || I18n.default_locale.to_s
     end
 
     def profile_locale(request)
@@ -40,16 +56,13 @@ module Dummy
       request = ActionDispatch::Request.new(env)
       locale = Dummy::Locale.from_request(request)
       status, headers, body = I18n.with_locale(locale) { @app.call(env) }
-      persist_query_locale(request, headers, locale)
+      persist_locale(headers, locale)
       [status, headers, body]
     end
 
     private
 
-    def persist_query_locale(request, headers, locale)
-      query = Rack::Utils.parse_nested_query(request.env["QUERY_STRING"].to_s)
-      return if query["locale"].blank?
-
+    def persist_locale(headers, locale)
       Rack::Utils.set_cookie_header!(
         headers,
         Dummy::Locale::COOKIE,
