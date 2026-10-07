@@ -2,8 +2,9 @@
 
 module Dummy
   # Dummy-only locale switch so review shots can use ?locale=fr and a saved
-  # profile locale. Hosts that install Recording Studio Internationalization
-  # should use that gem instead of copying this.
+  # profile locale. French copy lives in dummy config/locales/fr.yml. Hosts
+  # that install Recording Studio Internationalization should use that gem
+  # instead of copying this.
   module Locale
     AVAILABLE = %i[en fr].freeze
     COOKIE = "dummy_locale"

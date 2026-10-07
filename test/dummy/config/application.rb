@@ -44,6 +44,8 @@ module Dummy
     # Don't generate system test files.
     config.generators.system_tests = nil
 
+    # Host-owned locale list. Users' Language select follows this (or
+    # Recording Studio Internationalization when that gem is loaded).
     config.i18n.available_locales = %i[en fr]
     config.i18n.default_locale = :en
   end

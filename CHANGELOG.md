@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-10-07
+
+The gem ships English default copy only. Other languages belong to the host.
+
+### Changed
+- Engine `config/locales/` contains only `en.yml` under `recording_studio_user.*`.
+  French copy moves to the dummy app (`test/dummy/config/locales/fr.yml`) so
+  dummy can still switch locale.
+- Edit Profile Language select lists `I18n.available_locales` (or Recording
+  Studio Internationalization when that gem is loaded). It no longer always
+  offers English, Français, and 日本語.
+
+### Upgrade notes
+- Bump to `0.14.0`. No migration.
+- If you relied on bundled French, copy the `recording_studio_user.*` keys into
+  `config/locales/fr.yml` (dummy's file is a complete starting point) and list
+  `:fr` in `config.i18n.available_locales`. Without a host file, French screens
+  fall back to the English defaults.
+- Language select follows the host locale list. Set
+  `config.i18n.available_locales` to the languages you offer. Install
+  Recording Studio Internationalization if you want that gem to own the list
+  and names.
+- Override any `recording_studio_user.*` key in the host locale files; host
+  translations win. Leave `config.login_title` unset to follow I18n.
+
 ## [0.13.0] - 2026-10-07
 
 A signed-in profile can store a preferred language so Recording Studio

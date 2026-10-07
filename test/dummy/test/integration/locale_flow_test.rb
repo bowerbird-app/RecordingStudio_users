@@ -16,6 +16,29 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "dummy locale file supplies french recording_studio_user keys" do
+    engine_fr = RecordingStudioUser::Engine.root.join("config/locales/fr.yml")
+    dummy_fr = Rails.root.join("config/locales/fr.yml")
+
+    refute File.exist?(engine_fr)
+    assert File.exist?(dummy_fr)
+    I18n.with_locale(:fr) do
+      assert_equal "Utilisateur", I18n.t("recording_studio_user.profile.unnamed_user")
+      assert_equal "Heureux de vous revoir", I18n.t("recording_studio_user.auth.login_title")
+    end
+  end
+
+  test "host login_title override stays put in french" do
+    RecordingStudioUser.config.login_title = "Sign in to Acme"
+
+    get new_user_session_path, params: { locale: "fr" }
+
+    assert_response :success
+    assert_select "h2", text: "Sign in to Acme"
+  ensure
+    RecordingStudioUser.config.login_title = nil
+  end
+
   test "sign in and profile render in French from the query string" do
     get new_user_session_path, params: { locale: "fr" }
 
