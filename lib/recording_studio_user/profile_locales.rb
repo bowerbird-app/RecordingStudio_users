@@ -7,9 +7,9 @@ module RecordingStudioUser
   module ProfileLocales
     PROFILE_KEY = "locale"
     STARTING_SET = [
-      ["English", "en"],
-      ["Français", "fr"],
-      ["日本語", "ja"]
+      %w[English en],
+      %w[Français fr],
+      %w[日本語 ja]
     ].freeze
     SITE_DEFAULT_LABEL = "Use the site default"
 

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require "minitest/mock"
 
 class ProfileLocalesTest < Minitest::Test
   def test_locale_is_allowlisted_by_default
@@ -11,7 +10,7 @@ class ProfileLocalesTest < Minitest::Test
 
   def test_starting_set_matches_internationalization_dummy_languages
     assert_equal(
-      [["English", "en"], ["Français", "fr"], ["日本語", "ja"]],
+      [%w[English en], %w[Français fr], %w[日本語 ja]],
       RecordingStudioUser::ProfileLocales.options
     )
   end
@@ -20,7 +19,7 @@ class ProfileLocalesTest < Minitest::Test
     options = RecordingStudioUser::ProfileLocales.select_options
 
     assert_equal ["Use the site default", ""], options.first
-    assert_includes options, ["Français", "fr"]
+    assert_includes options, %w[Français fr]
   end
 
   def test_label_for_known_and_blank_codes
@@ -33,14 +32,13 @@ class ProfileLocalesTest < Minitest::Test
   def test_unknown_saved_code_stays_on_the_select
     options = RecordingStudioUser::ProfileLocales.options("pt-BR")
 
-    assert_includes options, ["pt-BR", "pt-BR"]
+    assert_includes options, %w[pt-BR pt-BR]
     assert_equal "pt-BR", RecordingStudioUser::ProfileLocales.label_for("pt-BR")
   end
 
-  def test_internationalization_locales_win_when_that_gem_is_loaded
-    RecordingStudioUser::ProfileLocales.stub :from_internationalization, [["Deutsch", "de"]] do
-      assert_equal [["Deutsch", "de"]], RecordingStudioUser::ProfileLocales.options
-      assert_equal "Deutsch", RecordingStudioUser::ProfileLocales.label_for("de")
-    end
+  def test_without_internationalization_falls_back_to_the_starting_set
+    refute defined?(RecordingStudioInternationalization)
+    assert_nil RecordingStudioUser::ProfileLocales.from_internationalization
+    assert_equal RecordingStudioUser::ProfileLocales::STARTING_SET, RecordingStudioUser::ProfileLocales.options
   end
 end

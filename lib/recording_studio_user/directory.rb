@@ -41,7 +41,7 @@ module RecordingStudioUser
     end
 
     def record_profile!(user, actor: nil, **profile_attrs)
-      extras = merged_additional_profile_attributes(user, profile_attrs)
+      extras = ProfileAttributes.merge(user, profile_attrs)
       assignment = profile_assignment(user, profile_attrs.merge(additional_profile_attributes: extras))
       recording = nil
 
@@ -53,24 +53,8 @@ module RecordingStudioUser
       recording
     end
 
-    def merged_additional_profile_attributes(user, profile_attrs)
-      existing = (profile_for(user)&.additional_profile_attributes || {}).stringify_keys
-      submitted = if profile_attrs.key?(:additional_profile_attributes)
-                    profile_attrs[:additional_profile_attributes]
-                  else
-                    {}
-                  end
-      filtered_additional_profile_attributes(existing.merge((submitted.presence || {}).stringify_keys))
-    end
-
     def filtered_additional_profile_attributes(value)
-      extras = (value.presence || {}).stringify_keys
-      extras = extras.except(*Configuration::PROTECTED_PROFILE_ATTRIBUTES)
-      extras = extras.slice(*RecordingStudioUser.config.additional_profile_attributes.map(&:to_s))
-      key = ProfileLocales::PROFILE_KEY
-      extras[key] = extras[key].to_s.strip if extras.key?(key)
-      extras.delete(key) if extras[key].blank?
-      extras
+      ProfileAttributes.filter(value)
     end
 
     def create_devise_user!(email, password, password_confirmation, attributes)
