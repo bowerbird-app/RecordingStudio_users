@@ -75,8 +75,9 @@
             name: "user[locale]",
             id: "user_locale",
             label: "Language",
-            value: @profile.locale,
+            value: @profile.locale.to_s,
             options: profile_language_options(@profile),
+            placeholder: false,
             searchable: false,
             error: @profile.errors[:locale].first
           ) %>

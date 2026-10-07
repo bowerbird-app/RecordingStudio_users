@@ -110,6 +110,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "profile_locale_allowlisted?"
     assert_includes edit, 'label: "Language"'
     assert_includes edit, 'name: "user[locale]"'
+    assert_includes edit, "placeholder: false"
     assert_includes show, "profile_language_name(@profile)"
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     assert_includes edit, %(class="mb-8")
