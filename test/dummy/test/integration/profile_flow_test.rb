@@ -188,7 +188,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Change your name, time zone, language, or photo."
     assert_includes response.body, "user_locale"
     assert_includes response.body, "Language"
-    assert_includes response.body, "Use the site default"
+    assert_includes response.body, "Default English"
     assert_includes response.body, "English"
     assert_includes response.body, "Français"
     assert_includes response.body, "日本語"

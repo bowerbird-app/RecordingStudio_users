@@ -36,7 +36,7 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Modifier le profil"
     assert_includes response.body, "Langue"
-    assert_includes response.body, "Utiliser la langue du site"
+    assert_includes response.body, "Par défaut (English)"
     assert_select "button[type='submit']", text: "Enregistrer le profil"
   end
 
@@ -55,8 +55,9 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Langue"
-    assert_includes response.body, "Utiliser la langue du site"
+    assert_includes response.body, "Par défaut (English)"
     refute_includes response.body, "Use the site default"
+    refute_includes response.body, "Default English"
   end
 
   test "a French query cookie keeps the verify screen after OTP post" do

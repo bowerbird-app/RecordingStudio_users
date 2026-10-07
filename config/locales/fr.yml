@@ -13,7 +13,7 @@ fr:
       time_zone: Fuseau horaire
       update: Enregistrer le profil
       cancel: Annuler
-      use_site_default: Utiliser la langue du site
+      use_site_default: "Par défaut (%{language})"
       updated: Profil enregistré.
       subtitle_with_language: Changez votre nom, fuseau horaire, langue ou photo.
       subtitle: Changez votre nom, fuseau horaire ou photo.

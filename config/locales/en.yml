@@ -13,7 +13,7 @@ en:
       time_zone: Time zone
       update: Update profile
       cancel: Cancel
-      use_site_default: Use the site default
+      use_site_default: "Default %{language}"
       updated: Profile updated.
       subtitle_with_language: Change your name, time zone, language, or photo.
       subtitle: Change your name, time zone, or photo.

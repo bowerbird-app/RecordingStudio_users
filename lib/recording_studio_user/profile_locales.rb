@@ -27,13 +27,21 @@ module RecordingStudioUser
     end
 
     def select_options(current = nil)
-      [[I18n.t("recording_studio_user.profile.use_site_default"), ""]] + options(current)
+      [[blank_option_label, ""]] + options(current)
     end
 
     def label_for(code)
       return if code.blank?
 
       options(code).find { |_name, value| value.to_s == code.to_s }&.first
+    end
+
+    def site_default_language_name
+      label_for(site_default_code).presence || site_default_code
+    end
+
+    def site_default_code
+      extract_locale_code(internationalization_default_locale) || extract_locale_code(I18n.default_locale)
     end
 
     def from_internationalization
@@ -43,6 +51,28 @@ module RecordingStudioUser
       locales = ::RecordingStudioInternationalization.configuration.available_locales
       mapped = Array(locales).map { |locale| [locale.name, locale.code.to_s] }
       mapped.presence
+    rescue StandardError
+      nil
+    end
+
+    def blank_option_label
+      I18n.t("recording_studio_user.profile.use_site_default", language: site_default_language_name)
+    end
+
+    def extract_locale_code(value)
+      return if value.blank?
+
+      (value.respond_to?(:code) ? value.code : value).to_s
+    end
+
+    def internationalization_default_locale
+      return unless defined?(::RecordingStudioInternationalization)
+      return unless ::RecordingStudioInternationalization.respond_to?(:configuration)
+
+      config = ::RecordingStudioInternationalization.configuration
+      return unless config.respond_to?(:default_locale)
+
+      config.default_locale
     rescue StandardError
       nil
     end

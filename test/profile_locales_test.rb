@@ -15,11 +15,43 @@ class ProfileLocalesTest < Minitest::Test
     )
   end
 
-  def test_select_options_lead_with_site_default
-    options = RecordingStudioUser::ProfileLocales.select_options
+  def test_select_options_lead_with_default_language_name
+    I18n.with_locale(:en) do
+      options = RecordingStudioUser::ProfileLocales.select_options
 
-    assert_equal ["Use the site default", ""], options.first
-    assert_includes options, %w[Français fr]
+      assert_equal ["Default English", ""], options.first
+      assert_includes options, %w[Français fr]
+    end
+    I18n.with_locale(:fr) do
+      assert_equal ["Par défaut (English)", ""], RecordingStudioUser::ProfileLocales.select_options.first
+    end
+  end
+
+  def test_select_options_follow_i18n_default_locale
+    previous = I18n.default_locale
+    I18n.default_locale = :fr
+
+    I18n.with_locale(:en) do
+      assert_equal ["Default Français", ""], RecordingStudioUser::ProfileLocales.select_options.first
+    end
+  ensure
+    I18n.default_locale = previous
+  end
+
+  def test_select_options_follow_internationalization_default_locale
+    intl = Module.new do
+      def self.configuration
+        Struct.new(:default_locale, :available_locales).new(:ja, nil)
+      end
+    end
+    Object.const_set(:RecordingStudioInternationalization, intl)
+
+    I18n.with_locale(:en) do
+      assert_equal ["Default 日本語", ""], RecordingStudioUser::ProfileLocales.select_options.first
+    end
+  ensure
+    Object.send(:remove_const, :RecordingStudioInternationalization) if
+      defined?(RecordingStudioInternationalization)
   end
 
   def test_label_for_known_and_blank_codes

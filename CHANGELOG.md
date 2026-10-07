@@ -16,9 +16,10 @@ now ship in English and French.
 ### Added
 - `:locale` is on `additional_profile_attributes` by default. The value lives
   in the existing Profile jsonb extras under `"locale"`. No new column.
-- Edit Profile shows a Language select (English, Français, 日本語, plus blank
-  for the site default). When Recording Studio Internationalization is loaded,
-  the select uses that gem's available locales instead.
+- Edit Profile shows a Language select (English, Français, 日本語, plus
+  `Default English` when the site default is English). When Recording Studio
+  Internationalization is loaded, the select uses that gem's available locales
+  and default instead.
 - My Profile shows the chosen language when one is saved.
 - Blank language unsets the key so Internationalization can fall back.
 - Gem-owned locale files `config/locales/en.yml` and `config/locales/fr.yml`
