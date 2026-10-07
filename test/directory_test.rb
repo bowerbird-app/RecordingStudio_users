@@ -9,12 +9,38 @@ class DirectoryTest < Minitest::Test
     assert_equal "ada@example.com", RecordingStudioUser.display_name_for(user)
   end
 
+  def test_default_allowlist_keeps_locale_and_drops_protected_keys
+    extras = RecordingStudioUser::Directory.filtered_additional_profile_attributes(
+      { locale: "en", email: "secret@example.com" }
+    )
+
+    assert_equal({ "locale" => "en" }, extras)
+  end
+
+  def test_blank_locale_is_omitted_instead_of_stored
+    original = RecordingStudioUser.config.additional_profile_attributes
+    RecordingStudioUser.config.additional_profile_attributes = %i[locale preferred_name]
+
+    extras = RecordingStudioUser::Directory.filtered_additional_profile_attributes(
+      { locale: "  ", preferred_name: "Ada" }
+    )
+
+    assert_equal({ "preferred_name" => "Ada" }, extras)
+  ensure
+    RecordingStudioUser.config.additional_profile_attributes = original
+  end
+
   def test_empty_allowlist_drops_extra_profile_keys
+    original = RecordingStudioUser.config.additional_profile_attributes
+    RecordingStudioUser.config.additional_profile_attributes = []
+
     extras = RecordingStudioUser::Directory.filtered_additional_profile_attributes(
       { locale: "en", email: "secret@example.com" }
     )
 
     assert_empty extras
+  ensure
+    RecordingStudioUser.config.additional_profile_attributes = original
   end
 
   def test_allowlist_keeps_configured_keys_and_drops_protected_ones

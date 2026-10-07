@@ -13,7 +13,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal "profile", @configuration.profile_route_path
     assert_equal "admin", @configuration.admin_route_path
     assert_equal "application", @configuration.layout
-    assert_empty @configuration.additional_profile_attributes
+    assert_equal %i[locale], @configuration.additional_profile_attributes
     refute @configuration.require_password_confirmation
     refute_predicate @configuration, :require_password_confirmation?
     assert_equal "Welcome back", @configuration.login_title

@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.12.8", RecordingStudioUser::VERSION
+    assert_equal "0.13.0", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -42,7 +42,9 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes sign_in_methods, "inline-flex items-center"
     assert_includes profile_show, "sign_in_methods_profile_path"
     refute_includes profile_edit, "sign_in_methods_profile_path"
+    assert_includes profile_edit, "Change your name, time zone, language, or photo."
     assert_includes profile_edit, "Change your name, time zone, or photo."
+    assert_includes profile_edit, "profile_locale_allowlisted?"
   end
 
   def test_profile_pages_use_a_page_title_and_show_identity_card
@@ -104,7 +106,11 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "render_attachment_file_button(@profile_recording, return_to: edit_profile_path)"
     assert_includes edit, "size: :\"2xl\""
     refute_includes edit, "FlatPack::Card::Component"
-    assert_includes edit, "Change your name, time zone, or photo."
+    assert_includes edit, "Change your name, time zone, language, or photo."
+    assert_includes edit, "profile_locale_allowlisted?"
+    assert_includes edit, 'label: "Language"'
+    assert_includes edit, 'name: "user[locale]"'
+    assert_includes show, "profile_language_name(@profile)"
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     assert_includes edit, %(class="mb-8")
     refute_includes edit, %(class="mb-16")

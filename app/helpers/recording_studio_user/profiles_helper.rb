@@ -6,6 +6,18 @@ module RecordingStudioUser
       RecordingStudioUser.display_name_for(user)
     end
 
+    def profile_locale_allowlisted?
+      ProfileLocales.allowlisted?
+    end
+
+    def profile_language_options(profile)
+      ProfileLocales.select_options(profile&.locale)
+    end
+
+    def profile_language_name(profile)
+      ProfileLocales.label_for(profile&.locale)
+    end
+
     def profile_image_recording(profile_recording)
       return if profile_recording.blank?
 

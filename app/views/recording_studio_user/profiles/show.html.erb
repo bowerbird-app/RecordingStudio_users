@@ -33,6 +33,9 @@
       <p class="font-semibold"><%= profile_display_name(@user) %></p>
       <p class="text-[var(--surface-muted-content-color)]"><%= @user.email %></p>
       <p class="text-[var(--surface-muted-content-color)]"><%= @profile.time_zone %></p>
+      <% if (language = profile_language_name(@profile)).present? %>
+        <p class="text-[var(--surface-muted-content-color)]"><%= language %></p>
+      <% end %>
     </div>
   <% end %>
 <% end %>

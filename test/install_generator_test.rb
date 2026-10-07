@@ -21,6 +21,9 @@ class InstallGeneratorTest < Minitest::Test
 
     assert_includes initializer, "Route configuration must load before Rails draws routes."
     assert_includes initializer, "additional_profile_attributes"
+    assert_includes initializer, ":locale is allowlisted by default"
+    assert_includes initializer, "config.additional_profile_attributes |= [:nickname]"
+    refute_includes initializer, "config.additional_profile_attributes = []"
     assert_includes initializer, "require_password_confirmation"
     assert_includes initializer, "config.login_title"
     assert_includes initializer, "primary_login_type"

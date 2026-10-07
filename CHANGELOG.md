@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-07
+
+A signed-in profile can store a preferred language so Recording Studio
+Internationalization can read and write it. The cookie alone is not enough
+when the person is signed in.
+
+### Added
+- `:locale` is on `additional_profile_attributes` by default. The value lives
+  in the existing Profile jsonb extras under `"locale"`. No new column.
+- Edit Profile shows a Language select (English, Français, 日本語, plus blank
+  for the site default). When Recording Studio Internationalization is loaded,
+  the select uses that gem's available locales instead.
+- My Profile shows the chosen language when one is saved.
+- Blank language unsets the key so Internationalization can fall back.
+
+### Changed
+- `record_profile!` keeps existing extras when `additional_profile_attributes`
+  is omitted, and merges submitted extras on top of the current hash. Blank
+  `"locale"` is dropped rather than stored as an empty string.
+- The install generator no longer assigns `additional_profile_attributes = []`,
+  which would have wiped the default `:locale` allowlist.
+
+### Upgrade notes
+- Bump to `0.13.0`. No migration.
+- New installs get `:locale` on the allowlist. If your initializer sets
+  `config.additional_profile_attributes = []`, remove that assignment or
+  `config.additional_profile_attributes |= [:locale]` so Internationalization
+  can persist a signed-in preference.
+- Adding other extras: `config.additional_profile_attributes |= [:nickname]`
+  so you do not drop locale.
+- Language is a free string in jsonb. Internationalization still checks the
+  host's available locales when it writes from its language selector.
+
 ## [0.12.8] - 2026-10-07
 
 Ops API endpoint `user_count` on `:operations` (PR #37).

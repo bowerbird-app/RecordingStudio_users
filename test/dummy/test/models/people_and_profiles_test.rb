@@ -55,6 +55,7 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
     assert_equal "Hopper", profile.last_name
     assert_equal "UTC", profile.time_zone
     assert_equal({ "locale" => "en" }, profile.additional_profile_attributes)
+    assert_equal "en", profile.locale
     assert_equal RecordingStudioUser.people_root, recording.parent_recording
     assert RecordingStudioUser.people_root.shared_root?
     assert recording.shared_root_tree?
@@ -133,6 +134,44 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
       recording: RecordingStudioUser.profile_recording_for(user),
       role: :admin
     )
+  end
+
+  test "record_profile! persists locale in extras and keeps it on a name-only revise" do
+    user = RecordingStudioUser.create_user!(
+      email: "locale-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Locale",
+      last_name: "Saver",
+      time_zone: "UTC",
+      additional_profile_attributes: { "locale" => "ja" }
+    )
+
+    profile = RecordingStudioUser.profile_for(user)
+    assert_equal "ja", profile.locale
+    assert_equal({ "locale" => "ja" }, profile.additional_profile_attributes)
+
+    RecordingStudioUser.record_profile!(
+      user,
+      first_name: "Renamed",
+      last_name: "Saver",
+      time_zone: "UTC"
+    )
+
+    updated = RecordingStudioUser.profile_for(user)
+    assert_equal "Renamed", updated.first_name
+    assert_equal "ja", updated.locale
+
+    RecordingStudioUser.record_profile!(
+      user,
+      first_name: "Renamed",
+      last_name: "Saver",
+      time_zone: "UTC",
+      additional_profile_attributes: { "locale" => "" }
+    )
+
+    cleared = RecordingStudioUser.profile_for(user)
+    assert_nil cleared.locale
+    assert_equal({}, cleared.additional_profile_attributes)
   end
 
   test "a profile can be recorded without a surname or time zone" do

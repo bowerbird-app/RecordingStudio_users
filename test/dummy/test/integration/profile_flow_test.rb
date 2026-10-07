@@ -185,7 +185,13 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Add a photo"
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Choose File"
-    assert_includes response.body, "Change your name, time zone, or photo."
+    assert_includes response.body, "Change your name, time zone, language, or photo."
+    assert_includes response.body, "user_locale"
+    assert_includes response.body, "Language"
+    assert_includes response.body, "Use the site default"
+    assert_includes response.body, "English"
+    assert_includes response.body, "Français"
+    assert_includes response.body, "日本語"
     refute_includes response.body, "Tidy up"
     refute_includes response.body, "The photo lives here too."
     assert_equal 1, response.body.scan("md:grid-cols-2").size
@@ -345,6 +351,61 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Save"
     assert_includes response.body, "Name"
     assert_includes response.body, image.recordable.original_filename
+  end
+
+  test "edit profile persists preferred language in extras and blank unsets it" do
+    sign_in @user
+
+    get recording_studio_users.edit_profile_path
+    assert_response :success
+    assert_includes response.body, 'id="user_locale"'
+
+    patch recording_studio_users.profile_path, params: {
+      user: {
+        first_name: "Profile",
+        last_name: "User",
+        time_zone: "UTC",
+        locale: "fr"
+      }
+    }
+
+    assert_redirected_to recording_studio_users.profile_path
+    profile = RecordingStudioUser.profile_for(@user)
+    assert_equal "fr", profile.locale
+    assert_equal({ "locale" => "fr" }, profile.additional_profile_attributes)
+
+    follow_redirect!
+    assert_response :success
+    assert_includes Nokogiri::HTML(response.body).text, "Français"
+
+    patch recording_studio_users.profile_path, params: {
+      user: {
+        first_name: "Profile",
+        last_name: "User",
+        time_zone: "UTC",
+        locale: ""
+      }
+    }
+
+    assert_redirected_to recording_studio_users.profile_path
+    profile = RecordingStudioUser.profile_for(@user)
+    assert_nil profile.locale
+    assert_equal({}, profile.additional_profile_attributes)
+  end
+
+  test "language field is hidden when locale is not allowlisted" do
+    original = RecordingStudioUser.config.additional_profile_attributes
+    RecordingStudioUser.config.additional_profile_attributes = []
+    sign_in @user
+
+    get recording_studio_users.edit_profile_path
+
+    assert_response :success
+    refute_includes response.body, "user_locale"
+    refute_includes response.body, "Change your name, time zone, language, or photo."
+    assert_includes response.body, "Change your name, time zone, or photo."
+  ensure
+    RecordingStudioUser.config.additional_profile_attributes = original
   end
 
   test "a current_user-only ACL is not used for profile authorization" do

@@ -28,7 +28,7 @@ module RecordingStudioUser
       profile_route_path: "profile",
       admin_route_path: "admin",
       layout: "application",
-      additional_profile_attributes: [],
+      additional_profile_attributes: [:locale],
       require_password_confirmation: false,
       login_title: DEFAULT_LOGIN_TITLE,
       primary_login_type: :email,

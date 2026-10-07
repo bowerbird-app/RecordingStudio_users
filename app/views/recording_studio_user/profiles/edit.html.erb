@@ -10,7 +10,7 @@
 
 <%= render FlatPack::PageTitle::Component.new(
   title: "Edit Profile",
-  subtitle: "Change your name, time zone, or photo.",
+  subtitle: (profile_locale_allowlisted? ? "Change your name, time zone, language, or photo." : "Change your name, time zone, or photo."),
   variant: :h1
 ) %>
 
@@ -70,7 +70,19 @@
           error: @profile.errors[:time_zone].first
         ) %>
 
-        <% RecordingStudioUser.config.additional_profile_attributes.each do |attribute| %>
+        <% if profile_locale_allowlisted? %>
+          <%= render FlatPack::Select::Component.new(
+            name: "user[locale]",
+            id: "user_locale",
+            label: "Language",
+            value: @profile.locale,
+            options: profile_language_options(@profile),
+            searchable: false,
+            error: @profile.errors[:locale].first
+          ) %>
+        <% end %>
+
+        <% (RecordingStudioUser.config.additional_profile_attributes - [:locale]).each do |attribute| %>
           <%= render FlatPack::TextInput::Component.new(
             name: "user[#{attribute}]",
             id: "user_#{attribute}",

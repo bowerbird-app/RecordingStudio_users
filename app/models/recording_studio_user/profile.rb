@@ -35,5 +35,9 @@ module RecordingStudioUser
     def additional_profile_attributes
       super || {}
     end
+
+    def locale
+      additional_profile_attributes[ProfileLocales::PROFILE_KEY].presence
+    end
   end
 end

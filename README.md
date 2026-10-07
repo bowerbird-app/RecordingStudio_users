@@ -89,7 +89,8 @@ RecordingStudioUser.configure do |config|
   config.profile_route_path = "me"
   config.admin_route_path = "user-reporting"
   config.layout = "application"
-  config.additional_profile_attributes = []
+  config.additional_profile_attributes = [:locale]
+  # config.additional_profile_attributes |= [:nickname]
   config.require_password_confirmation = false
   # config.login_title = "Welcome back"
   # config.primary_login_type = :email # or :otp when OTP is enabled
@@ -236,7 +237,15 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. `replace_profile_image!` swaps the file on that same attachment through `replace_attachment_file`. Edit Profile hosts a `profile-photo` Turbo frame: Flatpack Avatar via `attachment_preview_url` (circle, 2xl) plus Attachable `render_attachment_file_button` so Add/Change stays on that page. My Profile shows the Avatar only. Neither screen opens Attachable's Name / Description record edit.
 
-`additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. Identity, credential, authorization, membership, root, recording, and recordable fields stay protected.
+`additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. `:locale` is on that list by default so a signed-in preferred language can persist for Recording Studio Internationalization (`additional_profile_attributes["locale"]`). Identity, credential, authorization, membership, root, recording, and recordable fields stay protected. Edit Profile shows a Language select when `:locale` is allowlisted. Blank unsets the key so the host can fall back. Add more keys with `|=` so you do not drop locale:
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.additional_profile_attributes |= [:nickname]
+end
+```
+
+Hosts that still assign `config.additional_profile_attributes = []` hide Language and Internationalization will only use the cookie. There is no `locale` column — extras stay in jsonb.
 
 `require_password_confirmation` defaults to `false`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false` (the default). Set it to `true` to show confirmation. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail when confirmation is off.
 
