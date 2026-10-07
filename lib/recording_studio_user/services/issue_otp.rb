@@ -6,7 +6,10 @@ module RecordingStudioUser
       Result = Struct.new(:challenge, :issued, keyword_init: true) { def challenge_id = challenge&.id }
 
       NOTIFICATION_TYPES = { "registration" => :registration_otp, "login" => :login_otp }.freeze
-      TITLES = { "registration" => "Verify your email", "login" => "Your sign-in code" }.freeze
+      TITLE_KEYS = {
+        "registration" => "recording_studio_user.otp.verify_your_email",
+        "login" => "recording_studio_user.otp.your_sign_in_code"
+      }.freeze
 
       def self.call(...)
         new(...).call
@@ -85,7 +88,7 @@ module RecordingStudioUser
         {
           notification_type: NOTIFICATION_TYPES.fetch(@purpose),
           recipient: @user,
-          title: TITLES.fetch(@purpose),
+          title: I18n.t(TITLE_KEYS.fetch(@purpose)),
           body: nil,
           url: notification_url(challenge),
           metadata: { "otp_challenge_id" => challenge.id },

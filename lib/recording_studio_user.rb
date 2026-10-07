@@ -22,6 +22,9 @@ require "recording_studio_user/services/complete_registration"
 require "recording_studio_user/services/complete_email_proof"
 require "recording_studio_user/omniauth"
 
+locale_files = Dir[File.expand_path("../config/locales/**/*.{yml,rb}", __dir__)]
+I18n.load_path |= locale_files
+
 module RecordingStudioUser
   RateLimited = Services::OtpRateLimiter::RateLimited
   OtpProof = Struct.new(:purpose, keyword_init: true)
@@ -148,7 +151,7 @@ module RecordingStudioUser
     def email_or_fallback(user)
       return user.email if user.respond_to?(:email) && user.email.present?
 
-      I18n.t("recording_studio_user.profile.unnamed_user", default: "User")
+      I18n.t("recording_studio_user.profile.unnamed_user")
     end
   end
 end

@@ -41,7 +41,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_includes shell, "auth_site_logo"
     assert_equal 1, response.body.scan("min-h-dvh").length
     assert_includes response.body, "max-w-sm"
-    assert_includes response.body, "Don't have an account?"
+    assert_includes Nokogiri::HTML(response.body).text, "Don't have an account?"
     assert_includes response.body, "text-center"
     assert_includes response.body, 'href="/users/sign_up"'
     refute_includes response.body, 'href="/recording_studio_users/auth/sign_up"'
@@ -217,7 +217,6 @@ class LoginPageTest < ActionDispatch::IntegrationTest
   end
 
   test "login title follows RecordingStudioUser.config.login_title" do
-    original = RecordingStudioUser.config.login_title
     RecordingStudioUser.config.login_title = "Sign in to Acme"
 
     get new_user_session_path
@@ -225,7 +224,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h2", text: "Sign in to Acme"
   ensure
-    RecordingStudioUser.config.login_title = original
+    RecordingStudioUser.config.login_title = nil
   end
 
   test "dummy OmniAuth follows credentials and never enables OmniAuth test mode in the app" do

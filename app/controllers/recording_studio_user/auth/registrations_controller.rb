@@ -22,7 +22,7 @@ module RecordingStudioUser
 
       def continue
         email = submitted_email_from_params
-        return render_continue_failure("Enter your email to continue.") if email.blank?
+        return render_continue_failure(I18n.t("recording_studio_user.auth.enter_email")) if email.blank?
 
         store_pending_auth_email!(email)
         continue_with_primary_registration!(email)
@@ -30,7 +30,7 @@ module RecordingStudioUser
 
       def password
         email = pending_auth_email
-        return redirect_to host_new_user_registration_path, alert: "Start with your email." if email.blank?
+        return redirect_to host_new_user_registration_path, alert: start_with_email_alert if email.blank?
 
         build_password_resource(email: email)
       end
@@ -64,9 +64,9 @@ module RecordingStudioUser
 
       def resend
         issue_registration_resend!
-        redirect_to otp_registration_verify_path, notice: "Fresh code on the way."
+        redirect_to otp_registration_verify_path, notice: I18n.t("recording_studio_user.auth.fresh_code")
       rescue Services::OtpRateLimiter::RateLimited
-        redirect_to otp_registration_verify_path, alert: "Please wait before requesting another code."
+        redirect_to otp_registration_verify_path, alert: I18n.t("recording_studio_user.auth.wait_for_code")
       end
 
       private
@@ -118,7 +118,7 @@ module RecordingStudioUser
       end
 
       def render_password_taken
-        flash.now[:alert] = EMAIL_TAKEN_MESSAGE
+        flash.now[:alert] = email_taken_message
         render :password, status: :unprocessable_entity
       end
 

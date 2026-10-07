@@ -1,18 +1,24 @@
 <%= render layout: "recording_studio_user/auth/shell", locals: {
-  title: "Sign up with email",
-  subtitle: "We will email you a six-digit code."
+  title: t("recording_studio_user.registrations.sign_up_with_email"),
+  subtitle: t("recording_studio_user.registrations.sign_up_with_email_subtitle")
 } do %>
   <%= form_with scope: :user, url: otp_registration_otp_path, method: :post do %>
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",
         id: "user_email",
-        placeholder: "you@company.com",
+        placeholder: t("recording_studio_user.auth.email_placeholder"),
         required: true,
         autocomplete: "email",
-        aria: { label: "Email" }
+        aria: { label: t("recording_studio_user.auth.email") }
       ) %>
-      <%= render FlatPack::Button::Component.new(text: "Send code", style: :primary, size: :md, type: "submit", class: "w-full") %>
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.registrations.send_code"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
     </div>
   <% end %>
 <% end %>

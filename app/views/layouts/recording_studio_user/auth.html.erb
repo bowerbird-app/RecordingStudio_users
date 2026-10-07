@@ -2,7 +2,7 @@
 <%# Flatpack named-theme tokens resolve on html/:root, so the theme lives here. %>
 <html data-theme="<%= content_for(:body_theme).presence || "rounded" %>">
   <head>
-    <title><%= content_for(:title).presence || "Sign in" %></title>
+    <title><%= content_for(:title).presence || t("recording_studio_user.auth.sign_in") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>

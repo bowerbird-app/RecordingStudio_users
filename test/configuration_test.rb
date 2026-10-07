@@ -41,7 +41,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal "Sign in to Acme", @configuration.login_title
 
     @configuration.login_title = "  "
-    assert_equal "Welcome back", @configuration.login_title
+    I18n.with_locale(:en) { assert_equal "Welcome back", @configuration.login_title }
   end
 
   def test_omniauth_flags_and_providers

@@ -13,15 +13,6 @@ module RecordingStudioUser
 
       layout "recording_studio_user/auth"
 
-      VERIFY_FAILURE_MESSAGES = {
-        invalid_code: "That code did not work. Try again.",
-        expired: "That code expired. Request a new one.",
-        consumed: "That code was already used.",
-        revoked: "That code is no longer valid.",
-        too_many_attempts: "Too many tries. Request a new code.",
-        session_mismatch: "Start over with a new code."
-      }.freeze
-
       private
 
       def resource_class
@@ -29,7 +20,10 @@ module RecordingStudioUser
       end
 
       def verify_failure_message(reason)
-        VERIFY_FAILURE_MESSAGES.fetch(reason, "That code did not work.")
+        I18n.t(
+          "recording_studio_user.auth.verify.#{reason}",
+          default: I18n.t("recording_studio_user.auth.that_code_did_not_work")
+        )
       end
 
       def require_otp_enabled!
@@ -81,7 +75,11 @@ module RecordingStudioUser
       end
 
       def generic_login_notice
-        "If an eligible account exists, we sent a code."
+        I18n.t("recording_studio_user.auth.eligible_code_sent")
+      end
+
+      def start_with_email_alert
+        I18n.t("recording_studio_user.auth.start_with_email")
       end
 
       def host_new_user_session_path

@@ -1,4 +1,4 @@
-<%= render layout: "recording_studio_user/auth/shell", locals: { title: "Enter your code" } do %>
+<%= render layout: "recording_studio_user/auth/shell", locals: { title: t("recording_studio_user.sessions.enter_code") } do %>
   <% if flash[:notice].present? %>
     <%= render FlatPack::Alert::Component.new(title: flash[:notice], style: :info) %>
   <% end %>
@@ -7,11 +7,30 @@
   <% end %>
   <%= form_with url: otp_session_verify_path, method: :post do %>
     <div class="space-y-4">
-      <%= render FlatPack::TextInput::Component.new(name: "code", label: "Sign-in code", required: true, inputmode: "numeric", autocomplete: "one-time-code", maxlength: 6) %>
-      <%= render FlatPack::Button::Component.new(text: "Sign in", style: :primary, size: :md, type: "submit", class: "w-full") %>
+      <%= render FlatPack::TextInput::Component.new(
+        name: "code",
+        label: t("recording_studio_user.sessions.sign_in_code"),
+        required: true,
+        inputmode: "numeric",
+        autocomplete: "one-time-code",
+        maxlength: 6
+      ) %>
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.auth.sign_in"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
     </div>
   <% end %>
   <%= form_with url: otp_session_resend_path, method: :post do %>
-    <%= render FlatPack::Button::Component.new(text: "Resend code", style: :secondary, size: :md, type: "submit", class: "w-full") %>
+    <%= render FlatPack::Button::Component.new(
+      text: t("recording_studio_user.sessions.resend_code"),
+      style: :secondary,
+      size: :md,
+      type: "submit",
+      class: "w-full"
+    ) %>
   <% end %>
 <% end %>

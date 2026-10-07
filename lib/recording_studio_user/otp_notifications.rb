@@ -10,14 +10,14 @@ module RecordingStudioUser
       scope: :global
     }.freeze
 
-    TYPES = {
+    TYPE_KEYS = {
       registration_otp: {
-        label: "Registration code",
+        label_key: "recording_studio_user.otp.registration_label",
         default_channels: %i[email],
         available_channels: %i[email]
       },
       login_otp: {
-        label: "Login code",
+        label_key: "recording_studio_user.otp.login_label",
         default_channels: %i[email push],
         available_channels: %i[email push]
       }
@@ -29,7 +29,7 @@ module RecordingStudioUser
       return unless defined?(RecordingStudioNotifications)
       return if @registered
 
-      TYPES.each do |key, options|
+      TYPE_KEYS.each do |key, options|
         register_type!(key, **options)
         register_resolver!(key)
       end
@@ -37,8 +37,13 @@ module RecordingStudioUser
       @registered = true
     end
 
-    def register_type!(key, **)
-      RecordingStudioNotifications.register_notification_type(key, **SHARED_TYPE_OPTIONS, **)
+    def register_type!(key, label_key:, **)
+      RecordingStudioNotifications.register_notification_type(
+        key,
+        **SHARED_TYPE_OPTIONS,
+        **,
+        label: I18n.t(label_key)
+      )
     end
 
     def register_resolver!(key)

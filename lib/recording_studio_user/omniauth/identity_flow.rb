@@ -12,11 +12,10 @@ module RecordingStudioUser
 
         email = normalized_email(auth)
         existing = find_user_by_email(email)
-        raise UnconfirmedEmailError, "Existing email is not confirmed" if existing && !email_confirmed?(existing)
+        raise_if_unconfirmed!(existing)
         return create_identity!(existing, auth) && existing if existing
 
-        raise AccountCreationDisabledError, "Account creation from this provider is disabled" unless
-          RecordingStudioUser.config.omniauth_create_account?
+        raise_if_account_creation_disabled!
 
         create_user_from_auth!(auth, email)
       end
@@ -35,8 +34,7 @@ module RecordingStudioUser
       def disconnect!(user, provider)
         identity = user.identities.find_by!(provider: provider.to_s)
         if !other_usable_identity?(user, identity) && !password_set?(user)
-          raise LastSignInMethodError,
-                "Connect another sign-in method or set a password before disconnecting"
+          raise LastSignInMethodError, I18n.t("recording_studio_user.omniauth.last_method")
         end
 
         identity.destroy!
@@ -52,20 +50,32 @@ module RecordingStudioUser
       end
 
       def ensure_identity_available!(user, auth, existing)
-        if existing
-          raise IdentityTakenError,
-                "That #{provider_label(auth.provider)} account is already linked to another user"
-        end
-        return unless user.identity_for(auth.provider)
+        raise_identity_taken!(existing ? "taken_other" : "taken_this", auth.provider) if
+          existing || user.identity_for(auth.provider)
+      end
 
-        raise IdentityTakenError,
-              "A #{provider_label(auth.provider)} account is already linked to this user"
+      def raise_identity_taken!(key, provider)
+        raise IdentityTakenError, I18n.t("recording_studio_user.omniauth.#{key}", provider: provider_label(provider))
+      end
+
+      def raise_if_unconfirmed!(existing)
+        return unless existing && !email_confirmed?(existing)
+
+        raise UnconfirmedEmailError, I18n.t("recording_studio_user.omniauth.existing_unconfirmed")
+      end
+
+      def raise_if_account_creation_disabled!
+        return if RecordingStudioUser.config.omniauth_create_account?
+
+        raise AccountCreationDisabledError, I18n.t("recording_studio_user.omniauth.creation_disabled")
       end
 
       def normalized_email(auth)
         email = auth.info&.email.to_s.strip.downcase
-        raise MissingEmailError, "Email is required from the provider" if email.blank?
-        raise UnverifiedEmailError, "Email was not verified by the provider" if email_explicitly_unverified?(auth)
+        raise MissingEmailError, I18n.t("recording_studio_user.omniauth.email_required") if email.blank?
+        if email_explicitly_unverified?(auth)
+          raise UnverifiedEmailError, I18n.t("recording_studio_user.omniauth.email_not_verified")
+        end
 
         email
       end

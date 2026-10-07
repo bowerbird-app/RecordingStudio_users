@@ -1,12 +1,15 @@
 <%= render layout: "recording_studio_user/auth/shell",
-           locals: { title: "Forgot your password?", subtitle: "We'll send you a link to choose a new one." } do %>
+           locals: {
+             title: t("recording_studio_user.auth.forgot_password"),
+             subtitle: t("recording_studio_user.auth.forgot_password_subtitle")
+           } do %>
   <% if flash[:alert].present? %>
     <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
   <% end %>
 
   <% if resource.errors.any? %>
     <%= render FlatPack::Alert::Component.new(
-      title: "We couldn't send that link",
+      title: t("recording_studio_user.auth.could_not_send_link"),
       description: resource.errors.full_messages.join(", "),
       style: :danger
     ) %>
@@ -18,15 +21,15 @@
         name: "#{resource_name}[email]",
         id: "#{resource_name}_email",
         value: resource.email,
-        placeholder: "you@company.com",
+        placeholder: t("recording_studio_user.auth.email_placeholder"),
         required: true,
         autocomplete: "email",
-        aria: { label: "Email" },
+        aria: { label: t("recording_studio_user.auth.email") },
         error: resource.errors[:email].first
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: "Send reset link",
+        text: t("recording_studio_user.auth.send_reset_link"),
         style: :primary,
         size: :md,
         type: "submit",
@@ -36,9 +39,9 @@
   <% end %>
 
   <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
-    Remembered it?
+    <%= t("recording_studio_user.auth.remembered_it") %>
     <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
-      Back to sign in
+      <%= t("recording_studio_user.auth.back_to_sign_in") %>
     <% end %>
   </p>
 <% end %>

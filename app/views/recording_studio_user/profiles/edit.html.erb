@@ -1,16 +1,23 @@
-<% content_for :title, "Edit Profile | Recording Studio User" %>
+<% content_for :title, t(
+  "recording_studio_user.profile.document_title",
+  page: t("recording_studio_user.profile.edit_profile")
+) %>
 
 <% recording_studio_page_nav(
-  title: "Edit Profile",
+  title: t("recording_studio_user.profile.edit_profile"),
   page_nav_back_url: profile_path,
-  page_nav_back_label: "My Profile",
+  page_nav_back_label: t("recording_studio_user.profile.my_profile"),
   page_nav_anchor_url: main_app.root_path,
-  page_nav_anchor_label: "Close"
+  page_nav_anchor_label: t("recording_studio_user.profile.close")
 ) %>
 
 <%= render FlatPack::PageTitle::Component.new(
-  title: "Edit Profile",
-  subtitle: (profile_locale_allowlisted? ? "Change your name, time zone, language, or photo." : "Change your name, time zone, or photo."),
+  title: t("recording_studio_user.profile.edit_profile"),
+  subtitle: (
+    profile_locale_allowlisted? ?
+      t("recording_studio_user.profile.subtitle_with_language") :
+      t("recording_studio_user.profile.subtitle")
+  ),
   variant: :h1
 ) %>
 
@@ -32,7 +39,7 @@
     <%= form_with url: profile_path, method: :patch do %>
       <% if @profile.errors.any? %>
         <%= render FlatPack::Alert::Component.new(
-          title: "#{pluralize(@profile.errors.count, "error")} prevented your profile from being saved",
+          title: t("recording_studio_user.profile.errors.prevented_save", count: @profile.errors.count),
           description: @profile.errors.full_messages.join(", "),
           style: :danger
         ) %>
@@ -42,7 +49,7 @@
         <%= render FlatPack::TextInput::Component.new(
           name: "user[first_name]",
           id: "user_first_name",
-          label: "First name",
+          label: t("recording_studio_user.profile.first_name"),
           value: @profile.first_name,
           required: true,
           autocomplete: "given-name",
@@ -52,7 +59,7 @@
         <%= render FlatPack::TextInput::Component.new(
           name: "user[last_name]",
           id: "user_last_name",
-          label: "Last name",
+          label: t("recording_studio_user.profile.last_name"),
           value: @profile.last_name,
           required: true,
           autocomplete: "family-name",
@@ -62,7 +69,7 @@
         <%= render FlatPack::Select::Component.new(
           name: "user[time_zone]",
           id: "user_time_zone",
-          label: "Time zone",
+          label: t("recording_studio_user.profile.time_zone"),
           value: @profile.time_zone,
           options: ActiveSupport::TimeZone.all.map { |zone| [zone.to_s, zone.name] },
           searchable: true,
@@ -74,7 +81,7 @@
           <%= render FlatPack::Select::Component.new(
             name: "user[locale]",
             id: "user_locale",
-            label: "Language",
+            label: t("recording_studio_user.profile.language"),
             value: @profile.locale.to_s,
             options: profile_language_options(@profile),
             placeholder: false,
@@ -87,15 +94,15 @@
           <%= render FlatPack::TextInput::Component.new(
             name: "user[#{attribute}]",
             id: "user_#{attribute}",
-            label: attribute.to_s.humanize,
+            label: t("recording_studio_user.profile.attributes.#{attribute}", default: attribute.to_s.humanize),
             value: @profile.additional_profile_attributes[attribute.to_s],
             error: @profile.errors[attribute].first
           ) %>
         <% end %>
 
         <div class="flex flex-wrap items-center gap-3">
-          <%= render FlatPack::Button::Component.new(text: "Update profile", type: "submit", style: :primary) %>
-          <%= render FlatPack::Button::Component.new(text: "Cancel", href: profile_path, style: :secondary) %>
+          <%= render FlatPack::Button::Component.new(text: t("recording_studio_user.profile.update"), type: "submit", style: :primary) %>
+          <%= render FlatPack::Button::Component.new(text: t("recording_studio_user.profile.cancel"), href: profile_path, style: :secondary) %>
         </div>
       </div>
     <% end %>

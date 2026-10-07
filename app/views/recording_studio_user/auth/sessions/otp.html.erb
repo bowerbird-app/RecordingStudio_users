@@ -1,17 +1,23 @@
 <%= render layout: "recording_studio_user/auth/shell", locals: {
-  title: "Email sign-in code",
-  subtitle: "We will email a code if your account is eligible."
+  title: t("recording_studio_user.sessions.email_sign_in_code"),
+  subtitle: t("recording_studio_user.sessions.email_sign_in_code_subtitle")
 } do %>
   <%= form_with scope: :user, url: otp_session_otp_path, method: :post do %>
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",
-        placeholder: "you@company.com",
+        placeholder: t("recording_studio_user.auth.email_placeholder"),
         required: true,
         autocomplete: "email",
-        aria: { label: "Email" }
+        aria: { label: t("recording_studio_user.auth.email") }
       ) %>
-      <%= render FlatPack::Button::Component.new(text: "Send code", style: :primary, size: :md, type: "submit", class: "w-full") %>
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.sessions.send_code"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
     </div>
   <% end %>
 <% end %>

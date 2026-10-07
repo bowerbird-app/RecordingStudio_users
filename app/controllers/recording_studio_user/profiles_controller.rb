@@ -16,7 +16,7 @@ module RecordingStudioUser
         actor: current_user,
         **profile_write_attributes
       )
-      redirect_to profile_path, notice: "Profile updated."
+      redirect_to profile_path, notice: I18n.t("recording_studio_user.profile.updated")
     rescue ActiveRecord::RecordInvalid => e
       @profile = e.record
       render :edit, status: :unprocessable_entity

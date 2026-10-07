@@ -25,25 +25,25 @@ class RecordingStudioUserTest < Minitest::Test
     )
 
     assert_includes continue_partial, "recording_studio_user_omniauth_provider_names"
-    assert_includes continue_partial, "Continue with"
+    assert_includes continue_partial, "recording_studio_user.omniauth.continue_with"
     assert_includes continue_partial, "form_with"
     assert_includes continue_partial, "FlatPack::Button::Component"
-    assert_includes continue_partial, 'FlatPack::Divider::Component.new(label: "Or"'
+    assert_includes continue_partial, 't("recording_studio_user.omniauth.or")'
     refute File.exist?(
       File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_google.html.erb", __dir__)
     )
 
     assert_includes sign_in_methods, "FlatPack::List::Component"
     assert_includes sign_in_methods, "FlatPack::Card::Component"
-    assert_includes sign_in_methods, 'text: "Connect"'
-    assert_includes sign_in_methods, 'text: "Disconnect"'
+    assert_includes sign_in_methods, "recording_studio_user.omniauth.connect"
+    assert_includes sign_in_methods, "recording_studio_user.omniauth.disconnect"
     assert_includes sign_in_methods, "form_with"
     assert_includes sign_in_methods, "!items-center"
     assert_includes sign_in_methods, "inline-flex items-center"
     assert_includes profile_show, "sign_in_methods_profile_path"
     refute_includes profile_edit, "sign_in_methods_profile_path"
-    assert_includes profile_edit, "Change your name, time zone, language, or photo."
-    assert_includes profile_edit, "Change your name, time zone, or photo."
+    assert_includes profile_edit, "recording_studio_user.profile.subtitle_with_language"
+    assert_includes profile_edit, "recording_studio_user.profile.subtitle"
     assert_includes profile_edit, "profile_locale_allowlisted?"
   end
 
@@ -106,9 +106,9 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "render_attachment_file_button(@profile_recording, return_to: edit_profile_path)"
     assert_includes edit, "size: :\"2xl\""
     refute_includes edit, "FlatPack::Card::Component"
-    assert_includes edit, "Change your name, time zone, language, or photo."
+    assert_includes edit, "recording_studio_user.profile.subtitle_with_language"
     assert_includes edit, "profile_locale_allowlisted?"
-    assert_includes edit, 'label: "Language"'
+    assert_includes edit, 't("recording_studio_user.profile.language")'
     assert_includes edit, 'name: "user[locale]"'
     assert_includes edit, "placeholder: false"
     assert_includes show, "profile_language_name(@profile)"
@@ -120,8 +120,8 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes edit, "camera"
     refute_includes edit, "FlatPack::ButtonGroup::Component"
     assert_includes edit, "FlatPack::Button::Component"
-    assert_includes edit, "Update profile"
-    assert_includes edit, "Cancel"
+    assert_includes edit, "recording_studio_user.profile.update"
+    assert_includes edit, "recording_studio_user.profile.cancel"
     assert_includes edit, "FlatPack::TextInput::Component"
     assert_includes edit, "FlatPack::Select::Component"
   end

@@ -14,7 +14,7 @@ RecordingStudioUser.configure do |config|
   # so you do not drop locale:
   # config.additional_profile_attributes |= [:nickname]
   config.require_password_confirmation = false
-  # Sign-in page heading. Default "Welcome back".
+  # Sign-in page heading. Leave unset to follow I18n (en: "Welcome back").
   # config.login_title = "Welcome back"
   # First auth screen is always email. Next screen follows this setting:
   # :email → password, :otp → email code (requires otp_enabled and OTP flags).

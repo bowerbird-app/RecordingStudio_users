@@ -32,16 +32,17 @@ module RecordingStudioUser
     private
 
     def title_for(challenge)
-      challenge.registration? ? "Verify your email" : "Your sign-in code"
+      if challenge.registration?
+        I18n.t("recording_studio_user.otp.verify_your_email")
+      else
+        I18n.t("recording_studio_user.otp.your_sign_in_code")
+      end
     end
 
     def body_for(challenge, code)
       minutes = (RecordingStudioUser.config.otp_expires_in / 60).to_i
-      if challenge.registration?
-        "#{code} is your verification code. It expires in #{minutes} minutes."
-      else
-        "#{code} is your sign-in code. It expires in #{minutes} minutes."
-      end
+      key = challenge.registration? ? "registration_body" : "login_body"
+      I18n.t("recording_studio_user.otp.#{key}", code: code, minutes: minutes)
     end
   end
 end

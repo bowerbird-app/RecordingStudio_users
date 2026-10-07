@@ -30,7 +30,10 @@ module RecordingStudioUser
 
     def connect_current_user!(auth)
       Omniauth.connect!(current_user, auth)
-      redirect_to after_connect_path, notice: "#{Omniauth.provider_label(auth.provider)} connected."
+      redirect_to after_connect_path, notice: I18n.t(
+        "recording_studio_user.omniauth.connected",
+        provider: Omniauth.provider_label(auth.provider)
+      )
     end
 
     def sign_in_from_omniauth!(auth)
@@ -54,19 +57,22 @@ module RecordingStudioUser
     end
 
     def email_alert(error)
+      provider = provider_label_for(request.env["omniauth.auth"])
       case error
       when Omniauth::MissingEmailError
-        "#{provider_label_for(request.env['omniauth.auth'])} did not return an email address."
+        I18n.t("recording_studio_user.omniauth.missing_email", provider: provider)
       when Omniauth::UnverifiedEmailError
-        "#{provider_label_for(request.env['omniauth.auth'])} did not verify that email address."
+        I18n.t("recording_studio_user.omniauth.unverified_email", provider: provider)
       else
-        "Confirm your email before connecting this sign-in method."
+        I18n.t("recording_studio_user.omniauth.confirm_email")
       end
     end
 
     def account_creation_disabled_alert
-      label = provider_label_for(request.env["omniauth.auth"])
-      "No account exists for that #{label} email, and new accounts are disabled."
+      I18n.t(
+        "recording_studio_user.omniauth.account_creation_disabled",
+        provider: provider_label_for(request.env["omniauth.auth"])
+      )
     end
   end
 end

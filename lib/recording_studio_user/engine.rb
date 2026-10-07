@@ -8,6 +8,12 @@ module RecordingStudioUser
       RecordingStudioUser.config.validate!
     end
 
+    initializer "recording_studio_user.i18n" do |app|
+      locale_files = Dir[root.join("config/locales/**/*.{yml,rb}").to_s]
+      extra = locale_files - app.config.i18n.load_path
+      app.config.i18n.load_path.concat(extra)
+    end
+
     initializer "recording_studio_user.helpers", after: :set_autoload_paths do
       RecordingStudioUser::Engine.load_view_helpers!
       ActiveSupport.on_load(:action_controller) do

@@ -3,8 +3,6 @@
 require "active_support/core_ext/numeric/time"
 
 module RecordingStudioUser
-  DEFAULT_LOGIN_TITLE = "Welcome back"
-
   class Configuration
     PROTECTED_PROFILE_ATTRIBUTES = %w[
       id email password password_confirmation encrypted_password reset_password_token
@@ -30,7 +28,6 @@ module RecordingStudioUser
       layout: "application",
       additional_profile_attributes: [:locale],
       require_password_confirmation: false,
-      login_title: DEFAULT_LOGIN_TITLE,
       primary_login_type: :email,
       auth_logo: :square,
       otp_enabled: false,
@@ -79,8 +76,13 @@ module RecordingStudioUser
 
     def initialize
       DEFAULTS.each { |setting, value| instance_variable_set("@#{setting}", value) }
+      @login_title = nil
       @omniauth_providers = {}
       @auth_site_root_resolver = nil
+    end
+
+    def login_title
+      @login_title.presence || I18n.t("recording_studio_user.auth.login_title")
     end
 
     def otp_login_enabled=(value)
@@ -153,7 +155,7 @@ module RecordingStudioUser
     end
 
     def login_title=(value)
-      @login_title = value.to_s.strip.presence || DEFAULT_LOGIN_TITLE
+      @login_title = value.to_s.strip.presence
     end
 
     def omniauth_create_account=(value)

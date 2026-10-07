@@ -1,8 +1,11 @@
 <%= render layout: "recording_studio_user/auth/shell",
-           locals: { title: "Resend confirmation", subtitle: "We'll send a fresh link to your inbox." } do %>
+           locals: {
+             title: t("recording_studio_user.auth.resend_confirmation"),
+             subtitle: t("recording_studio_user.auth.resend_confirmation_subtitle")
+           } do %>
   <% if resource.errors.any? %>
     <%= render FlatPack::Alert::Component.new(
-      title: "We couldn't send that link",
+      title: t("recording_studio_user.auth.could_not_send_link"),
       description: resource.errors.full_messages.join(", "),
       style: :danger
     ) %>
@@ -14,15 +17,15 @@
         name: "#{resource_name}[email]",
         id: "#{resource_name}_email",
         value: resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email,
-        placeholder: "you@company.com",
+        placeholder: t("recording_studio_user.auth.email_placeholder"),
         required: true,
         autocomplete: "email",
-        aria: { label: "Email" },
+        aria: { label: t("recording_studio_user.auth.email") },
         error: resource.errors[:email].first
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: "Resend confirmation",
+        text: t("recording_studio_user.auth.resend_confirmation"),
         style: :primary,
         size: :md,
         type: "submit",
@@ -33,7 +36,7 @@
 
   <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
     <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
-      Back to sign in
+      <%= t("recording_studio_user.auth.back_to_sign_in") %>
     <% end %>
   </p>
 <% end %>

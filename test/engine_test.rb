@@ -3,6 +3,14 @@
 require "test_helper"
 
 class EngineTest < Minitest::Test
+  def test_engine_loads_english_and_french_locale_files
+    locale_dir = RecordingStudioUser::Engine.root.join("config/locales").to_s
+    loaded = I18n.load_path.select { |path| path.to_s.start_with?(locale_dir) }
+
+    assert(loaded.any? { |path| path.end_with?("en.yml") })
+    assert(loaded.any? { |path| path.end_with?("fr.yml") })
+  end
+
   def test_engine_is_isolated_under_recording_studio_user
     assert_predicate RecordingStudioUser::Engine, :isolated?
   end

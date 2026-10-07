@@ -1,24 +1,27 @@
-<% content_for :title, "My Profile | Recording Studio User" %>
+<% content_for :title, t(
+  "recording_studio_user.profile.document_title",
+  page: t("recording_studio_user.profile.my_profile")
+) %>
 
 <% recording_studio_page_nav(
-  title: "My Profile",
+  title: t("recording_studio_user.profile.my_profile"),
   page_nav_anchor_url: main_app.root_path,
-  page_nav_anchor_label: "Close"
+  page_nav_anchor_label: t("recording_studio_user.profile.close")
 ) %>
 
 <%= render FlatPack::PageTitle::Component.new(
-  title: "My Profile",
+  title: t("recording_studio_user.profile.my_profile"),
   variant: :h1
 ) do |page_title| %>
   <% page_title.slot do %>
     <%= render FlatPack::Button::Component.new(
-      text: "Edit",
+      text: t("recording_studio_user.profile.edit"),
       href: edit_profile_path,
       style: :primary
     ) %>
     <% if RecordingStudioUser.config.omniauth_configured? %>
       <%= render FlatPack::Button::Component.new(
-        text: "Sign-in methods",
+        text: t("recording_studio_user.profile.sign_in_methods"),
         href: sign_in_methods_profile_path,
         style: :secondary
       ) %>

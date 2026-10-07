@@ -11,7 +11,6 @@ module RecordingStudioUser
       %w[Français fr],
       %w[日本語 ja]
     ].freeze
-    SITE_DEFAULT_LABEL = "Use the site default"
 
     module_function
 
@@ -28,7 +27,7 @@ module RecordingStudioUser
     end
 
     def select_options(current = nil)
-      [[SITE_DEFAULT_LABEL, ""]] + options(current)
+      [[I18n.t("recording_studio_user.profile.use_site_default"), ""]] + options(current)
     end
 
     def label_for(code)

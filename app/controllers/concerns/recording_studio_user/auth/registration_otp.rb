@@ -5,9 +5,11 @@ module RecordingStudioUser
     module RegistrationOtp
       extend ActiveSupport::Concern
 
-      EMAIL_TAKEN_MESSAGE = "That email already has an account. Try signing in."
-
       private
+
+      def email_taken_message
+        I18n.t("recording_studio_user.auth.email_taken")
+      end
 
       def start_otp_registration!(email)
         existing = resource_class.find_by(email: email)
@@ -17,7 +19,7 @@ module RecordingStudioUser
         RecordingStudioUser.issue_otp!(user: user, purpose: :registration, request: request, session: session)
         redirect_to otp_registration_verify_path
       rescue Services::OtpRateLimiter::RateLimited
-        flash.now[:alert] = "Give it a minute, then try again."
+        flash.now[:alert] = I18n.t("recording_studio_user.auth.give_it_a_minute")
         render_otp_rate_limited
       end
 
@@ -30,7 +32,7 @@ module RecordingStudioUser
       end
 
       def redirect_to_sign_in_for(existing)
-        flash[existing.confirmed? ? :notice : :alert] = EMAIL_TAKEN_MESSAGE
+        flash[existing.confirmed? ? :notice : :alert] = email_taken_message
         redirect_to host_new_user_session_path
       end
 

@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.13.0] - 2026-10-07
 
 A signed-in profile can store a preferred language so Recording Studio
-Internationalization can read and write it. The cookie alone is not enough
-when the person is signed in.
+Internationalization can read and write it. Gem screens, flashes, and OTP copy
+now ship in English and French.
 
 ### Added
 - `:locale` is on `additional_profile_attributes` by default. The value lives
@@ -21,6 +21,8 @@ when the person is signed in.
   the select uses that gem's available locales instead.
 - My Profile shows the chosen language when one is saved.
 - Blank language unsets the key so Internationalization can fall back.
+- Gem-owned locale files `config/locales/en.yml` and `config/locales/fr.yml`
+  under `recording_studio_user.*`. The engine adds them to the host load path.
 
 ### Changed
 - `record_profile!` keeps existing extras when `additional_profile_attributes`
@@ -28,6 +30,9 @@ when the person is signed in.
   `"locale"` is dropped rather than stored as an empty string.
 - The install generator no longer assigns `additional_profile_attributes = []`,
   which would have wiped the default `:locale` allowlist.
+- Auth, profile, OTP, OmniAuth, and helper copy resolve through I18n at call
+  time. `config.login_title` still wins when the host sets it; the default
+  follows the current locale (`Welcome back` / `Heureux de vous revoir`).
 
 ### Upgrade notes
 - Bump to `0.13.0`. No migration.
@@ -39,6 +44,11 @@ when the person is signed in.
   so you do not drop locale.
 - Language is a free string in jsonb. Internationalization still checks the
   host's available locales when it writes from its language selector.
+- Hosts get English and French for Users screens automatically. Add another
+  language by supplying the same `recording_studio_user.*` keys (for example
+  `config/locales/ja.yml`) and adding that locale to `config.i18n.available_locales`.
+- If you still assign `config.login_title = "Welcome back"`, that string will
+  not switch language. Leave it unset to follow I18n.
 
 ## [0.12.8] - 2026-10-07
 

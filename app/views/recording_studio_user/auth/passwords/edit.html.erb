@@ -1,8 +1,11 @@
 <%= render layout: "recording_studio_user/auth/shell",
-           locals: { title: "Choose a new password", subtitle: "Make it one you'll remember." } do %>
+           locals: {
+             title: t("recording_studio_user.auth.choose_new_password"),
+             subtitle: t("recording_studio_user.auth.choose_new_password_subtitle")
+           } do %>
   <% if resource.errors.any? %>
     <%= render FlatPack::Alert::Component.new(
-      title: "That password didn't save",
+      title: t("recording_studio_user.auth.password_did_not_save"),
       description: resource.errors.full_messages.join(", "),
       style: :danger
     ) %>
@@ -18,24 +21,24 @@
       <%= render FlatPack::PasswordInput::Component.new(
         name: "#{resource_name}[password]",
         id: "#{resource_name}_password",
-        label: "New password",
+        label: t("recording_studio_user.auth.new_password"),
         required: true,
         autocomplete: "new-password",
-        help_text: "#{Devise.password_length.min} characters minimum",
+        help_text: t("recording_studio_user.auth.password_minimum", count: Devise.password_length.min),
         error: resource.errors[:password].first
       ) %>
 
       <%= render FlatPack::PasswordInput::Component.new(
         name: "#{resource_name}[password_confirmation]",
         id: "#{resource_name}_password_confirmation",
-        label: "Confirm new password",
+        label: t("recording_studio_user.auth.confirm_new_password"),
         required: true,
         autocomplete: "new-password",
         error: resource.errors[:password_confirmation].first
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: "Save password",
+        text: t("recording_studio_user.auth.save_password"),
         style: :primary,
         size: :md,
         type: "submit",

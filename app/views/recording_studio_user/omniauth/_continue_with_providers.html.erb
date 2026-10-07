@@ -1,6 +1,6 @@
 <%# Flatpack Or divider + Continue-with buttons for every configured OmniAuth provider. %>
 <% if recording_studio_user_omniauth_configured? %>
-  <%= render FlatPack::Divider::Component.new(label: "Or", class: "my-4") %>
+  <%= render FlatPack::Divider::Component.new(label: t("recording_studio_user.omniauth.or"), class: "my-4") %>
 
   <div class="flex flex-col gap-2">
     <% recording_studio_user_omniauth_provider_names.each do |provider| %>
@@ -10,7 +10,7 @@
       <% button_icon = logo.to_s.start_with?("<svg") ? logo : nil %>
       <%= form_with url: authorize_path, method: :post, data: { turbo: false } do %>
         <%= render FlatPack::Button::Component.new(
-          text: "Continue with #{recording_studio_user_provider_label(provider)}",
+          text: t("recording_studio_user.omniauth.continue_with", provider: recording_studio_user_provider_label(provider)),
           icon: button_icon,
           type: "submit",
           style: :secondary,
