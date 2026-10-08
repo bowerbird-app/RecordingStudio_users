@@ -151,26 +151,35 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_attachable", "~> 0.7"'
   end
 
-  def test_root_gemfile_pins_flatpack_v0198
+  def test_root_gemfile_pins_admin_v206_and_flatpack_v01207
     gemfile = File.read(File.expand_path("../Gemfile", __dir__))
     lock = File.read(File.expand_path("../Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.198"'
-    assert_includes lock, "tag: v0.1.198"
-    assert_includes lock, "flat_pack (0.1.198)"
-    assert_includes lock, "20a17d7dcb76686ea5e5964dd6483a455b2a32d6"
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin"'
+    assert_includes gemfile, 'tag: "v2.0.6"'
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.207"'
+    assert_includes lock, "tag: v2.0.6"
+    assert_includes lock, "e1398281da7932bdec891a2b873b7d531191be35"
+    assert_includes lock, "tag: v0.1.207"
+    assert_includes lock, "flat_pack (0.1.207)"
+    assert_includes lock, "7490c10b4ec59c7df81aa4f6a46d8f9ef83de8bc"
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
     assert_includes gemspec, '"flat_pack", ">= 0.1.144"'
+    assert_includes gemspec, '"recording_studio_admin", "~> 2.0"'
   end
 
-  def test_dummy_gemfile_pins_flatpack_v0198_for_tnc
+  def test_dummy_gemfile_pins_admin_v206_and_flatpack_v01207
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.198"'
-    assert_includes lock, "tag: v0.1.198"
-    assert_includes lock, "flat_pack (0.1.198)"
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin"'
+    assert_includes gemfile, 'tag: "v2.0.6"'
+    assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.207"'
+    assert_includes lock, "tag: v2.0.6"
+    assert_includes lock, "e1398281da7932bdec891a2b873b7d531191be35"
+    assert_includes lock, "tag: v0.1.207"
+    assert_includes lock, "flat_pack (0.1.207)"
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
