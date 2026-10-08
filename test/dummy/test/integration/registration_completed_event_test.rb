@@ -42,7 +42,7 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
     }
 
     user = User.find_by!(email: email)
-    assert_equal [{ user_id: user.id, method: :password, user_found: true }], @events
+    assert_equal [ { user_id: user.id, method: :password, user_found: true } ], @events
   end
 
   test "password signup that fails validation does not emit" do
@@ -87,7 +87,7 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
     end
 
     user = User.find_by!(email: email)
-    assert_equal [{ user_id: user.id, method: :oauth, user_found: true }], @events
+    assert_equal [ { user_id: user.id, method: :oauth, user_found: true } ], @events
   end
 
   test "oauth link to an existing user does not emit" do
@@ -150,7 +150,7 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
 
     user.reload
     assert user.confirmed?
-    assert_equal [{ user_id: user.id, method: :otp, user_found: true }], @events
+    assert_equal [ { user_id: user.id, method: :otp, user_found: true } ], @events
     assert_equal 1, @otp_events.size
     assert_equal user.id, @otp_events.first[:user_id]
     assert_equal challenge.id, @otp_events.first[:challenge_id]
