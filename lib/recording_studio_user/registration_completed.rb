@@ -10,9 +10,7 @@ module RecordingStudioUser
 
     def emit!(user_id:, method:)
       method = method.to_sym
-      unless METHODS.include?(method)
-        raise ArgumentError, "unsupported registration method: #{method.inspect}"
-      end
+      raise ArgumentError, "unsupported registration method: #{method.inspect}" unless METHODS.include?(method)
 
       ActiveRecord.after_all_transactions_commit do
         ActiveSupport::Notifications.instrument(EVENT, user_id: user_id, method: method)
