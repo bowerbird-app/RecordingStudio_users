@@ -26,8 +26,11 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     get recording_studio_terms_and_conditions.acceptance_path
 
     assert_response :success
-    assert_includes CGI.unescapeHTML(response.body), "We have updated our terms and conditions."
+    assert_select "h1", text: "Terms and Conditions"
+    refute_includes CGI.unescapeHTML(response.body), "We have updated our terms and conditions."
     assert_includes response.body, "Studio Terms"
+    assert_select "button[aria-expanded='false']", text: "Studio Terms"
+    assert_select "[data-controller='flat-pack--collapse']", count: 1
     assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
     assert_includes CGI.unescapeHTML(response.body), "Terms & Conditions"
     assert_select "a", text: "Terms & Conditions", count: 0
@@ -56,6 +59,7 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Agree again"
     refute_includes CGI.unescapeHTML(response.body), "We've updated our Terms and Conditions"
     assert_includes CGI.unescapeHTML(response.body), "We have updated our terms and conditions."
+    assert_select "button[aria-expanded='false']", text: "Studio Terms"
     assert_select "button[type=submit]", text: "Continue"
     assert_select 'button[type=submit][data-fp-style="primary"]', text: "Continue"
     assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"

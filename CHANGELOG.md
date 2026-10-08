@@ -51,18 +51,15 @@ Operations API for users (`/recording_studio_api/apis/operations/v1`).
   `registration.completed`; this release is the next minor.
 - Hosts that already name `:operations` (for example featured_in) get the
   user routes when `recording_studio_api` is present. Add that gem in the
-  **host** Gemfile if you want the JSON surface. Dummy pins `v0.6.4`.
+  **host** Gemfile if you want the JSON surface. Dummy pins `v0.6.7`.
 - Provision an operations API client on the admin root and grant the client
   Accessible `:view` (reads) or `:edit` (writes) on that AdminRoot.
 - Create without a password does not accept Terms. First login still hits the
   Terms Accept page when that gem is installed.
 - Public API clients cannot list or change users.
-- RecordingStudio_api `v0.6.4` matches registered endpoints by path only
-  (`registered_endpoint_request_match` → `match_path`), so GET and POST on
-  `users` (and GET/PATCH on `users/:id`) collide at HTTP dispatch. This gem
-  still registers the REST verbs. Hosts need API dispatch to call
-  `registered_endpoint_registry.match(path:, http_verb: request.request_method_symbol)`.
-  Do not monkey-patch that method from Users.
+- RecordingStudio_api **v0.6.5+** matches registered endpoints by path and HTTP
+  verb. Pin **v0.6.7** (or newer) in the host Gemfile so `POST users` and
+  `PATCH users/:id` dispatch correctly.
 
 ## [0.15.0] - 2026-10-08
 

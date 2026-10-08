@@ -10,7 +10,7 @@ PR: https://github.com/bowerbird-app/RecordingStudio_users/pull/27
 
 PR: https://github.com/bowerbird-app/RecordingStudio_users/pull/28
 
-Dummy installs released `recording_studio_terms_and_conditions` `v0.7.0` and Flatpack `v0.1.198`. Users detects that gem and pending live Terms on create-password. TnC `Gate.root_for_signup` falls back to the first live-Terms root when the current workspace has none. Production Users stays independent of a gemspec pin. Dummy uses the gem Accept screen (continue-notice + **Continue**). Accept PageTitle carries the update copy; the gate no longer flashes a duplicate notice.
+Dummy installs released `recording_studio_terms_and_conditions` `v0.8.1` (Publishable `v0.4.4`) and Flatpack `v0.1.207`. Users detects that gem and pending live Terms on create-password. TnC `Gate.root_for_signup` falls back to the first live-Terms root when the current workspace has none. Production Users stays independent of a gemspec pin. Dummy uses the gem Accept screen (Collapse document rows, continue-notice + **Continue**). First-time Accept titles **Terms and Conditions**; re-gate carries the update copy. The gate no longer flashes a duplicate notice.
 
 - `signup-password-tnc-notice-closed.png` — `/users/sign_up/password` with the xs muted “By continuing…” notice and Terms & Conditions link. Modal closed.
 - `signup-password-tnc-modal-open.png` — the same page with the Flatpack Modal open on the standalone Terms document (`Terms and Conditions v1.0`).

@@ -11,7 +11,7 @@ Do not register these routes on the public API (`/recording_studio_api/api/v1`).
 ## Install (host)
 
 ```ruby
-gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v0.6.4"
+gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v0.6.7"
 ```
 
 Name the Admin API `:operations` (`default_access :read_only`). Users registers collection and member endpoints on that API and passes each `operations:` registration only through `api: :operations`. Hosts that already define `config.api :operations` (for example featured_in) do not add a second named-API block in this gem.
@@ -48,7 +48,7 @@ The API client’s `AccessGrant.actor` is the Accessible actor. Grant that clien
 
 Public `/api/v1/users` is not registered (`404`). There is no `DELETE`.
 
-`RecordingStudioApi.register_endpoint` already stores GET+POST on `users` and GET+PATCH on `users/:id`. RecordingStudio_api `v0.6.4` looks up those registrations with `match_path` (verb-blind), so HTTP POST/PATCH can 422 `unsupported_action` until the API gem matches `path` **and** `http_verb`. Users does not patch that method.
+Users registers GET+POST on `users` and GET+PATCH on `users/:id`. RecordingStudio_api **v0.6.5+** dispatches with `registered_endpoint_registry.match(path:, http_verb:)`, so POST and PATCH reach the right handlers. Pin **v0.6.7** or newer in the host Gemfile. Users does not patch API dispatch.
 
 ## Routes
 

@@ -65,6 +65,7 @@ class NotificationsHostTest < ActionDispatch::IntegrationTest
     user.registered_with = "password"
     user.skip_confirmation! if user.respond_to?(:skip_confirmation!) && !user.confirmed?
     user.save!
+    accept_pending_live_terms!(user)
     user
   end
 end

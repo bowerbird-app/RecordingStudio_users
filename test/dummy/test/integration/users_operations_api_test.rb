@@ -120,21 +120,17 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_equal "password", response.parsed_body.fetch("registered_with")
     refute_secret_fields response.parsed_body
 
-    assert_raises(RecordingStudioApi::AuthorizationError) do
-      invoke_users_handler(
-        RecordingStudioUser::Api::Create,
-        @viewer_token,
-        { email: "viewer-cannot-#{SecureRandom.hex(4)}@example.com" }
-      )
-    end
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@viewer_token),
+         params: { email: "viewer-cannot-#{SecureRandom.hex(4)}@example.com" },
+         as: :json
+    assert_response :forbidden
 
-    assert_raises(RecordingStudioApi::AuthorizationError) do
-      invoke_users_handler(
-        RecordingStudioUser::Api::Update,
-        @viewer_token,
-        { id: listed.id, first_name: "Hijack" }
-      )
-    end
+    patch "#{OPERATIONS_ROOT}/users/#{listed.id}",
+          headers: auth(@viewer_token),
+          params: { first_name: "Hijack" },
+          as: :json
+    assert_response :forbidden
   end
 
   test "operations editor creates without password and does not accept terms" do
@@ -142,13 +138,13 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
 
     payload = nil
     events = registration_completed_events do
-      payload = invoke_users_handler(
-        RecordingStudioUser::Api::Create,
-        @editor_token,
-        { email: email, first_name: "Nico", last_name: "New", locale: "en" }
-      )
+      post "#{OPERATIONS_ROOT}/users",
+           headers: auth(@editor_token),
+           params: { email: email, first_name: "Nico", last_name: "New", locale: "en" },
+           as: :json
+      assert_response :success
+      payload = response.parsed_body
     end
-    payload = payload.deep_stringify_keys
     assert_equal email, payload.fetch("email")
     assert_equal "Nico", payload.fetch("first_name")
     assert_equal "otp", payload.fetch("registered_with")
@@ -173,46 +169,46 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
 
     created = nil
     events = registration_completed_events do
-      created = invoke_users_handler(
-        RecordingStudioUser::Api::Create,
-        @editor_token,
-        {
-          email: email,
-          password: "Password123!",
-          first_name: "Pat",
-          last_name: "Chable",
-          time_zone: "UTC"
-        }
-      )
+      post "#{OPERATIONS_ROOT}/users",
+           headers: auth(@editor_token),
+           params: {
+             email: email,
+             password: "Password123!",
+             first_name: "Pat",
+             last_name: "Chable",
+             time_zone: "UTC"
+           },
+           as: :json
+      assert_response :success
+      created = response.parsed_body
     end
-    user_id = created.fetch(:id)
+    user_id = created.fetch("id")
     user = User.find(user_id)
     assert_equal "password", user.registered_with
     assert user.password_set?
     assert_equal [{ user_id: user.id, method: :password }], events
 
-    updated = invoke_users_handler(
-      RecordingStudioUser::Api::Update,
-      @editor_token,
-      { id: user_id, first_name: "Patricia", time_zone: "Eastern Time (US & Canada)" }
-    )
-    assert_equal email, updated.fetch(:email)
-    assert_equal "Patricia", updated.fetch(:first_name)
-    assert_equal "Eastern Time (US & Canada)", updated.fetch(:time_zone)
+    patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+          headers: auth(@editor_token),
+          params: { first_name: "Patricia", time_zone: "Eastern Time (US & Canada)" },
+          as: :json
+    assert_response :success
+    updated = response.parsed_body
+    assert_equal email, updated.fetch("email")
+    assert_equal "Patricia", updated.fetch("first_name")
+    assert_equal "Eastern Time (US & Canada)", updated.fetch("time_zone")
 
     user.reload
     assert_equal email, user.email
     assert_nil user.unconfirmed_email
     assert_equal "Patricia", RecordingStudioUser.profile_for(user).first_name
 
-    error = assert_raises(RecordingStudioApi::InvalidActionInputError) do
-      invoke_users_handler(
-        RecordingStudioUser::Api::Update,
-        @editor_token,
-        { id: user_id, email: "reconfirm-#{SecureRandom.hex(4)}@example.com" }
-      )
-    end
-    assert_match(/email cannot be changed/, error.message)
+    patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+          headers: auth(@editor_token),
+          params: { email: "reconfirm-#{SecureRandom.hex(4)}@example.com" },
+          as: :json
+    assert_response :unprocessable_entity
+    assert_match(/email cannot be changed/, response.parsed_body.dig("error", "message"))
   end
 
   test "operations list uses offset paging on ordered_users" do
@@ -277,7 +273,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     )
 
     delete "#{OPERATIONS_ROOT}/users/#{user.id}", headers: auth(@editor_token), as: :json
-    assert_includes [404, 422], response.status, response.body
+    assert_response :method_not_allowed
+    assert_match(/DELETE is not allowed/, response.parsed_body.dig("error", "message"))
     assert User.exists?(user.id)
   end
 
@@ -307,25 +304,6 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     events
   ensure
     ActiveSupport::Notifications.unsubscribe(subscriber)
-  end
-
-  def invoke_users_handler(handler, token, params)
-    result = RecordingStudioApi.access_grant_from_authorization_header(
-      authorization_header: "Bearer #{token}",
-      api: :operations
-    )
-    raise result.error unless result.success?
-
-    grant = result.value
-    context = RecordingStudioApi::RegisteredEndpointContext.new(
-      api_client: grant.api_client,
-      credential: grant.credential,
-      access_recording: grant.access_recording,
-      access_grant: grant,
-      root_recording: grant.root_recording,
-      params: params
-    )
-    handler.call(context)
   end
 
   def provision_token(access_point:, actor:, role:, name:, api: :public, admin_root_recording: nil, admin_root_role: :edit)
