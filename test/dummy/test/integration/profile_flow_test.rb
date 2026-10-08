@@ -16,6 +16,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
       last_name: "User",
       time_zone: "UTC"
     )
+    accept_pending_live_terms!(@user)
   end
 
   test "profiles require the existing Devise sign-in flow" do

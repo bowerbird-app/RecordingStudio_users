@@ -74,11 +74,14 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: otp_email)
     code = current_otp_code(user, "registration")
     post "#{verify_user_registration_path}", params: { code: code }
-    follow_redirect!
+    # TnC after-auth may redirect to Accept (mounted engine). Do not follow that
+    # redirect: integration helpers then prefix main_app paths with the engine
+    # script name and POST /users/sign_in/password 404s.
+    assert_response :redirect
     sign_out_user!
     clear_otp_session!
 
-    post user_session_path, params: { user: { email: otp_email, password: "Password123!" } }
+    post "/users/sign_in/password", params: { user: { email: otp_email, password: "Password123!" } }
     assert_response :unprocessable_entity
     assert_includes response.body, "email codes"
   end
@@ -197,19 +200,19 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
   test "password account can sign in with a login code" do
     email = "password-otp-login-#{SecureRandom.hex(4)}@example.com"
-    RecordingStudioUser.create_user!(
+    user = RecordingStudioUser.create_user!(
       email: email,
       password: "Password123!",
       first_name: "Pass",
       last_name: "Word",
       time_zone: "UTC"
     )
+    accept_pending_live_terms!(user)
 
     post "#{new_user_session_path}/otp", params: { user: { email: email } }
     follow_redirect!
     assert_response :success
 
-    user = User.find_by!(email: email)
     assert user.registered_with_password?
 
     code = current_otp_code(user, "login")
@@ -222,16 +225,16 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
   test "password account keeps working with its password after using a login code" do
     email = "password-both-#{SecureRandom.hex(4)}@example.com"
-    RecordingStudioUser.create_user!(
+    user = RecordingStudioUser.create_user!(
       email: email,
       password: "Password123!",
       first_name: "Both",
       last_name: "Ways",
       time_zone: "UTC"
     )
+    accept_pending_live_terms!(user)
 
     post "#{new_user_session_path}/otp", params: { user: { email: email } }
-    user = User.find_by!(email: email)
     post verify_user_session_path, params: { code: current_otp_code(user, "login") }
     assert_redirected_to root_path
 
@@ -252,6 +255,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       last_name: "Code",
       time_zone: "UTC"
     )
+    accept_pending_live_terms!(user)
     sign_in user
 
     result = RecordingStudioUser.issue_otp!(user: user, purpose: :login)
@@ -286,6 +290,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       last_name: "Expiry",
       time_zone: "UTC"
     )
+    accept_pending_live_terms!(user)
     sign_in user
 
     original = RecordingStudioUser.config.otp_expires_in
@@ -315,6 +320,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       last_name: "Viewer",
       time_zone: "UTC"
     )
+    accept_pending_live_terms!(owner)
+    accept_pending_live_terms!(viewer)
     challenge = RecordingStudioUser.issue_otp!(user: owner, purpose: :login).challenge
     code = challenge.decrypt_delivery_code!
     sign_in viewer
@@ -345,6 +352,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
   test "confirmed OTP user can sign in with a login code" do
     email = "otp-login-#{SecureRandom.hex(4)}@example.com"
     confirm_otp_user!(email)
+    user = User.find_by!(email: email)
+    accept_pending_live_terms!(user)
     sign_out_user!
     clear_otp_session!
 
@@ -352,7 +361,6 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_response :success
 
-    user = User.find_by!(email: email)
     code = current_otp_code(user, "login")
     post verify_user_session_path, params: { code: code }
     assert_redirected_to root_path
