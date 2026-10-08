@@ -88,7 +88,7 @@ module RecordingStudioUser
       end
 
       def update_description
-        "Updates profile fields and email. Email uses Devise reconfirmation when enabled. " \
+        "Updates profile fields via Directory.record_profile!. Email cannot be changed. " \
           "Requires Accessible :edit on AdminRoot."
       end
     end

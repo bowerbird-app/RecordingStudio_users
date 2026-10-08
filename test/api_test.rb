@@ -202,6 +202,27 @@ class ApiTest < Minitest::Test
     refute attributes.key?(:encrypted_password)
   end
 
+  def test_update_attributes_reject_email
+    context = FakeContext.new(
+      actor: :staff,
+      params: { id: "user-1", email: "new@example.com", first_name: "Ada" }
+    )
+    error = assert_raises(ArgumentError) do
+      RecordingStudioUser::Api::Params.update_attributes(context)
+    end
+    assert_match(/email cannot be changed/, error.message)
+  end
+
+  def test_update_attributes_allow_profile_fields_without_email
+    context = FakeContext.new(actor: :staff, params: { id: "user-1", first_name: "Ada", locale: "fr" })
+    attributes = RecordingStudioUser::Api::Params.update_attributes(context)
+
+    assert_equal "Ada", attributes[:first_name]
+    assert_equal({ locale: "fr" }, attributes[:additional_profile_attributes])
+    refute attributes.key?(:email)
+    refute attributes.key?(:password)
+  end
+
   def test_query_normalizes_limit
     assert_equal 50, RecordingStudioUser::Api::Query.normalize_limit(nil)
     assert_equal 50, RecordingStudioUser::Api::Query.normalize_limit(0)

@@ -60,7 +60,7 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 | `GET` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:view` | One user |
 | `GET` | `/recording_studio_api/apis/operations/v1/users/count` | AdminRoot `:view` | `{ "count": N }` |
 | `POST` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:edit` | Create via `Directory.create_user!` |
-| `PATCH` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:edit` | Profile fields and email |
+| `PATCH` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:edit` | Profile fields only (`record_profile!`) |
 
 Send writable fields at the JSON root. Do not wrap them in `attributes`.
 
@@ -72,9 +72,7 @@ Never returned: password digests, password params, reset/confirmation/unlock tok
 
 Writable on create: `email` (required), `password` (optional), `password_confirmation`, `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys.
 
-Writable on update: `email`, `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. Password is ignored.
-
-Email changes use Devise `save!`. If the host has `config.reconfirmable = true` and `unconfirmed_email`, the current email stays until the person confirms. Do not call `skip_reconfirmation!`.
+Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. `email`, `password`, and `password_confirmation` are not accepted; sending `email` returns `422` with a clear error.
 
 ## Passwordless create
 
@@ -165,17 +163,17 @@ Content-Type: application/json
 }
 ```
 
-Update profile and email:
+Update profile:
 
 ```http
 PATCH /recording_studio_api/apis/operations/v1/users/:id
 Authorization: Bearer <operations_token>
 Content-Type: application/json
 
-{ "email": "new-address@example.com", "first_name": "Patricia", "locale": "fr" }
+{ "first_name": "Patricia", "time_zone": "UTC", "locale": "fr" }
 ```
 
-When the host has Devise `reconfirmable`, the JSON `email` stays the current address until they confirm. The pending address lives on the user as `unconfirmed_email` (not in this payload).
+Response is the same user object shape; `email` is unchanged. Do not send `email` — the API returns `422`.
 
 Show:
 

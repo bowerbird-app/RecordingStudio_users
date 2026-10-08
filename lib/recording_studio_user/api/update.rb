@@ -15,7 +15,6 @@ module RecordingStudioUser
         Access.authorize_edit!(context)
         user = find_user!
         attributes = Params.update_attributes(context)
-        update_email!(user, attributes[:email])
         revise_profile!(user, attributes)
         Serialize.user(user.reload)
       rescue ActiveRecord::RecordInvalid => e
@@ -31,14 +30,6 @@ module RecordingStudioUser
         Errors.not_found! if user.blank?
 
         user
-      end
-
-      def update_email!(user, email)
-        return if email.blank?
-        return if email.to_s.strip.casecmp?(user.email.to_s)
-
-        user.email = email.to_s.strip
-        user.save!
       end
 
       def revise_profile!(user, attributes)

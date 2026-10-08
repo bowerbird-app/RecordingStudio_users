@@ -165,7 +165,7 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_equal [{ user_id: user.id, method: :otp }], events
   end
 
-  test "operations editor creates with password and patches email through reconfirmation" do
+  test "operations editor patches profile fields but rejects email changes" do
     email = "password-#{SecureRandom.hex(4)}@example.com"
 
     created = nil
@@ -188,18 +188,28 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert user.password_set?
     assert_equal [{ user_id: user.id, method: :password }], events
 
-    new_email = "reconfirm-#{SecureRandom.hex(4)}@example.com"
     updated = invoke_users_handler(
       RecordingStudioUser::Api::Update,
       @editor_token,
-      { id: user_id, email: new_email, first_name: "Patricia" }
+      { id: user_id, first_name: "Patricia", time_zone: "Eastern Time (US & Canada)" }
     )
     assert_equal email, updated.fetch(:email)
     assert_equal "Patricia", updated.fetch(:first_name)
+    assert_equal "Eastern Time (US & Canada)", updated.fetch(:time_zone)
 
     user.reload
     assert_equal email, user.email
-    assert_equal new_email, user.unconfirmed_email
+    assert_nil user.unconfirmed_email
+    assert_equal "Patricia", RecordingStudioUser.profile_for(user).first_name
+
+    error = assert_raises(RecordingStudioApi::InvalidActionInputError) do
+      invoke_users_handler(
+        RecordingStudioUser::Api::Update,
+        @editor_token,
+        { id: user_id, email: "reconfirm-#{SecureRandom.hex(4)}@example.com" }
+      )
+    end
+    assert_match(/email cannot be changed/, error.message)
   end
 
   test "operations registry matches POST and PATCH users by verb" do

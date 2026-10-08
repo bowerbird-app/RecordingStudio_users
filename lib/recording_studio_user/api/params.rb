@@ -28,7 +28,24 @@ module RecordingStudioUser
       end
 
       def update_attributes(context)
-        slice_writable(request_hash(context)).except(:password, :password_confirmation)
+        hash = request_hash(context)
+        reject_email_update!(hash)
+        slice_profile_writable(hash)
+      end
+
+      def reject_email_update!(hash)
+        return unless hash.key?(:email)
+
+        Errors.invalid_input!("email cannot be changed through the operations users API")
+      end
+
+      def slice_profile_writable(hash)
+        extras = hash[:additional_profile_attributes]
+        extras = extras.to_h if extras.respond_to?(:to_h)
+        allowlisted = RecordingStudioUser.config.additional_profile_attributes.map(&:to_sym)
+        top_level_extras = hash.slice(*allowlisted)
+        merged_extras = (extras || {}).symbolize_keys.merge(top_level_extras)
+        hash.slice(*PROFILE_KEYS).merge(additional_profile_attributes: merged_extras)
       end
 
       def search_term(context)

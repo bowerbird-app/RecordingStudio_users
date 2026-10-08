@@ -28,8 +28,8 @@ Operations API for users (`/recording_studio_api/apis/operations/v1`).
   (login codes / Google), not a random password. The Terms gate is not
   accepted on the person's behalf. Create emits
   `registration.completed.recording_studio_user` (`:otp` or `:password`).
-- `PATCH users/:id` updates profile fields and email. Email assignment uses
-  Devise save, so reconfirmation stays on when the host has it enabled.
+- `PATCH users/:id` updates profile fields through `Directory.record_profile!`.
+  Email is not writable; a request that includes `email` returns `422`.
 - Reads require Accessible `:view` on AdminRoot. Writes require `:edit` on
   AdminRoot, matching Support operations writes. The API client is the
   Accessible actor.
