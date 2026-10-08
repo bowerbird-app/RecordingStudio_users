@@ -13,7 +13,6 @@ module RecordingStudioUser
       include RegistrationOtp
       include SignupTermsAcceptance
 
-      before_action :prefer_host_then_users_signup_views
       before_action :require_otp_registration_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
       def new
@@ -72,14 +71,6 @@ module RecordingStudioUser
       private
 
       attr_reader :resource
-
-      # TnC may prepend its extra_fields onto ActionController::Base after
-      # boot. Put Users ahead of TnC, then the host ahead of Users so a host
-      # copy at app/views/... wins — same order as prefer_signup_view_paths!.
-      def prefer_host_then_users_signup_views
-        prepend_view_path(RecordingStudioUser::Engine.root.join("app/views"))
-        prepend_view_path(Rails.root.join("app/views"))
-      end
 
       def continue_with_primary_registration!(email)
         return redirect_to otp_registration_password_path unless

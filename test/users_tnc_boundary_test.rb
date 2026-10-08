@@ -29,11 +29,14 @@ class UsersTncBoundaryTest < Minitest::Test
     controller = File.read(
       File.expand_path("../app/controllers/recording_studio_user/auth/registrations_controller.rb", __dir__)
     )
+    base = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/auth/base_controller.rb", __dir__)
+    )
     concern = File.read(
       File.expand_path("../app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb", __dir__)
     )
-    assert_includes controller, "prefer_host_then_users_signup_views"
-    assert_includes controller, "prepend_view_path(Rails.root.join(\"app/views\"))"
+    assert_includes base, "prefer_host_then_users_signup_views"
+    assert_includes base, "prepend_view_path(Rails.root.join(\"app/views\"))"
     assert_includes controller, "include SignupTermsAcceptance"
     assert_includes controller, "accept_pending_terms_on_signup!(resource)"
     assert_includes concern, "defined?(RecordingStudioTermsAndConditions::Gate)"

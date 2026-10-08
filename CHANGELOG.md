@@ -15,10 +15,10 @@ Host `app/views` overrides win over this gem’s auth screens again.
 - Signup view path preference is host → Users → TnC/Devise. The previous
   `prepend_view_path` of the gem’s views put Users ahead of the host, so a
   host copy at `app/views/recording_studio_user/auth/registrations/...` never
-  rendered. Registrations (and the engine-wide signup path helper) still put
-  Users ahead of TnC’s `extra_fields` override and Devise’s defaults; they
-  then put the host `app/views` in front. `ApplicationController` also
-  prefers the host path on Users controllers.
+  rendered. Auth `BaseController` (and the engine-wide signup path helper)
+  still put Users ahead of TnC’s `extra_fields` override and Devise’s
+  defaults; they then put the host `app/views` in front.
+  `ApplicationController` also prefers the host path on Users controllers.
 
 ### Upgrade notes
 - Bump to `0.16.0`. No migration.
