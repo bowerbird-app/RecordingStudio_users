@@ -57,6 +57,27 @@ module SignupTermsTestHelper
       attributes: { slug: slug, status: status }
     ).value!
   end
+
+  # Terms 0.7.7+ gates against the first root with live Terms when the current
+  # workspace has none. Dummy seeds leave live Terms under My workspace, so
+  # integration users that are not exercising Accept need a receipt first.
+  def accept_pending_live_terms!(user)
+    root = RecordingStudioTermsAndConditions::Gate.first_root_with_live_terms
+    return if user.blank? || root.blank?
+
+    RecordingStudioTermsAndConditions.pending_published_list(user, root).each do |terms|
+      RecordingStudioTermsAndConditions.accept!(user, terms, { "source" => "continue_notice" })
+    end
+  end
+
+  def without_live_terms_fallback
+    gate = RecordingStudioTermsAndConditions::Gate
+    original = gate.method(:first_root_with_live_terms)
+    gate.define_singleton_method(:first_root_with_live_terms) { nil }
+    yield
+  ensure
+    gate.define_singleton_method(:first_root_with_live_terms, original)
+  end
 end
 
 class ActionDispatch::IntegrationTest

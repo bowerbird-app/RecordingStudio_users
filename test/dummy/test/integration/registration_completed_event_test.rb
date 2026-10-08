@@ -57,13 +57,14 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
 
   test "password login does not emit" do
     email = "reg-event-login-#{SecureRandom.hex(4)}@example.com"
-    RecordingStudioUser.create_user!(
+    user = RecordingStudioUser.create_user!(
       email: email,
       password: "Password123!",
       first_name: "Log",
       last_name: "In",
       time_zone: "UTC"
     )
+    accept_pending_live_terms!(user)
     @events.clear
 
     post user_session_path, params: { user: { email: email, password: "Password123!" } }

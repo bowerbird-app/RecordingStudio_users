@@ -74,7 +74,9 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     assert user.identities.exists?(provider: "google_oauth2")
     assert_equal "Gail OAuth", RecordingStudioUser.display_name_for(user)
     assert RecordingStudioUser.profile_recording_for(user).present?
-    follow_redirect! if response.redirect?
+    # TnC 0.7.7+ sends OAuth sign-ins to Accept when live Terms exist elsewhere.
+    accept_pending_live_terms!(user)
+    5.times { follow_redirect! if response.redirect? }
     assert_response :success
   end
 
