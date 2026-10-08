@@ -26,7 +26,8 @@ Operations API for users (`/recording_studio_api/apis/operations/v1`).
   People-root Profile recording is created. Email is required. Password is
   optional: omit it to create a confirmed `registered_with: otp` account
   (login codes / Google), not a random password. The Terms gate is not
-  accepted on the person's behalf.
+  accepted on the person's behalf. Create emits
+  `registration.completed.recording_studio_user` (`:otp` or `:password`).
 - `PATCH users/:id` updates profile fields and email. Email assignment uses
   Devise save, so reconfirmation stays on when the host has it enabled.
 - Reads require Accessible `:view` on AdminRoot. Writes require `:edit` on

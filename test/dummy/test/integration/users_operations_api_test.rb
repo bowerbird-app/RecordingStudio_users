@@ -137,11 +137,14 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
   test "operations editor creates without password and does not accept terms" do
     email = "passwordless-#{SecureRandom.hex(4)}@example.com"
 
-    payload = invoke_users_handler(
-      RecordingStudioUser::Api::Create,
-      @editor_token,
-      { email: email, first_name: "Nico", last_name: "New", locale: "en" }
-    )
+    payload = nil
+    events = registration_completed_events do
+      payload = invoke_users_handler(
+        RecordingStudioUser::Api::Create,
+        @editor_token,
+        { email: email, first_name: "Nico", last_name: "New", locale: "en" }
+      )
+    end
     payload = payload.deep_stringify_keys
     assert_equal email, payload.fetch("email")
     assert_equal "Nico", payload.fetch("first_name")
@@ -159,26 +162,31 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     )
     pending = RecordingStudioTermsAndConditions.pending_published_list(user, Dummy::SignupTerms.workspace)
     assert pending.any?, "passwordless create must leave Terms for the Accept page"
+    assert_equal [{ user_id: user.id, method: :otp }], events
   end
 
   test "operations editor creates with password and patches email through reconfirmation" do
     email = "password-#{SecureRandom.hex(4)}@example.com"
 
-    created = invoke_users_handler(
-      RecordingStudioUser::Api::Create,
-      @editor_token,
-      {
-        email: email,
-        password: "Password123!",
-        first_name: "Pat",
-        last_name: "Chable",
-        time_zone: "UTC"
-      }
-    )
+    created = nil
+    events = registration_completed_events do
+      created = invoke_users_handler(
+        RecordingStudioUser::Api::Create,
+        @editor_token,
+        {
+          email: email,
+          password: "Password123!",
+          first_name: "Pat",
+          last_name: "Chable",
+          time_zone: "UTC"
+        }
+      )
+    end
     user_id = created.fetch(:id)
     user = User.find(user_id)
     assert_equal "password", user.registered_with
     assert user.password_set?
+    assert_equal [{ user_id: user.id, method: :password }], events
 
     new_email = "reconfirm-#{SecureRandom.hex(4)}@example.com"
     updated = invoke_users_handler(
@@ -235,6 +243,19 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
 
   def auth(token)
     { "Authorization" => "Bearer #{token}", "Accept" => "application/json" }
+  end
+
+  def registration_completed_events
+    events = []
+    subscriber = ActiveSupport::Notifications.subscribe(
+      RecordingStudioUser::RegistrationCompleted::EVENT
+    ) do |_name, _start, _finish, _id, payload|
+      events << payload
+    end
+    yield
+    events
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
   end
 
   def invoke_users_handler(handler, token, params)
