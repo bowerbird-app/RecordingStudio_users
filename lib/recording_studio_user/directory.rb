@@ -21,6 +21,7 @@ module RecordingStudioUser
 
     def profile_recording_for(user)
       return if user.blank? || !user.respond_to?(:id) || user.id.blank?
+      return unless defined?(RecordingStudio::Recording)
 
       RecordingStudio::Recording.find_by(
         recordable_type: Profile.name,
@@ -29,13 +30,19 @@ module RecordingStudioUser
       )
     end
 
-    def create_user!(email:, password:, password_confirmation: nil, actor: nil, **attributes)
+    def create_user!(email:, password: nil, password_confirmation: nil, actor: nil, **attributes)
+      raise ArgumentError, "email is required" if email.blank?
+
       profile_attrs = attributes.extract!(*PROFILE_ATTRIBUTE_KEYS)
-      confirmation = password_confirmation.presence || password
       user = nil
       ActiveRecord::Base.transaction do
-        user = create_devise_user!(email, password, confirmation, attributes)
-        record_profile!(user, actor: actor, **profile_attrs)
+        user = if password.present?
+                 confirmation = password_confirmation.presence || password
+                 create_devise_user!(email, password, confirmation, attributes)
+               else
+                 create_passwordless_user!(email, attributes)
+               end
+        record_profile!(user, actor: actor, **profile_attrs_with_defaults(user, profile_attrs))
       end
       user
     end
@@ -81,6 +88,27 @@ module RecordingStudioUser
       return unless user.respond_to?(:skip_confirmation!)
 
       user.skip_confirmation!
+    end
+
+    def create_passwordless_user!(email, attributes)
+      klass = RecordingStudioUser.config.user_class
+      attrs = attributes.symbolize_keys.except(:password, :password_confirmation)
+      attrs = attrs.merge(registered_with: "otp") if klass.column_names.include?("registered_with")
+      user = klass.new(email: email, **attrs)
+      user.skip_confirmation_notification! if user.respond_to?(:skip_confirmation_notification!)
+      user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
+      user.save!
+      user
+    end
+
+    def profile_attrs_with_defaults(user, profile_attrs)
+      defaults = Profile.default_attributes_for(user)
+      {
+        first_name: profile_attrs[:first_name].presence || defaults[:first_name],
+        last_name: profile_attrs[:last_name],
+        time_zone: profile_attrs.key?(:time_zone) ? profile_attrs[:time_zone] : defaults[:time_zone],
+        additional_profile_attributes: profile_attrs[:additional_profile_attributes]
+      }
     end
 
     def create_unconfirmed_user!(email:)

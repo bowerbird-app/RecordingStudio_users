@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-10-08
+
+Operations API for users (`/recording_studio_api/apis/operations/v1`).
+
+### Added
+- Operations endpoints on the host named `:operations` API when
+  `recording_studio_api` is present (still no gemspec dependency):
+  `GET users`, `GET users/:id`, `GET users/count`, `POST users`,
+  `PATCH users/:id`. There is no `DELETE`. Nothing is registered on the
+  public API (`/api/v1`).
+- List is paged (`limit`, `pagination_token`) with optional `?q=` on email
+  and profile name. Show/create/update serialize id, email, first/last name,
+  time zone, confirmed_at, created_at, updated_at, registered_with, linked
+  identity provider names, and allowlisted additional profile attributes.
+  Password digests, tokens, and OTP secrets are never returned.
+- `POST users` calls `RecordingStudioUser::Directory.create_user!` so the
+  People-root Profile recording is created. Email is required. Password is
+  optional: omit it to create a confirmed `registered_with: otp` account
+  (login codes / Google), not a random password. The Terms gate is not
+  accepted on the person's behalf.
+- `PATCH users/:id` updates profile fields and email. Email assignment uses
+  Devise save, so reconfirmation stays on when the host has it enabled.
+- Reads require Accessible `:view` on AdminRoot. Writes require `:edit` on
+  AdminRoot, matching Support operations writes. The API client is the
+  Accessible actor.
+
+### Changed
+- `Directory.create_user!` takes an optional `password`. Blank password
+  creates a passwordless OTP-registered account and still records a Profile.
+  When first name is omitted, the profile uses `Profile.default_attributes_for`.
+- `GET users/count` now requires Accessible `:view` on AdminRoot. The handler
+  used to count with no grant check.
+
+### Upgrade notes
+- Bump to `0.16.0`. No migration. Default already has `0.15.0` for
+  `registration.completed`; this release is the next minor.
+- Hosts that already name `:operations` (for example featured_in) get the
+  user routes when `recording_studio_api` is present. Add that gem in the
+  **host** Gemfile if you want the JSON surface. Dummy pins `v0.6.4`.
+- Provision an operations API client on the admin root and grant the client
+  Accessible `:view` (reads) or `:edit` (writes) on that AdminRoot.
+- Create without a password does not accept Terms. First login still hits the
+  Terms Accept page when that gem is installed.
+- Public API clients cannot list or change users.
+- RecordingStudio_api `v0.6.4` matches registered endpoints by path only
+  (`registered_endpoint_request_match` → `match_path`), so GET and POST on
+  `users` (and GET/PATCH on `users/:id`) collide at HTTP dispatch. This gem
+  still registers the REST verbs. Hosts need API dispatch to call
+  `registered_endpoint_registry.match(path:, http_verb: request.request_method_symbol)`.
+  Do not monkey-patch that method from Users.
+
 ## [0.15.0] - 2026-10-08
 
 Hosts can subscribe to one registration-completed event for password, OAuth, and
@@ -695,8 +746,11 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.14.0...v0.15.0
+[0.14.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.13.0...v0.14.0
+[0.13.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.8...v0.13.0
 [0.12.8]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.8
 [0.12.7]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.7
 [0.12.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.3

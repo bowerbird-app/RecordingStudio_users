@@ -112,6 +112,22 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
     assert_match(/RecordingStudioUser::Profile cannot be recorded under Workspace/, error.message)
   end
 
+  test "create_user! without a password makes a confirmed otp account and a Profile" do
+    user = RecordingStudioUser.create_user!(
+      email: "passwordless-#{SecureRandom.hex(4)}@example.com",
+      first_name: "No",
+      last_name: "Password",
+      time_zone: "UTC"
+    )
+
+    assert user.persisted?
+    assert user.registered_with_otp?
+    assert user.confirmed?
+    assert_not user.password_set?
+    assert RecordingStudioUser.profile_for(user).present?
+    assert_equal RecordingStudioUser.people_root, RecordingStudioUser.profile_recording_for(user).parent_recording
+  end
+
   test "create_user! signs up a Devise user then records a Profile under People" do
     user = RecordingStudioUser.create_user!(
       email: "signup-#{SecureRandom.hex(4)}@example.com",
