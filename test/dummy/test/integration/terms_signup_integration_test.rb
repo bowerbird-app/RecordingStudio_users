@@ -25,7 +25,7 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     assert_includes CGI.unescapeHTML(response.body), "Studio's"
     assert_includes response.body, "Terms &amp; Conditions"
     assert_includes response.body, '<p class="text-xs text-[var(--surface-muted-content-color)]">'
-    assert_select "a.flat-pack-link[data-modal-id]", text: "Terms & Conditions"
+    assert_select "button[type=button][data-modal-id]", text: "Terms & Conditions"
     assert_includes response.body, "text-[var(--color-primary)]"
     assert_includes response.body, "underline"
     assert_match %r{flat_pack/application}, response.body
