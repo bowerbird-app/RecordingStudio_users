@@ -126,6 +126,7 @@ module RecordingStudioUser
         confirm_password_account!
         RecordingStudioUser.record_profile!(resource, actor: resource, **Profile.default_attributes_for(resource))
         accept_pending_terms_on_signup!(resource)
+        RegistrationCompleted.emit!(user_id: resource.id, method: :password)
       end
 
       def confirm_password_account!

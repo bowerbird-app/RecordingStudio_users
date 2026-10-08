@@ -173,6 +173,39 @@ bin/rails recording_studio_user:prune_unconfigured_identities
 
 First login requires an email. Instagram often returns none, and Apple may return an email only on first consent or use a private relay; those first logins fail closed when no email is available. A signed-in user can still connect such a provider from **My Profile → Sign-in methods**, because the provider identity can safely attach to the current User without inventing an email. Disconnect is blocked when it would remove the only sign-in method from a user without a password.
 
+## Events
+
+Successful registration emits one ActiveSupport::Notifications event after the
+creating transaction commits:
+
+```ruby
+ActiveSupport::Notifications.subscribe(
+  "registration.completed.recording_studio_user"
+) do |_name, _start, _finish, _id, payload|
+  # payload: { user_id:, method: } — method is :password, :oauth, or :otp
+  user = User.find(payload[:user_id])
+end
+```
+
+| Path | When it fires | `method` |
+| --- | --- | --- |
+| Password sign-up | After `provision_password_account!` commits | `:password` |
+| OAuth | Only when `create_user_from_auth!` creates a **new** user | `:oauth` |
+| OTP registration | Alongside the existing OTP event below | `:otp` |
+
+It does **not** fire for password or OAuth login, for linking an OAuth identity
+to an existing user, or when password sign-up fails validation.
+
+OTP registration still emits the legacy event unchanged:
+
+```ruby
+"otp.registration_completed.recording_studio_user"
+# payload: { user_id:, challenge_id: }
+```
+
+Other OTP instrumentation (`otp.*.recording_studio_user` for issue/verify and
+`otp.email_proof_completed.recording_studio_user`) is unchanged.
+
 ## User contract
 
 The configured `user_class_name` must name the existing, Devise-compatible Active Record class returned by `current_user`. It must use the host's UUID primary key and provide `email`, password digest, and timestamps. It must **not** store `first_name`, `last_name`, `time_zone`, or `additional_profile_attributes` — those belong on Profile.
