@@ -106,14 +106,16 @@ module RecordingStudioUser
         password = Devise.friendly_token[0, 32]
         first_name, last_name = name_parts_from(auth)
 
-        ActiveRecord::Base.transaction do
-          user = Directory.create_user!(
+        user = ActiveRecord::Base.transaction do
+          created = Directory.create_user!(
             email: email, password: password, password_confirmation: password,
             first_name: first_name, last_name: last_name, time_zone: "UTC"
           )
-          create_identity!(user, auth)
-          clear_oauth_password!(user)
+          create_identity!(created, auth)
+          clear_oauth_password!(created)
         end
+        RegistrationCompleted.emit!(user_id: user.id, method: :oauth)
+        user
       end
 
       def clear_oauth_password!(user)

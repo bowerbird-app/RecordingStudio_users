@@ -63,6 +63,7 @@ module RecordingStudioUser
           user_id: @user.id,
           challenge_id: @challenge.id
         )
+        RegistrationCompleted.emit!(user_id: @user.id, method: :otp)
       end
 
       def roll_back_confirmation!
