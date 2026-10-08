@@ -13,7 +13,15 @@ module RecordingStudioUser
 
       layout "recording_studio_user/auth"
 
+      # Users before TnC extra_fields; host before Users (see prefer_signup_view_paths!).
+      before_action :prefer_host_then_users_signup_views
+
       private
+
+      def prefer_host_then_users_signup_views
+        prepend_view_path(RecordingStudioUser::Engine.root.join("app/views"))
+        prepend_view_path(Rails.root.join("app/views"))
+      end
 
       def resource_class
         RecordingStudioUser.config.user_class

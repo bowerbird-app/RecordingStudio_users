@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-10-08
+
+Host `app/views` overrides win over this gem’s auth screens again.
+
+### Changed
+- Signup view path preference is host → Users → TnC/Devise. The previous
+  `prepend_view_path` of the gem’s views put Users ahead of the host, so a
+  host copy at `app/views/recording_studio_user/auth/registrations/...` never
+  rendered. Auth `BaseController` (and the engine-wide signup path helper)
+  still put Users ahead of TnC’s `extra_fields` override and Devise’s
+  defaults; they then put the host `app/views` in front.
+  `ApplicationController` also prefers the host path on Users controllers.
+
+### Upgrade notes
+- Bump to `0.16.0`. No migration.
+- No change for hosts that do not override gem views.
+- To customize a screen, add the template under the host `app/views` with the
+  same path as the gem (for example
+  `app/views/recording_studio_user/auth/registrations/new.html.erb`).
+
 ## [0.15.0] - 2026-10-08
 
 Hosts can subscribe to one registration-completed event for password, OAuth, and
@@ -695,7 +715,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.14.0...v0.15.0
 [0.12.8]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.8
 [0.12.7]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.7

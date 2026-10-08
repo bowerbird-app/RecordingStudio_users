@@ -20,17 +20,23 @@ class UsersTncBoundaryTest < Minitest::Test
     refute_includes helper, "first_root_with_live_terms"
     assert_includes helper, "recording_studio_terms_continue_notice"
     engine = File.read(File.expand_path("../lib/recording_studio_user/engine.rb", __dir__))
-    assert_includes engine, "prepend_signup_view_path!"
+    assert_includes engine, "prefer_signup_view_paths!"
+    assert_includes engine, "prepend_view_path(users_views)"
+    assert_includes engine, "prepend_view_path(host_views)"
     refute_match(/By continuing|agreed|checkbox/i, extra_fields)
     assert_includes password, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
 
     controller = File.read(
       File.expand_path("../app/controllers/recording_studio_user/auth/registrations_controller.rb", __dir__)
     )
+    base = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/auth/base_controller.rb", __dir__)
+    )
     concern = File.read(
       File.expand_path("../app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb", __dir__)
     )
-    assert_includes controller, "prefer_users_signup_extra_fields"
+    assert_includes base, "prefer_host_then_users_signup_views"
+    assert_includes base, "prepend_view_path(Rails.root.join(\"app/views\"))"
     assert_includes controller, "include SignupTermsAcceptance"
     assert_includes controller, "accept_pending_terms_on_signup!(resource)"
     assert_includes concern, "defined?(RecordingStudioTermsAndConditions::Gate)"
