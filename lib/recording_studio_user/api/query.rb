@@ -29,14 +29,11 @@ module RecordingStudioUser
         rows = paged.limit(normalized_limit + 1).to_a
         has_more = rows.length > normalized_limit
         items = has_more ? rows.first(normalized_limit) : rows
-        {
-          rows: items,
-          meta: {
-            limit: normalized_limit,
-            has_more: has_more,
-            next_pagination_token: next_token(items, has_more)
-          }
-        }
+        { rows: items, meta: page_meta(items, normalized_limit, has_more) }
+      end
+
+      def page_meta(items, limit, has_more)
+        { limit: limit, has_more: has_more, next_pagination_token: next_token(items, has_more) }
       end
 
       def normalize_limit(limit)

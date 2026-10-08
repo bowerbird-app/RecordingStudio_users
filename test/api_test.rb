@@ -237,11 +237,13 @@ class ApiTest < Minitest::Test
 
   def test_directory_create_user_accepts_a_blank_password
     directory = File.read(File.expand_path("../lib/recording_studio_user/directory.rb", __dir__))
+    accounts = File.read(File.expand_path("../lib/recording_studio_user/directory/accounts.rb", __dir__))
 
     assert_includes directory, "def create_user!(email:, password: nil"
-    assert_includes directory, "create_passwordless_user!"
-    assert_includes directory, 'attrs = attrs.merge(registered_with: "otp")'
+    assert_includes directory, "Accounts.create_passwordless_user!"
+    assert_includes accounts, 'attrs = attrs.merge(registered_with: "otp")'
     refute_includes directory, "accept!"
+    refute_includes accounts, "accept!"
   end
 
   private

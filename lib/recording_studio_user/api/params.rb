@@ -12,15 +12,15 @@ module RecordingStudioUser
         raw = context&.params
         return {} if raw.blank?
 
-        hash =
-          if raw.respond_to?(:to_unsafe_h)
-            raw.to_unsafe_h
-          elsif raw.respond_to?(:to_h)
-            raw.to_h
-          else
-            {}
-          end
+        hash = hash_from(raw)
         hash.respond_to?(:deep_symbolize_keys) ? hash.deep_symbolize_keys : hash
+      end
+
+      def hash_from(raw)
+        return raw.to_unsafe_h if raw.respond_to?(:to_unsafe_h)
+        return raw.to_h if raw.respond_to?(:to_h)
+
+        {}
       end
 
       def create_attributes(context)

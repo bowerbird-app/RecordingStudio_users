@@ -15,11 +15,9 @@ module RecordingStudioUser
                       else
                         ArgumentError
                       end
-        if error_class == ArgumentError
-          raise error_class, message
-        else
-          raise error_class.new(message, details: details)
-        end
+        raise error_class, message if error_class == ArgumentError
+
+        raise error_class.new(message, details: details)
       end
 
       def from_record_invalid(error)

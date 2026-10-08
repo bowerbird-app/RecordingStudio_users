@@ -22,23 +22,42 @@ module RecordingStudioUser
       module_function
 
       def user(record)
-        profile = Directory.profile_for(record)
-        extras = ProfileAttributes.filter(profile&.additional_profile_attributes)
-        payload = {
+        payload = user_payload(record)
+        assert_no_secrets!(payload)
+        payload
+      end
+
+      def user_payload(record)
+        timestamps(record)
+          .merge(identity_fields(record))
+          .merge(profile_fields(Directory.profile_for(record)))
+      end
+
+      def identity_fields(record)
+        {
           id: record.id,
           email: record.email,
+          registered_with: registered_with(record),
+          identity_providers: identity_provider_names(record)
+        }
+      end
+
+      def profile_fields(profile)
+        extras = ProfileAttributes.filter(profile&.additional_profile_attributes)
+        {
           first_name: profile&.first_name,
           last_name: profile&.last_name,
           time_zone: profile&.time_zone,
-          confirmed_at: timestamp(record, :confirmed_at),
-          created_at: timestamp(record, :created_at),
-          updated_at: timestamp(record, :updated_at),
-          registered_with: registered_with(record),
-          identity_providers: identity_provider_names(record),
           additional_profile_attributes: extras
         }
-        assert_no_secrets!(payload)
-        payload
+      end
+
+      def timestamps(record)
+        {
+          confirmed_at: timestamp(record, :confirmed_at),
+          created_at: timestamp(record, :created_at),
+          updated_at: timestamp(record, :updated_at)
+        }
       end
 
       def collection(records, meta:)

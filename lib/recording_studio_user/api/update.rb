@@ -18,8 +18,8 @@ module RecordingStudioUser
         update_email!(user, attributes[:email])
         revise_profile!(user, attributes)
         Serialize.user(user.reload)
-      rescue ActiveRecord::RecordInvalid => error
-        Errors.from_record_invalid(error)
+      rescue ActiveRecord::RecordInvalid => e
+        Errors.from_record_invalid(e)
       end
 
       private
@@ -42,21 +42,29 @@ module RecordingStudioUser
       end
 
       def revise_profile!(user, attributes)
+        assignment = profile_revision(user, attributes)
+        return if assignment.nil?
+
+        Directory.record_profile!(user, actor: Access.actor_for(context), **assignment)
+      end
+
+      def profile_revision(user, attributes)
         profile_attrs = attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
         extras = profile_attrs[:additional_profile_attributes]
-        extras_submitted = extras.present?
         named = profile_attrs.except(:additional_profile_attributes).compact_blank
-        return if named.blank? && !extras_submitted
+        return if named.blank? && extras.blank?
 
-        profile = Directory.profile_for(user)
-        Directory.record_profile!(
-          user,
-          actor: Access.actor_for(context),
-          first_name: named.key?(:first_name) ? named[:first_name] : profile&.first_name,
-          last_name: named.key?(:last_name) ? named[:last_name] : profile&.last_name,
-          time_zone: named.key?(:time_zone) ? named[:time_zone] : profile&.time_zone,
-          additional_profile_attributes: extras_submitted ? extras : nil
+        named_profile_fields(Directory.profile_for(user), named).merge(
+          additional_profile_attributes: extras.presence
         )
+      end
+
+      def named_profile_fields(profile, named)
+        {
+          first_name: named.fetch(:first_name, profile&.first_name),
+          last_name: named.fetch(:last_name, profile&.last_name),
+          time_zone: named.fetch(:time_zone, profile&.time_zone)
+        }
       end
     end
   end

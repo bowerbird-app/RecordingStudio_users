@@ -14,73 +14,28 @@ module RecordingStudioUser
       end
 
       def register_user_count!
-        register_named!(
-          USER_COUNT_ENDPOINT,
-          http_verb: :get,
-          path: USER_COUNT_PATH,
-          handler: UserCount,
-          openapi: {
-            tags: ["Users"],
-            summary: "Count users",
-            description: "Total number of users. Requires Accessible :view on AdminRoot."
-          }
-        )
+        register_named!(USER_COUNT_ENDPOINT, http_verb: :get, path: USER_COUNT_PATH, handler: UserCount,
+                                             openapi: users_openapi("Count users", count_description))
       end
 
       def register_index!
-        register_named!(
-          USERS_INDEX_ENDPOINT,
-          http_verb: :get,
-          path: USERS_PATH,
-          handler: Index,
-          openapi: {
-            tags: ["Users"],
-            summary: "List users",
-            description: "Paged users, optional ?q= on email and name. Requires Accessible :view on AdminRoot."
-          }
-        )
+        register_named!(USERS_INDEX_ENDPOINT, http_verb: :get, path: USERS_PATH, handler: Index,
+                                              openapi: users_openapi("List users", index_description))
       end
 
       def register_create!
-        register_named!(
-          USERS_CREATE_ENDPOINT,
-          http_verb: :post,
-          path: USERS_PATH,
-          handler: Create,
-          openapi: {
-            tags: ["Users"],
-            summary: "Create a user",
-            description: "Creates a Devise user and People-root Profile. Requires Accessible :edit on AdminRoot. Omit password for a passwordless (registered_with otp) account."
-          }
-        )
+        register_named!(USERS_CREATE_ENDPOINT, http_verb: :post, path: USERS_PATH, handler: Create,
+                                               openapi: users_openapi("Create a user", create_description))
       end
 
       def register_show!
-        register_named!(
-          USERS_SHOW_ENDPOINT,
-          http_verb: :get,
-          path: USER_PATH,
-          handler: Show,
-          openapi: {
-            tags: ["Users"],
-            summary: "Show a user",
-            description: "One user. Requires Accessible :view on AdminRoot. Secrets are never returned."
-          }
-        )
+        register_named!(USERS_SHOW_ENDPOINT, http_verb: :get, path: USER_PATH, handler: Show,
+                                             openapi: users_openapi("Show a user", show_description))
       end
 
       def register_update!
-        register_named!(
-          USERS_UPDATE_ENDPOINT,
-          http_verb: :patch,
-          path: USER_PATH,
-          handler: Update,
-          openapi: {
-            tags: ["Users"],
-            summary: "Update a user",
-            description: "Updates profile fields and email. Email uses Devise reconfirmation when enabled. Requires Accessible :edit on AdminRoot."
-          }
-        )
+        register_named!(USERS_UPDATE_ENDPOINT, http_verb: :patch, path: USER_PATH, handler: Update,
+                                               openapi: users_openapi("Update a user", update_description))
       end
 
       def register_named!(name, http_verb:, path:, handler:, openapi: nil)
@@ -109,6 +64,32 @@ module RecordingStudioUser
         return true unless configuration.respond_to?(:api_names)
 
         Array(configuration.api_names).include?("operations")
+      end
+
+      def users_openapi(summary, description)
+        { tags: ["Users"], summary: summary, description: description }
+      end
+
+      def count_description
+        "Total number of users. Requires Accessible :view on AdminRoot."
+      end
+
+      def index_description
+        "Paged users, optional ?q= on email and name. Requires Accessible :view on AdminRoot."
+      end
+
+      def create_description
+        "Creates a Devise user and People-root Profile. Requires Accessible :edit on AdminRoot. " \
+          "Omit password for a passwordless (registered_with otp) account."
+      end
+
+      def show_description
+        "One user. Requires Accessible :view on AdminRoot. Secrets are never returned."
+      end
+
+      def update_description
+        "Updates profile fields and email. Email uses Devise reconfirmation when enabled. " \
+          "Requires Accessible :edit on AdminRoot."
       end
     end
   end

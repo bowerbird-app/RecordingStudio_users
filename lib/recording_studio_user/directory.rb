@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "directory/accounts"
+
 module RecordingStudioUser
   # Public write and lookup helpers for the shared People root and Profile snapshots.
   module Directory
@@ -36,15 +38,19 @@ module RecordingStudioUser
       profile_attrs = attributes.extract!(*PROFILE_ATTRIBUTE_KEYS)
       user = nil
       ActiveRecord::Base.transaction do
-        user = if password.present?
-                 confirmation = password_confirmation.presence || password
-                 create_devise_user!(email, password, confirmation, attributes)
-               else
-                 create_passwordless_user!(email, attributes)
-               end
+        user = persist_user!(email, password, password_confirmation, attributes)
         record_profile!(user, actor: actor, **profile_attrs_with_defaults(user, profile_attrs))
       end
       user
+    end
+
+    def persist_user!(email, password, password_confirmation, attributes)
+      if password.present?
+        confirmation = password_confirmation.presence || password
+        Accounts.create_devise_user!(email, password, confirmation, attributes)
+      else
+        Accounts.create_passwordless_user!(email, attributes)
+      end
     end
 
     def record_profile!(user, actor: nil, **profile_attrs)
@@ -62,43 +68,6 @@ module RecordingStudioUser
 
     def filtered_additional_profile_attributes(value)
       ProfileAttributes.filter(value)
-    end
-
-    def create_devise_user!(email, password, password_confirmation, attributes)
-      user = RecordingStudioUser.config.user_class.new(
-        email: email,
-        password: password,
-        password_confirmation: password_confirmation,
-        **devise_user_attributes(attributes)
-      )
-      skip_confirmation_for_password_account(user)
-      user.save!
-      user
-    end
-
-    def devise_user_attributes(attributes)
-      attrs = attributes.symbolize_keys
-      return attrs unless RecordingStudioUser.config.user_class.column_names.include?("registered_with")
-
-      attrs.merge(registered_with: "password")
-    end
-
-    def skip_confirmation_for_password_account(user)
-      return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
-      return unless user.respond_to?(:skip_confirmation!)
-
-      user.skip_confirmation!
-    end
-
-    def create_passwordless_user!(email, attributes)
-      klass = RecordingStudioUser.config.user_class
-      attrs = attributes.symbolize_keys.except(:password, :password_confirmation)
-      attrs = attrs.merge(registered_with: "otp") if klass.column_names.include?("registered_with")
-      user = klass.new(email: email, **attrs)
-      user.skip_confirmation_notification! if user.respond_to?(:skip_confirmation_notification!)
-      user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
-      user.save!
-      user
     end
 
     def profile_attrs_with_defaults(user, profile_attrs)
