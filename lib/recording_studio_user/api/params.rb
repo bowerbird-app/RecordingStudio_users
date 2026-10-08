@@ -48,16 +48,12 @@ module RecordingStudioUser
         hash.slice(*PROFILE_KEYS).merge(additional_profile_attributes: merged_extras)
       end
 
-      def search_term(context)
-        request_hash(context)[:q].to_s
+      def page(context)
+        request_hash(context)[:page]
       end
 
-      def pagination_limit(context)
-        request_hash(context)[:limit]
-      end
-
-      def pagination_token(context)
-        request_hash(context)[:pagination_token]
+      def per_page(context)
+        request_hash(context)[:per_page]
       end
 
       def record_id(context)

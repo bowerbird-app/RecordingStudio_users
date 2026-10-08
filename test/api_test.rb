@@ -223,11 +223,30 @@ class ApiTest < Minitest::Test
     refute attributes.key?(:password)
   end
 
-  def test_query_normalizes_limit
-    assert_equal 50, RecordingStudioUser::Api::Query.normalize_limit(nil)
-    assert_equal 50, RecordingStudioUser::Api::Query.normalize_limit(0)
-    assert_equal 10, RecordingStudioUser::Api::Query.normalize_limit(10)
-    assert_equal 100, RecordingStudioUser::Api::Query.normalize_limit(500)
+  def test_query_normalizes_page_and_per_page
+    assert_equal 1, RecordingStudioUser::Api::Query.normalize_page(nil)
+    assert_equal 1, RecordingStudioUser::Api::Query.normalize_page(0)
+    assert_equal 3, RecordingStudioUser::Api::Query.normalize_page(3)
+    assert_equal 50, RecordingStudioUser::Api::Query.normalize_per_page(nil)
+    assert_equal 50, RecordingStudioUser::Api::Query.normalize_per_page(0)
+    assert_equal 10, RecordingStudioUser::Api::Query.normalize_per_page(10)
+    assert_equal 100, RecordingStudioUser::Api::Query.normalize_per_page(500)
+  end
+
+  def test_engine_list_and_admin_share_ordered_users
+    admin = File.read(File.expand_path("../lib/recording_studio_user/admin.rb", __dir__))
+    index = File.read(File.expand_path("../lib/recording_studio_user/api/index.rb", __dir__))
+    facade = File.read(File.expand_path("../lib/recording_studio_user.rb", __dir__))
+
+    directory = File.read(File.expand_path("../lib/recording_studio_user/directory.rb", __dir__))
+    assert_includes facade, "def ordered_users"
+    assert_includes directory, "config.user_class.order(created_at: :desc)"
+    assert_includes admin, "RecordingStudioUser.ordered_users"
+    assert_includes admin, "paginate per_page: 50"
+    assert_includes index, "RecordingStudioUser.ordered_users"
+    refute_includes index, "search_term"
+    refute_includes File.read(File.expand_path("../lib/recording_studio_user/api/query.rb", __dir__)),
+                    "pagination_token"
   end
 
   def test_create_requires_email_after_edit_authorization

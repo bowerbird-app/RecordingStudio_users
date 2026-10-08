@@ -53,45 +53,18 @@ module RecordingStudioUser
       end
     end
 
-    def people_recordable
-      Directory.people_recordable
-    end
+    def ordered_users = Directory.ordered_users
 
-    def people_root
-      Directory.people_root
-    end
-
-    def profile_for(user)
-      Directory.profile_for(user)
-    end
-
-    def profile_recording_for(user)
-      Directory.profile_recording_for(user)
-    end
-
-    def profile_image_recording_for(user)
-      ProfileImage.recording_for(user)
-    end
-
-    def attach_profile_image!(...)
-      ProfileImage.attach!(...)
-    end
-
-    def replace_profile_image!(...)
-      ProfileImage.replace!(...)
-    end
-
-    def create_user!(...)
-      Directory.create_user!(...)
-    end
-
-    def record_profile!(...)
-      Directory.record_profile!(...)
-    end
-
-    def create_unconfirmed_user!(email:)
-      Directory.create_unconfirmed_user!(email: email)
-    end
+    def people_recordable = Directory.people_recordable
+    def people_root = Directory.people_root
+    def profile_for(user) = Directory.profile_for(user)
+    def profile_recording_for(user) = Directory.profile_recording_for(user)
+    def profile_image_recording_for(user) = ProfileImage.recording_for(user)
+    def attach_profile_image!(...) = ProfileImage.attach!(...)
+    def replace_profile_image!(...) = ProfileImage.replace!(...)
+    def create_user!(...) = Directory.create_user!(...)
+    def record_profile!(...) = Directory.record_profile!(...)
+    def create_unconfirmed_user!(email:) = Directory.create_unconfirmed_user!(email: email)
 
     def issue_otp!(...)
       Services::IssueOtp.call(...)

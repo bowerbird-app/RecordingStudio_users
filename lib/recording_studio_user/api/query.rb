@@ -3,91 +3,43 @@
 module RecordingStudioUser
   module Api
     module Query
-      DEFAULT_LIMIT = 50
-      MAX_LIMIT = 100
-      TOKEN_PURPOSE = "recording_studio_user.api.users.pagination"
+      DEFAULT_PER_PAGE = 50
+      MAX_PER_PAGE = 100
 
       module_function
 
-      def apply_search(relation, term)
-        needle = term.to_s.strip
-        return relation if needle.blank?
-
-        pattern = "%#{escape_like(needle.downcase)}%"
-        profile_ids = Profile.where(
-          "LOWER(first_name) LIKE :q OR LOWER(COALESCE(last_name, '')) LIKE :q",
-          q: pattern
-        ).select(:user_id)
-        relation.where("LOWER(email) LIKE :q OR id IN (:profile_user_ids)", q: pattern, profile_user_ids: profile_ids)
+      def paginate(relation, page:, per_page:)
+        normalized_page = normalize_page(page)
+        normalized_per_page = normalize_per_page(per_page)
+        total_count = relation.except(:limit, :offset).count
+        {
+          rows: page_rows(relation, normalized_page, normalized_per_page),
+          meta: page_meta(normalized_page, normalized_per_page, total_count)
+        }
       end
 
-      def paginate(relation, limit:, pagination_token:)
-        normalized_limit = normalize_limit(limit)
-        paged = relation.reorder(created_at: :desc, id: :desc)
-        payload = decode_token(pagination_token)
-        paged = apply_cursor(paged, payload) if payload
-        rows = paged.limit(normalized_limit + 1).to_a
-        has_more = rows.length > normalized_limit
-        items = has_more ? rows.first(normalized_limit) : rows
-        { rows: items, meta: page_meta(items, normalized_limit, has_more) }
+      def page_rows(relation, page, per_page)
+        relation.offset((page - 1) * per_page).limit(per_page).to_a
       end
 
-      def page_meta(items, limit, has_more)
-        { limit: limit, has_more: has_more, next_pagination_token: next_token(items, has_more) }
+      def page_meta(page, per_page, total_count)
+        {
+          page: page,
+          per_page: per_page,
+          total_count: total_count,
+          total_pages: [(total_count.to_f / per_page).ceil, 1].max
+        }
       end
 
-      def normalize_limit(limit)
-        requested = limit.to_i
-        requested = DEFAULT_LIMIT if requested <= 0
-        [requested, MAX_LIMIT].min
+      def normalize_page(page)
+        requested = page.to_i
+        requested.positive? ? requested : 1
       end
 
-      def apply_cursor(relation, payload)
-        created_at = Time.iso8601(payload.fetch("created_at"))
-        id = payload.fetch("id")
-        table = relation.klass.arel_table
-        relation.where(
-          table[:created_at].lt(created_at)
-            .or(table[:created_at].eq(created_at).and(table[:id].lt(id)))
-        )
-      end
-
-      def next_token(items, has_more)
-        return unless has_more
-
-        last = items.last
-        encode_token("created_at" => last.created_at.utc.iso8601(6), "id" => last.id)
-      end
-
-      def encode_token(payload)
-        verifier.generate(payload, purpose: TOKEN_PURPOSE)
-      end
-
-      def decode_token(token)
-        return if token.blank?
-
-        payload = verifier.verify(token.to_s, purpose: TOKEN_PURPOSE)
-        raise invalid_pagination_error, "Invalid pagination token" unless payload.is_a?(Hash)
-
-        payload
-      rescue ActiveSupport::MessageVerifier::InvalidSignature, ArgumentError, TypeError
-        raise invalid_pagination_error, "Invalid pagination token"
-      end
-
-      def verifier
-        Rails.application.message_verifier(TOKEN_PURPOSE)
-      end
-
-      def escape_like(value)
-        value.gsub(/[%_\\]/) { |char| "\\#{char}" }
-      end
-
-      def invalid_pagination_error
-        if defined?(RecordingStudioApi::InvalidPaginationTokenError)
-          RecordingStudioApi::InvalidPaginationTokenError
-        else
-          ArgumentError
-        end
+      def normalize_per_page(per_page)
+        requested = per_page.to_i
+        requested = DEFAULT_PER_PAGE if requested <= 0
+        [requested, MAX_PER_PAGE].min
       end
     end
   end

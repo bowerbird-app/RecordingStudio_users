@@ -17,8 +17,10 @@ Operations API for users (`/recording_studio_api/apis/operations/v1`).
   `GET users`, `GET users/:id`, `GET users/count`, `POST users`,
   `PATCH users/:id`. There is no `DELETE`. Nothing is registered on the
   public API (`/api/v1`).
-- List is paged (`limit`, `pagination_token`) with optional `?q=` on email
-  and profile name. Show/create/update serialize id, email, first/last name,
+- List is offset-paged (`page`, `per_page`, default 50, max 100) on
+  `RecordingStudioUser.ordered_users` (`created_at desc`), the same relation
+  as the Admin users screen. No `?q=` search. Show/create/update serialize
+  id, email, first/last name,
   time zone, confirmed_at, created_at, updated_at, registered_with, linked
   identity provider names, and allowlisted additional profile attributes.
   Password digests, tokens, and OTP secrets are never returned.
@@ -40,6 +42,9 @@ Operations API for users (`/recording_studio_api/apis/operations/v1`).
   When first name is omitted, the profile uses `Profile.default_attributes_for`.
 - `GET users/count` now requires Accessible `:view` on AdminRoot. The handler
   used to count with no grant check.
+- The Admin users table declares `paginate per_page: 50` on the same
+  `ordered_users` relation. Charts and the Total users widget still count
+  the full unpaginated relation.
 
 ### Upgrade notes
 - Bump to `0.16.0`. No migration. Default already has `0.15.0` for

@@ -4,7 +4,7 @@ How a host, person, or AI agent manages **users** over **Recording Studio API**.
 
 Users are Devise actors, not tree recordables. The gem registers named endpoints with `RecordingStudioApi.register_endpoint` on the host’s `:operations` API. It does **not** gemspec-depend on `recording_studio_api`. If that constant is missing, Users boots with no JSON user routes.
 
-There is no Users `ApiController`. Create and profile writes go through `RecordingStudioUser::Directory.create_user!` / `record_profile!`. Access is **Accessible** only.
+There is no Users `ApiController`. Create and profile writes go through `RecordingStudioUser::Directory.create_user!` / `record_profile!`. List uses `RecordingStudioUser.ordered_users` (`created_at desc`), the same relation as the Admin users screen, with `page` / `per_page` offset paging. Access is **Accessible** only.
 
 Do not register these routes on the public API (`/recording_studio_api/api/v1`).
 
@@ -56,7 +56,7 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 
 | Method | Path | Who | Notes |
 | --- | --- | --- | --- |
-| `GET` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:view` | Paged list. Optional `?q=` on email and profile name. `limit`, `pagination_token` |
+| `GET` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:view` | Offset list (`page`, `per_page`; default 50, max 100). Same order as Admin users. |
 | `GET` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:view` | One user |
 | `GET` | `/recording_studio_api/apis/operations/v1/users/count` | AdminRoot `:view` | `{ "count": N }` |
 | `POST` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:edit` | Create via `Directory.create_user!` |
@@ -96,7 +96,7 @@ Authorization: Bearer <operations_token>
 List:
 
 ```http
-GET /recording_studio_api/apis/operations/v1/users?q=ada&limit=50
+GET /recording_studio_api/apis/operations/v1/users?page=1&per_page=50
 Authorization: Bearer <operations_token>
 ```
 
@@ -117,7 +117,7 @@ Authorization: Bearer <operations_token>
       "additional_profile_attributes": { "locale": "en" }
     }
   ],
-  "meta": { "limit": 50, "has_more": false, "next_pagination_token": null, "q": "ada" }
+  "meta": { "page": 1, "per_page": 50, "total_count": 12, "total_pages": 1 }
 }
 ```
 

@@ -75,7 +75,7 @@ module RecordingStudioUser
       end
 
       def index_description
-        "Paged users, optional ?q= on email and name. Requires Accessible :view on AdminRoot."
+        "Paged users (page, per_page; same order as the Admin users screen). Requires Accessible :view on AdminRoot."
       end
 
       def create_description

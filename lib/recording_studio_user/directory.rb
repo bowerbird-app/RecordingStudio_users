@@ -9,6 +9,10 @@ module RecordingStudioUser
 
     module_function
 
+    def ordered_users
+      RecordingStudioUser.config.user_class.order(created_at: :desc)
+    end
+
     def people_recordable
       People.first || People.create!
     end

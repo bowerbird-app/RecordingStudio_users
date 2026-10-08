@@ -102,12 +102,15 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
 
     get "#{OPERATIONS_ROOT}/users",
         headers: auth(@viewer_token),
-        params: { q: listed.email },
+        params: { page: 1, per_page: 50 },
         as: :json
     assert_response :success
     emails = response.parsed_body.fetch("records").map { |row| row.fetch("email") }
     assert_includes emails, listed.email
-    assert_equal listed.email, response.parsed_body.fetch("meta").fetch("q")
+    meta = response.parsed_body.fetch("meta")
+    assert_equal 1, meta.fetch("page")
+    assert_equal 50, meta.fetch("per_page")
+    assert_equal User.count, meta.fetch("total_count")
     refute_secret_fields response.parsed_body.fetch("records").first
 
     get "#{OPERATIONS_ROOT}/users/#{listed.id}", headers: auth(@viewer_token), as: :json
@@ -210,6 +213,44 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       )
     end
     assert_match(/email cannot be changed/, error.message)
+  end
+
+  test "operations list uses offset paging on ordered_users" do
+    stamp = Time.utc(2026, 10, 8, 15, 0, 0)
+    3.times do |index|
+      RecordingStudioUser.create_user!(
+        email: "page-#{index}-#{SecureRandom.hex(4)}@example.com",
+        password: "Password123!",
+        first_name: "Page#{index}",
+        last_name: "User",
+        time_zone: "UTC"
+      ).update_columns(created_at: stamp + index.seconds, updated_at: stamp + index.seconds)
+    end
+    total = User.count
+
+    get "#{OPERATIONS_ROOT}/users",
+        headers: auth(@viewer_token),
+        params: { page: 1, per_page: 2 },
+        as: :json
+    assert_response :success
+    first = response.parsed_body
+    assert_equal 2, first.fetch("records").length
+    assert_equal(
+      { "page" => 1, "per_page" => 2, "total_count" => total, "total_pages" => (total.to_f / 2).ceil },
+      first.fetch("meta")
+    )
+    refute first.fetch("meta").key?("q")
+    refute first.fetch("meta").key?("pagination_token")
+    refute first.fetch("meta").key?("next_pagination_token")
+
+    get "#{OPERATIONS_ROOT}/users",
+        headers: auth(@viewer_token),
+        params: { page: 2, per_page: 2 },
+        as: :json
+    assert_response :success
+    second_ids = response.parsed_body.fetch("records").map { |row| row.fetch("id") }
+    first_ids = first.fetch("records").map { |row| row.fetch("id") }
+    assert_empty first_ids & second_ids
   end
 
   test "operations registry matches POST and PATCH users by verb" do
