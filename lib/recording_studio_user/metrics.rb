@@ -13,53 +13,66 @@ module RecordingStudioUser
     RESOURCE = :users
     API = :operations
     CONFIRMABLE_COLUMN = "confirmed_at"
+    EXPOSE = { api: [API] }.freeze
 
     module_function
 
     def register!
-      return unless metrics_available?
+      return unless ready?
 
-      user_class = RecordingStudioUser.config.user_class
-      return if already_registered? && !reloading?
-
-      RecordingStudioMetrics.register(
-        RESOURCE,
-        model: user_class,
-        blast_radius: :site,
-        api_authorize: ->(context) { RecordingStudioUser::Api::Access.can_view?(context) }
-      ) do
-        count :total, title: "Total users", expose: { api: [API] }
-
-        timeseries :signups,
-                   title: "Signups over time",
-                   field: :created_at,
-                   expose: { api: [API] }
-
-        timeseries :total_over_time,
-                   title: "Total users over time",
-                   field: :created_at,
-                   semantics: "population_at_end_of_period",
-                   expose: { api: [API] }
-
-        breakdown :by_method,
-                  title: "Signups by method",
-                  field: :registered_with,
-                  expose: { api: [API] }
-
-        if RecordingStudioUser::Metrics.confirmable_column?(user_class)
-          custom :confirmation,
-                 result_type: :breakdown,
-                 title: "Confirmed vs unconfirmed",
-                 expose: { api: [API] } do |relation, _context|
-            [
-              { key: "confirmed", value: relation.where.not(confirmed_at: nil).distinct.count },
-              { key: "unconfirmed", value: relation.where(confirmed_at: nil).distinct.count }
-            ]
-          end
-        end
-      end
+      RecordingStudioMetrics.register(RESOURCE, **resource_options, &catalog)
     rescue ArgumentError
       # Host user class may not be loadable during early boot.
+    end
+
+    def ready?
+      metrics_available? && !(already_registered? && !reloading?)
+    end
+
+    def resource_options
+      {
+        model: RecordingStudioUser.config.user_class,
+        blast_radius: :site,
+        api_authorize: ->(context) { RecordingStudioUser::Api::Access.can_view?(context) }
+      }
+    end
+
+    def catalog
+      user_class = RecordingStudioUser.config.user_class
+      proc do
+        RecordingStudioUser::Metrics.define_core(self)
+        RecordingStudioUser::Metrics.define_confirmation(self, user_class)
+      end
+    end
+
+    def define_core(dsl)
+      dsl.count :total, title: "Total users", expose: EXPOSE
+      dsl.timeseries :signups, title: "Signups over time", field: :created_at, expose: EXPOSE
+      dsl.timeseries :total_over_time,
+                     title: "Total users over time",
+                     field: :created_at,
+                     semantics: "population_at_end_of_period",
+                     expose: EXPOSE
+      dsl.breakdown :by_method, title: "Signups by method", field: :registered_with, expose: EXPOSE
+    end
+
+    def define_confirmation(dsl, user_class)
+      return unless confirmable_column?(user_class)
+
+      dsl.custom :confirmation,
+                 result_type: :breakdown,
+                 title: "Confirmed vs unconfirmed",
+                 expose: EXPOSE,
+                 &confirmation_calculator
+    end
+
+    def confirmation_calculator
+      lambda do |relation, _context|
+        [
+          { key: "confirmed", value: relation.where.not(confirmed_at: nil).distinct.count },
+          { key: "unconfirmed", value: relation.where(confirmed_at: nil).distinct.count }
+        ]
+      end
     end
 
     def metrics_available?

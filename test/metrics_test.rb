@@ -13,7 +13,8 @@ class MetricsTest < Minitest::Test
     refute_includes metrics, "RecordingStudioMetrics::Api.register!"
     assert_includes metrics, "blast_radius: :site"
     assert_includes metrics, "RecordingStudioUser::Api::Access.can_view?"
-    assert_includes metrics, "expose: { api: [API] }"
+    assert_includes metrics, "EXPOSE = { api: [API] }.freeze"
+    assert_includes metrics, "expose: EXPOSE"
     assert_includes metrics, 'title: "Total users"'
     assert_includes metrics, 'title: "Signups over time"'
     assert_includes metrics, 'title: "Total users over time"'

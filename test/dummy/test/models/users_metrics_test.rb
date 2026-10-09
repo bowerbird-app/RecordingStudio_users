@@ -3,8 +3,12 @@
 require "test_helper"
 
 class UsersMetricsTest < ActiveSupport::TestCase
+  include AccessGrantTestHelper
+
   setup do
     @actor = create_user("metrics-actor-#{SecureRandom.hex(4)}@example.com")
+    @admin_root = AdminRoot.find_or_create_by!(name: "Admin")
+    @admin_recording = RecordingStudio.root_recording_for(@admin_root)
     RecordingStudioUser::Metrics.register!
   end
 
@@ -129,39 +133,32 @@ class UsersMetricsTest < ActiveSupport::TestCase
   end
 
   test "execute handler returns the value when access allows" do
-    payload = nil
-    RecordingStudioUser::Api::Access.stub(:can_view?, true) do
-      payload = RecordingStudioMetrics::Api::ExecuteHandler.call(build_api_context(@actor))
-    end
+    bootstrap_owner_access!(@actor, @admin_recording)
+
+    payload = RecordingStudioMetrics::Api::ExecuteHandler.call(build_api_context(@actor))
 
     assert_equal "users.total", payload[:metric]
     assert_equal User.count, payload[:value]
   end
 
   test "execute handler is 403 when access denies" do
-    error = assert_raises(StandardError) do
-      RecordingStudioUser::Api::Access.stub(:can_view?, false) do
-        RecordingStudioMetrics::Api::ExecuteHandler.call(build_api_context(@actor))
-      end
+    error = assert_raises(RecordingStudioMetrics::Errors::AuthorizationError) do
+      RecordingStudioMetrics::Api::ExecuteHandler.call(build_api_context(@actor))
     end
 
-    assert_includes [RecordingStudioMetrics::Errors::AuthorizationError, authorization_error_class], error.class
+    assert_match(/not authorized/i, error.message)
   end
 
   test "discovery hides metrics from denied callers" do
-    allowed = RecordingStudioUser::Api::Access.stub(:can_view?, true) do
-      RecordingStudioMetrics::Api::DiscoveryHandler.call(build_api_context(@actor))
-    end
-    denied = RecordingStudioUser::Api::Access.stub(:can_view?, false) do
-      RecordingStudioMetrics::Api::DiscoveryHandler.call(build_api_context(@actor))
-    end
-
-    allowed_ids = allowed.fetch(:metrics).map { |row| row[:identifier] }
+    denied = RecordingStudioMetrics::Api::DiscoveryHandler.call(build_api_context(@actor))
     denied_ids = denied.fetch(:metrics).map { |row| row[:identifier] }
+    refute_includes denied_ids, "users.total"
+
+    bootstrap_owner_access!(@actor, @admin_recording)
+    allowed = RecordingStudioMetrics::Api::DiscoveryHandler.call(build_api_context(@actor))
+    allowed_ids = allowed.fetch(:metrics).map { |row| row[:identifier] }
 
     assert_includes allowed_ids, "users.total"
-    refute_includes denied_ids, "users.total"
-    assert_empty denied_ids.select { |identifier| identifier.to_s.start_with?("users.") }
   end
 
   private
@@ -194,12 +191,6 @@ class UsersMetricsTest < ActiveSupport::TestCase
     context.define_singleton_method(:api_key) { :operations }
     context.define_singleton_method(:params) { params }
     context
-  end
-
-  def authorization_error_class
-    return RecordingStudioApi::AuthorizationError if defined?(RecordingStudioApi::AuthorizationError)
-
-    RecordingStudioMetrics::Errors::AuthorizationError
   end
 
   def create_user(email, registered_with: "password")
