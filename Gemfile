@@ -13,6 +13,9 @@ gem "recording_studio_admin",
 gem "recording_studio_attachable",
     github: "bowerbird-app/RecordingStudio_attachable",
     tag: "v0.7.1"
+gem "recording_studio_metrics",
+    github: "bowerbird-app/RecordingStudio_metrics",
+    tag: "v0.2.0"
 gemspec
 
 gem "puma"

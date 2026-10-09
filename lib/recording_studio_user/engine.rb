@@ -61,6 +61,10 @@ module RecordingStudioUser
       config.to_prepare { RecordingStudioUser::Api.register! }
     end
 
+    initializer "recording_studio_user.metrics" do
+      config.to_prepare { RecordingStudioUser::Metrics.register! }
+    end
+
     # TnC prepends its registrations/extra_fields override onto ActionController::Base.
     # Re-assert Users after TnC so soft-detect wins over TnC's hard partial,
     # then put the host app/views in front so hosts override either gem —
