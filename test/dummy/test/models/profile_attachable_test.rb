@@ -7,6 +7,7 @@ class ProfileAttachableTest < ActiveSupport::TestCase
 
   test "Attachable is enabled on Profile only with one-image options" do
     options = RecordingStudio.capability_options(:attachable, for_type: "RecordingStudioUser::Profile")
+    types = RecordingStudio.configuration.recordable_types.map(&:to_s)
 
     assert RecordingStudio.capability_enabled?(:attachable, for: "RecordingStudioUser::Profile")
     refute RecordingStudio.capability_enabled?(:attachable, for: "RecordingStudioUser::People")
@@ -15,6 +16,10 @@ class ProfileAttachableTest < ActiveSupport::TestCase
     assert_equal 1, options[:max_file_count]
     refute_includes RecordingStudio.capability_allowed_parent_types_for("RecordingStudioAttachable::Attachment"),
                     "RecordingStudioUser::People"
+    assert_includes types, "RecordingStudioAttachable::Library"
+    assert_includes types, "RecordingStudioAttachable::Placement"
+    refute RecordingStudio.capability_enabled?(:image_library, for: "RecordingStudioUser::Profile")
+    refute RecordingStudio.capability_enabled?(:library_placement, for: "RecordingStudioUser::Profile")
   end
 
   test "attach_profile_image! records one attachment under the Profile recording" do
