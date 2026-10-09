@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.3] - 2026-10-09
+
+Site-wide user metrics authorization uses the site admin resolver and denies access when that resolver raises.
+
+### Fixed
+- `RecordingStudioUser::Api::Access` resolves the admin root with
+  `site_admin_recording_resolver`, then `access_recording_resolver`.
+  Metrics `can_view?` still checks AdminRoot `:view` through Accessible.
+  A resolver error (for example a controller-bound resolver called with no
+  controller) denies the check instead of failing metrics discovery.
+
+### Upgrade notes
+- Bump to `0.18.3`. No migration.
+- Hosts that set `site_admin_recording_resolver` now use that recording for
+  users metrics authorization. Hosts that only set `access_recording_resolver`
+  keep that recording. A raising resolver now denies access instead of
+  returning 500 from discovery.
+
 ## [0.18.0] - 2026-10-09
 
 OTP screens are not routed when OTP (or registration / login OTP) is off.
