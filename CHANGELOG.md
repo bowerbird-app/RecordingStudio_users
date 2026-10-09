@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-10-09
+
+OTP screens are not routed when OTP (or registration / login OTP) is off.
+
+### Changed
+- `recording_studio_user_auth_for` and the engine auth draw omit OTP paths
+  (`sign_up/otp`, `sign_up/verify`, `sign_up/resend`, `sign_in/otp`,
+  `sign_in/verify`, `sign_in/resend`, and engine `otp_codes`) unless
+  `otp_enabled` and the matching `otp_registration_enabled` /
+  `otp_login_enabled` flag are on. Host initializers already run before
+  routes draw (same rule as `mount_path`), so a host with OTP opt-in and
+  off gets a normal missing route instead of a controller
+  `RoutingError` error page. Password email screens are unchanged.
+  Controller guards remain as a safety net when routes were drawn with
+  OTP on and a flag is later flipped without a reload.
+
+### Upgrade notes
+- Bump to `0.18.0`. No migration.
+- Keep OTP flags in the host initializer before routes are evaluated.
+  After changing OTP flags in development, reload routes (or restart)
+  so the draw matches config.
+- No change for hosts that already run with OTP fully enabled.
+
 ## [0.17.0] - 2026-10-09
 
 Site-wide user metrics register with Recording Studio Metrics for the operations API.
