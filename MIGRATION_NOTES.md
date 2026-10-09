@@ -108,4 +108,4 @@ recording_studio_user_auth_for :users
 Hosts using Devise `:confirmable` should map confirmations as shown so the
 resend-confirmation screen shares the Users auth chrome.
 
-`primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths return not found while `otp_enabled` is false.
+`primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths are not drawn while `otp_enabled` (or the matching registration / login OTP flag) is false — set those flags in the initializer before routes draw.

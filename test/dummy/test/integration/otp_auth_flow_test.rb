@@ -648,12 +648,21 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     original_primary = RecordingStudioUser.config.primary_login_type
     RecordingStudioUser.config.primary_login_type = :email
     RecordingStudioUser.config.otp_registration_enabled = false
+    Rails.application.reload_routes!
 
     get "#{new_user_registration_path}/otp"
     assert_response :not_found
+    post "#{new_user_registration_path}/otp", params: { user: { email: "x@example.com" } }
+    assert_response :not_found
+    get "/users/sign_up/verify"
+    assert_response :not_found
+    post "/users/sign_up/resend"
+    assert_response :not_found
+    refute Rails.application.routes.url_helpers.respond_to?(:verify_user_registration_path)
   ensure
     RecordingStudioUser.config.otp_registration_enabled = original
     RecordingStudioUser.config.primary_login_type = original_primary
+    Rails.application.reload_routes!
   end
 
   test "disabled OTP login returns not found" do
@@ -663,13 +672,21 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     RecordingStudioUser.config.primary_login_type = :email
     RecordingStudioUser.config.instance_variable_set(:@registration_authentication_methods, %i[password])
     RecordingStudioUser.config.instance_variable_set(:@otp_login_enabled, false)
+    Rails.application.reload_routes!
 
     get "#{new_user_session_path}/otp"
+    assert_response :not_found
+    post "#{new_user_session_path}/otp", params: { user: { email: "x@example.com" } }
+    assert_response :not_found
+    get "/users/sign_in/verify"
+    assert_response :not_found
+    post "/users/sign_in/resend"
     assert_response :not_found
   ensure
     RecordingStudioUser.config.instance_variable_set(:@otp_login_enabled, original_login)
     RecordingStudioUser.config.instance_variable_set(:@registration_authentication_methods, original_methods)
     RecordingStudioUser.config.primary_login_type = original_primary
+    Rails.application.reload_routes!
   end
 
   private
