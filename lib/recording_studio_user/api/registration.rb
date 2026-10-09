@@ -26,11 +26,11 @@ module RecordingStudioUser
         )
       end
 
-      def already_registered?
+      def already_registered?(name = USER_COUNT_ENDPOINT)
         return false unless RecordingStudioApi.respond_to?(:registered_endpoint)
         return false unless operations_api_present?
 
-        RecordingStudioApi.registered_endpoint(USER_COUNT_ENDPOINT, api: USER_COUNT_API)
+        RecordingStudioApi.registered_endpoint(name, api: USER_COUNT_API)
       end
 
       def operations_api_present?
@@ -62,11 +62,11 @@ module RecordingStudioUser
 
       def register_users_endpoint!(name, http_verb:, path:, handler:, summary:, description:)
         return unless RecordingStudioApi.respond_to?(:register_endpoint)
-        return if users_endpoint_registered?(name)
+        return if already_registered?(name)
 
         RecordingStudioApi.register_endpoint(
           name,
-          api: OPERATIONS_API,
+          api: USER_COUNT_API,
           http_verb: http_verb,
           path: path,
           handler: handler,
@@ -74,20 +74,14 @@ module RecordingStudioUser
         )
       end
 
-      def users_endpoint_registered?(name)
-        return false unless RecordingStudioApi.respond_to?(:registered_endpoint)
-        return false unless operations_api_present?
-
-        RecordingStudioApi.registered_endpoint(name, api: OPERATIONS_API)
-      end
-
       def index_description
         "Paged users (page, per_page; same order as the Admin users screen). Requires Accessible :view on AdminRoot."
       end
 
       def create_description
-        "Creates a Devise user and People-root Profile. Requires Accessible :edit on AdminRoot. " \
-          "Pass a password to call create_user!. Omit it to call create_passwordless_user!."
+        "Requires Accessible :edit on AdminRoot. Pass a password to call create_user! " \
+          "(Devise user and People-root Profile). Omit the password when one-time codes are on " \
+          "to call create_unconfirmed_user!. Omit it when they are off and the response is 422."
       end
 
       def show_description

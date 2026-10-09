@@ -133,8 +133,9 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test "operations editor creates without password and does not accept terms" do
-    email = "passwordless-#{SecureRandom.hex(4)}@example.com"
+  test "operations editor creates an unconfirmed user when one-time codes are on" do
+    email = "otp-create-#{SecureRandom.hex(4)}@example.com"
+    assert_predicate RecordingStudioUser.config, :otp_enabled?
 
     payload = nil
     events = registration_completed_events do
@@ -146,22 +147,38 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       payload = response.parsed_body
     end
     assert_equal email, payload.fetch("email")
-    assert_equal "Nico", payload.fetch("first_name")
+    assert_nil payload.fetch("first_name")
+    assert_nil payload.fetch("confirmed_at")
     assert_equal "otp", payload.fetch("registered_with")
-    assert payload.fetch("confirmed_at").present?
     refute_secret_fields payload
+    assert_empty events
 
     user = User.find(payload.fetch("id"))
     assert user.registered_with_otp?
+    assert_not user.confirmed?
     assert_not user.password_set?
-    assert RecordingStudioUser.profile_for(user).present?
+    assert_nil RecordingStudioUser.profile_for(user)
     assert_empty RecordingStudioTermsAndConditions::Acceptance.where(
       actor_type: user.class.name,
       actor_id: user.id
     )
-    pending = RecordingStudioTermsAndConditions.pending_published_list(user, Dummy::SignupTerms.workspace)
-    assert pending.any?, "passwordless create must leave Terms for the Accept page"
-    assert_equal [{ user_id: user.id, method: :otp }], events
+  end
+
+  test "operations editor rejects a missing password when one-time codes are off" do
+    email = "needs-password-#{SecureRandom.hex(4)}@example.com"
+    original = RecordingStudioUser.config.otp_enabled
+    RecordingStudioUser.config.otp_enabled = false
+
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@editor_token),
+         params: { email: email, first_name: "Nico" },
+         as: :json
+
+    assert_response :unprocessable_entity
+    assert_match(/password is required/, response.parsed_body.dig("error", "message"))
+    assert_nil User.find_by(email: email)
+  ensure
+    RecordingStudioUser.config.otp_enabled = original
   end
 
   test "operations editor patches profile fields but rejects email changes" do
@@ -186,7 +203,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     user = User.find(user_id)
     assert_equal "password", user.registered_with
     assert user.password_set?
-    assert_equal [{ user_id: user.id, method: :password }], events
+    assert RecordingStudioUser.profile_for(user).present?
+    assert_empty events
 
     patch "#{OPERATIONS_ROOT}/users/#{user_id}",
           headers: auth(@editor_token),
@@ -211,7 +229,7 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_match(/email cannot be changed/, response.parsed_body.dig("error", "message"))
   end
 
-  test "operations list uses offset paging on ordered_users" do
+  test "operations list uses offset paging in created_at desc order" do
     stamp = Time.utc(2026, 10, 8, 15, 0, 0)
     3.times do |index|
       RecordingStudioUser.create_user!(

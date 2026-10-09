@@ -6,18 +6,11 @@ module RecordingStudioUser
       module_function
 
       def not_found!(message = "User was not found")
-        raise not_found_error, message
+        raise RecordingStudioApi::NotFoundError, message
       end
 
       def invalid_input!(message, details: [])
-        error_class = if defined?(RecordingStudioApi::InvalidActionInputError)
-                        RecordingStudioApi::InvalidActionInputError
-                      else
-                        ArgumentError
-                      end
-        raise error_class, message if error_class == ArgumentError
-
-        raise error_class.new(message, details: details)
+        raise RecordingStudioApi::InvalidActionInputError.new(message, details: details)
       end
 
       def from_record_invalid(error)
@@ -30,14 +23,6 @@ module RecordingStudioUser
           }
         end
         invalid_input!(error.message, details: details)
-      end
-
-      def not_found_error
-        if defined?(RecordingStudioApi::NotFoundError)
-          RecordingStudioApi::NotFoundError
-        else
-          KeyError
-        end
       end
     end
   end

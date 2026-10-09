@@ -41,15 +41,8 @@ module RecordingStudioUser
       end
 
       def deny!
-        raise authorization_error, "API access grant is not authorized for this capability"
-      end
-
-      def authorization_error
-        if defined?(RecordingStudioApi::AuthorizationError)
-          RecordingStudioApi::AuthorizationError
-        else
-          AuthorizationDenied
-        end
+        raise RecordingStudioApi::AuthorizationError,
+              "API access grant is not authorized for this capability"
       end
 
       def authorized_on_admin_root?(context, role)
@@ -65,7 +58,5 @@ module RecordingStudioUser
         )
       end
     end
-
-    class AuthorizationDenied < StandardError; end
   end
 end

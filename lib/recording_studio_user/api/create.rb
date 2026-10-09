@@ -13,9 +13,7 @@ module RecordingStudioUser
 
       def call
         Access.authorize_edit!(context)
-        user = persist_user!
-        emit_registration_completed!(user)
-        Serialize.user(user)
+        Serialize.user(persist_user!)
       rescue ActiveRecord::RecordInvalid => e
         Errors.from_record_invalid(e)
       rescue ArgumentError => e
@@ -29,8 +27,7 @@ module RecordingStudioUser
       def persist_user!
         attributes = Params.create_attributes(context)
         email = required_email(attributes)
-        profile = attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
-        build_user(email, attributes, profile)
+        build_user(email, attributes)
       end
 
       def required_email(attributes)
@@ -40,31 +37,27 @@ module RecordingStudioUser
         email
       end
 
-      def build_user(email, attributes, profile)
-        actor = Access.actor_for(context)
+      def build_user(email, attributes)
         password = attributes[:password].presence
-        return passwordless_user!(email, actor, profile) if password.blank?
+        return password_user!(email, password, attributes) if password
 
-        password_user!(email, password, attributes, actor, profile)
+        unconfirmed_user!(email)
       end
 
-      def password_user!(email, password, attributes, actor, profile)
+      def password_user!(email, password, attributes)
         RecordingStudioUser.create_user!(
           email: email,
           password: password,
           password_confirmation: attributes[:password_confirmation].presence,
-          actor: actor,
-          **profile
+          actor: Access.actor_for(context),
+          **attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
         )
       end
 
-      def passwordless_user!(email, actor, profile)
-        Directory.create_passwordless_user!(email: email, actor: actor, **profile)
-      end
+      def unconfirmed_user!(email)
+        Errors.invalid_input!("password is required") unless RecordingStudioUser.config.otp_enabled?
 
-      def emit_registration_completed!(user)
-        method = user.respond_to?(:registered_with_otp?) && user.registered_with_otp? ? :otp : :password
-        RegistrationCompleted.emit!(user_id: user.id, method: method)
+        RecordingStudioUser.create_unconfirmed_user!(email: email)
       end
     end
   end

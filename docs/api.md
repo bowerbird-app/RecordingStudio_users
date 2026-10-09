@@ -4,7 +4,7 @@ How a host, person, or AI agent manages **users** over **Recording Studio API**.
 
 Users are Devise actors, not tree recordables. The gem registers named endpoints with `RecordingStudioApi.register_endpoint` on the host’s `:operations` API. It does **not** gemspec-depend on `recording_studio_api`. If that constant is missing, Users boots with no JSON user routes.
 
-There is no Users `ApiController`. Create with a password calls `RecordingStudioUser.create_user!`. Create without a password calls `Directory.create_passwordless_user!`. Profile writes go through `record_profile!`. List uses `Directory.ordered_users` (`created_at desc`), the same order as the Admin users screen, with `page` / `per_page` offset paging. Access is **Accessible** only.
+There is no Users `ApiController`. Create with a password calls `RecordingStudioUser.create_user!`. Create without a password calls `RecordingStudioUser.create_unconfirmed_user!` when `otp_enabled?` is true, and returns `422` `password is required` when it is false. Profile writes on update go through `record_profile!`. List uses `RecordingStudioUser.config.user_class.order(created_at: :desc)`, the same order as the Admin users screen, with `page` / `per_page` offset paging. Access is **Accessible** only.
 
 Do not register these routes on the public API (`/recording_studio_api/api/v1`).
 
@@ -60,7 +60,7 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 | `GET` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:view` | Offset list (`page`, `per_page`; default 50, max 100). Same order as Admin users. |
 | `GET` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:view` | One user |
 | `GET` | `/recording_studio_api/apis/operations/v1/users/count` | Operations token | Existing endpoint. `{ "count": N }` |
-| `POST` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:edit` | Password: `create_user!`. No password: `create_passwordless_user!` |
+| `POST` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:edit` | Password: `create_user!`. No password and one-time codes on: `create_unconfirmed_user!`. No password and one-time codes off: `422` |
 | `PATCH` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:edit` | Profile fields only (`record_profile!`) |
 
 Send writable fields at the JSON root. Do not wrap them in `attributes`.
@@ -71,15 +71,17 @@ Serialized keys: `id`, `email`, `first_name`, `last_name`, `time_zone`, `confirm
 
 Never returned: password digests, password params, reset/confirmation/unlock tokens, OTP secrets, or other credentials.
 
-Writable on create: `email` (required), `password` (optional), `password_confirmation`, `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys.
+Writable on create: `email` (required), `password`, `password_confirmation`, `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. Profile fields are applied only by `create_user!` (password present). `create_unconfirmed_user!` takes `email` only.
 
 Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. `email`, `password`, and `password_confirmation` are not accepted; sending `email` returns `422` with a clear error.
 
-## Passwordless create
+## Create
 
-Omit `password` (or send blank). `create_passwordless_user!` sets `registered_with` to `otp`, does not invent a password, confirms the account so login codes work, and still records a Profile under People through `record_profile!`. When first name is omitted, the profile uses `Profile.default_attributes_for`. Google (and other OmniAuth) can link later by email. Terms are **not** accepted; the Terms gem still sends them to Accept on first login.
+With a password, `POST` calls `create_user!` unchanged. `registered_with` stays `password`, the People-root Profile is recorded, and the existing confirmation policy applies. Admin create does not emit `registration.completed`.
 
-With a password, `POST` calls `create_user!` unchanged. `registered_with` stays `password` and the existing confirmation policy applies.
+Omit `password` (or send blank) while one-time codes are enabled (`RecordingStudioUser.config.otp_enabled?`). `POST` calls `create_unconfirmed_user!`. That method sets `registered_with` to `otp`, skips the confirmation email, and does not call `skip_confirmation!`. The account stays unconfirmed, no Profile is recorded, and Terms are not accepted. Profile fields on that request are ignored.
+
+Omit `password` while one-time codes are off. `POST` returns `422` with `password is required` and creates no user.
 
 ## Examples
 
@@ -122,29 +124,29 @@ Authorization: Bearer <operations_token>
 }
 ```
 
-Create without a password:
+Create without a password while one-time codes are on:
 
 ```http
 POST /recording_studio_api/apis/operations/v1/users
 Authorization: Bearer <operations_token>
 Content-Type: application/json
 
-{ "email": "new@example.com", "first_name": "Nico", "last_name": "New" }
+{ "email": "new@example.com" }
 ```
 
 ```json
 {
   "id": "…",
   "email": "new@example.com",
-  "first_name": "Nico",
-  "last_name": "New",
-  "time_zone": "UTC",
-  "confirmed_at": "2026-10-08T00:00:00.000Z",
+  "first_name": null,
+  "last_name": null,
+  "time_zone": null,
+  "confirmed_at": null,
   "created_at": "2026-10-08T00:00:00.000Z",
   "updated_at": "2026-10-08T00:00:00.000Z",
   "registered_with": "otp",
   "identity_providers": [],
-  "additional_profile_attributes": { "locale": "en" }
+  "additional_profile_attributes": {}
 }
 ```
 

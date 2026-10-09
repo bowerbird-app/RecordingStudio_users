@@ -23,28 +23,26 @@ Users can be listed, shown, created, and updated on the host's named `:operation
   names, and allowlisted additional profile attributes. Password digests, tokens,
   and OTP secrets are never returned.
 - `POST` with a password calls `RecordingStudioUser.create_user!`, which records a
-  People-root Profile. Omit the password and `POST` calls
-  `Directory.create_passwordless_user!`: a confirmed `registered_with: otp`
-  account, no invented password, a Profile, and no Terms acceptance. Create emits
-  `registration.completed.recording_studio_user` (`:otp` or `:password`).
+  People-root Profile. Omit the password when one-time codes are enabled and `POST`
+  calls `create_unconfirmed_user!`: an unconfirmed `registered_with: otp` account,
+  no profile, and no Terms acceptance. Omit the password when one-time codes are
+  off and `POST` returns `422` with `password is required`. Admin create does not
+  emit `registration.completed.recording_studio_user`.
 - `PATCH` updates profile fields through `record_profile!`. A request that includes
   `email` returns `422`.
 - List and show require Accessible `:view` on AdminRoot. Create and update require
   `:edit` on AdminRoot. The API client is the Accessible actor.
-- The Admin users table declares `paginate per_page: 50`. Charts and the Total users
-  widget still use the full unpaginated relation.
 
 ### Upgrade notes
 - Bump to `0.19.0`. No migration in this gem. Dummy loads Recording Studio API tables
   for the host demo.
-- `create_user!` still requires a password. Passwordless create is the new
-  `Directory.create_passwordless_user!` method.
+- `create_user!` still requires a password. Create without a password calls the
+  existing `create_unconfirmed_user!` only when `otp_enabled?` is true, and does
+  not confirm the account.
 - Hosts that already name `:operations` get the user routes when `recording_studio_api`
   is loaded. Add that gem in the host Gemfile. Dummy pins `v0.6.7`.
 - Grant the operations API client Accessible `:view` (list and show) or `:edit`
   (create and update) on AdminRoot.
-- Create without a password does not accept Terms. First login still hits the Terms
-  Accept page when that gem is installed.
 - Public API clients cannot list or change users.
 - RecordingStudio_api **v0.6.7** (or newer) matches registered endpoints by path and
   HTTP verb. Pin that tag so `POST users` and `PATCH users/:id` dispatch correctly.

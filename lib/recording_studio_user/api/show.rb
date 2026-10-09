@@ -13,19 +13,12 @@ module RecordingStudioUser
 
       def call
         Access.authorize_view!(context)
-        Serialize.user(find_user!)
+        Serialize.user(Users.find!(context))
       end
 
       private
 
       attr_reader :context
-
-      def find_user!
-        user = RecordingStudioUser.config.user_class.find_by(id: Params.record_id(context))
-        Errors.not_found! if user.blank?
-
-        user
-      end
     end
   end
 end

@@ -24,28 +24,19 @@ module RecordingStudioUser
       end
 
       def create_attributes(context)
-        slice_writable(request_hash(context))
+        slice_writable(request_hash(context), USER_KEYS + PROFILE_KEYS)
       end
 
       def update_attributes(context)
         hash = request_hash(context)
         reject_email_update!(hash)
-        slice_profile_writable(hash)
+        slice_writable(hash, PROFILE_KEYS)
       end
 
       def reject_email_update!(hash)
         return unless hash.key?(:email)
 
         Errors.invalid_input!("email cannot be changed through the operations users API")
-      end
-
-      def slice_profile_writable(hash)
-        extras = hash[:additional_profile_attributes]
-        extras = extras.to_h if extras.respond_to?(:to_h)
-        allowlisted = RecordingStudioUser.config.additional_profile_attributes.map(&:to_sym)
-        top_level_extras = hash.slice(*allowlisted)
-        merged_extras = (extras || {}).symbolize_keys.merge(top_level_extras)
-        hash.slice(*PROFILE_KEYS).merge(additional_profile_attributes: merged_extras)
       end
 
       def page(context)
@@ -61,15 +52,13 @@ module RecordingStudioUser
         hash[:id].presence || hash[:user_id].presence
       end
 
-      def slice_writable(hash)
+      def slice_writable(hash, keys)
         extras = hash[:additional_profile_attributes]
         extras = extras.to_h if extras.respond_to?(:to_h)
         allowlisted = RecordingStudioUser.config.additional_profile_attributes.map(&:to_sym)
         top_level_extras = hash.slice(*allowlisted)
         merged_extras = (extras || {}).symbolize_keys.merge(top_level_extras)
-        hash.slice(*(USER_KEYS + PROFILE_KEYS)).merge(
-          additional_profile_attributes: merged_extras
-        )
+        hash.slice(*keys).merge(additional_profile_attributes: merged_extras)
       end
     end
   end

@@ -83,7 +83,8 @@ class ApiTest < Minitest::Test
     assert_includes registration, "handler: Create"
     assert_includes registration, "handler: Show"
     assert_includes registration, "handler: Update"
-    assert_includes registration, "api: OPERATIONS_API"
+    assert_includes registration, "api: USER_COUNT_API"
+    refute_includes registration, "OPERATIONS_API"
     refute_includes registration, "api: :public"
     refute_includes registration, "http_verb: :delete"
   end
@@ -226,8 +227,10 @@ class ApiTest < Minitest::Test
       actor: :staff,
       params: { id: "user-1", email: "new@example.com", first_name: "Ada" }
     )
-    error = assert_raises(ArgumentError) do
-      RecordingStudioUser::Api::Params.update_attributes(context)
+    error = with_api_errors do
+      assert_raises(RecordingStudioApi::InvalidActionInputError) do
+        RecordingStudioUser::Api::Params.update_attributes(context)
+      end
     end
     assert_match(/email cannot be changed/, error.message)
   end
@@ -255,20 +258,21 @@ class ApiTest < Minitest::Test
   def test_operations_list_orders_like_the_admin_screen
     admin = File.read(File.expand_path("../lib/recording_studio_user/admin.rb", __dir__))
     index = File.read(File.expand_path("../lib/recording_studio_user/api/index.rb", __dir__))
-    ordering = File.read(File.expand_path("../lib/recording_studio_user/directory/ordered_users.rb", __dir__))
-    assert_includes ordering, "def ordered_users"
-    assert_includes ordering, "config.user_class.order(created_at: :desc)"
-    assert_includes admin, "order(created_at: :desc)"
-    assert_includes admin, "paginate per_page: 50"
-    assert_includes index, "Directory.ordered_users"
+
+    assert_includes admin, "config.user_class.order(created_at: :desc)"
+    assert_includes index, "config.user_class.order(created_at: :desc)"
+    refute_includes index, "ordered_users"
     refute_includes index, "search_term"
+    refute_includes admin, "paginate per_page"
     refute_includes File.read(File.expand_path("../lib/recording_studio_user/api/query.rb", __dir__)),
                     "pagination_token"
   end
 
   def test_create_requires_email_after_edit_authorization
-    error = assert_raises(ArgumentError) do
-      RecordingStudioUser::Api::Create.call(FakeContext.new(actor: :staff, params: { first_name: "Nico" }))
+    error = with_api_errors do
+      assert_raises(RecordingStudioApi::InvalidActionInputError) do
+        RecordingStudioUser::Api::Create.call(FakeContext.new(actor: :staff, params: { first_name: "Nico" }))
+      end
     end
     assert_match(/email is required/, error.message)
   end
@@ -278,30 +282,117 @@ class ApiTest < Minitest::Test
     RecordingStudioUser::Api::Access.authorization_result = ->(_context, _role) { false }
     context = FakeContext.new(actor: :stranger, params: { id: "missing" })
 
-    assert_raises(RecordingStudioUser::Api::AuthorizationDenied) do
-      RecordingStudioUser::Api::Index.call(context)
-    end
-    assert_raises(RecordingStudioUser::Api::AuthorizationDenied) do
-      RecordingStudioUser::Api::Show.call(context)
-    end
-    assert_raises(RecordingStudioUser::Api::AuthorizationDenied) do
-      RecordingStudioUser::Api::Create.call(context)
-    end
-    assert_raises(RecordingStudioUser::Api::AuthorizationDenied) do
-      RecordingStudioUser::Api::Update.call(context)
+    with_api_errors do
+      assert_raises(RecordingStudioApi::AuthorizationError) do
+        RecordingStudioUser::Api::Index.call(context)
+      end
+      assert_raises(RecordingStudioApi::AuthorizationError) do
+        RecordingStudioUser::Api::Show.call(context)
+      end
+      assert_raises(RecordingStudioApi::AuthorizationError) do
+        RecordingStudioUser::Api::Create.call(context)
+      end
+      assert_raises(RecordingStudioApi::AuthorizationError) do
+        RecordingStudioUser::Api::Update.call(context)
+      end
     end
   end
 
-  def test_create_user_stays_password_required_and_passwordless_is_separate
+  def test_create_with_password_calls_create_user!
+    created = fake_created_user(registered_with: "password")
+    calls = []
+    with_api_errors do
+      with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**kwargs|
+        calls << kwargs
+        created
+      }) do
+        with_singleton_method(RecordingStudioUser.singleton_class, :create_unconfirmed_user!, proc { |**|
+          flunk "create_unconfirmed_user! must not run when a password is present"
+        }) do
+          events = registration_events do
+            payload = without_profile_lookup do
+              context = FakeContext.new(
+                actor: :staff,
+                params: { email: "ada@example.com", password: "secret", first_name: "Ada" }
+              )
+              RecordingStudioUser::Api::Create.call(context)
+            end
+            assert_equal "ada@example.com", payload.fetch(:email)
+            assert_equal "password", payload.fetch(:registered_with)
+          end
+          assert_empty events
+        end
+      end
+    end
+    assert_equal "ada@example.com", calls.first[:email]
+    assert_equal "secret", calls.first[:password]
+    assert_nil calls.first[:password_confirmation]
+    assert_equal :staff, calls.first[:actor]
+    assert_equal "Ada", calls.first[:first_name]
+  end
+
+  def test_create_without_password_calls_create_unconfirmed_user_when_otp_is_on
+    created = fake_created_user(registered_with: "otp")
+    calls = []
+    with_api_errors do
+      with_otp_enabled(true) do
+        with_singleton_method(RecordingStudioUser.singleton_class, :create_unconfirmed_user!, proc { |email:|
+          calls << email
+          created
+        }) do
+          with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
+            flunk "create_user! must not run without a password"
+          }) do
+            events = registration_events do
+              payload = without_profile_lookup do
+                RecordingStudioUser::Api::Create.call(
+                  FakeContext.new(actor: :staff, params: { email: "ada@example.com", first_name: "Ada" })
+                )
+              end
+              assert_equal "otp", payload.fetch(:registered_with)
+            end
+            assert_empty events
+          end
+        end
+      end
+    end
+    assert_equal ["ada@example.com"], calls
+  end
+
+  def test_create_without_password_requires_a_password_when_otp_is_off
+    with_api_errors do
+      with_otp_enabled(false) do
+        with_singleton_method(RecordingStudioUser.singleton_class, :create_unconfirmed_user!, proc { |**|
+          flunk "create_unconfirmed_user! must not run when one-time codes are off"
+        }) do
+          with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
+            flunk "create_user! must not run without a password"
+          }) do
+            error = assert_raises(RecordingStudioApi::InvalidActionInputError) do
+              RecordingStudioUser::Api::Create.call(
+                FakeContext.new(actor: :staff, params: { email: "ada@example.com" })
+              )
+            end
+            assert_equal "password is required", error.message
+          end
+        end
+      end
+    end
+  end
+
+  def test_create_handler_calls_existing_user_methods_only
     directory = File.read(File.expand_path("../lib/recording_studio_user/directory.rb", __dir__))
-    passwordless = File.read(File.expand_path("../lib/recording_studio_user/directory/passwordless.rb", __dir__))
+    create = File.read(File.expand_path("../lib/recording_studio_user/api/create.rb", __dir__))
 
     assert_includes directory, "def create_user!(email:, password:, password_confirmation: nil"
     refute_includes directory, "def create_user!(email:, password: nil"
-    assert_includes passwordless, "def create_passwordless_user!(email:, actor: nil"
-    assert_includes passwordless, 'registered_with: "otp"'
-    refute_includes directory, "accept!"
-    refute_includes passwordless, "accept!"
+    assert_includes create, "RecordingStudioUser.create_user!"
+    assert_includes create, "RecordingStudioUser.create_unconfirmed_user!"
+    assert_includes create, "otp_enabled?"
+    refute_includes create, "create_passwordless_user!"
+    refute_includes create, "RegistrationCompleted"
+    refute_includes create, "skip_confirmation!"
+    refute File.exist?(File.expand_path("../lib/recording_studio_user/directory/passwordless.rb", __dir__))
   end
 
   private
@@ -317,6 +408,80 @@ class ApiTest < Minitest::Test
     $VERBOSE = nil
     singleton.define_method(:profile_for, original) if defined?(singleton) && defined?(original)
     $VERBOSE = verbose
+  end
+
+  def fake_created_user(registered_with:)
+    Struct.new(:id, :email, :confirmed_at, :created_at, :updated_at, :registered_with, keyword_init: true).new(
+      id: "user-1",
+      email: "ada@example.com",
+      confirmed_at: nil,
+      created_at: Time.utc(2026, 1, 1),
+      updated_at: Time.utc(2026, 1, 1),
+      registered_with: registered_with
+    )
+  end
+
+  def registration_events
+    events = []
+    event = RecordingStudioUser::RegistrationCompleted::EVENT
+    subscriber = ActiveSupport::Notifications.subscribe(event) do |_name, _start, _finish, _id, payload|
+      events << payload
+    end
+    yield
+    events
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+  end
+
+  def with_otp_enabled(enabled)
+    config = RecordingStudioUser.config
+    singleton = config.singleton_class
+    original = singleton.instance_method(:otp_enabled?)
+    verbose = $VERBOSE
+    $VERBOSE = nil
+    singleton.define_method(:otp_enabled?) { enabled }
+    $VERBOSE = verbose
+    yield
+  ensure
+    $VERBOSE = nil
+    singleton.define_method(:otp_enabled?, original) if defined?(singleton) && defined?(original) && original
+    $VERBOSE = verbose
+  end
+
+  def with_singleton_method(singleton, name, implementation)
+    original = singleton.instance_method(name)
+    verbose = $VERBOSE
+    $VERBOSE = nil
+    singleton.define_method(name, implementation)
+    $VERBOSE = verbose
+    yield
+  ensure
+    $VERBOSE = nil
+    singleton.define_method(name, original) if defined?(singleton) && defined?(original) && original
+    $VERBOSE = verbose
+  end
+
+  def with_api_errors
+    return yield if defined?(RecordingStudioApi::InvalidActionInputError)
+
+    api = Module.new
+    api.const_set(:AuthorizationError, Class.new(StandardError))
+    invalid = Class.new(StandardError) do
+      attr_reader :details
+
+      def initialize(message = "Action input is invalid", details: [])
+        super(message)
+        @details = Array(details)
+      end
+    end
+    api.const_set(:InvalidActionInputError, invalid)
+    api.const_set(:NotFoundError, Class.new(StandardError))
+    Object.const_set(:RecordingStudioApi, api)
+    yield
+  ensure
+    if defined?(api) && api && Object.const_defined?(:RecordingStudioApi, false) && RecordingStudioApi.equal?(api)
+      Object.send(:remove_const, :RecordingStudioApi)
+    end
   end
 
   def user_count_registration(api)

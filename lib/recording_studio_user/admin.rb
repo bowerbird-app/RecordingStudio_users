@@ -41,7 +41,6 @@ module RecordingStudioUser
                value: ->(user, _context) { RecordingStudioUser.display_name_for(user) }
         column :email, title: "Email"
         column :created_at, title: "Created at"
-        paginate per_page: 50
       end
       widget "widgets.users.total"
     end

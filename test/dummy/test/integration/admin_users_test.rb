@@ -154,7 +154,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       )
     end
 
-    relation = RecordingStudioUser::Directory.ordered_users
+    relation = RecordingStudioUser.config.user_class.order(created_at: :desc)
     assert_operator relation.count, :>, 50
     series = RecordingStudioUser::Admin.user_creation_series(relation)
     counted = series.sum { |point| point[:y] }
@@ -179,10 +179,6 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     51.times { |index| create_user("pagination-#{index}-#{SecureRandom.hex(4)}@example.com") }
     sign_in @admin
     bootstrap_owner_access!(@admin, @admin_recording)
-
-    screen_source = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/admin.rb"))
-    assert_includes screen_source, "paginate per_page: 50"
-    assert_includes screen_source, "order(created_at: :desc)"
 
     get "/admin/screens/recording_studio_users/table"
 

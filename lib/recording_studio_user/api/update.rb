@@ -13,7 +13,7 @@ module RecordingStudioUser
 
       def call
         Access.authorize_edit!(context)
-        user = find_user!
+        user = Users.find!(context)
         attributes = Params.update_attributes(context)
         revise_profile!(user, attributes)
         Serialize.user(user.reload)
@@ -24,13 +24,6 @@ module RecordingStudioUser
       private
 
       attr_reader :context
-
-      def find_user!
-        user = RecordingStudioUser.config.user_class.find_by(id: Params.record_id(context))
-        Errors.not_found! if user.blank?
-
-        user
-      end
 
       def revise_profile!(user, attributes)
         assignment = profile_revision(user, attributes)
