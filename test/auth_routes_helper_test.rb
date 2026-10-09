@@ -33,7 +33,7 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "otp_enabled?"
     assert_includes source, "otp_registration_enabled?"
     assert_includes source, "otp_login_enabled?"
-    assert_includes source, 'resources :otp_codes, only: :show'
+    assert_includes source, "resources :otp_codes, only: :show"
   end
 
   def test_auth_route_helpers_prefer_host_paths

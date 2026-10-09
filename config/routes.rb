@@ -4,9 +4,7 @@
 # OTP auth and otp_codes follow the same config as recording_studio_user_auth_for
 # (initializer values must be set before routes draw / reload).
 RecordingStudioUser::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
-  if RecordingStudioUser.config.otp_enabled?
-    resources :otp_codes, only: :show
-  end
+  resources :otp_codes, only: :show if RecordingStudioUser.config.otp_enabled?
 
   resource :profile, only: %i[show edit update], path: RecordingStudioUser.config.profile_route_path do
     get "sign-in-methods", to: "sign_in_methods#show", as: :sign_in_methods
@@ -14,7 +12,7 @@ RecordingStudioUser::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
   end
   get RecordingStudioUser.config.admin_route_path, to: "admin/users#index", as: :admin
 
-  scope module: :auth, path: "auth" do
+  scope module: :auth, path: "auth" do # rubocop:disable Metrics/BlockLength
     get "sign_up", to: "registrations#new", as: :sign_up
     post "sign_up", to: "registrations#continue"
     get "sign_up/password", to: "registrations#password", as: :sign_up_password
