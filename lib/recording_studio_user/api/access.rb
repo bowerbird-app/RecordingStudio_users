@@ -24,24 +24,6 @@ module RecordingStudioUser
         authorized_on_admin_root?(context, :view)
       end
 
-      def authorize_view!(context)
-        return if can_view?(context)
-
-        deny!
-      end
-
-      def deny!
-        raise authorization_error, "API access grant is not authorized for this capability"
-      end
-
-      def authorization_error
-        if defined?(RecordingStudioApi::AuthorizationError)
-          RecordingStudioApi::AuthorizationError
-        else
-          AuthorizationDenied
-        end
-      end
-
       def authorized_on_admin_root?(context, role)
         actor = actor_for(context)
         recording = admin_root_recording
@@ -55,7 +37,5 @@ module RecordingStudioUser
         )
       end
     end
-
-    class AuthorizationDenied < StandardError; end
   end
 end

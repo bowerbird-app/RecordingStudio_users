@@ -2,6 +2,21 @@
 
 require "test_helper"
 
+unless Object.method_defined?(:stub)
+  class Object
+    def stub(name, val_or_callable)
+      metaclass = singleton_class
+      original = metaclass.instance_method(name)
+      metaclass.define_method(name) do |*_args, **_kwargs|
+        val_or_callable
+      end
+      yield
+    ensure
+      metaclass.define_method(name, original)
+    end
+  end
+end
+
 class UsersMetricsTest < ActiveSupport::TestCase
   include AccessGrantTestHelper
 
@@ -9,6 +24,7 @@ class UsersMetricsTest < ActiveSupport::TestCase
     @actor = create_user("metrics-actor-#{SecureRandom.hex(4)}@example.com")
     @admin_root = AdminRoot.find_or_create_by!(name: "Admin")
     @admin_recording = RecordingStudio.root_recording_for(@admin_root)
+    RecordingStudioMetrics.registry.reset!
     RecordingStudioUser::Metrics.register!
   end
 
@@ -116,18 +132,16 @@ class UsersMetricsTest < ActiveSupport::TestCase
   end
 
   test "skips confirmation when confirmed_at is missing" do
-    user_class = User
-    original = user_class.method(:column_names)
-    user_class.define_singleton_method(:column_names) { original.call - ["confirmed_at"] }
+    names = User.column_names - ["confirmed_at"]
+    User.stub(:column_names, names) do
+      RecordingStudioMetrics.registry.reset!
+      RecordingStudioUser::Metrics.register!
 
-    RecordingStudioMetrics.registry.reset!
-    RecordingStudioUser::Metrics.register!
-
-    identifiers = RecordingStudioMetrics.for_resource(:users).map(&:identifier)
-    refute_includes identifiers, "users.confirmation"
-    assert_includes identifiers, "users.total"
+      identifiers = RecordingStudioMetrics.for_resource(:users).map(&:identifier)
+      refute_includes identifiers, "users.confirmation"
+      assert_includes identifiers, "users.total"
+    end
   ensure
-    user_class.define_singleton_method(:column_names, original)
     RecordingStudioMetrics.registry.reset!
     RecordingStudioUser::Metrics.register!
   end

@@ -1,12 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "api/access"
-
-begin
-  require "recording_studio_metrics"
-rescue LoadError
-  # Hosts and the gem suite can boot without Metrics loaded yet.
-end
+require "recording_studio_metrics"
 
 module RecordingStudioUser
   module Metrics
@@ -18,28 +13,13 @@ module RecordingStudioUser
     module_function
 
     def register!
-      return unless ready?
-
-      RecordingStudioMetrics.register(RESOURCE, **resource_options, &catalog)
-    rescue ArgumentError
-      # Host user class may not be loadable during early boot.
-    end
-
-    def ready?
-      metrics_available? && !(already_registered? && !reloading?)
-    end
-
-    def resource_options
-      {
-        model: RecordingStudioUser.config.user_class,
+      user_class = RecordingStudioUser.config.user_class
+      RecordingStudioMetrics.register(
+        RESOURCE,
+        model: user_class,
         blast_radius: :site,
         api_authorize: ->(context) { RecordingStudioUser::Api::Access.can_view?(context) }
-      }
-    end
-
-    def catalog
-      user_class = RecordingStudioUser.config.user_class
-      proc do
+      ) do
         RecordingStudioUser::Metrics.define_core(self)
         RecordingStudioUser::Metrics.define_confirmation(self, user_class)
       end
@@ -75,28 +55,12 @@ module RecordingStudioUser
       end
     end
 
-    def metrics_available?
-      defined?(RecordingStudioMetrics) && RecordingStudioMetrics.respond_to?(:register)
-    end
-
-    def already_registered?
-      RecordingStudioMetrics.for_resource(RESOURCE).any?
-    end
-
-    def reloading?
-      defined?(Rails) &&
-        Rails.respond_to?(:application) &&
-        Rails.application &&
-        Rails.application.config.respond_to?(:cache_classes) &&
-        Rails.application.config.cache_classes == false
-    end
-
     def confirmable_column?(user_class)
       return false unless user_class.respond_to?(:column_names)
       return false if user_class.respond_to?(:table_exists?) && !user_class.table_exists?
 
       user_class.column_names.include?(CONFIRMABLE_COLUMN)
-    rescue StandardError
+    rescue ActiveRecord::ActiveRecordError
       false
     end
   end
