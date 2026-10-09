@@ -112,6 +112,14 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
     assert_match(/RecordingStudioUser::Profile cannot be recorded under Workspace/, error.message)
   end
 
+  test "create_user! still requires a password" do
+    error = assert_raises(ArgumentError) do
+      RecordingStudioUser.create_user!(email: "needs-password-#{SecureRandom.hex(4)}@example.com")
+    end
+
+    assert_match(/password/, error.message)
+  end
+
   test "create_user! signs up a Devise user then records a Profile under People" do
     user = RecordingStudioUser.create_user!(
       email: "signup-#{SecureRandom.hex(4)}@example.com",

@@ -145,6 +145,25 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     admin_surface.engine_layout = original_layout
   end
 
+  test "users over time series counts every user when there is more than one page" do
+    freeze = Time.utc(2026, 10, 8, 12, 0, 0)
+    51.times do |index|
+      create_user(
+        "chart-page-#{index}-#{SecureRandom.hex(4)}@example.com",
+        created_at: freeze
+      )
+    end
+
+    relation = RecordingStudioUser.config.user_class.order(created_at: :desc)
+    assert_operator relation.count, :>, 50
+    series = RecordingStudioUser::Admin.user_creation_series(relation)
+    counted = series.sum { |point| point[:y] }
+
+    assert_equal relation.count, counted
+    assert_equal User.count, counted
+    assert_equal User.count, RecordingStudioUser.config.user_class.count
+  end
+
   test "builds user creation series from an ordered relation" do
     create_user("series-a-#{SecureRandom.hex(4)}@example.com")
     create_user("series-b-#{SecureRandom.hex(4)}@example.com")

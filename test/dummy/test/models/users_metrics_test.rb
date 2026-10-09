@@ -156,7 +156,8 @@ class UsersMetricsTest < ActiveSupport::TestCase
   end
 
   test "execute handler is 403 when access denies" do
-    error = assert_raises(RecordingStudioMetrics::Errors::AuthorizationError) do
+    # Dummy loads recording_studio_api, so Metrics maps the denial onto that gem's error.
+    error = assert_raises(RecordingStudioApi::AuthorizationError) do
       RecordingStudioMetrics::Api::ExecuteHandler.call(build_api_context(@actor))
     end
 

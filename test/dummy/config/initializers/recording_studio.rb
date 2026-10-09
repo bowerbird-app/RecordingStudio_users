@@ -16,6 +16,13 @@ RecordingStudio.configure do |config|
     "RecordingStudioTermsAndConditions::Terms",
     "RecordingStudioPublishable::Publishable"
   ]
+  config.recordable_types += [
+    "RecordingStudio::Access",
+    "RecordingStudioApi::ApiClient",
+    "RecordingStudioApi::ApiCredential",
+    "RecordingStudioApi::ApiAccessToken",
+    "RecordingStudioApi::AdminApi"
+  ]
 
   # Require each configured ActiveRecord type to call recording_studio_recordable.
   config.require_recordable_declarations = true

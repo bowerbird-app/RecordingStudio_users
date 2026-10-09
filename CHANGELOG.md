@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-10-09
+
+Users can be listed, shown, created, and updated on the host's named `:operations` API.
+
+### Added
+- Operations endpoints when `recording_studio_api` is present (still no gemspec dependency):
+  `GET users`, `GET users/:id`, `POST users`, and `PATCH users/:id` on `:operations` only.
+  There is no `DELETE`, and nothing new is registered on the public API.
+  `GET users/count` stays the existing endpoint.
+- List is offset-paged (`page`, `per_page`, default 50, max 100) in `created_at desc`
+  order, the same order as the Admin users screen. No `?q=` search.
+- Show, create, and update return id, email, first and last name, time zone,
+  confirmed_at, created_at, updated_at, registered_with, linked identity provider
+  names, and allowlisted additional profile attributes. Password digests, tokens,
+  and OTP secrets are never returned.
+- `POST` with a password calls `RecordingStudioUser.create_user!`, which records a
+  People-root Profile. Omit the password when one-time codes are enabled and `POST`
+  calls `create_unconfirmed_user!`: an unconfirmed `registered_with: otp` account,
+  no profile, and no Terms acceptance. Omit the password when one-time codes are
+  off and `POST` returns `422` with `password is required`. Admin create does not
+  emit `registration.completed.recording_studio_user`.
+- `PATCH` updates profile fields through `record_profile!`. A request that includes
+  `email` returns `422`.
+- List and show require Accessible `:view` on AdminRoot. Create and update require
+  `:edit` on AdminRoot. The API client is the Accessible actor.
+
+### Upgrade notes
+- Bump to `0.19.0`. No migration in this gem. Dummy loads Recording Studio API tables
+  for the host demo.
+- `create_user!` still requires a password. Create without a password calls the
+  existing `create_unconfirmed_user!` only when `otp_enabled?` is true, and does
+  not confirm the account.
+- Hosts that already name `:operations` get the user routes when `recording_studio_api`
+  is loaded. Add that gem in the host Gemfile. Dummy pins `v0.6.7`.
+- Grant the operations API client Accessible `:view` (list and show) or `:edit`
+  (create and update) on AdminRoot.
+- Public API clients cannot list or change users.
+- RecordingStudio_api **v0.6.7** (or newer) matches registered endpoints by path and
+  HTTP verb. Pin that tag so `POST users` and `PATCH users/:id` dispatch correctly.
+
 ## [0.18.3] - 2026-10-09
 
 Site-wide user metrics authorization uses the site admin resolver and denies access when that resolver raises.
@@ -782,7 +822,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.18.3...v0.19.0
 [0.17.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.1...v0.17.0
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.14.0...v0.15.0
