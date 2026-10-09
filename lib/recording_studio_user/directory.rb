@@ -1,17 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "directory/accounts"
-
 module RecordingStudioUser
   # Public write and lookup helpers for the shared People root and Profile snapshots.
   module Directory
     PROFILE_ATTRIBUTE_KEYS = %i[first_name last_name time_zone additional_profile_attributes].freeze
 
     module_function
-
-    def ordered_users
-      RecordingStudioUser.config.user_class.order(created_at: :desc)
-    end
 
     def people_recordable
       People.first || People.create!
@@ -27,7 +21,6 @@ module RecordingStudioUser
 
     def profile_recording_for(user)
       return if user.blank? || !user.respond_to?(:id) || user.id.blank?
-      return unless defined?(RecordingStudio::Recording)
 
       RecordingStudio::Recording.find_by(
         recordable_type: Profile.name,
@@ -36,25 +29,15 @@ module RecordingStudioUser
       )
     end
 
-    def create_user!(email:, password: nil, password_confirmation: nil, actor: nil, **attributes)
-      raise ArgumentError, "email is required" if email.blank?
-
+    def create_user!(email:, password:, password_confirmation: nil, actor: nil, **attributes)
       profile_attrs = attributes.extract!(*PROFILE_ATTRIBUTE_KEYS)
+      confirmation = password_confirmation.presence || password
       user = nil
       ActiveRecord::Base.transaction do
-        user = persist_user!(email, password, password_confirmation, attributes)
-        record_profile!(user, actor: actor, **profile_attrs_with_defaults(user, profile_attrs))
+        user = create_devise_user!(email, password, confirmation, attributes)
+        record_profile!(user, actor: actor, **profile_attrs)
       end
       user
-    end
-
-    def persist_user!(email, password, password_confirmation, attributes)
-      if password.present?
-        confirmation = password_confirmation.presence || password
-        Accounts.create_devise_user!(email, password, confirmation, attributes)
-      else
-        Accounts.create_passwordless_user!(email, attributes)
-      end
     end
 
     def record_profile!(user, actor: nil, **profile_attrs)
@@ -74,14 +57,30 @@ module RecordingStudioUser
       ProfileAttributes.filter(value)
     end
 
-    def profile_attrs_with_defaults(user, profile_attrs)
-      defaults = Profile.default_attributes_for(user)
-      {
-        first_name: profile_attrs[:first_name].presence || defaults[:first_name],
-        last_name: profile_attrs[:last_name],
-        time_zone: profile_attrs.key?(:time_zone) ? profile_attrs[:time_zone] : defaults[:time_zone],
-        additional_profile_attributes: profile_attrs[:additional_profile_attributes]
-      }
+    def create_devise_user!(email, password, password_confirmation, attributes)
+      user = RecordingStudioUser.config.user_class.new(
+        email: email,
+        password: password,
+        password_confirmation: password_confirmation,
+        **devise_user_attributes(attributes)
+      )
+      skip_confirmation_for_password_account(user)
+      user.save!
+      user
+    end
+
+    def devise_user_attributes(attributes)
+      attrs = attributes.symbolize_keys
+      return attrs unless RecordingStudioUser.config.user_class.column_names.include?("registered_with")
+
+      attrs.merge(registered_with: "password")
+    end
+
+    def skip_confirmation_for_password_account(user)
+      return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
+      return unless user.respond_to?(:skip_confirmation!)
+
+      user.skip_confirmation!
     end
 
     def create_unconfirmed_user!(email:)

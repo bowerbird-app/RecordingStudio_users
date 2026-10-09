@@ -154,7 +154,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       )
     end
 
-    relation = RecordingStudioUser.ordered_users
+    relation = RecordingStudioUser::Directory.ordered_users
     assert_operator relation.count, :>, 50
     series = RecordingStudioUser::Admin.user_creation_series(relation)
     counted = series.sum { |point| point[:y] }
@@ -182,7 +182,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
     screen_source = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/admin.rb"))
     assert_includes screen_source, "paginate per_page: 50"
-    assert_includes screen_source, "RecordingStudioUser.ordered_users"
+    assert_includes screen_source, "order(created_at: :desc)"
 
     get "/admin/screens/recording_studio_users/table"
 

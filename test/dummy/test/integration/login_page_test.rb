@@ -177,6 +177,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     original_primary = RecordingStudioUser.config.primary_login_type
     RecordingStudioUser.config.primary_login_type = :email
     RecordingStudioUser.config.otp_enabled = false
+    Rails.application.reload_routes!
 
     get new_user_session_path
     assert_response :success
@@ -198,6 +199,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
   ensure
     RecordingStudioUser.config.otp_enabled = original_otp
     RecordingStudioUser.config.primary_login_type = original_primary
+    Rails.application.reload_routes!
   end
 
   test "primary otp continue issues a code and opens verify" do

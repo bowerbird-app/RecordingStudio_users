@@ -10,9 +10,13 @@ RecordingStudio.configure do |config|
     "RecordingStudioUser::People",
     "RecordingStudioUser::Profile",
     "RecordingStudioAttachable::Attachment",
+    "RecordingStudioAttachable::Library",
+    "RecordingStudioAttachable::Placement",
     "RecordingStudioSiteSettings::SiteSetting",
     "RecordingStudioTermsAndConditions::Terms",
-    "RecordingStudioPublishable::Publishable",
+    "RecordingStudioPublishable::Publishable"
+  ]
+  config.recordable_types += [
     "RecordingStudio::Access",
     "RecordingStudioApi::ApiClient",
     "RecordingStudioApi::ApiCredential",

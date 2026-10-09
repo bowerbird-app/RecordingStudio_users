@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "active_record"
 require_relative "api/access"
 require_relative "api/errors"
 require_relative "api/params"
@@ -17,7 +18,7 @@ module RecordingStudioUser
     OPERATIONS_API = :operations
     USER_COUNT_ENDPOINT = :user_count
     USER_COUNT_PATH = "users/count"
-    USER_COUNT_API = OPERATIONS_API
+    USER_COUNT_API = :operations
     USERS_INDEX_ENDPOINT = :users
     USERS_CREATE_ENDPOINT = :users_create
     USERS_SHOW_ENDPOINT = :users_show

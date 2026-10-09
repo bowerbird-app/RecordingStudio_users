@@ -7,59 +7,116 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.16.0] - 2026-10-08
+## [0.19.0] - 2026-10-09
 
-Operations API for users (`/recording_studio_api/apis/operations/v1`).
+Users can be listed, shown, created, and updated on the host's named `:operations` API.
 
 ### Added
-- Operations endpoints on the host named `:operations` API when
-  `recording_studio_api` is present (still no gemspec dependency):
-  `GET users`, `GET users/:id`, `GET users/count`, `POST users`,
-  `PATCH users/:id`. There is no `DELETE`. Nothing is registered on the
-  public API (`/api/v1`).
-- List is offset-paged (`page`, `per_page`, default 50, max 100) on
-  `RecordingStudioUser.ordered_users` (`created_at desc`), the same relation
-  as the Admin users screen. No `?q=` search. Show/create/update serialize
-  id, email, first/last name,
-  time zone, confirmed_at, created_at, updated_at, registered_with, linked
-  identity provider names, and allowlisted additional profile attributes.
-  Password digests, tokens, and OTP secrets are never returned.
-- `POST users` calls `RecordingStudioUser::Directory.create_user!` so the
-  People-root Profile recording is created. Email is required. Password is
-  optional: omit it to create a confirmed `registered_with: otp` account
-  (login codes / Google), not a random password. The Terms gate is not
-  accepted on the person's behalf. Create emits
+- Operations endpoints when `recording_studio_api` is present (still no gemspec dependency):
+  `GET users`, `GET users/:id`, `POST users`, and `PATCH users/:id` on `:operations` only.
+  There is no `DELETE`, and nothing new is registered on the public API.
+  `GET users/count` stays the existing endpoint.
+- List is offset-paged (`page`, `per_page`, default 50, max 100) in `created_at desc`
+  order, the same order as the Admin users screen. No `?q=` search.
+- Show, create, and update return id, email, first and last name, time zone,
+  confirmed_at, created_at, updated_at, registered_with, linked identity provider
+  names, and allowlisted additional profile attributes. Password digests, tokens,
+  and OTP secrets are never returned.
+- `POST` with a password calls `RecordingStudioUser.create_user!`, which records a
+  People-root Profile. Omit the password and `POST` calls
+  `Directory.create_passwordless_user!`: a confirmed `registered_with: otp`
+  account, no invented password, a Profile, and no Terms acceptance. Create emits
   `registration.completed.recording_studio_user` (`:otp` or `:password`).
-- `PATCH users/:id` updates profile fields through `Directory.record_profile!`.
-  Email is not writable; a request that includes `email` returns `422`.
-- Reads require Accessible `:view` on AdminRoot. Writes require `:edit` on
-  AdminRoot, matching Support operations writes. The API client is the
-  Accessible actor.
-
-### Changed
-- `Directory.create_user!` takes an optional `password`. Blank password
-  creates a passwordless OTP-registered account and still records a Profile.
-  When first name is omitted, the profile uses `Profile.default_attributes_for`.
-- `GET users/count` now requires Accessible `:view` on AdminRoot. The handler
-  used to count with no grant check.
-- The Admin users table declares `paginate per_page: 50` on the same
-  `ordered_users` relation. Charts and the Total users widget still count
-  the full unpaginated relation.
+- `PATCH` updates profile fields through `record_profile!`. A request that includes
+  `email` returns `422`.
+- List and show require Accessible `:view` on AdminRoot. Create and update require
+  `:edit` on AdminRoot. The API client is the Accessible actor.
+- The Admin users table declares `paginate per_page: 50`. Charts and the Total users
+  widget still use the full unpaginated relation.
 
 ### Upgrade notes
-- Bump to `0.16.0`. No migration. Default already has `0.15.0` for
-  `registration.completed`; this release is the next minor.
-- Hosts that already name `:operations` (for example featured_in) get the
-  user routes when `recording_studio_api` is present. Add that gem in the
-  **host** Gemfile if you want the JSON surface. Dummy pins `v0.6.7`.
-- Provision an operations API client on the admin root and grant the client
-  Accessible `:view` (reads) or `:edit` (writes) on that AdminRoot.
-- Create without a password does not accept Terms. First login still hits the
-  Terms Accept page when that gem is installed.
+- Bump to `0.19.0`. No migration in this gem. Dummy loads Recording Studio API tables
+  for the host demo.
+- `create_user!` still requires a password. Passwordless create is the new
+  `Directory.create_passwordless_user!` method.
+- Hosts that already name `:operations` get the user routes when `recording_studio_api`
+  is loaded. Add that gem in the host Gemfile. Dummy pins `v0.6.7`.
+- Grant the operations API client Accessible `:view` (list and show) or `:edit`
+  (create and update) on AdminRoot.
+- Create without a password does not accept Terms. First login still hits the Terms
+  Accept page when that gem is installed.
 - Public API clients cannot list or change users.
-- RecordingStudio_api **v0.6.5+** matches registered endpoints by path and HTTP
-  verb. Pin **v0.6.7** (or newer) in the host Gemfile so `POST users` and
-  `PATCH users/:id` dispatch correctly.
+- RecordingStudio_api **v0.6.7** (or newer) matches registered endpoints by path and
+  HTTP verb. Pin that tag so `POST users` and `PATCH users/:id` dispatch correctly.
+
+## [0.18.0] - 2026-10-09
+
+OTP screens are not routed when OTP (or registration / login OTP) is off.
+
+### Changed
+- `recording_studio_user_auth_for` and the engine auth draw omit OTP paths
+  (`sign_up/otp`, `sign_up/verify`, `sign_up/resend`, `sign_in/otp`,
+  `sign_in/verify`, `sign_in/resend`, and engine `otp_codes`) unless
+  `otp_enabled` and the matching `otp_registration_enabled` /
+  `otp_login_enabled` flag are on. Host initializers already run before
+  routes draw (same rule as `mount_path`), so a host with OTP opt-in and
+  off gets a normal missing route instead of a controller
+  `RoutingError` error page. Password email screens are unchanged.
+  Controller guards remain as a safety net when routes were drawn with
+  OTP on and a flag is later flipped without a reload.
+
+### Upgrade notes
+- Bump to `0.18.0`. No migration.
+- Keep OTP flags in the host initializer before routes are evaluated.
+  After changing OTP flags in development, reload routes (or restart)
+  so the draw matches config.
+- No change for hosts that already run with OTP fully enabled.
+
+## [0.17.0] - 2026-10-09
+
+Site-wide user metrics register with Recording Studio Metrics for the operations API.
+
+### Added
+- `RecordingStudioUser::Metrics.register!` registers a `:users` resource
+  (`blast_radius: :site`) with RecordingStudioMetrics. Metrics:
+  `users.total` (Total users), `users.signups` (Signups over time),
+  `users.total_over_time` (Total users over time,
+  `semantics: "population_at_end_of_period"`), `users.by_method` (Signups by
+  method on `registered_with`), and `users.confirmation` (Confirmed vs
+  unconfirmed) when `confirmed_at` exists. Each is exposed on `:operations`
+  only. `api_authorize` uses `RecordingStudioUser::Api::Access.can_view?`
+  (AdminRoot `:view`).
+- Runtime dependency `recording_studio_metrics` `~> 0.2` (GitHub tag `v0.2.0`).
+
+### Upgrade notes
+- Bump to `0.17.0`. No migration.
+- Add `recording_studio_metrics` at tag `v0.2.0`.
+- This gem does not call `RecordingStudioMetrics::Api.register!`. The host
+  registers Metrics endpoints once:
+
+```ruby
+RecordingStudioMetrics::Api.register!(api: :operations)
+```
+
+## [0.16.0] - 2026-10-08
+
+Host `app/views` overrides win over this gem’s auth screens again.
+
+### Changed
+- Signup view path preference is host → Users → TnC/Devise. The previous
+  `prepend_view_path` of the gem’s views put Users ahead of the host, so a
+  host copy at `app/views/recording_studio_user/auth/registrations/...` never
+  rendered. Auth `BaseController` (and the engine-wide signup path helper)
+  still put Users ahead of TnC’s `extra_fields` override and Devise’s
+  defaults; they then put the host `app/views` in front.
+  `ApplicationController` also prefers the host path on Users controllers.
+
+### Upgrade notes
+- Bump to `0.16.0`. No migration.
+- No change for hosts that do not override gem views.
+- To customize a screen, add the template under the host `app/views` with the
+  same path as the gem (for example
+  `app/views/recording_studio_user/auth/registrations/new.html.erb`).
 
 ## [0.15.0] - 2026-10-08
 
@@ -749,11 +806,11 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.18.2...v0.19.0
+[0.17.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.1...v0.17.0
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.14.0...v0.15.0
-[0.14.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.13.0...v0.14.0
-[0.13.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.12.8...v0.13.0
 [0.12.8]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.8
 [0.12.7]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.7
 [0.12.3]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.3

@@ -14,7 +14,7 @@ module RecordingStudioUser
       def call
         Access.authorize_view!(context)
         page = Query.paginate(
-          RecordingStudioUser.ordered_users,
+          Directory.ordered_users,
           page: Params.page(context),
           per_page: Params.per_page(context)
         )

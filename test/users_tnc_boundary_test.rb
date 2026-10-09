@@ -20,17 +20,23 @@ class UsersTncBoundaryTest < Minitest::Test
     refute_includes helper, "first_root_with_live_terms"
     assert_includes helper, "recording_studio_terms_continue_notice"
     engine = File.read(File.expand_path("../lib/recording_studio_user/engine.rb", __dir__))
-    assert_includes engine, "prepend_signup_view_path!"
+    assert_includes engine, "prefer_signup_view_paths!"
+    assert_includes engine, "prepend_view_path(users_views)"
+    assert_includes engine, "prepend_view_path(host_views)"
     refute_match(/By continuing|agreed|checkbox/i, extra_fields)
     assert_includes password, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
 
     controller = File.read(
       File.expand_path("../app/controllers/recording_studio_user/auth/registrations_controller.rb", __dir__)
     )
+    base = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/auth/base_controller.rb", __dir__)
+    )
     concern = File.read(
       File.expand_path("../app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb", __dir__)
     )
-    assert_includes controller, "prefer_users_signup_extra_fields"
+    assert_includes base, "prefer_host_then_users_signup_views"
+    assert_includes base, "prepend_view_path(Rails.root.join(\"app/views\"))"
     assert_includes controller, "include SignupTermsAcceptance"
     assert_includes controller, "accept_pending_terms_on_signup!(resource)"
     assert_includes concern, "defined?(RecordingStudioTermsAndConditions::Gate)"
@@ -55,14 +61,15 @@ class UsersTncBoundaryTest < Minitest::Test
     assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_terms_and_conditions"'
     assert_includes dummy_gemfile, 'tag: "v0.8.1"'
     assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_publishable"'
-    assert_includes dummy_gemfile, 'tag: "v0.4.4"'
-    assert_includes dummy_gemfile, 'tag: "v0.1.207"'
+    assert_includes dummy_gemfile, 'tag: "v0.6.0"'
+    assert_includes dummy_gemfile, 'tag: "v0.1.213"'
     refute_match(/recording_studio_terms_and_conditions.*ref:/, dummy_gemfile)
     assert_includes dummy_lock, "tag: v0.8.1"
     assert_includes dummy_lock, "recording_studio_terms_and_conditions (0.8.0)"
     assert_includes dummy_lock, "dcc5713ee2f5e9ece6955a1b0601e06b845c23e1"
-    assert_includes dummy_lock, "tag: v0.4.4"
-    assert_includes dummy_lock, "recording_studio_publishable (0.4.0)"
-    assert_includes dummy_lock, "flat_pack (0.1.207)"
+    assert_includes dummy_lock, "tag: v0.6.0"
+    assert_includes dummy_lock, "recording_studio_publishable (0.6.0)"
+    assert_includes dummy_lock, "6e7da3c8a9359dfcde7a177d29a49886f85fdbf8"
+    assert_includes dummy_lock, "flat_pack (0.1.213)"
   end
 end

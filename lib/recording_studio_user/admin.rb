@@ -24,7 +24,7 @@ module RecordingStudioUser
       title "Users"
       subtitle "Review sitewide user accounts"
       blast_radius :site
-      query { |_context| RecordingStudioUser.ordered_users }
+      query { |_context| RecordingStudioUser.config.user_class.order(created_at: :desc) }
       filter :date_range, field: :created_at, default: :last_30_days
       filter :group_by, values: %i[day week month], default: :day
 

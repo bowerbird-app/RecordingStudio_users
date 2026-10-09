@@ -16,10 +16,24 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "registrations#continue"
     assert_includes source, "sessions#otp"
     assert_includes source, "registrations#otp"
+    assert_includes source, "recording_studio_user_otp_registration_routes?"
+    assert_includes source, "recording_studio_user_otp_login_routes?"
+    assert_includes source, "otp_enabled?"
+    assert_includes source, "otp_registration_enabled?"
+    assert_includes source, "otp_login_enabled?"
     assert_includes source, "devise/sessions#destroy"
     assert_includes source, "recording_studio_user/auth/passwords"
     assert_includes source, '"edit_#{singular}_password"'
     assert_includes source, "\#{passwords}#update"
+  end
+
+  def test_engine_routes_gate_otp_on_config
+    source = File.read(File.expand_path("../config/routes.rb", __dir__))
+
+    assert_includes source, "otp_enabled?"
+    assert_includes source, "otp_registration_enabled?"
+    assert_includes source, "otp_login_enabled?"
+    assert_includes source, "resources :otp_codes, only: :show"
   end
 
   def test_auth_route_helpers_prefer_host_paths

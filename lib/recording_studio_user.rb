@@ -7,7 +7,10 @@ require "recording_studio_user/rails/routes"
 require "recording_studio_user/engine"
 require "recording_studio_user/admin"
 require "recording_studio_user/api"
+require "recording_studio_user/metrics"
 require "recording_studio_user/directory"
+require "recording_studio_user/directory/ordered_users"
+require "recording_studio_user/directory/passwordless"
 require "recording_studio_user/profile_locales"
 require "recording_studio_user/profile_attributes"
 require "recording_studio_user/profile_image"
@@ -53,18 +56,45 @@ module RecordingStudioUser
       end
     end
 
-    def ordered_users = Directory.ordered_users
+    def people_recordable
+      Directory.people_recordable
+    end
 
-    def people_recordable = Directory.people_recordable
-    def people_root = Directory.people_root
-    def profile_for(user) = Directory.profile_for(user)
-    def profile_recording_for(user) = Directory.profile_recording_for(user)
-    def profile_image_recording_for(user) = ProfileImage.recording_for(user)
-    def attach_profile_image!(...) = ProfileImage.attach!(...)
-    def replace_profile_image!(...) = ProfileImage.replace!(...)
-    def create_user!(...) = Directory.create_user!(...)
-    def record_profile!(...) = Directory.record_profile!(...)
-    def create_unconfirmed_user!(email:) = Directory.create_unconfirmed_user!(email: email)
+    def people_root
+      Directory.people_root
+    end
+
+    def profile_for(user)
+      Directory.profile_for(user)
+    end
+
+    def profile_recording_for(user)
+      Directory.profile_recording_for(user)
+    end
+
+    def profile_image_recording_for(user)
+      ProfileImage.recording_for(user)
+    end
+
+    def attach_profile_image!(...)
+      ProfileImage.attach!(...)
+    end
+
+    def replace_profile_image!(...)
+      ProfileImage.replace!(...)
+    end
+
+    def create_user!(...)
+      Directory.create_user!(...)
+    end
+
+    def record_profile!(...)
+      Directory.record_profile!(...)
+    end
+
+    def create_unconfirmed_user!(email:)
+      Directory.create_unconfirmed_user!(email: email)
+    end
 
     def issue_otp!(...)
       Services::IssueOtp.call(...)

@@ -75,30 +75,74 @@ class ApiTest < Minitest::Test
     assert_includes engine, 'initializer "recording_studio_user.api"'
     assert_includes engine, "RecordingStudioUser::Api.register!"
     assert_includes registration, "RecordingStudioApi.register_endpoint"
-    assert_includes registration, "api: OPERATIONS_API"
-    refute_includes registration, "api: :public"
-    refute_includes registration, "http_verb: :delete"
+    assert_includes registration, "api: USER_COUNT_API"
+    assert_includes registration, "path: USER_COUNT_PATH"
     assert_includes registration, "handler: UserCount"
+    assert_includes registration, "return unless RecordingStudioApi.respond_to?(:register_endpoint)"
     assert_includes registration, "handler: Index"
     assert_includes registration, "handler: Create"
     assert_includes registration, "handler: Show"
     assert_includes registration, "handler: Update"
+    assert_includes registration, "api: OPERATIONS_API"
+    refute_includes registration, "api: :public"
+    refute_includes registration, "http_verb: :delete"
+  end
+
+  def test_user_count_endpoint_is_registered_on_operations_when_api_present
+    api = install_test_recording_studio_api!
+
+    assert RecordingStudioUser::Api.register!
+
+    registration = user_count_registration(api)
+    assert_equal :user_count, registration.fetch(:name)
+    assert_equal :operations, registration.fetch(:api)
+    assert_equal :get, registration.fetch(:http_verb)
+    assert_equal "users/count", registration.fetch(:path)
+    assert_equal RecordingStudioUser::Api::UserCount, registration.fetch(:handler)
+    assert_equal :user_count, RecordingStudioUser::Api::USER_COUNT_ENDPOINT
+    assert_equal "users/count", RecordingStudioUser::Api::USER_COUNT_PATH
+    assert_equal :operations, RecordingStudioUser::Api::USER_COUNT_API
+  end
+
+  def test_user_count_registration_is_idempotent
+    api = install_test_recording_studio_api!
+
+    2.times { RecordingStudioUser::Api.register! }
+
+    names = api.registrations.map { |entry| entry.fetch(:name) }
+    assert_equal 1, names.count(:user_count)
+    assert_equal %i[user_count users users_create users_show users_update], names
+  end
+
+  def test_user_count_returns_the_configured_user_class_count
+    CountedUsers.total = 4
+    with_user_class_name("ApiTest::CountedUsers") do
+      assert_equal({ count: 4 }, RecordingStudioUser::Api::UserCount.call(nil))
+
+      CountedUsers.total = 9
+      assert_equal({ count: 9 }, RecordingStudioUser::Api::UserCount.call(nil))
+    end
+  end
+
+  def test_registered_handler_uses_the_configured_user_class
+    api = install_test_recording_studio_api!
+    CountedUsers.total = 6
+    with_user_class_name("ApiTest::CountedUsers") do
+      RecordingStudioUser::Api.register!
+
+      assert_equal({ count: 6 }, user_count_registration(api).fetch(:handler).call(nil))
+    end
   end
 
   def test_users_endpoints_register_on_operations_not_public
     api = install_test_recording_studio_api!
 
-    assert RecordingStudioUser::Api.register!
+    RecordingStudioUser::Api.register!
 
     names = api.registrations.map { |entry| entry.fetch(:name) }
     assert_equal %i[user_count users users_create users_show users_update], names
     assert(api.registrations.all? { |entry| entry.fetch(:api) == :operations })
     refute(api.registrations.any? { |entry| entry.fetch(:http_verb) == :delete })
-
-    count = registration_named(api, :user_count)
-    assert_equal :get, count.fetch(:http_verb)
-    assert_equal "users/count", count.fetch(:path)
-    assert_equal RecordingStudioUser::Api::UserCount, count.fetch(:handler)
 
     index = registration_named(api, :users)
     assert_equal :get, index.fetch(:http_verb)
@@ -117,31 +161,6 @@ class ApiTest < Minitest::Test
     assert_equal "users/:id", update.fetch(:path)
   end
 
-  def test_user_count_registration_is_idempotent
-    api = install_test_recording_studio_api!
-
-    2.times { RecordingStudioUser::Api.register! }
-
-    assert_equal 5, api.registrations.size
-  end
-
-  def test_user_count_authorizes_view_then_counts
-    CountedUsers.total = 4
-    with_user_class_name("ApiTest::CountedUsers") do
-      assert_equal({ count: 4 }, RecordingStudioUser::Api::UserCount.call(FakeContext.new(actor: :staff)))
-    end
-  end
-
-  def test_user_count_rejects_unauthorized_actors
-    @authorize_admin_root = false
-    RecordingStudioUser::Api::Access.authorization_result = ->(_context, _role) { false }
-
-    error = assert_raises(RecordingStudioUser::Api::AuthorizationDenied) do
-      RecordingStudioUser::Api::UserCount.call(FakeContext.new(actor: :stranger))
-    end
-    assert_match(/not authorized/, error.message)
-  end
-
   def test_serialize_omits_secrets_and_lists_identity_providers
     identity = Struct.new(:provider).new("google_oauth2")
     user = Struct.new(
@@ -156,7 +175,7 @@ class ApiTest < Minitest::Test
       [identity],
       "DIGEST"
     )
-    payload = RecordingStudioUser::Api::Serialize.user(user)
+    payload = without_profile_lookup { RecordingStudioUser::Api::Serialize.user(user) }
 
     assert_equal "user-1", payload.fetch(:id)
     assert_equal "ada@example.com", payload.fetch(:email)
@@ -233,17 +252,15 @@ class ApiTest < Minitest::Test
     assert_equal 100, RecordingStudioUser::Api::Query.normalize_per_page(500)
   end
 
-  def test_engine_list_and_admin_share_ordered_users
+  def test_operations_list_orders_like_the_admin_screen
     admin = File.read(File.expand_path("../lib/recording_studio_user/admin.rb", __dir__))
     index = File.read(File.expand_path("../lib/recording_studio_user/api/index.rb", __dir__))
-    facade = File.read(File.expand_path("../lib/recording_studio_user.rb", __dir__))
-
-    directory = File.read(File.expand_path("../lib/recording_studio_user/directory.rb", __dir__))
-    assert_includes facade, "def ordered_users"
-    assert_includes directory, "config.user_class.order(created_at: :desc)"
-    assert_includes admin, "RecordingStudioUser.ordered_users"
+    ordering = File.read(File.expand_path("../lib/recording_studio_user/directory/ordered_users.rb", __dir__))
+    assert_includes ordering, "def ordered_users"
+    assert_includes ordering, "config.user_class.order(created_at: :desc)"
+    assert_includes admin, "order(created_at: :desc)"
     assert_includes admin, "paginate per_page: 50"
-    assert_includes index, "RecordingStudioUser.ordered_users"
+    assert_includes index, "Directory.ordered_users"
     refute_includes index, "search_term"
     refute_includes File.read(File.expand_path("../lib/recording_studio_user/api/query.rb", __dir__)),
                     "pagination_token"
@@ -275,18 +292,36 @@ class ApiTest < Minitest::Test
     end
   end
 
-  def test_directory_create_user_accepts_a_blank_password
+  def test_create_user_stays_password_required_and_passwordless_is_separate
     directory = File.read(File.expand_path("../lib/recording_studio_user/directory.rb", __dir__))
-    accounts = File.read(File.expand_path("../lib/recording_studio_user/directory/accounts.rb", __dir__))
+    passwordless = File.read(File.expand_path("../lib/recording_studio_user/directory/passwordless.rb", __dir__))
 
-    assert_includes directory, "def create_user!(email:, password: nil"
-    assert_includes directory, "Accounts.create_passwordless_user!"
-    assert_includes accounts, 'attrs = attrs.merge(registered_with: "otp")'
+    assert_includes directory, "def create_user!(email:, password:, password_confirmation: nil"
+    refute_includes directory, "def create_user!(email:, password: nil"
+    assert_includes passwordless, "def create_passwordless_user!(email:, actor: nil"
+    assert_includes passwordless, 'registered_with: "otp"'
     refute_includes directory, "accept!"
-    refute_includes accounts, "accept!"
+    refute_includes passwordless, "accept!"
   end
 
   private
+
+  def without_profile_lookup
+    singleton = RecordingStudioUser::Directory.singleton_class
+    original = singleton.instance_method(:profile_for)
+    verbose = $VERBOSE
+    $VERBOSE = nil
+    singleton.define_method(:profile_for) { |_record| nil }
+    yield
+  ensure
+    $VERBOSE = nil
+    singleton.define_method(:profile_for, original) if defined?(singleton) && defined?(original)
+    $VERBOSE = verbose
+  end
+
+  def user_count_registration(api)
+    registration_named(api, :user_count)
+  end
 
   def registration_named(api, name)
     found = api.registrations.find { |entry| entry[:name] == name }

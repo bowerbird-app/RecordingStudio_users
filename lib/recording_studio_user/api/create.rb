@@ -28,16 +28,38 @@ module RecordingStudioUser
 
       def persist_user!
         attributes = Params.create_attributes(context)
+        email = required_email(attributes)
+        profile = attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
+        build_user(email, attributes, profile)
+      end
+
+      def required_email(attributes)
         email = attributes[:email].to_s.strip
         Errors.invalid_input!("email is required") if email.blank?
 
-        Directory.create_user!(
+        email
+      end
+
+      def build_user(email, attributes, profile)
+        actor = Access.actor_for(context)
+        password = attributes[:password].presence
+        return passwordless_user!(email, actor, profile) if password.blank?
+
+        password_user!(email, password, attributes, actor, profile)
+      end
+
+      def password_user!(email, password, attributes, actor, profile)
+        RecordingStudioUser.create_user!(
           email: email,
-          password: attributes[:password].presence,
+          password: password,
           password_confirmation: attributes[:password_confirmation].presence,
-          actor: Access.actor_for(context),
-          **attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
+          actor: actor,
+          **profile
         )
+      end
+
+      def passwordless_user!(email, actor, profile)
+        Directory.create_passwordless_user!(email: email, actor: actor, **profile)
       end
 
       def emit_registration_completed!(user)

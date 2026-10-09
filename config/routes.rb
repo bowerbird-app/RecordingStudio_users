@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 # Auth mount lists many paired GET/POST routes; keep them in one draw block.
+# OTP auth and otp_codes follow the same config as recording_studio_user_auth_for
+# (initializer values must be set before routes draw / reload).
 RecordingStudioUser::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
-  resources :otp_codes, only: :show
+  resources :otp_codes, only: :show if RecordingStudioUser.config.otp_enabled?
 
   resource :profile, only: %i[show edit update], path: RecordingStudioUser.config.profile_route_path do
     get "sign-in-methods", to: "sign_in_methods#show", as: :sign_in_methods
@@ -10,26 +12,30 @@ RecordingStudioUser::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
   end
   get RecordingStudioUser.config.admin_route_path, to: "admin/users#index", as: :admin
 
-  scope module: :auth, path: "auth" do
+  scope module: :auth, path: "auth" do # rubocop:disable Metrics/BlockLength
     get "sign_up", to: "registrations#new", as: :sign_up
     post "sign_up", to: "registrations#continue"
     get "sign_up/password", to: "registrations#password", as: :sign_up_password
     post "sign_up/password", to: "registrations#create_password"
-    get "sign_up/otp", to: "registrations#otp", as: :sign_up_otp
-    post "sign_up/otp", to: "registrations#create_otp"
-    get "sign_up/verify", to: "registrations#verify", as: :sign_up_verify
-    post "sign_up/verify", to: "registrations#submit_verify"
-    post "sign_up/resend", to: "registrations#resend", as: :sign_up_resend
+    if RecordingStudioUser.config.otp_enabled? && RecordingStudioUser.config.otp_registration_enabled?
+      get "sign_up/otp", to: "registrations#otp", as: :sign_up_otp
+      post "sign_up/otp", to: "registrations#create_otp"
+      get "sign_up/verify", to: "registrations#verify", as: :sign_up_verify
+      post "sign_up/verify", to: "registrations#submit_verify"
+      post "sign_up/resend", to: "registrations#resend", as: :sign_up_resend
+    end
 
     get "sign_in", to: "sessions#new", as: :sign_in
     post "sign_in", to: "sessions#continue"
     get "sign_in/password", to: "sessions#password", as: :sign_in_password
     post "sign_in/password", to: "sessions#create_password"
-    get "sign_in/otp", to: "sessions#otp", as: :sign_in_otp
-    post "sign_in/otp", to: "sessions#create_otp"
-    get "sign_in/verify", to: "sessions#verify", as: :sign_in_verify
-    post "sign_in/verify", to: "sessions#submit_verify"
-    post "sign_in/resend", to: "sessions#resend", as: :sign_in_resend
+    if RecordingStudioUser.config.otp_enabled? && RecordingStudioUser.config.otp_login_enabled?
+      get "sign_in/otp", to: "sessions#otp", as: :sign_in_otp
+      post "sign_in/otp", to: "sessions#create_otp"
+      get "sign_in/verify", to: "sessions#verify", as: :sign_in_verify
+      post "sign_in/verify", to: "sessions#submit_verify"
+      post "sign_in/resend", to: "sessions#resend", as: :sign_in_resend
+    end
 
     get "password/new", to: "passwords#new", as: :new_password
     get "password/edit", to: "passwords#edit", as: :edit_password

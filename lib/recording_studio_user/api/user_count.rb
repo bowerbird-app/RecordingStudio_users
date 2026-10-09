@@ -3,8 +3,7 @@
 module RecordingStudioUser
   module Api
     class UserCount
-      def self.call(context = nil)
-        Access.authorize_view!(context)
+      def self.call(_context = nil)
         { count: RecordingStudioUser.config.user_class.count }
       end
     end

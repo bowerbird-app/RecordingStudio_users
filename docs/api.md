@@ -4,7 +4,7 @@ How a host, person, or AI agent manages **users** over **Recording Studio API**.
 
 Users are Devise actors, not tree recordables. The gem registers named endpoints with `RecordingStudioApi.register_endpoint` on the host’s `:operations` API. It does **not** gemspec-depend on `recording_studio_api`. If that constant is missing, Users boots with no JSON user routes.
 
-There is no Users `ApiController`. Create and profile writes go through `RecordingStudioUser::Directory.create_user!` / `record_profile!`. List uses `RecordingStudioUser.ordered_users` (`created_at desc`), the same relation as the Admin users screen, with `page` / `per_page` offset paging. Access is **Accessible** only.
+There is no Users `ApiController`. Create with a password calls `RecordingStudioUser.create_user!`. Create without a password calls `Directory.create_passwordless_user!`. Profile writes go through `record_profile!`. List uses `Directory.ordered_users` (`created_at desc`), the same order as the Admin users screen, with `page` / `per_page` offset paging. Access is **Accessible** only.
 
 Do not register these routes on the public API (`/recording_studio_api/api/v1`).
 
@@ -38,13 +38,14 @@ Accept: application/json
 
 The API client’s `AccessGrant.actor` is the Accessible actor. Grant that client on **AdminRoot**.
 
-| Actor | `GET` list / show / count | `POST` / `PATCH` |
-| --- | --- | --- |
-| Accessible `:edit` on **AdminRoot** (operations token) | Yes | Yes |
-| Accessible `:view` on **AdminRoot** (operations token) | Yes | No — `403` |
-| Workspace-only grant, no AdminRoot | `403` | `403` |
-| Public token on operations | Rejected | Rejected |
-| Missing token | `401` | `401` |
+| Actor | `GET` list / show | `GET` count | `POST` / `PATCH` |
+| --- | --- | --- | --- |
+| Accessible `:edit` on **AdminRoot** (operations token) | Yes | Yes | Yes |
+| Accessible `:view` on **AdminRoot** (operations token) | Yes | Yes | No — `403` |
+| Operations token without AdminRoot `:view` | `403` | Yes — existing count endpoint | `403` |
+| Workspace-only grant, no AdminRoot | `403` | Rejected with the token | `403` |
+| Public token on operations | Rejected | Rejected | Rejected |
+| Missing token | `401` | `401` | `401` |
 
 Public `/api/v1/users` is not registered (`404`). There is no `DELETE`.
 
@@ -58,8 +59,8 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 | --- | --- | --- | --- |
 | `GET` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:view` | Offset list (`page`, `per_page`; default 50, max 100). Same order as Admin users. |
 | `GET` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:view` | One user |
-| `GET` | `/recording_studio_api/apis/operations/v1/users/count` | AdminRoot `:view` | `{ "count": N }` |
-| `POST` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:edit` | Create via `Directory.create_user!` |
+| `GET` | `/recording_studio_api/apis/operations/v1/users/count` | Operations token | Existing endpoint. `{ "count": N }` |
+| `POST` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:edit` | Password: `create_user!`. No password: `create_passwordless_user!` |
 | `PATCH` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:edit` | Profile fields only (`record_profile!`) |
 
 Send writable fields at the JSON root. Do not wrap them in `attributes`.
@@ -76,9 +77,9 @@ Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra pr
 
 ## Passwordless create
 
-Omit `password` (or send blank). `Directory.create_user!` sets `registered_with` to `otp`, does not invent a password, confirms the account so login codes work, and still records a Profile under People. Google (and other OmniAuth) can link later by email. Terms are **not** accepted; the Terms gem still sends them to Accept on first login.
+Omit `password` (or send blank). `create_passwordless_user!` sets `registered_with` to `otp`, does not invent a password, confirms the account so login codes work, and still records a Profile under People through `record_profile!`. When first name is omitted, the profile uses `Profile.default_attributes_for`. Google (and other OmniAuth) can link later by email. Terms are **not** accepted; the Terms gem still sends them to Accept on first login.
 
-With a password, `registered_with` stays `password` and the existing confirmation policy applies.
+With a password, `POST` calls `create_user!` unchanged. `registered_with` stays `password` and the existing confirmation policy applies.
 
 ## Examples
 

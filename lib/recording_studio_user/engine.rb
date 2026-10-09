@@ -61,14 +61,19 @@ module RecordingStudioUser
       config.to_prepare { RecordingStudioUser::Api.register! }
     end
 
-    # TnC prepends its extra_fields override. Keep Users last so the
-    # soft-detect helper (and live-Terms fallback) is what create-password
-    # renders when both gems are loaded.
+    initializer "recording_studio_user.metrics" do
+      config.to_prepare { RecordingStudioUser::Metrics.register! }
+    end
+
+    # TnC prepends its registrations/extra_fields override onto ActionController::Base.
+    # Re-assert Users after TnC so soft-detect wins over TnC's hard partial,
+    # then put the host app/views in front so hosts override either gem —
+    # normal Rails precedence (host > this gem > TnC/Devise).
     initializer "recording_studio_user.signup_view_path" do
       ActiveSupport.on_load(:action_controller_base) do
-        RecordingStudioUser::Engine.prepend_signup_view_path!
+        RecordingStudioUser::Engine.prefer_signup_view_paths!
       end
-      config.to_prepare { RecordingStudioUser::Engine.prepend_signup_view_path! }
+      config.to_prepare { RecordingStudioUser::Engine.prefer_signup_view_paths! }
     end
 
     initializer "recording_studio_user.filter_parameters" do |app|
@@ -92,13 +97,18 @@ module RecordingStudioUser
       end
     end
 
-    def self.prepend_signup_view_path!
+    def self.prefer_signup_view_paths!
       return unless defined?(ActionController::Base)
+      return unless defined?(Rails.root)
 
-      views = root.join("app/views").to_s
-      return if ActionController::Base.view_paths.first.to_s == views
+      users_views = root.join("app/views").to_s
+      host_views = Rails.root.join("app/views").to_s
+      paths = ActionController::Base.view_paths.map(&:to_s)
+      return if paths[0] == host_views && paths[1] == users_views
 
-      ActionController::Base.prepend_view_path(views)
+      # Users before TnC/Devise; host before Users.
+      ActionController::Base.prepend_view_path(users_views)
+      ActionController::Base.prepend_view_path(host_views)
     end
 
     def self.apply_flatpack_button_svg_icon!
