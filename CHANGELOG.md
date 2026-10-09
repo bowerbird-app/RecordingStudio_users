@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-10-09
+
+Site-wide user metrics register with Recording Studio Metrics for the operations API.
+
+### Added
+- `RecordingStudioUser::Metrics.register!` registers a `:users` resource
+  (`blast_radius: :site`) with RecordingStudioMetrics. Metrics:
+  `users.total` (Total users), `users.signups` (Signups over time),
+  `users.total_over_time` (Total users over time,
+  `semantics: "population_at_end_of_period"`), `users.by_method` (Signups by
+  method on `registered_with`), and `users.confirmation` (Confirmed vs
+  unconfirmed) when `confirmed_at` exists. Each is exposed on `:operations`
+  only. `api_authorize` uses `RecordingStudioUser::Api::Access.can_view?`
+  (AdminRoot `:view`).
+- Runtime dependency `recording_studio_metrics` `~> 0.2` (GitHub tag `v0.2.0`).
+
+### Upgrade notes
+- Bump to `0.17.0`. No migration.
+- Add `recording_studio_metrics` at tag `v0.2.0`.
+- This gem does not call `RecordingStudioMetrics::Api.register!`. The host
+  registers Metrics endpoints once:
+
+```ruby
+RecordingStudioMetrics::Api.register!(api: :operations)
+```
+
 ## [0.16.0] - 2026-10-08
 
 Host `app/views` overrides win over this gem’s auth screens again.
@@ -715,7 +741,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.1...v0.17.0
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.14.0...v0.15.0
 [0.12.8]: https://github.com/bowerbird-app/RecordingStudio_users/releases/tag/v0.12.8

@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.11), `recording_studio_attachable` (~> 0.7), `recording_studio_admin` (~> 2.0), `flat_pack` (>= 0.1.144), `devise`, the supported OmniAuth strategies, and `omniauth-rails_csrf_protection` (~> 2.0) are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People. Hosts upgrading Accessible to 0.11 need string roles, Accessible’s 0.8–0.11 migrations, and grants through `bootstrap_owner_access!` / `grant_access` (`RecordingStudio::Access` is readonly).
+`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.11), `recording_studio_attachable` (~> 0.7), `recording_studio_admin` (~> 2.0), `recording_studio_metrics` (~> 0.2), `flat_pack` (>= 0.1.144), `devise`, the supported OmniAuth strategies, and `omniauth-rails_csrf_protection` (~> 2.0) are runtime dependencies. This gem enables Accessible and Attachable on Profile only. It does not enable either on People. Hosts upgrading Accessible to 0.11 need string roles, Accessible’s 0.8–0.11 migrations, and grants through `bootstrap_owner_access!` / `grant_access` (`RecordingStudio::Access` is readonly).
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 
@@ -396,6 +396,12 @@ Show puts **Edit** in the PageTitle actions slot (not in the card) and one Flatp
 The engine still registers a reusable `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The read-only screen lists name, email, and created-at. The gem does not add user editing, deletion, impersonation, password operations, or admin/role columns.
 
 When Recording Studio API is present, the engine also registers a `user_count` endpoint on the host's named `:operations` API (`GET users/count`). The payload is `{ count: }` from `RecordingStudioUser.config.user_class.count`. Hosts that already define `config.api :operations` (for example featured_in) do not need a second named-API block in this gem. MCP tools follow the endpoint name; this gem does not change RecordingStudio_MCP. The gemspec does not depend on `recording_studio_api`.
+
+The engine also registers a `:users` metrics resource with RecordingStudioMetrics (`blast_radius: :site`, AdminRoot `:view` via `RecordingStudioUser::Api::Access.can_view?`). The metrics are `users.total`, `users.signups`, `users.total_over_time`, `users.by_method`, and `users.confirmation` when `confirmed_at` exists. They are exposed on `:operations` only. This gem does not call `RecordingStudioMetrics::Api.register!`. The host registers Metrics endpoints once:
+
+```ruby
+RecordingStudioMetrics::Api.register!(api: :operations)
+```
 
 The host owns administration and must create its admin recordable/root, mount RecordingStudioAdmin, and grant first-owner `:admin` access on the empty owned admin root with `RecordingStudioAccessible.bootstrap_owner_access!`.
 
