@@ -126,12 +126,13 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes edit, "FlatPack::Select::Component"
   end
 
-  def test_gemfiles_pin_attachable_v0130_tag
+  def test_gemfiles_pin_attachable_v0150_tag
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_attachable"'
-      assert_includes contents, 'tag: "v0.13.0"'
+      assert_includes contents, 'tag: "v0.15.0"'
+      refute_includes contents, 'tag: "v0.13.0"'
       refute_includes contents, 'tag: "v0.7.1"'
       refute_includes contents, 'tag: "v0.5.0"'
       refute_includes contents, "62c2f944d1ed206c84c80275851db0aee8e3306a"
@@ -140,9 +141,11 @@ class RecordingStudioUserTest < Minitest::Test
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.13.0"
-      assert_includes lock, "8457c5681d9d3742d2b272082d62eecd91dd1102"
-      assert_includes lock, "recording_studio_attachable (0.13.0)"
+      assert_includes lock, "tag: v0.15.0"
+      assert_includes lock, "0140c73d2cce6a5bdbdc8825ff496c42f8e260c3"
+      assert_includes lock, "recording_studio_attachable (0.15.0)"
+      refute_includes lock, "recording_studio_attachable (0.13.0)"
+      refute_includes lock, "8457c5681d9d3742d2b272082d62eecd91dd1102"
       refute_includes lock, "tag: v0.7.1"
       refute_includes lock, "tag: v0.5.0"
       refute_includes lock, "62c2f944d1ed206c84c80275851db0aee8e3306a"
