@@ -153,19 +153,19 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_attachable", "~> 0.7"'
   end
 
-  def test_gemfiles_pin_accessible_v0130_tag
+  def test_gemfiles_pin_accessible_v0150_tag
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_accessible"'
-      assert_includes contents, 'tag: "v0.13.0"'
+      assert_includes contents, 'tag: "v0.15.0"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.13.0"
-      assert_includes lock, "bc0f62cf104bf6f6223bc81fadf56f44f7e7e920"
-      assert_includes lock, "recording_studio_accessible (0.13.0)"
+      assert_includes lock, "tag: v0.15.0"
+      assert_includes lock, "db1d692fdecccdf251c7c8b5dc19074a0e4da97c"
+      assert_includes lock, "recording_studio_accessible (0.15.0)"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
