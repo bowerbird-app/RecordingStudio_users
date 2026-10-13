@@ -74,9 +74,8 @@ module RecordingStudioUser
       def normalized_email(auth)
         email = auth.info&.email.to_s.strip.downcase
         raise MissingEmailError, Copy.legacy_t("omniauth.email_required") if email.blank?
-        if email_explicitly_unverified?(auth)
-          raise UnverifiedEmailError, Copy.legacy_t("omniauth.email_not_verified")
-        end
+        raise UnverifiedEmailError, Copy.legacy_t("omniauth.email_not_verified") if
+          email_explicitly_unverified?(auth)
 
         email
       end

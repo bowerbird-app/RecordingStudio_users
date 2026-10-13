@@ -53,15 +53,21 @@ class LocalesTest < Minitest::Test
     french_legacy = flatten_keys(locale_tree(File.join(dummy_locales_dir, "fr.yml"), "fr", "recording_studio_user"))
     missing_legacy = english_legacy - french_legacy
 
-    assert_empty missing_legacy,
-                 "dummy fr.yml is missing recording_studio_user keys present in engine en.yml: #{missing_legacy.join(', ')}"
+    assert_empty(
+      missing_legacy,
+      "dummy fr.yml missing recording_studio_user keys: #{missing_legacy.join(', ')}"
+    )
 
-    english_nested = flatten_keys(locale_tree(File.join(engine_locales_dir, "en.yml"), "en", "recording_studio", "users"))
-    french_nested = flatten_keys(locale_tree(File.join(dummy_locales_dir, "fr.yml"), "fr", "recording_studio", "users"))
+    en_yml = File.join(engine_locales_dir, "en.yml")
+    fr_yml = File.join(dummy_locales_dir, "fr.yml")
+    english_nested = flatten_keys(locale_tree(en_yml, "en", "recording_studio", "users"))
+    french_nested = flatten_keys(locale_tree(fr_yml, "fr", "recording_studio", "users"))
     missing_nested = english_nested - french_nested
 
-    assert_empty missing_nested,
-                 "dummy fr.yml is missing recording_studio.users keys present in engine en.yml: #{missing_nested.join(', ')}"
+    assert_empty(
+      missing_nested,
+      "dummy fr.yml missing recording_studio.users keys: #{missing_nested.join(', ')}"
+    )
   end
 
   def test_english_default_copy_is_unchanged
@@ -78,10 +84,13 @@ class LocalesTest < Minitest::Test
   end
 
   def test_legacy_first_lookup_prefers_host_legacy_override
-    I18n.backend.store_translations(:en, {
-                                      recording_studio_user: { profile: { updated: "HOST Legacy Profile updated." } },
-                                      recording_studio: { users: { profile: { updated: "HOST Nested Profile updated." } } }
-                                    })
+    I18n.backend.store_translations(
+      :en,
+      {
+        recording_studio_user: { profile: { updated: "HOST Legacy Profile updated." } },
+        recording_studio: { users: { profile: { updated: "HOST Nested Profile updated." } } }
+      }
+    )
 
     assert_equal "HOST Legacy Profile updated.",
                  RecordingStudioUser::Copy.legacy_t("profile.updated")

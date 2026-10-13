@@ -32,9 +32,9 @@ module RecordingStudioUser
         # via I18n key defaults (never an English string default).
         Copy.legacy_t(
           "auth.verify.#{reason}",
-          default: [
-            :"recording_studio_user.auth.that_code_did_not_work",
-            :"recording_studio.users.auth.that_code_did_not_work"
+          default: %i[
+            recording_studio_user.auth.that_code_did_not_work
+            recording_studio.users.auth.that_code_did_not_work
           ]
         )
       end

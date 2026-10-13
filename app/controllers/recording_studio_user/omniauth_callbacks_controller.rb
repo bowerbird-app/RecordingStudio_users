@@ -30,8 +30,8 @@ module RecordingStudioUser
 
     def connect_current_user!(auth)
       Omniauth.connect!(current_user, auth)
-      redirect_to after_connect_path, notice: Copy.legacy_t("omniauth.connected", provider: Omniauth.provider_label(auth.provider)
-      )
+      provider = Omniauth.provider_label(auth.provider)
+      redirect_to after_connect_path, notice: Copy.legacy_t("omniauth.connected", provider: provider)
     end
 
     def sign_in_from_omniauth!(auth)
@@ -67,8 +67,8 @@ module RecordingStudioUser
     end
 
     def account_creation_disabled_alert
-      Copy.legacy_t("omniauth.account_creation_disabled", provider: provider_label_for(request.env["omniauth.auth"])
-      )
+      provider = provider_label_for(request.env["omniauth.auth"])
+      Copy.legacy_t("omniauth.account_creation_disabled", provider: provider)
     end
   end
 end
