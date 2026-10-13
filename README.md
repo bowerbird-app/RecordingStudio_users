@@ -448,7 +448,7 @@ Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable
 | `member@admin.com` | `Password` |
 | `otp@admin.com` | none — signs in with an email code |
 
-Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Dummy mounts notifications at `/notifications` (inbox and settings), email as a delivery channel, and push at `/notifications/push`. The dummy Gemfile pins released `recording_studio_notifications` `v0.7.0` (github tag); email and push channel gems stay path-vendored. Workspace remains the host-owned bucket.
+Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Dummy mounts notifications at `/notifications` (inbox and settings), email as a delivery channel, and push at `/notifications/push`. The dummy Gemfile pins released `recording_studio_notifications` `v0.7.0` (github tag); email and push channel gems stay path-vendored. Dummy also pins `recording_studio_api` `v0.7.0` (Trashable query helpers; Metrics `v0.2.2`). Workspace remains the host-owned bucket.
 
 ## Cloud Agent boot
 

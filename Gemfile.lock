@@ -49,10 +49,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_metrics.git
-  revision: 2028742202100be608604c4a9d11ad1a40484da6
-  tag: v0.2.0
+  revision: b992b5d3a5ef0b5a96c98a2e1410810d7d872f20
+  tag: v0.2.2
   specs:
-    recording_studio_metrics (0.2.0)
+    recording_studio_metrics (0.2.2)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
 
@@ -595,7 +595,7 @@ CHECKSUMS
   recording_studio_admin (2.3.0)
   recording_studio_attachable (0.15.0)
   recording_studio_cache (0.5.0)
-  recording_studio_metrics (0.2.0)
+  recording_studio_metrics (0.2.2)
   recording_studio_trashable (0.10.0)
   recording_studio_user (0.21.0)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
