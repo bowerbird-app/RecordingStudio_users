@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nested `recording_studio.users.*` mirrors of every existing `recording_studio_user.*` key so hosts can override either namespace.
 - `RecordingStudioUser::Copy` with `t` (nested) and `legacy_t` (legacy-first, then nested key fallback). English comes only from `config/locales/en.yml` — no English `default:` on call sites.
 - Host English override coverage: test-only fixture `test/dummy/test/locales/users_host_override.en.yml` on a fresh `I18n::Backend::Simple`, plus a real-page assert.
-- Always-loaded boot-order guard `test/dummy/config/locales/recording_studio_users_boot_override.en.yml` for a rarely shown OmniAuth flash key, with a render assert on the not-connected redirect.
+- Always-loaded boot-order guard `test/dummy/config/locales/recording_studio_users_boot_override.en.yml` for a rarely shown OmniAuth flash key (`omniauth.not_connected`), with a render assert on the not-connected redirect. Probe / test-only keys stay under `test/dummy` (not packaged by the gemspec); gem `config/locales/*.yml` ships only product English.
 - Locale regression: every `lib/**/*.rb` file must not mention `i18n.load_path` / `I18n.load_path`. Call sites must keep `Copy` / `rsu_t` (reverting a translated string to a literal fails a test).
 
 ### Changed

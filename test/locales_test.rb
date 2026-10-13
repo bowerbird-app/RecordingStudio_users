@@ -27,6 +27,28 @@ class LocalesTest < Minitest::Test
     assert_equal ["en.yml"], files.sort
   end
 
+  # Wave rule: no probe / test-only keys in packaged config/locales/*.yml.
+  # Host overrides and probes live under test/dummy (excluded by the gemspec).
+  def test_packaged_locales_have_no_probe_or_test_only_keys
+    packaged = Gem::Specification.load(
+      File.expand_path("../recording_studio_user.gemspec", __dir__)
+    ).files.grep(%r{\Aconfig/locales/.*\.yml\z})
+
+    assert_equal ["config/locales/en.yml"], packaged.sort
+
+    packaged.each do |relative|
+      source = File.read(File.expand_path("../#{relative}", __dir__))
+      refute_match(/\bHOST\b/, source, "#{relative} must not ship HOST probe strings")
+      refute_match(/\bprobe\b/i, source, "#{relative} must not ship probe keys")
+      refute_match(/test[_-]?only/i, source, "#{relative} must not ship test-only keys")
+    end
+
+    assert File.exist?(File.expand_path(
+                         "dummy/config/locales/recording_studio_users_boot_override.en.yml", __dir__
+                       )),
+           "boot override must live under test/dummy, not the gem package"
+  end
+
   def test_engine_exposes_english_locale_paths
     locale_path = File.expand_path(File.join(engine_locales_dir, "en.yml"))
     existent = RecordingStudioUser::Engine.paths["config/locales"].existent.map { |path| File.expand_path(path) }
