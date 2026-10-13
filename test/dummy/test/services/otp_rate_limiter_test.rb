@@ -68,7 +68,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     assert_equal 2, Rails.cache.read(counter_key)
   end
 
-  test "fail_closed blocks when increment raises a connection error" do
+  test "fail_closed blocks only when a custom store raises on increment or write" do
     failing = Object.new
     def failing.increment(*)
       raise Errno::ECONNREFUSED, "cache down"
@@ -128,7 +128,8 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     assert_equal true, Rails.cache.read("recording_studio_user:otp:rl:resend:nil@example.com")
   end
 
-  test "negative cooldown raises like main expires_in: negative on Rails 8.1" do
+  test "negative cooldown raises when raise_on_invalid_cache_expiration_time is on" do
+    assert ActiveSupport::Cache::Store.raise_on_invalid_cache_expiration_time
     RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, -1)
 
     error = assert_raises(ArgumentError) do
@@ -151,6 +152,29 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
 
     assert_raises(NoMethodError) do
       RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "blank@example.com")
+    end
+  end
+
+  test "boolean from nil or zero cooldown RateLimits under a positive cooldown without NoMethodError" do
+    %w[from-nil@example.com from-zero@example.com].each_with_index do |email, index|
+      storage_key = "recording_studio_user:otp:rl:resend:#{email}"
+
+      if index.zero?
+        RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, nil)
+        RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: email)
+      else
+        Rails.cache.write(storage_key, true, expires_in: 0)
+        Rails.cache.write(storage_key, true)
+      end
+      assert_equal true, Rails.cache.read(storage_key)
+
+      RecordingStudioUser.config.otp_resend_cooldown = 60.seconds
+
+      error = assert_raises(RecordingStudioUser::RateLimited) do
+        RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: email)
+      end
+      assert_equal :resend, error.scope
+      assert_equal true, Rails.cache.read(storage_key)
     end
   end
 end

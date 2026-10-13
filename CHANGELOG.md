@@ -20,9 +20,10 @@ OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
 - Cache storage keys move from `recording_studio_user:otp:#{scope}:#{key}`
   (boolean `true`) to `recording_studio_user:otp:rl:#{scope}:#{key}` (integer
   counter). Incrementing a legacy boolean raises `NoMethodError`; the new key
-  avoids that. Legacy boolean keys expire within one cooldown (≤ 1 minute).
-  Happy-path keys still use a TTL (main already set `expires_in:` on write;
-  the shared limiter keeps a TTL via `strategy: :ttl`).
+  avoids that. Legacy boolean keys follow the host cooldown
+  (`otp_resend_cooldown`, or one minute for `:issue`); a `nil` cooldown never
+  expires. Happy-path keys still use a TTL (main already set `expires_in:` on
+  write; the shared limiter keeps a TTL via `strategy: :ttl`).
 - Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
 
 ### Upgrade notes
@@ -30,19 +31,23 @@ OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
 - OTP rate-limit bucket identity (scope + email / IP / session) and cooldown
   lengths are the same. During a rolling deploy, a host may briefly allow one
   extra request per bucket while a legacy boolean key still exists alongside the
-  new counter key; both expire within the configured cooldown.
+  new counter key; both expire according to their own TTL (or never, for `nil`).
 - Store is still `Rails.cache` only (main never had a configurable
   `cache` / `cache_store` on Users). There is still no limit config: main was a
   one-shot cooldown, so the adapter always passes `limit: 1` and never uses the
   shared limiter’s `limit <= 0` “disabled” path.
 - Odd `cooldown_for` values (normally blocked by `otp_resend_cooldown`’s
   positive check) keep main’s `expires_in:` behavior: `0` always allows;
-  `nil` sticky-blocks after the first allow; negative and non-Numeric (e.g.
-  `"60"`) raise from `expires_in:` instead of being coerced or rejected by the
-  shared limiter’s period validation.
-- On cache connection / IO / timeout errors the limiter now fails closed
-  (raises `RateLimited`) instead of letting the error propagate. That fail-closed
-  path is intentional and is the main deliberate behavior change.
+  `nil` sticky-blocks after the first allow; non-Numeric (e.g. `"60"`) raise
+  from `expires_in:`. Negative `expires_in:` raises only when
+  `ActiveSupport::Cache::Store.raise_on_invalid_cache_expiration_time` is true;
+  otherwise the invalid expiry is reported and the write proceeds without an
+  expiry (same as main).
+- `fail_closed: true` only turns a rescued connection/IO/timeout from a custom
+  store’s increment/write into `RateLimited`. The boolean pre-read and the
+  0/nil/negative/string-period `expires_in:` path still propagate or allow as on
+  main. Stock Redis/MemCache stores still allow during an outage (their failsafe
+  does not raise into that rescue).
 
 ## [0.20.0] - 2026-10-13
 
