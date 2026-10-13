@@ -7,13 +7,12 @@ module RecordingStudioUser
     class UsersSection < RecordingStudioAdmin::Section
       key "users"
       icon :user_group
-      title { Copy.t("admin.section.title") }
-      # Subtitle stays a literal — Admin search reads some fields raw.
+      title "Users"
       subtitle "Review sitewide user accounts"
       blast_radius :site
 
       link :users,
-           text: ->(_context) { Copy.t("admin.section.link") },
+           text: "Users admin",
            url: ->(context) { context.admin_screen_path("recording_studio_users") },
            style: :secondary
       widget "widgets.users.total", view_variant: :compact
@@ -22,8 +21,7 @@ module RecordingStudioUser
     class UsersScreen < RecordingStudioAdmin::Screen
       key "recording_studio_users"
       icon :user_group
-      title { Copy.t("admin.screen.title") }
-      # Subtitle stays a literal — Admin search reads some fields raw.
+      title "Users"
       subtitle "Review sitewide user accounts"
       blast_radius :site
       query { |_context| RecordingStudioUser.config.user_class.order(created_at: :desc) }
@@ -31,19 +29,12 @@ module RecordingStudioUser
       filter :group_by, values: %i[day week month], default: :day
 
       chart do
-        title { Copy.t("admin.screen.chart_title") }
+        title "Users over time"
         type :line
-        series do |context|
-          [{
-            name: Copy.t("admin.screen.series_users"),
-            data: RecordingStudioUser::Admin.user_creation_series(context.query_result.relation)
-          }]
-        end
+        series { |context| [{ name: "Users", data: RecordingStudioUser::Admin.user_creation_series(context.query_result.relation) }] }
       end
 
       table do
-        # Column header titles stay literal English (Marco). Matching keys ship
-        # in en.yml for hosts that override via a custom screen.
         column :display_name,
                title: "Name",
                sortable: false,
@@ -56,7 +47,7 @@ module RecordingStudioUser
 
     TotalUsersWidget = RecordingStudioAdmin::Widget.new("widgets.users.total", blast_radius: :site) do
       type :number
-      title { Copy.t("admin.widget.total_users") }
+      title "Total users"
       value { |_context| RecordingStudioUser.config.user_class.count }
       link_to { |context| RecordingStudioUser.mounted_admin_path(context) }
       hide_change

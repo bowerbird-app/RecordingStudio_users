@@ -238,17 +238,3 @@ en:
         creation_disabled: Account creation from this provider is disabled
         email_required: Email is required from the provider
         email_not_verified: Email was not verified by the provider
-      admin:
-        section:
-          title: Users
-          link: Users admin
-          columns:
-            name: Name
-            email: Email
-            created_at: Created at
-        screen:
-          title: Users
-          chart_title: Users over time
-          series_users: Users
-        widget:
-          total_users: Total users

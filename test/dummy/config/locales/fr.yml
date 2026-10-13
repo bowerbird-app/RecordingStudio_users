@@ -241,17 +241,3 @@ fr:
         creation_disabled: La création de compte depuis ce fournisseur est désactivée
         email_required: L'e-mail est obligatoire de la part du fournisseur
         email_not_verified: L'e-mail n'a pas été vérifié par le fournisseur
-      admin:
-        section:
-          title: Utilisateurs
-          link: Admin utilisateurs
-          columns:
-            name: Nom
-            email: E-mail
-            created_at: Créé le
-        screen:
-          title: Utilisateurs
-          chart_title: Utilisateurs dans le temps
-          series_users: Utilisateurs
-        widget:
-          total_users: Total utilisateurs

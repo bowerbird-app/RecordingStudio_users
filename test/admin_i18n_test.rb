@@ -3,37 +3,31 @@
 require "test_helper"
 
 class AdminI18nTest < Minitest::Test
-  Copy = RecordingStudioUser::Copy
-
-  def test_admin_chrome_keys_resolve_to_literal_english
-    I18n.with_locale(:en) do
-      assert_equal "Users", Copy.t("admin.section.title")
-      assert_equal "Users admin", Copy.t("admin.section.link")
-      assert_equal "Users", Copy.t("admin.screen.title")
-      assert_equal "Users over time", Copy.t("admin.screen.chart_title")
-      assert_equal "Users", Copy.t("admin.screen.series_users")
-      assert_equal "Total users", Copy.t("admin.widget.total_users")
-      assert_equal "Name", Copy.t("admin.section.columns.name")
-      assert_equal "Email", Copy.t("admin.section.columns.email")
-      assert_equal "Created at", Copy.t("admin.section.columns.created_at")
-    end
-  end
-
-  def test_admin_source_calls_copy_for_titles_and_keeps_subtitle_and_columns_literal
+  def test_admin_dsl_stays_main_literal_strings
     admin = File.read(File.expand_path("../lib/recording_studio_user/admin.rb", __dir__))
 
-    assert_includes admin, 'Copy.t("admin.section.title"'
-    assert_includes admin, 'Copy.t("admin.section.link"'
-    assert_includes admin, 'Copy.t("admin.screen.title"'
-    assert_includes admin, 'Copy.t("admin.screen.chart_title"'
-    assert_includes admin, 'Copy.t("admin.screen.series_users"'
-    assert_includes admin, 'Copy.t("admin.widget.total_users"'
+    assert_includes admin, 'title "Users"'
     assert_includes admin, 'subtitle "Review sitewide user accounts"'
+    assert_includes admin, 'text: "Users admin"'
+    assert_includes admin, 'title "Users over time"'
+    assert_includes admin, 'name: "Users"'
+    assert_includes admin, 'title "Total users"'
     assert_includes admin, 'title: "Name"'
     assert_includes admin, 'title: "Email"'
     assert_includes admin, 'title: "Created at"'
-    refute_includes admin, 'title "Users"'
-    refute_includes admin, 'text: "Users admin"'
-    refute_includes admin, 'title "Total users"'
+
+    refute_includes admin, "Copy.t"
+    refute_includes admin, "Copy.legacy_t"
+    refute_includes admin, "title {"
+    refute_includes admin, "text: ->"
+  end
+
+  def test_engine_locales_do_not_ship_admin_keys
+    en = File.read(File.expand_path("../config/locales/en.yml", __dir__))
+
+    refute_match(/^\s+admin:\s*$/, en)
+    refute_includes en, "Users admin"
+    refute_includes en, "Users over time"
+    refute_includes en, "Total users"
   end
 end

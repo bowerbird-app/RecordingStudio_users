@@ -76,10 +76,31 @@ class LocalesTest < Minitest::Test
       assert_equal "Welcome back", I18n.t("recording_studio_user.auth.login_title")
       assert_equal "Profile updated.", I18n.t("recording_studio_user.profile.updated")
       assert_equal "My Profile", I18n.t("recording_studio_user.profile.my_profile")
-      assert_equal "Users", I18n.t("recording_studio.users.admin.section.title")
-      assert_equal "Total users", I18n.t("recording_studio.users.admin.widget.total_users")
       assert_equal "User", RecordingStudioUser::Copy.legacy_t("profile.unnamed_user")
       assert_equal "Welcome back", RecordingStudioUser::Copy.legacy_t("auth.login_title")
+    end
+  end
+
+  # Reverting a translated flash/view string back to a literal English must fail.
+  def test_translated_call_sites_are_not_reverted_to_literals
+    expectations = {
+      "app/controllers/recording_studio_user/profiles_controller.rb" =>
+        ['Copy.legacy_t("profile.updated")', "Profile updated."],
+      "app/controllers/recording_studio_user/identities_controller.rb" =>
+        ['Copy.legacy_t("omniauth.not_connected")', "That sign-in method is not connected."],
+      "app/views/recording_studio_user/auth/sessions/new.html.erb" =>
+        ['rsu_t("auth.continue_with_email")', "Continue with email"],
+      "app/views/recording_studio_user/profiles/show.html.erb" =>
+        ['rsu_t("profile.my_profile")', '"My Profile"']
+    }
+
+    expectations.each do |relative, (required, forbidden)|
+      path = File.expand_path("../#{relative}", __dir__)
+      source = File.read(path)
+
+      assert_includes source, required, "#{relative} must keep #{required}"
+      refute_includes source, forbidden,
+                      "#{relative} must not revert to literal #{forbidden.inspect}"
     end
   end
 
