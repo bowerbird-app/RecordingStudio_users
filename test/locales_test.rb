@@ -56,6 +56,14 @@ class LocalesTest < Minitest::Test
     assert_includes existent, locale_path
   end
 
+  def test_test_helper_does_not_load_engine_en_yml
+    helper = File.read(File.expand_path("test_helper.rb", __dir__))
+
+    refute_includes helper, "config/locales/en.yml"
+    refute_includes helper, "load_translations"
+    refute_includes helper, "I18n.load_path"
+  end
+
   def test_lib_sources_do_not_append_i18n_load_path
     lib_root = File.expand_path("../lib", __dir__)
     ruby_files = Dir[File.join(lib_root, "**", "*.rb")]
