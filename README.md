@@ -208,6 +208,31 @@ OTP registration still emits the legacy event unchanged:
 Other OTP instrumentation (`otp.*.recording_studio_user` for issue/verify and
 `otp.email_proof_completed.recording_studio_user`) is unchanged.
 
+## After-registration hooks
+
+Hosts that need their own work on sign-up (beyond subscribing to the event)
+register one or more `after_registration` callbacks. They run in the same
+`after_all_transactions_commit` callback as the event above, after the event
+is instrumented. The event itself is unchanged — RecordingStudio_onboarding
+and other subscribers keep working.
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.after_registration ->(user:, method:) {
+    # method is :password, :oauth, or :otp
+    Host::WelcomeMailer.deliver_later(user)
+  }
+
+  # Or a class-name string whose constant responds to .call(user:, method:)
+  config.after_registration "Host::ProvisionWorkspace"
+end
+```
+
+Multiple registrations are allowed; each runs in order. A hook error is logged
+and reported through `Rails.error` and does not break sign-up or later hooks.
+Hooks do **not** run on login or when an OAuth identity is linked to an
+existing user.
+
 ## User contract
 
 The configured `user_class_name` must name the existing, Devise-compatible Active Record class returned by `current_user`. It must use the host's UUID primary key and provide `email`, password digest, and timestamps. It must **not** store `first_name`, `last_name`, `time_zone`, or `additional_profile_attributes` — those belong on Profile.

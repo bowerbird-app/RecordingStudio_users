@@ -26,6 +26,25 @@ class ConfigurationTest < Minitest::Test
     assert_empty @configuration.omniauth_providers
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?
+    assert_empty @configuration.after_registration_hooks
+  end
+
+  def test_after_registration_accepts_callable_and_string_and_allows_multiple
+    first = ->(user:, method:) {}
+    @configuration.after_registration(first)
+    @configuration.after_registration("Host::AfterRegistration")
+    @configuration.after_registration { |user:, method:| [user, method] }
+
+    assert_equal 3, @configuration.after_registration_hooks.size
+    assert_equal first, @configuration.after_registration_hooks.first
+    assert_equal "Host::AfterRegistration", @configuration.after_registration_hooks[1]
+    assert_kind_of Proc, @configuration.after_registration_hooks.last
+  end
+
+  def test_after_registration_rejects_blank_and_non_callables
+    assert_raises(ArgumentError) { @configuration.after_registration(nil) }
+    assert_raises(ArgumentError) { @configuration.after_registration(42) }
+    assert_empty @configuration.after_registration_hooks
   end
 
   def test_require_password_confirmation_casts_like_other_flags

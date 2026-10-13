@@ -35,6 +35,7 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes initializer, "recording_studio_user_auth_for"
     assert_includes initializer, "omniauth:"
     assert_includes initializer, "otp_enabled"
+    assert_includes initializer, "after_registration"
     assert_includes initializer, "google_oauth2:"
     assert_includes initializer, "microsoft_graph:"
     assert_includes initializer, "client_id: your-google-client-id"
