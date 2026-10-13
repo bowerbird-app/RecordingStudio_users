@@ -56,10 +56,11 @@ module Dummy
     end
 
     def existing_terms_recording
-      RecordingStudio::Recording.find_by(
+      RecordingStudio::Recording.where(
+        RecordingStudio::Recording.recording_studio_trashable_kept_sql
+      ).find_by(
         recordable_type: RecordingStudioTermsAndConditions::Terms.name,
-        root_recording: root_recording,
-        trashed_at: nil
+        root_recording: root_recording
       )
     end
 
