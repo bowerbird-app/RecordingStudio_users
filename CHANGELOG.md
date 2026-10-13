@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.20.0] - 2026-10-13
+## [0.21.0] - 2026-10-13
 
 OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
 
@@ -26,7 +26,7 @@ OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
 - Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
 
 ### Upgrade notes
-- Bump to `0.20.0` and pin `recording_studio_cache` at tag `v0.5.0`. No migration.
+- Bump to `0.21.0` and pin `recording_studio_cache` at tag `v0.5.0`. No migration.
 - OTP rate-limit bucket identity (scope + email / IP / session) and cooldown
   lengths are the same. During a rolling deploy, a host may briefly allow one
   extra request per bucket while a legacy boolean key still exists alongside the
@@ -43,6 +43,30 @@ OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
 - On cache connection / IO / timeout errors the limiter now fails closed
   (raises `RateLimited`) instead of letting the error propagate. That fail-closed
   path is intentional and is the main deliberate behavior change.
+
+## [0.20.0] - 2026-10-13
+
+Hosts can register after-registration callbacks that run on successful sign-up.
+
+### Added
+- `config.after_registration` accepts a callable or a class-name string whose
+  constant responds to `.call(user:, method:)`. Multiple registrations are
+  allowed and run in order.
+- Hooks fire from `RegistrationCompleted.emit!` in the same
+  `after_all_transactions_commit` callback as
+  `registration.completed.recording_studio_user`, for password, OAuth
+  (new users only), and OTP sign-ups. They do not fire on login or identity
+  linking.
+- A hook error is logged and reported with `Rails.error.report` (`handled: true`)
+  and does not break sign-up or other hooks. The instrumentation event name and
+  payload are unchanged so RecordingStudio_onboarding subscribers keep working.
+
+### Upgrade notes
+- Bump to `0.20.0`. No migration.
+- Optional: register `config.after_registration` in the Users initializer when
+  the host needs work on sign-up beyond the existing ActiveSupport::Notifications
+  event. Prefer this over inventing a parallel subscriber when the host owns the
+  callback.
 
 ## [0.19.0] - 2026-10-09
 
@@ -859,7 +883,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.18.3...v0.19.0
 [0.17.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.1...v0.17.0
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.15.0...v0.16.0

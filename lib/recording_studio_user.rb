@@ -21,6 +21,7 @@ require "recording_studio_user/services/issue_otp"
 require "recording_studio_user/services/verify_otp"
 require "recording_studio_user/services/complete_registration"
 require "recording_studio_user/services/complete_email_proof"
+require "recording_studio_user/after_registration"
 require "recording_studio_user/registration_completed"
 require "recording_studio_user/omniauth"
 

@@ -65,6 +65,12 @@ RecordingStudioUser.configure do |config|
   # and installed recording_studio_notifications. Set primary_login_type = :otp
   # only when OTP login and registration are on.
   config.otp_enabled = false
+  # Optional host callbacks after successful sign-up (password, OAuth new-user,
+  # or OTP). Callable or class-name string responding to .call(user:, method:).
+  # Multiple registrations are allowed. Errors are logged and reported; sign-up
+  # continues. Does not fire on login or identity linking.
+  # config.after_registration ->(user:, method:) { }
+  # config.after_registration "Host::AfterRegistration"
 end
 
 # Host Devise must skip sessions/registrations/passwords and mount Users auth:
