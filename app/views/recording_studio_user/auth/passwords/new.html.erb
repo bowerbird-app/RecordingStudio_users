@@ -1,7 +1,7 @@
 <%= render layout: "recording_studio_user/auth/shell",
            locals: {
-             title: t("recording_studio_user.auth.forgot_password"),
-             subtitle: t("recording_studio_user.auth.forgot_password_subtitle")
+             title: rsu_t("auth.forgot_password", default: "Forgot your password?"),
+             subtitle: rsu_t("auth.forgot_password_subtitle", default: "We'll send you a link to choose a new one.")
            } do %>
   <% if flash[:alert].present? %>
     <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
@@ -9,7 +9,7 @@
 
   <% if resource.errors.any? %>
     <%= render FlatPack::Alert::Component.new(
-      title: t("recording_studio_user.auth.could_not_send_link"),
+      title: rsu_t("auth.could_not_send_link", default: "We couldn't send that link"),
       description: resource.errors.full_messages.join(", "),
       style: :danger
     ) %>
@@ -21,15 +21,15 @@
         name: "#{resource_name}[email]",
         id: "#{resource_name}_email",
         value: resource.email,
-        placeholder: t("recording_studio_user.auth.email_placeholder"),
+        placeholder: rsu_t("auth.email_placeholder", default: "you@company.com"),
         required: true,
         autocomplete: "email",
-        aria: { label: t("recording_studio_user.auth.email") },
+        aria: { label: rsu_t("auth.email", default: "Email") },
         error: resource.errors[:email].first
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: t("recording_studio_user.auth.send_reset_link"),
+        text: rsu_t("auth.send_reset_link", default: "Send reset link"),
         style: :primary,
         size: :md,
         type: "submit",
@@ -39,9 +39,9 @@
   <% end %>
 
   <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
-    <%= t("recording_studio_user.auth.remembered_it") %>
+    <%= rsu_t("auth.remembered_it", default: "Remembered it?") %>
     <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
-      <%= t("recording_studio_user.auth.back_to_sign_in") %>
+      <%= rsu_t("auth.back_to_sign_in", default: "Back to sign in") %>
     <% end %>
   </p>
 <% end %>

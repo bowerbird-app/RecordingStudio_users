@@ -98,7 +98,7 @@ module RecordingStudioUser
     end
 
     def login_title
-      @login_title.presence || I18n.t("recording_studio_user.auth.login_title")
+      @login_title.presence || Copy.legacy_t("auth.login_title", default: "Welcome back")
     end
 
     def otp_login_enabled=(value)

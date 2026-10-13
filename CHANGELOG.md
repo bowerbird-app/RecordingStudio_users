@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-10-13
+
+### Added
+
+- English Rails I18n keys for non-view Admin chrome under `recording_studio.users.admin.*` (section/screen titles, link text, chart title, series name, widget title). Column header keys ship for host overrides; Admin column titles stay literal English.
+- Nested `recording_studio.users.*` mirrors of every existing `recording_studio_user.*` key so hosts can override either namespace.
+- `RecordingStudioUser::Copy` with `t` (nested) and `legacy_t` (legacy-first, then nested, then English `default:`).
+- Host English override coverage: test-only fixture `test/dummy/test/locales/users_host_override.en.yml` loaded via `I18n.backend.load_translations` (no `I18n.load_path` mutation) plus a real-page assert.
+- Always-loaded boot-order guard `test/dummy/config/locales/recording_studio_user_host.en.yml` for a rarely shown OmniAuth flash key, with a render assert on the not-connected redirect.
+- Locale regression: every `lib/**/*.rb` file must not mention `i18n.load_path` / `I18n.load_path`.
+
+### Changed
+
+- Controller flashes, OTP delivery titles/bodies, OmniAuth error messages, profile fallbacks, and gem views resolve through `Copy.legacy_t` / `rsu_t` with English `default:`. English output stays byte-identical to `0.21.0`.
+- Admin section/screen titles, link text, chart title, series name, and the Total users widget title resolve through `Copy.t` at render time. Admin subtitles stay literal English (Admin search reads some fields raw).
+- Removed the explicit engine / gem `I18n.load_path` appenders. Rails engine `config/locales` paths load the English file.
+
+### Upgrade Notes
+
+- Bump to `0.22.0`. No migration.
+- English hosts need no change. Existing `recording_studio_user.*` host overrides keep winning via legacy-first lookup. Prefer new `recording_studio.users.*` keys when adding translations.
+- Hosts override by defining the same keys in their own `config/locales`. Public constants, API error strings, Metrics DSL titles, recordable labels, and persisted default names stay byte-identical to main.
+- Metrics DSL titles stay English (captured at registration). Admin column headers stay English until Admin evaluates callable column titles.
+
 ## [0.21.0] - 2026-10-13
 
 OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
@@ -888,7 +912,9 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.21.0...v0.22.0
+[0.21.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.18.3...v0.19.0
 [0.17.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.1...v0.17.0

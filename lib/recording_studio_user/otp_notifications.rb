@@ -12,12 +12,14 @@ module RecordingStudioUser
 
     TYPE_KEYS = {
       registration_otp: {
-        label_key: "recording_studio_user.otp.registration_label",
+        label_key: "otp.registration_label",
+        label_default: "Registration code",
         default_channels: %i[email],
         available_channels: %i[email]
       },
       login_otp: {
-        label_key: "recording_studio_user.otp.login_label",
+        label_key: "otp.login_label",
+        label_default: "Login code",
         default_channels: %i[email push],
         available_channels: %i[email push]
       }
@@ -37,12 +39,12 @@ module RecordingStudioUser
       @registered = true
     end
 
-    def register_type!(key, label_key:, **)
+    def register_type!(key, label_key:, label_default:, **)
       RecordingStudioNotifications.register_notification_type(
         key,
         **SHARED_TYPE_OPTIONS,
         **,
-        label: I18n.t(label_key)
+        label: Copy.legacy_t(label_key, default: label_default)
       )
     end
 

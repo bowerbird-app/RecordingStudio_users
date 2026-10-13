@@ -28,9 +28,9 @@ module RecordingStudioUser
       end
 
       def verify_failure_message(reason)
-        I18n.t(
-          "recording_studio_user.auth.verify.#{reason}",
-          default: I18n.t("recording_studio_user.auth.that_code_did_not_work")
+        Copy.legacy_t(
+          "auth.verify.#{reason}",
+          default: Copy.legacy_t("auth.that_code_did_not_work", default: "That code did not work.")
         )
       end
 
@@ -83,11 +83,11 @@ module RecordingStudioUser
       end
 
       def generic_login_notice
-        I18n.t("recording_studio_user.auth.eligible_code_sent")
+        Copy.legacy_t("auth.eligible_code_sent", default: "If an eligible account exists, we sent a code.")
       end
 
       def start_with_email_alert
-        I18n.t("recording_studio_user.auth.start_with_email")
+        Copy.legacy_t("auth.start_with_email", default: "Start with your email.")
       end
 
       def host_new_user_session_path

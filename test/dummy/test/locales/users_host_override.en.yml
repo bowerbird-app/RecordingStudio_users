@@ -1,0 +1,10 @@
+# Test-only fixture (outside config/locales). Loaded via I18n.backend.load_translations
+# inside one host-override test — never mutates I18n.load_path.
+en:
+  recording_studio_user:
+    profile:
+      my_profile: "HOST My Profile"
+  recording_studio:
+    users:
+      profile:
+        my_profile: "HOST Nested My Profile"

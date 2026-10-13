@@ -8,11 +8,11 @@ module RecordingStudioUser
 
     def destroy
       RecordingStudioUser::Omniauth.disconnect!(current_user, params[:provider])
-      redirect_to sign_in_methods_profile_path, notice: I18n.t("recording_studio_user.omniauth.disconnected")
+      redirect_to sign_in_methods_profile_path, notice: Copy.legacy_t("omniauth.disconnected", default: "Sign-in method disconnected.")
     rescue Omniauth::LastSignInMethodError => e
       redirect_to sign_in_methods_profile_path, alert: e.message
     rescue ActiveRecord::RecordNotFound
-      redirect_to sign_in_methods_profile_path, alert: I18n.t("recording_studio_user.omniauth.not_connected")
+      redirect_to sign_in_methods_profile_path, alert: Copy.legacy_t("omniauth.not_connected", default: "That sign-in method is not connected.")
     end
 
     private

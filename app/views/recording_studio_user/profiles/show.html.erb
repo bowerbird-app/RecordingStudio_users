@@ -1,27 +1,25 @@
-<% content_for :title, t(
-  "recording_studio_user.profile.document_title",
-  page: t("recording_studio_user.profile.my_profile")
+<% content_for :title, rsu_t("profile.document_title", default: "%{page} | Recording Studio User", page: rsu_t("profile.my_profile", default: "My Profile")
 ) %>
 
 <% recording_studio_page_nav(
-  title: t("recording_studio_user.profile.my_profile"),
+  title: rsu_t("profile.my_profile", default: "My Profile"),
   page_nav_anchor_url: main_app.root_path,
-  page_nav_anchor_label: t("recording_studio_user.profile.close")
+  page_nav_anchor_label: rsu_t("profile.close", default: "Close")
 ) %>
 
 <%= render FlatPack::PageTitle::Component.new(
-  title: t("recording_studio_user.profile.my_profile"),
+  title: rsu_t("profile.my_profile", default: "My Profile"),
   variant: :h1
 ) do |page_title| %>
   <% page_title.slot do %>
     <%= render FlatPack::Button::Component.new(
-      text: t("recording_studio_user.profile.edit"),
+      text: rsu_t("profile.edit", default: "Edit"),
       href: edit_profile_path,
       style: :primary
     ) %>
     <% if RecordingStudioUser.config.omniauth_configured? %>
       <%= render FlatPack::Button::Component.new(
-        text: t("recording_studio_user.profile.sign_in_methods"),
+        text: rsu_t("profile.sign_in_methods", default: "Sign-in methods"),
         href: sign_in_methods_profile_path,
         style: :secondary
       ) %>

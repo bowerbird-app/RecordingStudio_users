@@ -1,11 +1,11 @@
 <%= render layout: "recording_studio_user/auth/shell",
            locals: {
-             title: t("recording_studio_user.auth.choose_new_password"),
-             subtitle: t("recording_studio_user.auth.choose_new_password_subtitle")
+             title: rsu_t("auth.choose_new_password", default: "Choose a new password"),
+             subtitle: rsu_t("auth.choose_new_password_subtitle", default: "Make it one you'll remember.")
            } do %>
   <% if resource.errors.any? %>
     <%= render FlatPack::Alert::Component.new(
-      title: t("recording_studio_user.auth.password_did_not_save"),
+      title: rsu_t("auth.password_did_not_save", default: "That password didn't save"),
       description: resource.errors.full_messages.join(", "),
       style: :danger
     ) %>
@@ -21,24 +21,24 @@
       <%= render FlatPack::PasswordInput::Component.new(
         name: "#{resource_name}[password]",
         id: "#{resource_name}_password",
-        label: t("recording_studio_user.auth.new_password"),
+        label: rsu_t("auth.new_password", default: "New password"),
         required: true,
         autocomplete: "new-password",
-        help_text: t("recording_studio_user.auth.password_minimum", count: Devise.password_length.min),
+        help_text: rsu_t("auth.password_minimum", default: { one: "%{count} character minimum", other: "%{count} characters minimum" }, count: Devise.password_length.min),
         error: resource.errors[:password].first
       ) %>
 
       <%= render FlatPack::PasswordInput::Component.new(
         name: "#{resource_name}[password_confirmation]",
         id: "#{resource_name}_password_confirmation",
-        label: t("recording_studio_user.auth.confirm_new_password"),
+        label: rsu_t("auth.confirm_new_password", default: "Confirm new password"),
         required: true,
         autocomplete: "new-password",
         error: resource.errors[:password_confirmation].first
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: t("recording_studio_user.auth.save_password"),
+        text: rsu_t("auth.save_password", default: "Save password"),
         style: :primary,
         size: :md,
         type: "submit",

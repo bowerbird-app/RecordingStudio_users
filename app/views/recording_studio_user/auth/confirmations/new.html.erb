@@ -1,11 +1,11 @@
 <%= render layout: "recording_studio_user/auth/shell",
            locals: {
-             title: t("recording_studio_user.auth.resend_confirmation"),
-             subtitle: t("recording_studio_user.auth.resend_confirmation_subtitle")
+             title: rsu_t("auth.resend_confirmation", default: "Resend confirmation"),
+             subtitle: rsu_t("auth.resend_confirmation_subtitle", default: "We'll send a fresh link to your inbox.")
            } do %>
   <% if resource.errors.any? %>
     <%= render FlatPack::Alert::Component.new(
-      title: t("recording_studio_user.auth.could_not_send_link"),
+      title: rsu_t("auth.could_not_send_link", default: "We couldn't send that link"),
       description: resource.errors.full_messages.join(", "),
       style: :danger
     ) %>
@@ -17,15 +17,15 @@
         name: "#{resource_name}[email]",
         id: "#{resource_name}_email",
         value: resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email,
-        placeholder: t("recording_studio_user.auth.email_placeholder"),
+        placeholder: rsu_t("auth.email_placeholder", default: "you@company.com"),
         required: true,
         autocomplete: "email",
-        aria: { label: t("recording_studio_user.auth.email") },
+        aria: { label: rsu_t("auth.email", default: "Email") },
         error: resource.errors[:email].first
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: t("recording_studio_user.auth.resend_confirmation"),
+        text: rsu_t("auth.resend_confirmation", default: "Resend confirmation"),
         style: :primary,
         size: :md,
         type: "submit",
@@ -36,7 +36,7 @@
 
   <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
     <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
-      <%= t("recording_studio_user.auth.back_to_sign_in") %>
+      <%= rsu_t("auth.back_to_sign_in", default: "Back to sign in") %>
     <% end %>
   </p>
 <% end %>

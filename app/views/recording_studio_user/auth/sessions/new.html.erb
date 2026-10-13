@@ -11,14 +11,14 @@
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",
-        placeholder: t("recording_studio_user.auth.email_placeholder"),
+        placeholder: rsu_t("auth.email_placeholder", default: "you@company.com"),
         required: true,
         autocomplete: "email",
-        aria: { label: t("recording_studio_user.auth.email") }
+        aria: { label: rsu_t("auth.email", default: "Email") }
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: t("recording_studio_user.auth.continue_with_email"),
+        text: rsu_t("auth.continue_with_email", default: "Continue with email"),
         style: :primary,
         size: :md,
         type: "submit",
@@ -28,9 +28,9 @@
   <% end %>
 
   <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
-    <%= t("recording_studio_user.auth.no_account") %>
+    <%= rsu_t("auth.no_account", default: "Don't have an account?") %>
     <%= render FlatPack::Link::Component.new(href: auth_sign_up_path) do %>
-      <%= t("recording_studio_user.auth.sign_up") %>
+      <%= rsu_t("auth.sign_up", default: "Sign up") %>
     <% end %>
   </p>
 

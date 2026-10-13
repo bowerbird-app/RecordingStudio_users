@@ -8,7 +8,7 @@ module RecordingStudioUser
       private
 
       def email_taken_message
-        I18n.t("recording_studio_user.auth.email_taken")
+        Copy.legacy_t("auth.email_taken", default: "That email already has an account. Try signing in.")
       end
 
       def start_otp_registration!(email)
@@ -19,7 +19,7 @@ module RecordingStudioUser
         RecordingStudioUser.issue_otp!(user: user, purpose: :registration, request: request, session: session)
         redirect_to otp_registration_verify_path
       rescue Services::OtpRateLimiter::RateLimited
-        flash.now[:alert] = I18n.t("recording_studio_user.auth.give_it_a_minute")
+        flash.now[:alert] = Copy.legacy_t("auth.give_it_a_minute", default: "Give it a minute, then try again.")
         render_otp_rate_limited
       end
 

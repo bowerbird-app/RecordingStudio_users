@@ -313,9 +313,9 @@ Hosts that still assign `config.additional_profile_attributes = []` hide Languag
 
 ## Translations
 
-The engine ships English defaults in `config/locales/en.yml` under `recording_studio_user.*` and adds that file to the host I18n load path. Auth screens, profile screens, flashes, OTP mail copy, and OmniAuth alerts resolve those keys at request time. `recording_studio_user.profile.unnamed_user` remains the fallback display name when a person has no email and no profile name.
+The engine ships English defaults in `config/locales/en.yml` under both `recording_studio_user.*` (wave-1 keys, kept stable) and `recording_studio.users.*` (nested mirrors plus Admin chrome). Rails loads the file through the engine's `config/locales` path — there is no explicit `I18n.load_path` appender. Auth screens, profile screens, flashes, OTP mail copy, OmniAuth alerts, and Admin titles resolve those keys at request time via legacy-first lookup (`recording_studio_user.*`, then `recording_studio.users.*`, then an English `default:`). `recording_studio_user.profile.unnamed_user` remains the fallback display name when a person has no email and no profile name.
 
-Other languages are the host's job. Copy the same keys into `config/locales/<locale>.yml` and list that locale in `config.i18n.available_locales`. A host key with the same name overrides the English default. The dummy app's `test/dummy/config/locales/fr.yml` is a complete French override you can copy.
+Other languages are the host's job. Copy the same keys into `config/locales/<locale>.yml` and list that locale in `config.i18n.available_locales`. A host key with the same name overrides the English default; existing `recording_studio_user.*` overrides keep winning. Prefer `recording_studio.users.*` for new host translations. The dummy app's `test/dummy/config/locales/fr.yml` is a complete French override you can copy.
 
 Edit Profile's Language select lists `I18n.available_locales` (or Recording Studio Internationalization's available locales when that gem is loaded). The blank option is `Default {site language}` and unsets the saved preference. Restrict `config.i18n.available_locales` to the languages you offer — Devise and other gems may otherwise load a long list.
 

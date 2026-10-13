@@ -1,17 +1,15 @@
-<% content_for :title, t(
-  "recording_studio_user.profile.document_title",
-  page: t("recording_studio_user.otp.your_sign_in_code")
+<% content_for :title, rsu_t("profile.document_title", default: "%{page} | Recording Studio User", page: rsu_t("otp.your_sign_in_code", default: "Your sign-in code")
 ) %>
 
 <% recording_studio_page_nav(
-  title: t("recording_studio_user.otp.your_sign_in_code"),
+  title: rsu_t("otp.your_sign_in_code", default: "Your sign-in code"),
   page_nav_anchor_url: main_app.root_path,
-  page_nav_anchor_label: t("recording_studio_user.profile.close")
+  page_nav_anchor_label: rsu_t("profile.close", default: "Close")
 ) %>
 
 <%= render FlatPack::PageTitle::Component.new(
-  title: t("recording_studio_user.otp.your_sign_in_code"),
-  subtitle: (@code.present? ? t("recording_studio_user.otp.use_this_code") : nil),
+  title: rsu_t("otp.your_sign_in_code", default: "Your sign-in code"),
+  subtitle: (@code.present? ? rsu_t("otp.use_this_code", default: "Use this code to finish signing in.") : nil),
   variant: :h1
 ) %>
 
@@ -20,12 +18,12 @@
     <%= @code %>
   </p>
   <p class="mt-2 text-sm text-(--surface-muted-content-color)">
-    <%= t("recording_studio_user.otp.expires_in", time: time_ago_in_words(@challenge.expires_at)) %>
+    <%= rsu_t("otp.expires_in", default: "Expires in about %{time}.", time: time_ago_in_words(@challenge.expires_at)) %>
   </p>
 <% else %>
   <%= render FlatPack::Alert::Component.new(
-    title: t("recording_studio_user.otp.no_longer_valid"),
-    description: t("recording_studio_user.otp.request_fresh"),
+    title: rsu_t("otp.no_longer_valid", default: "This code is no longer valid"),
+    description: rsu_t("otp.request_fresh", default: "Request a fresh code from sign in."),
     style: :info
   ) %>
 <% end %>
