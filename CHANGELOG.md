@@ -21,6 +21,8 @@ OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
   (boolean `true`) to `recording_studio_user:otp:rl:#{scope}:#{key}` (integer
   counter). Incrementing a legacy boolean raises `NoMethodError`; the new key
   avoids that. Legacy boolean keys expire within one cooldown (≤ 1 minute).
+  Happy-path keys still use a TTL (main already set `expires_in:` on write;
+  the shared limiter keeps a TTL via `strategy: :ttl`).
 - Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
 
 ### Upgrade notes
@@ -29,8 +31,18 @@ OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
   lengths are the same. During a rolling deploy, a host may briefly allow one
   extra request per bucket while a legacy boolean key still exists alongside the
   new counter key; both expire within the configured cooldown.
+- Store is still `Rails.cache` only (main never had a configurable
+  `cache` / `cache_store` on Users). There is still no limit config: main was a
+  one-shot cooldown, so the adapter always passes `limit: 1` and never uses the
+  shared limiter’s `limit <= 0` “disabled” path.
+- Odd `cooldown_for` values (normally blocked by `otp_resend_cooldown`’s
+  positive check) keep main’s `expires_in:` behavior: `0` always allows;
+  `nil` sticky-blocks after the first allow; negative and non-Numeric (e.g.
+  `"60"`) raise from `expires_in:` instead of being coerced or rejected by the
+  shared limiter’s period validation.
 - On cache connection / IO / timeout errors the limiter now fails closed
-  (raises `RateLimited`) instead of letting the error propagate.
+  (raises `RateLimited`) instead of letting the error propagate. That fail-closed
+  path is intentional and is the main deliberate behavior change.
 
 ## [0.19.0] - 2026-10-09
 
