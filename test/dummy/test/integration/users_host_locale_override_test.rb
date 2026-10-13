@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+
+require "test_helper"
+require "devise/test/integration_helpers"
+
+class UsersHostLocaleOverrideTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+
+  HOST_NOT_CONNECTED = "HOST That sign-in method is not connected."
+  MAIN_NOT_CONNECTED = "That sign-in method is not connected."
+  OVERRIDE_KEY = "recording_studio_user.omniauth.not_connected"
+  BOOT_HOST_LOCALE = Rails.root.join("config/locales/recording_studio_users_boot_override.en.yml")
+
+  setup do
+    @load_path_before = I18n.load_path.dup
+    @user = RecordingStudioUser.create_user!(
+      email: "users-host-override-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Host",
+      last_name: "Override",
+      time_zone: "UTC"
+    )
+    accept_pending_live_terms!(@user)
+  end
+
+  teardown do
+    assert_equal @load_path_before, I18n.load_path,
+                 "test must not leave I18n.load_path modified"
+  end
+
+  # Real-boot-order guard: host file under config/locales must win without any
+  # test-time load_path mutation. Rarely shown disconnect flash.
+  test "host locale override for recording_studio_user wins on boot order" do
+    assert File.exist?(BOOT_HOST_LOCALE), "expected boot override at #{BOOT_HOST_LOCALE}"
+    assert_includes File.read(BOOT_HOST_LOCALE), HOST_NOT_CONNECTED
+    assert_equal HOST_NOT_CONNECTED, I18n.t(OVERRIDE_KEY)
+    refute_equal MAIN_NOT_CONNECTED, I18n.t(OVERRIDE_KEY)
+    assert_equal @load_path_before, I18n.load_path,
+                 "boot-order test must not mutate I18n.load_path"
+
+    sign_in @user
+
+    delete recording_studio_users.profile_identity_path("google_oauth2")
+    assert_response :redirect
+    follow_redirect!
+    assert_includes response.body, HOST_NOT_CONNECTED
+    refute_match(/(?<!HOST )That sign-in method is not connected\./, response.body)
+  end
+end

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Removed the engine `recording_studio_user.i18n` initializer that appended
+  `config/locales` onto `I18n.load_path`. Rails still loads the engine English
+  file through the engine `config/locales` path.
+
+### Added
+
+- Dummy boot-order host override
+  `test/dummy/config/locales/recording_studio_users_boot_override.en.yml` for the
+  rarely shown `recording_studio_user.omniauth.not_connected` flash, with a
+  real-page render assert. Probe keys stay under `test/dummy` (not packaged).
+
 ## [0.21.0] - 2026-10-13
 
 OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
