@@ -72,8 +72,8 @@ class LocalesTest < Minitest::Test
       assert_equal "My Profile", I18n.t("recording_studio_user.profile.my_profile")
       assert_equal "Users", I18n.t("recording_studio.users.admin.section.title")
       assert_equal "Total users", I18n.t("recording_studio.users.admin.widget.total_users")
-      assert_equal "User", RecordingStudioUser::Copy.legacy_t("profile.unnamed_user", default: "User")
-      assert_equal "Welcome back", RecordingStudioUser::Copy.legacy_t("auth.login_title", default: "Welcome back")
+      assert_equal "User", RecordingStudioUser::Copy.legacy_t("profile.unnamed_user")
+      assert_equal "Welcome back", RecordingStudioUser::Copy.legacy_t("auth.login_title")
     end
   end
 
@@ -84,7 +84,7 @@ class LocalesTest < Minitest::Test
                                     })
 
     assert_equal "HOST Legacy Profile updated.",
-                 RecordingStudioUser::Copy.legacy_t("profile.updated", default: "Profile updated.")
+                 RecordingStudioUser::Copy.legacy_t("profile.updated")
   end
 
   def test_legacy_first_lookup_falls_through_to_nested_when_legacy_missing
@@ -95,15 +95,35 @@ class LocalesTest < Minitest::Test
     I18n.locale = :en
 
     assert_equal "Nested Profile updated.",
-                 RecordingStudioUser::Copy.legacy_t("profile.updated", default: "Profile updated.")
+                 RecordingStudioUser::Copy.legacy_t("profile.updated")
   end
 
-  def test_legacy_first_lookup_uses_english_default_when_neither_key_exists
+  def test_legacy_first_lookup_matches_bare_i18n_when_neither_key_exists
     I18n.backend = I18n::Backend::Simple.new
     I18n.locale = :en
 
-    assert_equal "Profile updated.",
-                 RecordingStudioUser::Copy.legacy_t("profile.updated", default: "Profile updated.")
+    bare = I18n.t("recording_studio_user.profile.updated",
+                  default: [:"recording_studio.users.profile.updated"])
+    via_copy = RecordingStudioUser::Copy.legacy_t("profile.updated")
+
+    assert_equal bare, via_copy
+    assert_match(/translation missing/i, via_copy)
+  end
+
+  def test_copy_call_sites_do_not_pass_english_string_defaults
+    roots = [
+      File.expand_path("../lib", __dir__),
+      File.expand_path("../app", __dir__)
+    ]
+    files = roots.flat_map { |root| Dir[File.join(root, "**", "*.{rb,erb}")] }
+
+    offenders = files.select do |path|
+      source = File.read(path)
+      source.match?(/\b(?:Copy\.(?:legacy_)?t|rsu_t)\([^;\n]*default:\s*["']/)
+    end
+
+    assert_empty offenders,
+                 "Copy.t / legacy_t / rsu_t must not pass English string default: in #{offenders.join(', ')}"
   end
 
   def test_login_title_follows_english_until_the_host_overrides

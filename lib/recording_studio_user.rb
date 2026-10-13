@@ -152,7 +152,7 @@ module RecordingStudioUser
     def email_or_fallback(user)
       return user.email if user.respond_to?(:email) && user.email.present?
 
-      Copy.legacy_t("profile.unnamed_user", default: "User")
+      Copy.legacy_t("profile.unnamed_user")
     end
   end
 end

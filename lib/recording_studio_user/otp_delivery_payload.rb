@@ -33,20 +33,16 @@ module RecordingStudioUser
 
     def title_for(challenge)
       if challenge.registration?
-        Copy.legacy_t("otp.verify_your_email", default: "Verify your email")
+        Copy.legacy_t("otp.verify_your_email")
       else
-        Copy.legacy_t("otp.your_sign_in_code", default: "Your sign-in code")
+        Copy.legacy_t("otp.your_sign_in_code")
       end
     end
 
     def body_for(challenge, code)
       minutes = (RecordingStudioUser.config.otp_expires_in / 60).to_i
       key = challenge.registration? ? "registration_body" : "login_body"
-      english = {
-        "registration_body" => "%{code} is your verification code. It expires in %{minutes} minutes.",
-        "login_body" => "%{code} is your sign-in code. It expires in %{minutes} minutes."
-      }.fetch(key)
-      Copy.legacy_t("otp.#{key}", default: english, code: code, minutes: minutes)
+      Copy.legacy_t("otp.#{key}", code: code, minutes: minutes)
     end
   end
 end

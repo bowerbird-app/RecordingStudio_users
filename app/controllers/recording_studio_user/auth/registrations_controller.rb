@@ -21,7 +21,7 @@ module RecordingStudioUser
 
       def continue
         email = submitted_email_from_params
-        return render_continue_failure(Copy.legacy_t("auth.enter_email", default: "Enter your email to continue.")) if email.blank?
+        return render_continue_failure(Copy.legacy_t("auth.enter_email")) if email.blank?
 
         store_pending_auth_email!(email)
         continue_with_primary_registration!(email)
@@ -63,9 +63,9 @@ module RecordingStudioUser
 
       def resend
         issue_registration_resend!
-        redirect_to otp_registration_verify_path, notice: Copy.legacy_t("auth.fresh_code", default: "Fresh code on the way.")
+        redirect_to otp_registration_verify_path, notice: Copy.legacy_t("auth.fresh_code")
       rescue Services::OtpRateLimiter::RateLimited
-        redirect_to otp_registration_verify_path, alert: Copy.legacy_t("auth.wait_for_code", default: "Please wait before requesting another code.")
+        redirect_to otp_registration_verify_path, alert: Copy.legacy_t("auth.wait_for_code")
       end
 
       private

@@ -34,7 +34,7 @@ module RecordingStudioUser
       def disconnect!(user, provider)
         identity = user.identities.find_by!(provider: provider.to_s)
         if !other_usable_identity?(user, identity) && !password_set?(user)
-          raise LastSignInMethodError, Copy.legacy_t("omniauth.last_method", default: "Connect another sign-in method or set a password before disconnecting")
+          raise LastSignInMethodError, Copy.legacy_t("omniauth.last_method")
         end
 
         identity.destroy!
@@ -55,31 +55,27 @@ module RecordingStudioUser
       end
 
       def raise_identity_taken!(key, provider)
-        english = {
-          "taken_other" => "That %{provider} account is already linked to another user",
-          "taken_this" => "A %{provider} account is already linked to this user"
-        }.fetch(key)
         raise IdentityTakenError,
-              Copy.legacy_t("omniauth.#{key}", default: english, provider: provider_label(provider))
+              Copy.legacy_t("omniauth.#{key}", provider: provider_label(provider))
       end
 
       def raise_if_unconfirmed!(existing)
         return unless existing && !email_confirmed?(existing)
 
-        raise UnconfirmedEmailError, Copy.legacy_t("omniauth.existing_unconfirmed", default: "Existing email is not confirmed")
+        raise UnconfirmedEmailError, Copy.legacy_t("omniauth.existing_unconfirmed")
       end
 
       def raise_if_account_creation_disabled!
         return if RecordingStudioUser.config.omniauth_create_account?
 
-        raise AccountCreationDisabledError, Copy.legacy_t("omniauth.creation_disabled", default: "Account creation from this provider is disabled")
+        raise AccountCreationDisabledError, Copy.legacy_t("omniauth.creation_disabled")
       end
 
       def normalized_email(auth)
         email = auth.info&.email.to_s.strip.downcase
-        raise MissingEmailError, Copy.legacy_t("omniauth.email_required", default: "Email is required from the provider") if email.blank?
+        raise MissingEmailError, Copy.legacy_t("omniauth.email_required") if email.blank?
         if email_explicitly_unverified?(auth)
-          raise UnverifiedEmailError, Copy.legacy_t("omniauth.email_not_verified", default: "Email was not verified by the provider")
+          raise UnverifiedEmailError, Copy.legacy_t("omniauth.email_not_verified")
         end
 
         email

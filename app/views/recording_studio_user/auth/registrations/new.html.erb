@@ -1,4 +1,4 @@
-<%= render layout: "recording_studio_user/auth/shell", locals: { title: rsu_t("auth.sign_up", default: "Sign up") } do %>
+<%= render layout: "recording_studio_user/auth/shell", locals: { title: rsu_t("auth.sign_up") } do %>
   <% if flash[:alert].present? %>
     <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
   <% end %>
@@ -9,15 +9,15 @@
         name: "user[email]",
         id: "user_email",
         value: @resource&.email,
-        placeholder: rsu_t("auth.email_placeholder", default: "you@company.com"),
+        placeholder: rsu_t("auth.email_placeholder"),
         required: true,
         autocomplete: "email",
-        aria: { label: rsu_t("auth.email", default: "Email") },
+        aria: { label: rsu_t("auth.email") },
         error: @resource&.errors&.[](:email)&.first
       ) %>
 
       <%= render FlatPack::Button::Component.new(
-        text: rsu_t("auth.continue_with_email", default: "Continue with email"),
+        text: rsu_t("auth.continue_with_email"),
         style: :primary,
         size: :md,
         type: "submit",
@@ -27,9 +27,9 @@
   <% end %>
 
   <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
-    <%= rsu_t("auth.already_have_one", default: "Already have one?") %>
+    <%= rsu_t("auth.already_have_one") %>
     <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
-      <%= rsu_t("auth.log_in", default: "Log in") %>
+      <%= rsu_t("auth.log_in") %>
     <% end %>
   </p>
 

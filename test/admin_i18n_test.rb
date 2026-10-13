@@ -7,15 +7,15 @@ class AdminI18nTest < Minitest::Test
 
   def test_admin_chrome_keys_resolve_to_literal_english
     I18n.with_locale(:en) do
-      assert_equal "Users", Copy.t("admin.section.title", default: "Users")
-      assert_equal "Users admin", Copy.t("admin.section.link", default: "Users admin")
-      assert_equal "Users", Copy.t("admin.screen.title", default: "Users")
-      assert_equal "Users over time", Copy.t("admin.screen.chart_title", default: "Users over time")
-      assert_equal "Users", Copy.t("admin.screen.series_users", default: "Users")
-      assert_equal "Total users", Copy.t("admin.widget.total_users", default: "Total users")
-      assert_equal "Name", Copy.t("admin.section.columns.name", default: "Name")
-      assert_equal "Email", Copy.t("admin.section.columns.email", default: "Email")
-      assert_equal "Created at", Copy.t("admin.section.columns.created_at", default: "Created at")
+      assert_equal "Users", Copy.t("admin.section.title")
+      assert_equal "Users admin", Copy.t("admin.section.link")
+      assert_equal "Users", Copy.t("admin.screen.title")
+      assert_equal "Users over time", Copy.t("admin.screen.chart_title")
+      assert_equal "Users", Copy.t("admin.screen.series_users")
+      assert_equal "Total users", Copy.t("admin.widget.total_users")
+      assert_equal "Name", Copy.t("admin.section.columns.name")
+      assert_equal "Email", Copy.t("admin.section.columns.email")
+      assert_equal "Created at", Copy.t("admin.section.columns.created_at")
     end
   end
 

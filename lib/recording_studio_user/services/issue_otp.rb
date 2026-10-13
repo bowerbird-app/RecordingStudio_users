@@ -10,10 +10,6 @@ module RecordingStudioUser
         "registration" => "otp.verify_your_email",
         "login" => "otp.your_sign_in_code"
       }.freeze
-      TITLE_DEFAULTS = {
-        "registration" => "Verify your email",
-        "login" => "Your sign-in code"
-      }.freeze
 
       def self.call(...)
         new(...).call
@@ -92,10 +88,7 @@ module RecordingStudioUser
         {
           notification_type: NOTIFICATION_TYPES.fetch(@purpose),
           recipient: @user,
-          title: Copy.legacy_t(
-            TITLE_KEYS.fetch(@purpose),
-            default: TITLE_DEFAULTS.fetch(@purpose)
-          ),
+          title: Copy.legacy_t(TITLE_KEYS.fetch(@purpose)),
           body: nil,
           url: notification_url(challenge),
           metadata: { "otp_challenge_id" => challenge.id },

@@ -10,16 +10,16 @@ module RecordingStudioUser
       scope: :global
     }.freeze
 
+    # Labels are captured at register! time (Notifications stores the string).
+    # Keep main's English literals here — do not resolve I18n at boot.
     TYPE_KEYS = {
       registration_otp: {
-        label_key: "otp.registration_label",
-        label_default: "Registration code",
+        label: "Registration code",
         default_channels: %i[email],
         available_channels: %i[email]
       },
       login_otp: {
-        label_key: "otp.login_label",
-        label_default: "Login code",
+        label: "Login code",
         default_channels: %i[email push],
         available_channels: %i[email push]
       }
@@ -39,12 +39,12 @@ module RecordingStudioUser
       @registered = true
     end
 
-    def register_type!(key, label_key:, label_default:, **)
+    def register_type!(key, label:, **)
       RecordingStudioNotifications.register_notification_type(
         key,
         **SHARED_TYPE_OPTIONS,
         **,
-        label: Copy.legacy_t(label_key, default: label_default)
+        label: label
       )
     end
 

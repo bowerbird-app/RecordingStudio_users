@@ -59,7 +59,7 @@ module RecordingStudioUser
     end
 
     def updated_notice
-      I18n.with_locale(locale_for_notice) { Copy.legacy_t("profile.updated", default: "Profile updated.") }
+      I18n.with_locale(locale_for_notice) { Copy.legacy_t("profile.updated") }
     end
 
     def locale_for_notice

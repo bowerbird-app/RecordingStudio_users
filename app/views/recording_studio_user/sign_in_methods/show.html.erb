@@ -1,16 +1,15 @@
-<% content_for :title, rsu_t("profile.document_title", default: "%{page} | Recording Studio User", page: rsu_t("profile.sign_in_methods", default: "Sign-in methods")
-) %>
+<% content_for :title, rsu_t("profile.document_title", page: rsu_t("profile.sign_in_methods")) %>
 
 <% recording_studio_page_nav(
-  title: rsu_t("profile.sign_in_methods", default: "Sign-in methods"),
+  title: rsu_t("profile.sign_in_methods"),
   page_nav_back_url: profile_path,
-  page_nav_back_label: rsu_t("profile.my_profile", default: "My Profile"),
+  page_nav_back_label: rsu_t("profile.my_profile"),
   page_nav_anchor_url: main_app.root_path,
-  page_nav_anchor_label: rsu_t("profile.close", default: "Close")
+  page_nav_anchor_label: rsu_t("profile.close")
 ) %>
 
 <%= render FlatPack::PageTitle::Component.new(
-  title: rsu_t("profile.sign_in_methods", default: "Sign-in methods"),
+  title: rsu_t("profile.sign_in_methods"),
   subtitle: profile_display_name(@user),
   variant: :h1
 ) %>
@@ -35,12 +34,12 @@
                     method: :delete,
                     class: "inline-flex items-center",
                     data: {
-                      turbo_confirm: rsu_t("omniauth.disconnect_confirm", default: "Disconnect %{provider}?", provider: recording_studio_user_provider_label(identity.provider)
+                      turbo_confirm: rsu_t("omniauth.disconnect_confirm", provider: recording_studio_user_provider_label(identity.provider)
                       )
                     }
                   ) do
                     render FlatPack::Button::Component.new(
-                      text: rsu_t("omniauth.disconnect", default: "Disconnect"),
+                      text: rsu_t("omniauth.disconnect"),
                       type: "submit",
                       style: :secondary,
                       size: :sm
@@ -69,7 +68,7 @@
                     data: { turbo: false }
                   ) do
                     render FlatPack::Button::Component.new(
-                      text: rsu_t("omniauth.connect", default: "Connect"),
+                      text: rsu_t("omniauth.connect"),
                       type: "submit",
                       style: :secondary,
                       size: :sm

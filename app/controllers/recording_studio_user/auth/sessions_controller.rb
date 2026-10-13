@@ -9,7 +9,7 @@ module RecordingStudioUser
 
       def continue
         email = submitted_email_from_params
-        return render_continue_failure(Copy.legacy_t("auth.enter_email", default: "Enter your email to continue.")) if email.blank?
+        return render_continue_failure(Copy.legacy_t("auth.enter_email")) if email.blank?
 
         store_pending_auth_email!(email)
         continue_with_primary_login!(email)
@@ -26,9 +26,9 @@ module RecordingStudioUser
 
       def create_password
         user = resource_class.find_for_database_authentication(email: sign_in_params[:email])
-        return render_password_failure(Copy.legacy_t("auth.otp_account_password", default: "This account signs in with email codes.")) if
+        return render_password_failure(Copy.legacy_t("auth.otp_account_password")) if
           user&.registered_with_otp?
-        return render_password_failure(Copy.legacy_t("auth.email_or_password_mismatch", default: "Email or password did not match.")) unless
+        return render_password_failure(Copy.legacy_t("auth.email_or_password_mismatch")) unless
           user&.valid_password?(sign_in_params[:password])
 
         finish_sign_in!(user)
@@ -127,7 +127,7 @@ module RecordingStudioUser
         flash.now[:alert] = if result
                               verify_failure_message(result.reason)
                             else
-                              Copy.legacy_t("auth.that_code_did_not_work", default: "That code did not work.")
+                              Copy.legacy_t("auth.that_code_did_not_work")
                             end
         render :verify, status: :unprocessable_entity
       end

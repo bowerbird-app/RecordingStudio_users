@@ -53,7 +53,7 @@ module RecordingStudioUser
     end
 
     def auth_site_logo_alt(root)
-      RecordingStudioSiteSettings.name_for(root).presence || Copy.legacy_t("auth.logo", default: "Logo")
+      RecordingStudioSiteSettings.name_for(root).presence || Copy.legacy_t("auth.logo")
     end
 
     def auth_site_logo_public_src(logo)

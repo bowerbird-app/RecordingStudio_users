@@ -2,10 +2,10 @@
 
 module RecordingStudioUser
   module CopyHelper
-    # Legacy-first Users copy for views. Pass the original English as default:
-    # so a host locale with no fallback never shows "translation missing".
-    def rsu_t(key, default:, **options)
-      RecordingStudioUser::Copy.legacy_t(key, default: default, **options)
+    # Legacy-first Users copy for views. English comes from
+    # `config/locales/en.yml` only — no English `default:` wrappers.
+    def rsu_t(key, **options)
+      RecordingStudioUser::Copy.legacy_t(key, **options)
     end
   end
 end
