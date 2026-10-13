@@ -248,6 +248,24 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "recording_studio_admin (2.2.0)"
   end
 
+  def test_dummy_gemfile_pins_notifications_v070_tag
+    gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+    lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
+
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_notifications"'
+    assert_includes gemfile, 'tag: "v0.7.0"'
+    refute_includes gemfile, 'path: "../../vendor/recording_studio_notifications"'
+    assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_notifications.git"
+    assert_includes lock, "tag: v0.7.0"
+    assert_includes lock, "6fd2a4e01dd1e5a7c1cbce340152eae9e65bf8f6"
+    assert_includes lock, "recording_studio_notifications (0.7.0)"
+    refute_includes lock, "recording_studio_notifications (0.3.0)"
+    refute_match(
+      %r{^PATH\n  remote: \.\./\.\./vendor/recording_studio_notifications\n}m,
+      lock
+    )
+  end
+
   def test_dummy_default_layout_head_sets_rounded_on_html
     head = File.read(File.expand_path("dummy/app/views/recording_studio/_default_layout_head.html.erb", __dir__))
 

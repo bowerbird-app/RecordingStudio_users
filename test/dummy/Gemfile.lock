@@ -57,6 +57,19 @@ GIT
       recording_studio (~> 4.2)
 
 GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_notifications.git
+  revision: 6fd2a4e01dd1e5a7c1cbce340152eae9e65bf8f6
+  tag: v0.7.0
+  specs:
+    recording_studio_notifications (0.7.0)
+      flat_pack
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+      recording_studio_accessible
+      recording_studio_metrics (~> 0.2)
+      view_component
+
+GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_publishable.git
   revision: 059a41ad0b821bbd978c0d0ad22a46013c8867e1
   tag: v0.8.0
@@ -118,16 +131,6 @@ PATH
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
       recording_studio_notifications (>= 0.3.0, < 1)
-
-PATH
-  remote: ../../vendor/recording_studio_notifications
-  specs:
-    recording_studio_notifications (0.3.0)
-      flat_pack
-      rails (~> 8.1.0)
-      recording_studio
-      recording_studio_accessible
-      view_component
 
 PATH
   remote: ../../vendor/recording_studio_site_settings
@@ -852,7 +855,7 @@ CHECKSUMS
   recording_studio_api (0.6.7)
   recording_studio_attachable (0.15.0)
   recording_studio_metrics (0.2.0)
-  recording_studio_notifications (0.3.0)
+  recording_studio_notifications (0.7.0)
   recording_studio_notifications_email (0.3.0)
   recording_studio_notifications_push (0.2.0)
   recording_studio_publishable (0.8.0)
