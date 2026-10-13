@@ -216,15 +216,18 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio", "~> 4.2"'
   end
 
-  def test_dummy_gemfile_pins_root_switchable_v080_tag
+  def test_dummy_gemfile_pins_root_switchable_v090_tag
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.8.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.9.0"'
+    refute_includes gemfile, 'RecordingStudio_root_switchable", tag: "v0.8.0"'
     refute_includes gemfile, 'RecordingStudio_root_switchable", tag: "v0.6.0"'
-    assert_includes lock, "tag: v0.8.0"
-    assert_includes lock, "6f4ebe13d8021cc2097d4d93ab89d0dfb03e2c8c"
-    assert_includes lock, "recording_studio_root_switchable (0.8.0)"
+    assert_includes lock, "tag: v0.9.0"
+    assert_includes lock, "9cc759ea3290724f349269a437a5e284ddd4b30a"
+    assert_includes lock, "recording_studio_root_switchable (0.9.0)"
+    refute_includes lock, "recording_studio_root_switchable (0.8.0)"
+    refute_includes lock, "6f4ebe13d8021cc2097d4d93ab89d0dfb03e2c8c"
     refute_includes lock, "recording_studio_root_switchable (0.6.0)"
     refute_includes lock, "78ea1ad2b7705260fb07144ac32e7604b77090ab"
   end
