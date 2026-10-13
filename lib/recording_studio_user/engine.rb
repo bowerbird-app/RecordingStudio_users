@@ -11,14 +11,12 @@ module RecordingStudioUser
     initializer "recording_studio_user.helpers", after: :set_autoload_paths do
       RecordingStudioUser::Engine.load_view_helpers!
       ActiveSupport.on_load(:action_controller) do
-        helper RecordingStudioUser::CopyHelper if respond_to?(:helper)
         helper RecordingStudioUser::OmniauthHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthRoutesHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthSiteLogoHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthTermsNoticeHelper if respond_to?(:helper)
       end
       ActiveSupport.on_load(:action_view) do
-        include RecordingStudioUser::CopyHelper
         include RecordingStudioUser::OmniauthHelper
         include RecordingStudioUser::AuthRoutesHelper
         include RecordingStudioUser::AuthSiteLogoHelper
@@ -84,7 +82,6 @@ module RecordingStudioUser
 
     def self.load_view_helpers!
       %w[
-        copy_helper
         omniauth_helper
         auth_routes_helper
         auth_site_logo_helper

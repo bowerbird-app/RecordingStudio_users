@@ -5,11 +5,10 @@ require "test_helper"
 class EngineTest < Minitest::Test
   def test_engine_loads_only_english_locale_files
     locale_dir = RecordingStudioUser::Engine.root.join("config/locales")
-    locale_path = File.expand_path(locale_dir.join("en.yml"))
-    existent = RecordingStudioUser::Engine.paths["config/locales"].existent.map { |path| File.expand_path(path) }
+    loaded = I18n.load_path.select { |path| path.to_s.start_with?(locale_dir.to_s) }
 
-    assert_includes existent, locale_path
-    refute(Dir.children(locale_dir).any? { |name| name.end_with?("fr.yml") })
+    assert(loaded.any? { |path| path.end_with?("en.yml") })
+    refute(loaded.any? { |path| path.end_with?("fr.yml") })
     assert_equal ["en.yml"], Dir.children(locale_dir).sort
   end
 

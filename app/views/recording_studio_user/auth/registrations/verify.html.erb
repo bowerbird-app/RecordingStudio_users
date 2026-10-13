@@ -1,6 +1,6 @@
 <%= render layout: "recording_studio_user/auth/shell", locals: {
-  title: rsu_t("registrations.check_email"),
-  subtitle: rsu_t("registrations.check_email_subtitle")
+  title: t("recording_studio_user.registrations.check_email"),
+  subtitle: t("recording_studio_user.registrations.check_email_subtitle")
 } do %>
   <% if flash[:alert].present? %>
     <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
@@ -11,14 +11,14 @@
       <%= render FlatPack::TextInput::Component.new(
         name: "code",
         id: "code",
-        label: rsu_t("registrations.verification_code"),
+        label: t("recording_studio_user.registrations.verification_code"),
         required: true,
         inputmode: "numeric",
         autocomplete: "one-time-code",
         maxlength: 6
       ) %>
       <%= render FlatPack::Button::Component.new(
-        text: rsu_t("registrations.verify_and_continue"),
+        text: t("recording_studio_user.registrations.verify_and_continue"),
         style: :primary,
         size: :md,
         type: "submit",
@@ -29,7 +29,7 @@
 
   <%= form_with url: otp_registration_resend_path, method: :post do %>
     <%= render FlatPack::Button::Component.new(
-      text: rsu_t("registrations.resend_code"),
+      text: t("recording_studio_user.registrations.resend_code"),
       style: :secondary,
       size: :md,
       type: "submit",

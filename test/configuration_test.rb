@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require_relative "i18n_engine_locale"
 
 class ConfigurationTest < Minitest::Test
-  include I18nEngineLocale
-
   def setup
     @configuration = RecordingStudioUser::Configuration.new
   end
@@ -19,9 +16,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal %i[locale], @configuration.additional_profile_attributes
     refute @configuration.require_password_confirmation
     refute_predicate @configuration, :require_password_confirmation?
-    with_engine_english_locale do
-      assert_equal "Welcome back", @configuration.login_title
-    end
+    assert_equal "Welcome back", @configuration.login_title
     assert_equal :email, @configuration.primary_login_type
     assert_predicate @configuration, :primary_login_type_email?
     refute_predicate @configuration, :primary_login_type_otp?
@@ -65,9 +60,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal "Sign in to Acme", @configuration.login_title
 
     @configuration.login_title = "  "
-    with_engine_english_locale do
-      I18n.with_locale(:en) { assert_equal "Welcome back", @configuration.login_title }
-    end
+    I18n.with_locale(:en) { assert_equal "Welcome back", @configuration.login_title }
   end
 
   def test_omniauth_flags_and_providers

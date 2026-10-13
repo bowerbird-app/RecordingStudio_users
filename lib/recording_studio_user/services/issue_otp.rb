@@ -7,8 +7,8 @@ module RecordingStudioUser
 
       NOTIFICATION_TYPES = { "registration" => :registration_otp, "login" => :login_otp }.freeze
       TITLE_KEYS = {
-        "registration" => "otp.verify_your_email",
-        "login" => "otp.your_sign_in_code"
+        "registration" => "recording_studio_user.otp.verify_your_email",
+        "login" => "recording_studio_user.otp.your_sign_in_code"
       }.freeze
 
       def self.call(...)
@@ -88,7 +88,7 @@ module RecordingStudioUser
         {
           notification_type: NOTIFICATION_TYPES.fetch(@purpose),
           recipient: @user,
-          title: Copy.legacy_t(TITLE_KEYS.fetch(@purpose)),
+          title: I18n.t(TITLE_KEYS.fetch(@purpose)),
           body: nil,
           url: notification_url(challenge),
           metadata: { "otp_challenge_id" => challenge.id },

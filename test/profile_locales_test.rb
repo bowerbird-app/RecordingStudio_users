@@ -1,25 +1,18 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require_relative "i18n_engine_locale"
 
 class ProfileLocalesTest < Minitest::Test
-  include I18nEngineLocale
-
   def setup
     @previous_locales = I18n.available_locales
     @previous_default = I18n.default_locale
     @previous_locale = I18n.locale
-    @previous_backend = I18n.backend
-    I18n.backend = I18n::Backend::Simple.new
-    I18n.backend.load_translations(ENGINE_EN_LOCALE)
     I18n.available_locales = %i[en]
     I18n.default_locale = :en
     I18n.locale = :en
   end
 
   def teardown
-    I18n.backend = @previous_backend if @previous_backend
     I18n.available_locales = @previous_locales
     I18n.default_locale = @previous_default
     restored_locale = @previous_locale.to_sym

@@ -34,7 +34,7 @@ module RecordingStudioUser
       def disconnect!(user, provider)
         identity = user.identities.find_by!(provider: provider.to_s)
         if !other_usable_identity?(user, identity) && !password_set?(user)
-          raise LastSignInMethodError, Copy.legacy_t("omniauth.last_method")
+          raise LastSignInMethodError, I18n.t("recording_studio_user.omniauth.last_method")
         end
 
         identity.destroy!
@@ -55,27 +55,27 @@ module RecordingStudioUser
       end
 
       def raise_identity_taken!(key, provider)
-        raise IdentityTakenError,
-              Copy.legacy_t("omniauth.#{key}", provider: provider_label(provider))
+        raise IdentityTakenError, I18n.t("recording_studio_user.omniauth.#{key}", provider: provider_label(provider))
       end
 
       def raise_if_unconfirmed!(existing)
         return unless existing && !email_confirmed?(existing)
 
-        raise UnconfirmedEmailError, Copy.legacy_t("omniauth.existing_unconfirmed")
+        raise UnconfirmedEmailError, I18n.t("recording_studio_user.omniauth.existing_unconfirmed")
       end
 
       def raise_if_account_creation_disabled!
         return if RecordingStudioUser.config.omniauth_create_account?
 
-        raise AccountCreationDisabledError, Copy.legacy_t("omniauth.creation_disabled")
+        raise AccountCreationDisabledError, I18n.t("recording_studio_user.omniauth.creation_disabled")
       end
 
       def normalized_email(auth)
         email = auth.info&.email.to_s.strip.downcase
-        raise MissingEmailError, Copy.legacy_t("omniauth.email_required") if email.blank?
-        raise UnverifiedEmailError, Copy.legacy_t("omniauth.email_not_verified") if
-          email_explicitly_unverified?(auth)
+        raise MissingEmailError, I18n.t("recording_studio_user.omniauth.email_required") if email.blank?
+        if email_explicitly_unverified?(auth)
+          raise UnverifiedEmailError, I18n.t("recording_studio_user.omniauth.email_not_verified")
+        end
 
         email
       end

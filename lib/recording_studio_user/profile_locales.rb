@@ -67,7 +67,7 @@ module RecordingStudioUser
     end
 
     def blank_option_label
-      Copy.legacy_t("profile.use_site_default", language: site_default_language_name)
+      I18n.t("recording_studio_user.profile.use_site_default", language: site_default_language_name)
     end
 
     def native_name(code)

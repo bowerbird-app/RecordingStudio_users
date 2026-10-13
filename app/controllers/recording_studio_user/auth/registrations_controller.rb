@@ -21,7 +21,7 @@ module RecordingStudioUser
 
       def continue
         email = submitted_email_from_params
-        return render_continue_failure(Copy.legacy_t("auth.enter_email")) if email.blank?
+        return render_continue_failure(I18n.t("recording_studio_user.auth.enter_email")) if email.blank?
 
         store_pending_auth_email!(email)
         continue_with_primary_registration!(email)
@@ -63,9 +63,9 @@ module RecordingStudioUser
 
       def resend
         issue_registration_resend!
-        redirect_to otp_registration_verify_path, notice: Copy.legacy_t("auth.fresh_code")
+        redirect_to otp_registration_verify_path, notice: I18n.t("recording_studio_user.auth.fresh_code")
       rescue Services::OtpRateLimiter::RateLimited
-        redirect_to otp_registration_verify_path, alert: Copy.legacy_t("auth.wait_for_code")
+        redirect_to otp_registration_verify_path, alert: I18n.t("recording_studio_user.auth.wait_for_code")
       end
 
       private

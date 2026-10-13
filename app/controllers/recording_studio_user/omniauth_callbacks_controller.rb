@@ -30,8 +30,10 @@ module RecordingStudioUser
 
     def connect_current_user!(auth)
       Omniauth.connect!(current_user, auth)
-      provider = Omniauth.provider_label(auth.provider)
-      redirect_to after_connect_path, notice: Copy.legacy_t("omniauth.connected", provider: provider)
+      redirect_to after_connect_path, notice: I18n.t(
+        "recording_studio_user.omniauth.connected",
+        provider: Omniauth.provider_label(auth.provider)
+      )
     end
 
     def sign_in_from_omniauth!(auth)
@@ -58,17 +60,19 @@ module RecordingStudioUser
       provider = provider_label_for(request.env["omniauth.auth"])
       case error
       when Omniauth::MissingEmailError
-        Copy.legacy_t("omniauth.missing_email", provider: provider)
+        I18n.t("recording_studio_user.omniauth.missing_email", provider: provider)
       when Omniauth::UnverifiedEmailError
-        Copy.legacy_t("omniauth.unverified_email", provider: provider)
+        I18n.t("recording_studio_user.omniauth.unverified_email", provider: provider)
       else
-        Copy.legacy_t("omniauth.confirm_email")
+        I18n.t("recording_studio_user.omniauth.confirm_email")
       end
     end
 
     def account_creation_disabled_alert
-      provider = provider_label_for(request.env["omniauth.auth"])
-      Copy.legacy_t("omniauth.account_creation_disabled", provider: provider)
+      I18n.t(
+        "recording_studio_user.omniauth.account_creation_disabled",
+        provider: provider_label_for(request.env["omniauth.auth"])
+      )
     end
   end
 end

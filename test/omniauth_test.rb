@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require_relative "i18n_engine_locale"
 
 class OmniauthTest < Minitest::Test
-  include I18nEngineLocale
-
   def test_normalized_email_strips_and_downcases_provider_email
     auth = auth_hash(email: "  Person@Example.COM ")
 
@@ -13,13 +10,11 @@ class OmniauthTest < Minitest::Test
   end
 
   def test_normalized_email_requires_an_email
-    with_engine_english_locale do
-      error = assert_raises(RecordingStudioUser::Omniauth::MissingEmailError) do
-        RecordingStudioUser::Omniauth::IdentityFlow.normalized_email(auth_hash(email: nil))
-      end
-
-      assert_match(/Email is required/, error.message)
+    error = assert_raises(RecordingStudioUser::Omniauth::MissingEmailError) do
+      RecordingStudioUser::Omniauth::IdentityFlow.normalized_email(auth_hash(email: nil))
     end
+
+    assert_match(/Email is required/, error.message)
   end
 
   def test_normalized_email_rejects_explicitly_unverified_info_claim

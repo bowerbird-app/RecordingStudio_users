@@ -1,15 +1,18 @@
-<% content_for :title, rsu_t("profile.document_title", page: rsu_t("profile.sign_in_methods")) %>
+<% content_for :title, t(
+  "recording_studio_user.profile.document_title",
+  page: t("recording_studio_user.profile.sign_in_methods")
+) %>
 
 <% recording_studio_page_nav(
-  title: rsu_t("profile.sign_in_methods"),
+  title: t("recording_studio_user.profile.sign_in_methods"),
   page_nav_back_url: profile_path,
-  page_nav_back_label: rsu_t("profile.my_profile"),
+  page_nav_back_label: t("recording_studio_user.profile.my_profile"),
   page_nav_anchor_url: main_app.root_path,
-  page_nav_anchor_label: rsu_t("profile.close")
+  page_nav_anchor_label: t("recording_studio_user.profile.close")
 ) %>
 
 <%= render FlatPack::PageTitle::Component.new(
-  title: rsu_t("profile.sign_in_methods"),
+  title: t("recording_studio_user.profile.sign_in_methods"),
   subtitle: profile_display_name(@user),
   variant: :h1
 ) %>
@@ -34,12 +37,14 @@
                     method: :delete,
                     class: "inline-flex items-center",
                     data: {
-                      turbo_confirm: rsu_t("omniauth.disconnect_confirm", provider: recording_studio_user_provider_label(identity.provider)
+                      turbo_confirm: t(
+                        "recording_studio_user.omniauth.disconnect_confirm",
+                        provider: recording_studio_user_provider_label(identity.provider)
                       )
                     }
                   ) do
                     render FlatPack::Button::Component.new(
-                      text: rsu_t("omniauth.disconnect"),
+                      text: t("recording_studio_user.omniauth.disconnect"),
                       type: "submit",
                       style: :secondary,
                       size: :sm
@@ -68,7 +73,7 @@
                     data: { turbo: false }
                   ) do
                     render FlatPack::Button::Component.new(
-                      text: rsu_t("omniauth.connect"),
+                      text: t("recording_studio_user.omniauth.connect"),
                       type: "submit",
                       style: :secondary,
                       size: :sm

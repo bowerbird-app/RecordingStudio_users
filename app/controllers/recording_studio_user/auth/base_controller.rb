@@ -28,14 +28,9 @@ module RecordingStudioUser
       end
 
       def verify_failure_message(reason)
-        # Match main: unknown reason keys fall through to that_code_did_not_work
-        # via I18n key defaults (never an English string default).
-        Copy.legacy_t(
-          "auth.verify.#{reason}",
-          default: %i[
-            recording_studio_user.auth.that_code_did_not_work
-            recording_studio.users.auth.that_code_did_not_work
-          ]
+        I18n.t(
+          "recording_studio_user.auth.verify.#{reason}",
+          default: I18n.t("recording_studio_user.auth.that_code_did_not_work")
         )
       end
 
@@ -88,11 +83,11 @@ module RecordingStudioUser
       end
 
       def generic_login_notice
-        Copy.legacy_t("auth.eligible_code_sent")
+        I18n.t("recording_studio_user.auth.eligible_code_sent")
       end
 
       def start_with_email_alert
-        Copy.legacy_t("auth.start_with_email")
+        I18n.t("recording_studio_user.auth.start_with_email")
       end
 
       def host_new_user_session_path

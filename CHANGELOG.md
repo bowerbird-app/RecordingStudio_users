@@ -7,28 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.22.0] - 2026-10-13
+### Changed
+
+- Removed the engine `recording_studio_user.i18n` initializer that appended
+  `config/locales` onto `I18n.load_path`. Rails still loads the engine English
+  file through the engine `config/locales` path.
 
 ### Added
 
-- Nested `recording_studio.users.*` mirrors of every existing `recording_studio_user.*` key so hosts can override either namespace.
-- `RecordingStudioUser::Copy` with `t` (nested) and `legacy_t` (legacy-first, then nested key fallback). English comes only from `config/locales/en.yml` — no English `default:` on call sites.
-- Host English override coverage: test-only fixture `test/dummy/test/locales/users_host_override.en.yml` on a fresh `I18n::Backend::Simple`, plus a real-page assert.
-- Always-loaded boot-order guard `test/dummy/config/locales/recording_studio_users_boot_override.en.yml` for a rarely shown OmniAuth flash key (`omniauth.not_connected`), with a render assert on the not-connected redirect. Probe / test-only keys stay under `test/dummy` (not packaged by the gemspec); gem `config/locales/*.yml` ships only product English.
-- Locale regression: every `lib/**/*.rb` file must not mention `i18n.load_path` / `I18n.load_path`. Call sites must keep `Copy` / `rsu_t` (reverting a translated string to a literal fails a test).
-
-### Changed
-
-- Controller flashes, OTP delivery titles/bodies, OmniAuth error messages, profile fallbacks, and gem views resolve through `Copy.legacy_t` / `rsu_t` without English `default:` wrappers. Missing keys behave like bare `I18n.t` (translation missing / raise-on-missing). English output with loaded locales stays byte-identical to `0.21.0`.
-- Removed the explicit engine / gem `I18n.load_path` appenders. Rails engine `config/locales` paths load the English file.
-- Admin DSL titles, link text, chart title, series name, widget title, subtitles, and column headers stay main's literal English strings (no callables, no Admin locale keys).
-
-### Upgrade Notes
-
-- Bump to `0.22.0`. No migration.
-- English hosts need no change. Existing `recording_studio_user.*` host overrides keep winning via legacy-first lookup. Prefer new `recording_studio.users.*` keys when adding translations.
-- Hosts override by defining the same keys in their own `config/locales`. Public constants, API error strings, Metrics DSL titles, recordable labels, Admin DSL chrome, and persisted default names stay byte-identical to main.
-- OTP notification type labels stay English literals at `register!` (Notifications stores the string at boot). Locale keys for those labels still ship for hosts.
+- Dummy boot-order host override
+  `test/dummy/config/locales/recording_studio_users_boot_override.en.yml` for the
+  rarely shown `recording_studio_user.omniauth.not_connected` flash, with a
+  real-page render assert. Probe keys stay under `test/dummy` (not packaged).
 
 ## [0.21.0] - 2026-10-13
 
@@ -912,8 +902,6 @@ recording_studio_user_auth_for :users
 - Basic test suite with Minitest
 
 [Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.20.0...HEAD
-[0.22.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.21.0...v0.22.0
-[0.21.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.18.3...v0.19.0
 [0.17.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.1...v0.17.0
