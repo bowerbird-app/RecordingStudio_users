@@ -364,7 +364,7 @@ RecordingStudioUser.resend_otp!(
 )
 ```
 
-`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. Rescue `RecordingStudioUser::RateLimited` when a code request is too soon.
+`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. Rescue `RecordingStudioUser::RateLimited` when a code request is too soon. Issue and resend cooldowns use `RecordingStudioCache::RateLimiter` on `Rails.cache` (`otp_resend_cooldown` for resend, one minute otherwise).
 
 `complete_registration!` is the Users sign-up path. It still requires an OTP account and still fills a default surname and UTC.
 

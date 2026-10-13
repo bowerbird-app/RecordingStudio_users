@@ -38,6 +38,7 @@ Use the [FlatPack repository](https://github.com/bowerbird-app/flatpack) and the
 
 ### Dependencies
 
+- `recording_studio_cache` 0.5+ (OTP issue/resend cooldown via `RecordingStudioCache::RateLimiter`)
 - `recording_studio_notifications` 0.3+
 - `recording_studio_notifications_email` 0.3+ (required for email delivery)
 - `recording_studio_notifications_push` 0.2+ (optional; login OTP push channel)

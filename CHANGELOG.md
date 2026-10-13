@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-10-13
+
+OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
+
+### Changed
+- `Services::OtpRateLimiter` is a thin adapter over
+  `RecordingStudioCache::RateLimiter` (`backend: :rails_cache`, `strategy: :ttl`,
+  `limit: 1`, `store: Rails.cache`, `fail_closed: true`). Public
+  `allow_request!(scope:, key:)`, `cooldown_for`, `RateLimited`, and
+  `otp_resend_cooldown` are unchanged.
+- Cache storage keys move from `recording_studio_user:otp:#{scope}:#{key}`
+  (boolean `true`) to `recording_studio_user:otp:rl:#{scope}:#{key}` (integer
+  counter). Incrementing a legacy boolean raises `NoMethodError`; the new key
+  avoids that. Legacy boolean keys expire within one cooldown (≤ 1 minute).
+- Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
+
+### Upgrade notes
+- Bump to `0.20.0` and pin `recording_studio_cache` at tag `v0.5.0`. No migration.
+- OTP rate-limit bucket identity (scope + email / IP / session) and cooldown
+  lengths are the same. During a rolling deploy, a host may briefly allow one
+  extra request per bucket while a legacy boolean key still exists alongside the
+  new counter key; both expire within the configured cooldown.
+- On cache connection / IO / timeout errors the limiter now fails closed
+  (raises `RateLimited`) instead of letting the error propagate.
+
 ## [0.19.0] - 2026-10-09
 
 Users can be listed, shown, created, and updated on the host's named `:operations` API.
