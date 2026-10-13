@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-10-13
+
+OTP cooldown uses the shared `RecordingStudioCache::RateLimiter`.
+
+### Changed
+- `Services::OtpRateLimiter` is a thin adapter over
+  `RecordingStudioCache::RateLimiter` (`backend: :rails_cache`, `strategy: :ttl`,
+  `limit: 1`, `store: Rails.cache`, `fail_closed: true`). Public
+  `allow_request!(scope:, key:)`, `cooldown_for`, `RateLimited`, and
+  `otp_resend_cooldown` are unchanged.
+- Cache storage keys move from `recording_studio_user:otp:#{scope}:#{key}`
+  (boolean `true`) to `recording_studio_user:otp:rl:#{scope}:#{key}` (integer
+  counter). Incrementing a legacy boolean raises `NoMethodError`; the new key
+  avoids that. Legacy boolean keys follow the host cooldown
+  (`otp_resend_cooldown`, or one minute for `:issue`); a `nil` cooldown never
+  expires. Happy-path keys still use a TTL (main already set `expires_in:` on
+  write; the shared limiter keeps a TTL via `strategy: :ttl`).
+- Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
+
+### Upgrade notes
+- Bump to `0.21.0` and pin `recording_studio_cache` at tag `v0.5.0`. No migration.
+- OTP rate-limit bucket identity (scope + email / IP / session) and cooldown
+  lengths are the same. During a rolling deploy, a host may briefly allow one
+  extra request per bucket while a legacy boolean key still exists alongside the
+  new counter key; both expire according to their own TTL (or never, for `nil`).
+- Store is still `Rails.cache` only (main never had a configurable
+  `cache` / `cache_store` on Users). There is still no limit config: main was a
+  one-shot cooldown, so the adapter always passes `limit: 1` and never uses the
+  shared limiter’s `limit <= 0` “disabled” path.
+- Odd `cooldown_for` values (normally blocked by `otp_resend_cooldown`’s
+  positive check) keep main’s `expires_in:` behavior: `0` always allows;
+  `nil` sticky-blocks after the first allow; non-Numeric (e.g. `"60"`) raise
+  from `expires_in:`. Negative `expires_in:` raises only when
+  `ActiveSupport::Cache::Store.raise_on_invalid_cache_expiration_time` is true;
+  otherwise the invalid expiry is reported and the write proceeds without an
+  expiry (same as main).
+- `fail_closed: true` only turns a rescued connection/IO/timeout from a custom
+  store’s increment/write into `RateLimited`. The boolean pre-read and the
+  0/nil/negative/string-period `expires_in:` path still propagate or allow as on
+  main. Stock Redis/MemCache stores still allow during an outage (their failsafe
+  does not raise into that rescue).
+
 ## [0.20.0] - 2026-10-13
 
 Hosts can register after-registration callbacks that run on successful sign-up.
