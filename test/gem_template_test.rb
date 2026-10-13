@@ -209,37 +209,43 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes lock, "78ea1ad2b7705260fb07144ac32e7604b77090ab"
   end
 
-  def test_root_gemfile_pins_admin_v210_and_flatpack_v01213
+  def test_root_gemfile_pins_admin_v220_and_flatpack_v01213
     gemfile = File.read(File.expand_path("../Gemfile", __dir__))
     lock = File.read(File.expand_path("../Gemfile.lock", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin"'
-    assert_includes gemfile, 'tag: "v2.1.0"'
+    assert_includes gemfile, 'tag: "v2.2.0"'
+    refute_includes gemfile, 'tag: "v2.1.0"'
     assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.213"'
-    assert_includes lock, "tag: v2.1.0"
-    assert_includes lock, "78c13a7df6e69e0d2b05e7c0218572b7a6296134"
+    assert_includes lock, "tag: v2.2.0"
+    assert_includes lock, "3568969c82cd393fce38c2f788785fa42aa188bc"
+    refute_includes lock, "recording_studio_admin (2.1.0)"
+    refute_includes lock, "78c13a7df6e69e0d2b05e7c0218572b7a6296134"
     assert_includes lock, "tag: v0.1.213"
     assert_includes lock, "flat_pack (0.1.213)"
     assert_includes lock, "9606a6f24717e8f98c22c73e7ed40b30523fdd3f"
-    assert_includes lock, "recording_studio_admin (2.1.0)"
+    assert_includes lock, "recording_studio_admin (2.2.0)"
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
     assert_includes gemspec, '"flat_pack", ">= 0.1.144"'
     assert_includes gemspec, '"recording_studio_admin", "~> 2.0"'
   end
 
-  def test_dummy_gemfile_pins_admin_v210_and_flatpack_v01213
+  def test_dummy_gemfile_pins_admin_v220_and_flatpack_v01213
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin"'
-    assert_includes gemfile, 'tag: "v2.1.0"'
+    assert_includes gemfile, 'tag: "v2.2.0"'
+    refute_includes gemfile, 'tag: "v2.1.0"'
     assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.213"'
-    assert_includes lock, "tag: v2.1.0"
-    assert_includes lock, "78c13a7df6e69e0d2b05e7c0218572b7a6296134"
+    assert_includes lock, "tag: v2.2.0"
+    assert_includes lock, "3568969c82cd393fce38c2f788785fa42aa188bc"
+    refute_includes lock, "recording_studio_admin (2.1.0)"
+    refute_includes lock, "78c13a7df6e69e0d2b05e7c0218572b7a6296134"
     assert_includes lock, "tag: v0.1.213"
     assert_includes lock, "flat_pack (0.1.213)"
-    assert_includes lock, "recording_studio_admin (2.1.0)"
+    assert_includes lock, "recording_studio_admin (2.2.0)"
   end
 
   def test_dummy_default_layout_head_sets_rounded_on_html
