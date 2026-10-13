@@ -45,7 +45,7 @@ module RecordingStudioUser
     }.freeze
 
     attr_accessor :user_class_name, :layout, :auth_site_root_resolver
-    attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]))
+    attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]), :after_registration_hooks)
 
     BOOLEAN_SETTINGS.each do |setting|
       define_method("#{setting}=") do |value|
@@ -79,6 +79,22 @@ module RecordingStudioUser
       @login_title = nil
       @omniauth_providers = {}
       @auth_site_root_resolver = nil
+      @after_registration_hooks = []
+    end
+
+    # Register a host callback that runs after a successful sign-up (password,
+    # OAuth new-user, or OTP). Accepts a callable or a class-name string whose
+    # constant responds to .call. Signature: call(user:, method:). Multiple
+    # registrations are allowed; each runs in registration order.
+    def after_registration(hook = nil, &block)
+      callable = hook || block
+      raise ArgumentError, "after_registration hook or block is required" if callable.nil?
+      unless callable.respond_to?(:call) || callable.is_a?(String)
+        raise ArgumentError, "after_registration must be a callable or class-name string"
+      end
+
+      @after_registration_hooks << callable
+      callable
     end
 
     def login_title
