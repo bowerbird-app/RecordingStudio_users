@@ -6,6 +6,7 @@ require "recording_studio_metrics"
 module RecordingStudioUser
   module Metrics
     RESOURCE = :users
+    OTP_RESOURCE = :otp_challenges
     API = :operations
     CONFIRMABLE_COLUMN = "confirmed_at"
     EXPOSE = { api: [API] }.freeze
@@ -13,6 +14,11 @@ module RecordingStudioUser
     module_function
 
     def register!
+      register_users!
+      register_otp_challenges!
+    end
+
+    def register_users!
       user_class = RecordingStudioUser.config.user_class
       RecordingStudioMetrics.register(
         RESOURCE,
@@ -22,6 +28,18 @@ module RecordingStudioUser
       ) do
         RecordingStudioUser::Metrics.define_core(self)
         RecordingStudioUser::Metrics.define_confirmation(self, user_class)
+      end
+    end
+
+    # OTP challenges share the users AdminRoot :view check and site blast radius.
+    def register_otp_challenges!
+      RecordingStudioMetrics.register(
+        OTP_RESOURCE,
+        model: RecordingStudioUser::OtpChallenge,
+        blast_radius: :site,
+        api_authorize: ->(context) { RecordingStudioUser::Api::Access.can_view?(context) }
+      ) do
+        RecordingStudioUser::Metrics.define_otp_failures(self)
       end
     end
 
@@ -42,8 +60,34 @@ module RecordingStudioUser
       dsl.custom :confirmation,
                  result_type: :breakdown,
                  title: "Confirmed vs unconfirmed",
+                 unit: "count",
                  expose: EXPOSE,
                  &confirmation_calculator
+    end
+
+    # A failed challenge is one VerifyOtp locked: OtpChallenge#increment_attempts!
+    # revokes it once attempts_count reaches otp_max_attempts. Each challenge
+    # counts once, in the bucket of its revoked_at. Challenges revoked because a
+    # new code was issued (IssueOtp) are revoked below the limit and are not
+    # counted. Expired-unused challenges and single wrong-code attempts carry no
+    # failure timestamp, so they are not counted.
+    def define_otp_failures(dsl)
+      dsl.timeseries :failed_over_time,
+                     title: "Failed OTP challenges over time",
+                     description: "OTP challenges locked after otp_max_attempts wrong codes, " \
+                                  "bucketed by when they were locked (revoked_at).",
+                     field: :revoked_at,
+                     unit: "count",
+                     group_by: %i[purpose],
+                     scope: otp_failed_scope,
+                     expose: EXPOSE
+    end
+
+    def otp_failed_scope
+      lambda do |relation|
+        relation.where.not(revoked_at: nil)
+                .where(attempts_count: RecordingStudioUser.config.otp_max_attempts..)
+      end
     end
 
     def confirmation_calculator
