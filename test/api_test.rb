@@ -14,16 +14,6 @@ class ApiTest < Minitest::Test
     attr_accessor :authorization_result
   end
 
-  class CountedUsers
-    class << self
-      attr_accessor :total
-
-      def count
-        total
-      end
-    end
-  end
-
   class FakeGrant
     def initialize(actor)
       @actor = actor
@@ -42,7 +32,6 @@ class ApiTest < Minitest::Test
   end
 
   def setup
-    CountedUsers.total = 0
     @authorize_admin_root = true
     access = RecordingStudioUser::Api::Access
     unless access.singleton_class.ancestors.include?(ApiAccessOverride)
@@ -53,7 +42,6 @@ class ApiTest < Minitest::Test
 
   def teardown
     RecordingStudioUser::Api::Access.authorization_result = nil
-    restore_user_class_name
     remove_test_recording_studio_api!
   end
 
@@ -75,64 +63,26 @@ class ApiTest < Minitest::Test
     assert_includes engine, 'initializer "recording_studio_user.api"'
     assert_includes engine, "RecordingStudioUser::Api.register!"
     assert_includes registration, "RecordingStudioApi.register_endpoint"
-    assert_includes registration, "api: USER_COUNT_API"
-    assert_includes registration, "path: USER_COUNT_PATH"
-    assert_includes registration, "handler: UserCount"
     assert_includes registration, "return unless RecordingStudioApi.respond_to?(:register_endpoint)"
     assert_includes registration, "handler: Index"
     assert_includes registration, "handler: Create"
     assert_includes registration, "handler: Show"
     assert_includes registration, "handler: Update"
-    assert_includes registration, "api: USER_COUNT_API"
+    assert_includes registration, "api: USERS_API"
+    refute_includes registration, "UserCount"
     refute_includes registration, "OPERATIONS_API"
     refute_includes registration, "api: :public"
     refute_includes registration, "http_verb: :delete"
   end
 
-  def test_user_count_endpoint_is_registered_on_operations_when_api_present
-    api = install_test_recording_studio_api!
-
-    assert RecordingStudioUser::Api.register!
-
-    registration = user_count_registration(api)
-    assert_equal :user_count, registration.fetch(:name)
-    assert_equal :operations, registration.fetch(:api)
-    assert_equal :get, registration.fetch(:http_verb)
-    assert_equal "users/count", registration.fetch(:path)
-    assert_equal RecordingStudioUser::Api::UserCount, registration.fetch(:handler)
-    assert_equal :user_count, RecordingStudioUser::Api::USER_COUNT_ENDPOINT
-    assert_equal "users/count", RecordingStudioUser::Api::USER_COUNT_PATH
-    assert_equal :operations, RecordingStudioUser::Api::USER_COUNT_API
-  end
-
-  def test_user_count_registration_is_idempotent
+  def test_users_registration_is_idempotent
     api = install_test_recording_studio_api!
 
     2.times { RecordingStudioUser::Api.register! }
 
     names = api.registrations.map { |entry| entry.fetch(:name) }
-    assert_equal 1, names.count(:user_count)
-    assert_equal %i[user_count users users_create users_show users_update], names
-  end
-
-  def test_user_count_returns_the_configured_user_class_count
-    CountedUsers.total = 4
-    with_user_class_name("ApiTest::CountedUsers") do
-      assert_equal({ count: 4 }, RecordingStudioUser::Api::UserCount.call(nil))
-
-      CountedUsers.total = 9
-      assert_equal({ count: 9 }, RecordingStudioUser::Api::UserCount.call(nil))
-    end
-  end
-
-  def test_registered_handler_uses_the_configured_user_class
-    api = install_test_recording_studio_api!
-    CountedUsers.total = 6
-    with_user_class_name("ApiTest::CountedUsers") do
-      RecordingStudioUser::Api.register!
-
-      assert_equal({ count: 6 }, user_count_registration(api).fetch(:handler).call(nil))
-    end
+    assert_equal %i[users users_create users_show users_update], names
+    refute_includes names, :user_count
   end
 
   def test_users_endpoints_register_on_operations_not_public
@@ -141,7 +91,7 @@ class ApiTest < Minitest::Test
     RecordingStudioUser::Api.register!
 
     names = api.registrations.map { |entry| entry.fetch(:name) }
-    assert_equal %i[user_count users users_create users_show users_update], names
+    assert_equal %i[users users_create users_show users_update], names
     assert(api.registrations.all? { |entry| entry.fetch(:api) == :operations })
     refute(api.registrations.any? { |entry| entry.fetch(:http_verb) == :delete })
 
@@ -484,30 +434,10 @@ class ApiTest < Minitest::Test
     end
   end
 
-  def user_count_registration(api)
-    registration_named(api, :user_count)
-  end
-
   def registration_named(api, name)
     found = api.registrations.find { |entry| entry[:name] == name }
     refute_nil found, "missing #{name}"
     found
-  end
-
-  def with_user_class_name(name)
-    config = RecordingStudioUser.config
-    @previous_user_class_name = config.user_class_name
-    config.user_class_name = name
-    yield
-  ensure
-    restore_user_class_name
-  end
-
-  def restore_user_class_name
-    return unless defined?(@previous_user_class_name) && @previous_user_class_name
-
-    RecordingStudioUser.config.user_class_name = @previous_user_class_name
-    @previous_user_class_name = nil
   end
 
   def install_test_recording_studio_api!

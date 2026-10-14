@@ -6,31 +6,17 @@ module RecordingStudioUser
       module_function
 
       def register!
-        register_user_count!
         register_index!
         register_create!
         register_show!
         register_update!
       end
 
-      def register_user_count!
-        return unless RecordingStudioApi.respond_to?(:register_endpoint)
-        return if already_registered?
-
-        RecordingStudioApi.register_endpoint(
-          USER_COUNT_ENDPOINT,
-          api: USER_COUNT_API,
-          http_verb: :get,
-          path: USER_COUNT_PATH,
-          handler: UserCount
-        )
-      end
-
-      def already_registered?(name = USER_COUNT_ENDPOINT)
+      def already_registered?(name)
         return false unless RecordingStudioApi.respond_to?(:registered_endpoint)
         return false unless operations_api_present?
 
-        RecordingStudioApi.registered_endpoint(name, api: USER_COUNT_API)
+        RecordingStudioApi.registered_endpoint(name, api: USERS_API)
       end
 
       def operations_api_present?
@@ -66,7 +52,7 @@ module RecordingStudioUser
 
         RecordingStudioApi.register_endpoint(
           name,
-          api: USER_COUNT_API,
+          api: USERS_API,
           http_verb: http_verb,
           path: path,
           handler: handler,

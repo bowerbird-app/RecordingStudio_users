@@ -58,16 +58,10 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
   test "missing token is unauthorized on operations users" do
     get "#{OPERATIONS_ROOT}/users", as: :json
     assert_response :unauthorized
-
-    get "#{OPERATIONS_ROOT}/users/count", as: :json
-    assert_response :unauthorized
   end
 
   test "public API has no users routes" do
     get "#{PUBLIC_ROOT}/users", headers: auth(@workspace_token), as: :json
-    assert_includes [404, 422], response.status, response.body
-
-    get "#{PUBLIC_ROOT}/users/count", headers: auth(@workspace_token), as: :json
     assert_includes [404, 422], response.status, response.body
 
     post "#{PUBLIC_ROOT}/users",
@@ -83,11 +77,11 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
   end
 
   test "workspace client without admin root cannot read users" do
-    get "#{OPERATIONS_ROOT}/users/count", headers: auth(@workspace_token), as: :json
+    get "#{OPERATIONS_ROOT}/users", headers: auth(@workspace_token), as: :json
     assert_includes [401, 403], response.status, response.body
   end
 
-  test "operations viewer can count list and show but cannot write" do
+  test "operations viewer can list and show but cannot write" do
     listed = RecordingStudioUser.create_user!(
       email: "listed-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -95,10 +89,6 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       last_name: "Person",
       time_zone: "UTC"
     )
-
-    get "#{OPERATIONS_ROOT}/users/count", headers: auth(@viewer_token), as: :json
-    assert_response :success
-    assert_equal User.count, response.parsed_body.fetch("count")
 
     get "#{OPERATIONS_ROOT}/users",
         headers: auth(@viewer_token),
