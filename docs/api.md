@@ -59,7 +59,6 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 | --- | --- | --- | --- |
 | `GET` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:view` | Offset list (`page`, `per_page`; default 50, max 100). Same order as Admin users. |
 | `GET` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:view` | One user |
-| `GET` | `/recording_studio_api/apis/operations/v1/users/count` | Operations token | Existing endpoint. `{ "count": N }` |
 | `POST` | `/recording_studio_api/apis/operations/v1/users` | AdminRoot `:edit` | Password: `create_user!`. No password and one-time codes on: `create_unconfirmed_user!`. No password and one-time codes off: `422` |
 | `PATCH` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:edit` | Profile fields only (`record_profile!`) |
 
@@ -84,17 +83,6 @@ Omit `password` (or send blank) while one-time codes are enabled (`RecordingStud
 Omit `password` while one-time codes are off. `POST` returns `422` with `password is required` and creates no user.
 
 ## Examples
-
-Count:
-
-```http
-GET /recording_studio_api/apis/operations/v1/users/count
-Authorization: Bearer <operations_token>
-```
-
-```json
-{ "count": 12 }
-```
 
 List:
 

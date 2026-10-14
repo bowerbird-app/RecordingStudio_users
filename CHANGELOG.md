@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-10-14
+
+Breaking: the `user_count` Operations API endpoint is removed. User counts
+belong in Metrics.
+
+### Removed
+
+- `GET users/count` on the `:operations` API (`user_count` endpoint, and so the
+  `user_count` MCP tool), `RecordingStudioUser::Api::UserCount`, and the
+  `USER_COUNT_ENDPOINT` / `USER_COUNT_PATH` constants. Read the `users.total`
+  metric instead (`users.total_over_time` for history).
+
 ### Changed
 
+- `RecordingStudioUser::Api::USER_COUNT_API` is renamed `USERS_API` (still
+  `:operations`). Bump to `0.22.0`.
 - Removed the engine `recording_studio_user.i18n` initializer that appended
   `config/locales` onto `I18n.load_path`. Rails still loads the engine English
   file through the engine `config/locales` path.
