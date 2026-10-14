@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-10-14
+
+### Added
+
+- `otp_challenges.failed_over_time` metric on a new `:otp_challenges` resource
+  (`RecordingStudioUser::OtpChallenge`, `blast_radius: :site`, AdminRoot
+  `:view` via `RecordingStudioUser::Api::Access.can_view?`, exposed on
+  `:operations`). It counts OTP challenges that `VerifyOtp` locked after
+  `otp_max_attempts` wrong codes, bucketed by `revoked_at`. Challenges revoked
+  because a new code was issued, expired-unused challenges, and wrong codes
+  that did not lock a challenge are not counted. Unit `count`. Takes `from`,
+  `to` and `interval`, and `group_by: purpose` (groups under 5 fold into
+  `other`). No filters, because no OTP list endpoint exists.
+
+### Changed
+
+- `users.confirmation` now sets `unit: "count"`.
+- Requires `recording_studio_metrics` `~> 0.3` (git tag `v0.3.1`, for
+  `group_by` and `min_group_size`). Hosts pinning Metrics `v0.2.3` must move
+  to `v0.3.1`. Bump to `0.23.0`.
+
 ## [0.22.0] - 2026-10-14
 
 Breaking: the `user_count` Operations API endpoint is removed. User counts

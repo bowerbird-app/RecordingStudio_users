@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.22.0", RecordingStudioUser::VERSION
+    assert_equal "0.23.0", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -186,7 +186,7 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_trashable"'
       assert_includes contents, 'tag: "v0.10.0"'
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_metrics"'
-      assert_includes contents, 'tag: "v0.2.3"'
+      assert_includes contents, 'tag: "v0.3.1"'
       assert_includes contents, "require: false"
     end
 
@@ -198,8 +198,8 @@ class RecordingStudioUserTest < Minitest::Test
       refute_includes lock, "recording_studio_accessible (0.17.0)"
       refute_includes lock, "226c6a92472f6ddf1fabcb27ea52ef6a23e53f87"
       assert_includes lock, "recording_studio_trashable (0.10.0)"
-      assert_includes lock, "tag: v0.2.3"
-      assert_includes lock, "eeada2296c2db27585fc5f2726bec19677fe8b5d"
+      assert_includes lock, "tag: v0.3.1"
+      assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
       refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
     end
 
@@ -254,7 +254,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
     assert_includes gemfile, 'tag: "v0.10.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics"'
-    assert_includes gemfile, 'tag: "v0.2.3"'
+    assert_includes gemfile, 'tag: "v0.3.1"'
     assert_includes gemfile, "require: false"
     assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.213"'
     assert_includes lock, "tag: v2.3.0"
@@ -267,8 +267,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "recording_studio_admin (2.3.0)"
     assert_includes lock, "recording_studio_trashable (0.10.0)"
     assert_includes lock, "6f590d0b1ed6cd64515ae5ffec280b28bbbca20d"
-    assert_includes lock, "tag: v0.2.3"
-    assert_includes lock, "eeada2296c2db27585fc5f2726bec19677fe8b5d"
+    assert_includes lock, "tag: v0.3.1"
+    assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
     refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
@@ -286,7 +286,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
     assert_includes gemfile, 'tag: "v0.10.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics"'
-    assert_includes gemfile, 'tag: "v0.2.3"'
+    assert_includes gemfile, 'tag: "v0.3.1"'
     assert_includes gemfile, "require: false"
     assert_includes gemfile, 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.213"'
     assert_includes lock, "tag: v2.3.0"
@@ -298,8 +298,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "recording_studio_admin (2.3.0)"
     assert_includes lock, "recording_studio_trashable (0.10.0)"
     assert_includes lock, "6f590d0b1ed6cd64515ae5ffec280b28bbbca20d"
-    assert_includes lock, "tag: v0.2.3"
-    assert_includes lock, "eeada2296c2db27585fc5f2726bec19677fe8b5d"
+    assert_includes lock, "tag: v0.3.1"
+    assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
     refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
   end
 
@@ -330,7 +330,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
     assert_includes gemfile, 'tag: "v0.10.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics"'
-    assert_includes gemfile, 'tag: "v0.2.3"'
+    assert_includes gemfile, 'tag: "v0.3.1"'
     assert_includes gemfile, "require: false"
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_api.git"
     assert_includes lock, "tag: v0.7.0"
@@ -338,8 +338,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "recording_studio_api (0.7.0)"
     refute_includes lock, "recording_studio_api (0.6.7)"
     assert_includes lock, "recording_studio_trashable (0.10.0)"
-    assert_includes lock, "tag: v0.2.3"
-    assert_includes lock, "eeada2296c2db27585fc5f2726bec19677fe8b5d"
+    assert_includes lock, "tag: v0.3.1"
+    assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
     refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
   end
 
