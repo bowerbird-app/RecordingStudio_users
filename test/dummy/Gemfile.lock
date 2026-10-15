@@ -7,6 +7,23 @@ GIT
       rails (>= 8.1.0)
 
 GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_Oauth.git
+  revision: 4b2e7a9ffc8df00c6a5eaa66b4f79f3a3ab286e2
+  tag: v0.12.2
+  specs:
+    recording_studio_oauth (0.12.2)
+      flat_pack (~> 0.1.198)
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+      recording_studio_accessible (~> 0.11)
+      recording_studio_admin (~> 2.0)
+      recording_studio_api (>= 0.5.2, < 0.12)
+      recording_studio_cache (~> 0.5)
+      recording_studio_metrics (~> 0.3)
+      recording_studio_site_settings (~> 0.2)
+      recording_studio_trashable (~> 0.10)
+
+GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_accessible.git
   revision: 2cd0a0117a9018cf3a8374823b5bf58578fa6eb9
   tag: v0.18.0
@@ -61,6 +78,19 @@ GIT
       recording_studio (~> 4.2)
 
 GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_mcp.git
+  revision: ffa3066b91bd700f2aaf608871b492d4509bebbc
+  tag: v0.17.0
+  specs:
+    recording_studio_mcp (0.17.0)
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+      recording_studio_admin (~> 2.0)
+      recording_studio_api (>= 0.11.0, < 0.12)
+      recording_studio_metrics (>= 0.3.0, < 0.4)
+      recording_studio_oauth (~> 0.10)
+
+GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_metrics.git
   revision: a6cad79bcd2a82473db7b140cebdc1cc5e428d80
   tag: v0.3.1
@@ -104,6 +134,19 @@ GIT
       recording_studio_accessible (~> 0.15)
       recording_studio_cache (~> 0.5)
       recording_studio_metrics (~> 0.2)
+
+GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_site_settings.git
+  revision: db3f7d6cad9385021de99e8c026091bda51edaa9
+  tag: v0.2.1
+  specs:
+    recording_studio_site_settings (0.2.0)
+      flat_pack (>= 0.1.144)
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+      recording_studio_accessible (~> 0.11)
+      recording_studio_admin (~> 2.0)
+      recording_studio_attachable (~> 0.5)
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_terms_and_conditions.git
@@ -156,17 +199,6 @@ PATH
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
       recording_studio_notifications (>= 0.3.0, < 1)
-
-PATH
-  remote: ../../vendor/recording_studio_site_settings
-  specs:
-    recording_studio_site_settings (0.1.0)
-      flat_pack (>= 0.1.144)
-      rails (~> 8.1.0)
-      recording_studio (~> 4.2)
-      recording_studio_accessible (~> 0.8)
-      recording_studio_admin (~> 2.0)
-      recording_studio_attachable (~> 0.5)
 
 PATH
   remote: ../..
@@ -715,10 +747,12 @@ DEPENDENCIES
   recording_studio_api!
   recording_studio_attachable!
   recording_studio_cache!
+  recording_studio_mcp!
   recording_studio_metrics!
   recording_studio_notifications!
   recording_studio_notifications_email!
   recording_studio_notifications_push!
+  recording_studio_oauth!
   recording_studio_publishable!
   recording_studio_root_switchable!
   recording_studio_site_settings!
@@ -883,13 +917,15 @@ CHECKSUMS
   recording_studio_api (0.11.0)
   recording_studio_attachable (0.15.0)
   recording_studio_cache (0.5.0)
+  recording_studio_mcp (0.17.0)
   recording_studio_metrics (0.3.0)
   recording_studio_notifications (0.7.0)
   recording_studio_notifications_email (0.3.0)
   recording_studio_notifications_push (0.2.0)
+  recording_studio_oauth (0.12.2)
   recording_studio_publishable (0.8.0)
   recording_studio_root_switchable (0.9.0)
-  recording_studio_site_settings (0.1.0)
+  recording_studio_site_settings (0.2.0)
   recording_studio_terms_and_conditions (0.8.0)
   recording_studio_trashable (0.10.0)
   recording_studio_user (0.23.0)

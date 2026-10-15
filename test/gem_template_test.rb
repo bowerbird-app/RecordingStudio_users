@@ -348,6 +348,32 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
   end
 
+  def test_dummy_gemfile_pins_mcp_v0170_tag
+    gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+    lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
+
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_mcp"'
+    assert_includes gemfile, 'tag: "v0.17.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_Oauth"'
+    assert_includes gemfile, 'tag: "v0.12.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_site_settings"'
+    assert_includes gemfile, 'tag: "v0.2.1"'
+    refute_includes gemfile, 'path: "../../vendor/recording_studio_site_settings"'
+    assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_mcp.git"
+    assert_includes lock, "tag: v0.17.0"
+    assert_includes lock, "ffa3066b91bd700f2aaf608871b492d4509bebbc"
+    assert_includes lock, "recording_studio_mcp (0.17.0)"
+    assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_Oauth.git"
+    assert_includes lock, "tag: v0.12.2"
+    assert_includes lock, "4b2e7a9ffc8df00c6a5eaa66b4f79f3a3ab286e2"
+    assert_includes lock, "recording_studio_oauth (0.12.2)"
+    assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_site_settings.git"
+    assert_includes lock, "tag: v0.2.1"
+    assert_includes lock, "db3f7d6cad9385021de99e8c026091bda51edaa9"
+    assert_includes lock, "recording_studio_site_settings (0.2.0)"
+    refute_includes lock, "remote: ../../vendor/recording_studio_site_settings"
+  end
+
   def test_dummy_default_layout_head_sets_rounded_on_html
     head = File.read(File.expand_path("dummy/app/views/recording_studio/_default_layout_head.html.erb", __dir__))
 
