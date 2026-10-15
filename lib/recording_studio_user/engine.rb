@@ -52,7 +52,10 @@ module RecordingStudioUser
     end
 
     initializer "recording_studio_user.api" do
-      config.to_prepare { RecordingStudioUser::Api.register! }
+      config.to_prepare do
+        RecordingStudioUser::Api.register!
+        RecordingStudioUser::Api::Metrics.register!
+      end
     end
 
     initializer "recording_studio_user.metrics" do

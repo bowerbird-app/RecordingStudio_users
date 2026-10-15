@@ -12,6 +12,7 @@ require_relative "api/show"
 require_relative "api/create"
 require_relative "api/update"
 require_relative "api/registration"
+require_relative "api/metrics"
 
 module RecordingStudioUser
   module Api
