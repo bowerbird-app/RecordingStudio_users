@@ -321,12 +321,13 @@ class RecordingStudioUserTest < Minitest::Test
     )
   end
 
-  def test_dummy_gemfile_pins_api_actor_metrics_branch
+  def test_dummy_gemfile_pins_api_v0110_tag
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
     assert_includes gemfile,
-                    'github: "bowerbird-app/RecordingStudio_api", branch: "cursor/recordable-metrics-hook-0fe9"'
+                    'github: "bowerbird-app/RecordingStudio_api", tag: "v0.11.0"'
+    refute_includes gemfile, "cursor/recordable-metrics-hook-0fe9"
     refute_includes gemfile, 'RecordingStudio_api", tag: "v0.7.0"'
     refute_includes gemfile, 'RecordingStudio_api", tag: "v0.6.7"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
@@ -335,9 +336,10 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'tag: "v0.3.1"'
     assert_includes gemfile, "require: false"
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_api.git"
-    assert_includes lock, "branch: cursor/recordable-metrics-hook-0fe9"
-    assert_includes lock, "08165e767068cec8ef49ecc875aaddaff3acff7c"
+    assert_includes lock, "tag: v0.11.0"
+    assert_includes lock, "8a1aec37f97a52fa7749a7b02f7014030a39ac0a"
     assert_includes lock, "recording_studio_api (0.11.0)"
+    refute_includes lock, "branch: cursor/recordable-metrics-hook-0fe9"
     refute_includes lock, "recording_studio_api (0.7.0)"
     refute_includes lock, "recording_studio_api (0.6.7)"
     assert_includes lock, "recording_studio_trashable (0.10.0)"

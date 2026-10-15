@@ -271,7 +271,7 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_equal :get, path_only.endpoint.http_verb
   end
 
-  test "operations recordable registry omits User and list stays custom" do
+  test "metrics_for User is empty and the users list stays custom" do
     listed = RecordingStudioUser.create_user!(
       email: "shape-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
@@ -280,6 +280,7 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       time_zone: "UTC"
     )
 
+    assert_empty RecordingStudioApi.metrics_for("User", api: :operations)
     refute_includes RecordingStudioApi.api(:operations).recordable_registry.to_h.keys, "User"
 
     get "#{OPERATIONS_ROOT}/users",
@@ -290,11 +291,11 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     body = response.parsed_body
     assert_equal %w[records meta], body.keys
     assert_includes body.fetch("records").map { |row| row.fetch("email") }, listed.email
-    assert_equal 1, body.fetch("meta").fetch("page")
-    assert_equal 50, body.fetch("meta").fetch("per_page")
-    refute body.fetch("meta").key?("pagination_token")
-    refute body.key?("resource")
-    refute body.key?("type")
+    assert_equal User.count, body.fetch("meta").fetch("total_count")
+
+    get "#{OPERATIONS_ROOT}/users/metrics", headers: auth(@viewer_token), as: :json
+    assert_includes [404, 422], response.status, response.body
+    refute_equal "users.total", response.parsed_body.dig("metrics", 0, "name")
   end
 
   test "delete is not registered on operations users" do

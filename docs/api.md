@@ -4,7 +4,7 @@ How a host, person, or AI agent manages **users** over **Recording Studio API**.
 
 Users are Devise actors, not tree recordables. The gem registers named endpoints with `RecordingStudioApi.register_endpoint` on the host’s `:operations` API. It does **not** gemspec-depend on `recording_studio_api`. If that constant is missing, Users boots with no JSON user routes.
 
-Users does not pass `User` to `RecordingStudioApi.register_recordable_type_api`. `RecordingStudioUser::Api::Metrics.register!` calls `RecordingStudioApi.register_actor_metrics` only when that method exists. API 0.11 does not define `register_actor_metrics`. The operations users routes stay the custom endpoints.
+Users does not pass `User` to `RecordingStudioApi.register_recordable_type_api`. On API 0.11 that call claims the `users` path, so the custom operations endpoints stop running, and the metric executor counts recordings of type `User`. This gem does not create those recordings. `metrics_for("User", api: :operations)` stays empty. The operations users routes stay the custom endpoints.
 
 There is no Users `ApiController`. Create with a password calls `RecordingStudioUser.create_user!`. Create without a password calls `RecordingStudioUser.create_unconfirmed_user!` when `otp_enabled?` is true, and returns `422` `password is required` when it is false. Profile writes on update go through `record_profile!`. List uses `RecordingStudioUser.config.user_class.order(created_at: :desc)`, the same order as the Admin users screen, with `page` / `per_page` offset paging. Access is **Accessible** only.
 
