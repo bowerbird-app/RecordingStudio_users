@@ -5,10 +5,6 @@ module RecordingStudioUser
     module Metrics
       module_function
 
-      # register_recordable_type_api("User") claims the users path, so the
-      # custom operations endpoints stop running. The definitions fail
-      # eligibility (site blast radius and already exposed on operations).
-      # The executor counts recordings of type User, which do not exist.
       def register!
         return unless actor_metrics_supported?
 
