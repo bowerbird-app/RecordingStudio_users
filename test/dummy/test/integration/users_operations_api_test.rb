@@ -271,6 +271,32 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_equal :get, path_only.endpoint.http_verb
   end
 
+  test "operations recordable registry omits User and list stays custom" do
+    listed = RecordingStudioUser.create_user!(
+      email: "shape-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Shape",
+      last_name: "Check",
+      time_zone: "UTC"
+    )
+
+    refute_includes RecordingStudioApi.api(:operations).recordable_registry.to_h.keys, "User"
+
+    get "#{OPERATIONS_ROOT}/users",
+        headers: auth(@viewer_token),
+        params: { page: 1, per_page: 50 },
+        as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert_equal %w[records meta], body.keys
+    assert_includes body.fetch("records").map { |row| row.fetch("email") }, listed.email
+    assert_equal 1, body.fetch("meta").fetch("page")
+    assert_equal 50, body.fetch("meta").fetch("per_page")
+    refute body.fetch("meta").key?("pagination_token")
+    refute body.key?("resource")
+    refute body.key?("type")
+  end
+
   test "delete is not registered on operations users" do
     user = RecordingStudioUser.create_user!(
       email: "keep-#{SecureRandom.hex(4)}@example.com",
