@@ -76,13 +76,79 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     refute_includes Array(create_required).map(&:to_s), "password"
 
     update_names = argument_names(surface, "users_update")
-    %w[id first_name last_name time_zone additional_profile_attributes locale].each do |name|
+    %w[id email first_name last_name time_zone additional_profile_attributes locale].each do |name|
       assert_includes update_names, name
     end
-    refute_includes update_names, "email"
     refute_includes update_names, "password"
     update_required = surface.tool_definitions.find { |tool| tool.fetch(:name) == "users_update" }.dig(:inputSchema, :required)
     assert_includes Array(update_required).map(&:to_s), "id"
+    refute_includes Array(update_required).map(&:to_s), "email"
+
+    create_schema = tool_schema(surface, "users_create")
+    update_schema = tool_schema(surface, "users_update")
+    assert_equal false, schema_additional_properties(create_schema)
+    assert_equal false, schema_additional_properties(update_schema)
+  end
+
+  test "users_create and users_update reject unknown arguments and still accept declared fields" do
+    email = "mcp-known-#{SecureRandom.hex(4)}@example.com"
+    create_unknown = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users_create",
+      arguments: {
+        "email" => email,
+        "password" => "Password123!",
+        "first_name" => "Ada",
+        "locale" => "fr",
+        "not_a_real_field" => "boom"
+      },
+      access_grant: editor_grant
+    )
+    assert_equal true, create_unknown.fetch(:isError)
+    assert_match(/Invalid input for endpoint users_create/, create_unknown.dig(:content, 0, :text).to_s)
+    assert_contract_unknown_parameter(:users_create, { email: email, not_a_real_field: "boom" }, "not_a_real_field")
+    assert_nil User.find_by(email: email)
+
+    created = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users_create",
+      arguments: {
+        "email" => email,
+        "password" => "Password123!",
+        "first_name" => "Ada",
+        "locale" => "fr"
+      },
+      access_grant: editor_grant
+    )
+    assert_equal false, created.fetch(:isError)
+    user_id = created.dig(:structuredContent, "id")
+    assert_equal "Ada", created.dig(:structuredContent, "first_name")
+    assert_equal "fr", created.dig(:structuredContent, "additional_profile_attributes", "locale")
+
+    update_unknown = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users_update",
+      arguments: {
+        "id" => user_id,
+        "first_name" => "Grace",
+        "locale" => "en",
+        "not_a_real_field" => "boom"
+      },
+      access_grant: editor_grant
+    )
+    assert_equal true, update_unknown.fetch(:isError)
+    assert_match(/Invalid input for endpoint users_update/, update_unknown.dig(:content, 0, :text).to_s)
+    assert_contract_unknown_parameter(:users_update, { id: user_id, first_name: "Grace", not_a_real_field: "boom" }, "not_a_real_field")
+
+    updated = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users_update",
+      arguments: {
+        "id" => user_id,
+        "first_name" => "Grace",
+        "locale" => "en"
+      },
+      access_grant: editor_grant
+    )
+    assert_equal false, updated.fetch(:isError)
+    assert_equal "Grace", updated.dig(:structuredContent, "first_name")
+    assert_equal "en", updated.dig(:structuredContent, "additional_profile_attributes", "locale")
   end
 
   test "users total runs through api authorize" do
@@ -129,6 +195,28 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
   end
 
   private
+
+  def editor_grant
+    @editor_grant ||= operations_grant(access_point: @admin_root, role: :edit, name: "Users editor")
+  end
+
+  def tool_schema(surface, name)
+    surface.tool_definitions.find { |tool| tool.fetch(:name) == name }.fetch(:inputSchema)
+  end
+
+  def schema_additional_properties(schema)
+    return schema[:additionalProperties] if schema.key?(:additionalProperties)
+    return schema["additionalProperties"] if schema.key?("additionalProperties")
+
+    nil
+  end
+
+  def assert_contract_unknown_parameter(endpoint_name, params, field)
+    endpoint = RecordingStudioApi.registered_endpoint(endpoint_name, api: :operations)
+    result = endpoint.input_contract.call(params)
+    refute result.success?
+    assert(result.errors.any? { |entry| entry.include?("Unknown parameters") && entry.include?(field) })
+  end
 
   def argument_names(surface, name)
     argument_properties(surface, name).keys.map(&:to_s).sort
