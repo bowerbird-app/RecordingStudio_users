@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.3] - 2026-10-16
+
+### Fixed
+
+- `users_create` and `users_update` set `reject_unknown: true` on their `input_contract`. Extra keys return `422` with `Unknown parameters` naming the field. OpenAPI and MCP 0.17 set `additionalProperties` false on those tool schemas. Allowlisted profile keys (including top-level extras such as `locale`) still write. `PATCH` with `email` still returns `422` `email cannot be changed through the operations users API`.
+
+### Upgrade notes
+
+- Bump to `0.23.3`. No gemspec dependency change and no migration. Hosts or MCP clients that sent extra keys on create or update now get `422` instead of those keys being dropped. Pin MCP `v0.17.0` to pick up `additionalProperties: false` on the tools.
+
+## [0.23.2] - 2026-10-16
+
+### Fixed
+
+- `PATCH` users (`users_update`) touches the Devise user after `record_profile!`, so serialized `updated_at` moves.
+
+### Changed
+
+- `users_create` and `users_update` pass `input_contract` to `RecordingStudioApi.register_endpoint`. OpenAPI and MCP 0.17 list the real writable fields (`email`, `password`, `password_confirmation`, profile keys, and allowlisted extras such as `locale`). `reject_unknown` is `false`, so extra keys still reach the handler. Update does not declare `email` or `password`.
+
+### Upgrade notes
+
+- Bump to `0.23.2`. No gemspec dependency change and no migration. Hosts already on API 0.11 and MCP 0.17 pick up the tool fields after this gem bump. No change is required in RecordingStudio_api or RecordingStudio_mcp.
+
+## [0.23.1] - 2026-10-16
+
+### Changed
+
+- Docs name the MCP 0.17 tools for the existing users metrics. An operations
+  client that passes `RecordingStudioUser::Api::Access.can_view?` sees
+  `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`,
+  and `users-confirmation`. `users-signups` and `users-total_over_time` accept
+  `from`, `to`, and `interval`. The other three accept none of those. None of
+  the five accept `group_by` or `filters`. The gem does not register the tools.
+  `RecordingStudioMcp::CatalogMetricTools.execute` of `users-total` for a client
+  that fails the check raises `RecordingStudioApi::AuthorizationError`.
+
+### Upgrade notes
+
+- Bump to `0.23.1`. No gemspec dependency change and no migration. Hosts that
+  want the tools install MCP `v0.17.0` with Metrics `>= 0.3.0` and `< 0.4`.
+
 ## [0.23.0] - 2026-10-14
 
 ### Added

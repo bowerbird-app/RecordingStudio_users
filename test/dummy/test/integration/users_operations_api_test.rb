@@ -211,12 +211,76 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_nil user.unconfirmed_email
     assert_equal "Patricia", RecordingStudioUser.profile_for(user).first_name
 
+    original_updated_at = user.updated_at
+    travel 1.minute do
+      patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+            headers: auth(@editor_token),
+            params: { last_name: "Updated" },
+            as: :json
+      assert_response :success
+      payload_updated_at = response.parsed_body.fetch("updated_at")
+      payload_time = payload_updated_at.is_a?(String) ? Time.iso8601(payload_updated_at) : payload_updated_at
+      assert_operator payload_time, :>, original_updated_at
+      assert_operator user.reload.updated_at, :>, original_updated_at
+      assert_equal "Updated", response.parsed_body.fetch("last_name")
+    end
+
     patch "#{OPERATIONS_ROOT}/users/#{user_id}",
           headers: auth(@editor_token),
           params: { email: "reconfirm-#{SecureRandom.hex(4)}@example.com" },
           as: :json
     assert_response :unprocessable_entity
     assert_match(/email cannot be changed/, response.parsed_body.dig("error", "message"))
+  end
+
+  test "operations editor rejects unknown fields on create and update and still accepts declared fields" do
+    email = "known-fields-#{SecureRandom.hex(4)}@example.com"
+
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@editor_token),
+         params: {
+           email: email,
+           password: "Password123!",
+           first_name: "Ada",
+           locale: "fr",
+           not_a_real_field: "boom"
+         },
+         as: :json
+    assert_response :unprocessable_entity
+    assert_unknown_parameter_error(response.parsed_body, "not_a_real_field")
+    assert_nil User.find_by(email: email)
+
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@editor_token),
+         params: {
+           email: email,
+           password: "Password123!",
+           first_name: "Ada",
+           locale: "fr"
+         },
+         as: :json
+    assert_response :success
+    created = response.parsed_body
+    user_id = created.fetch("id")
+    assert_equal "Ada", created.fetch("first_name")
+    assert_equal "fr", created.fetch("additional_profile_attributes").fetch("locale")
+
+    patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+          headers: auth(@editor_token),
+          params: { first_name: "Ada", locale: "en", not_a_real_field: "boom" },
+          as: :json
+    assert_response :unprocessable_entity
+    assert_unknown_parameter_error(response.parsed_body, "not_a_real_field")
+    assert_equal "Ada", User.find(user_id).then { |user| RecordingStudioUser.profile_for(user).first_name }
+
+    patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+          headers: auth(@editor_token),
+          params: { first_name: "Grace", locale: "en" },
+          as: :json
+    assert_response :success
+    updated = response.parsed_body
+    assert_equal "Grace", updated.fetch("first_name")
+    assert_equal "en", updated.fetch("additional_profile_attributes").fetch("locale")
   end
 
   test "operations list uses offset paging in created_at desc order" do
@@ -271,6 +335,33 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_equal :get, path_only.endpoint.http_verb
   end
 
+  test "metrics_for User is empty and the users list stays custom" do
+    listed = RecordingStudioUser.create_user!(
+      email: "shape-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Shape",
+      last_name: "Check",
+      time_zone: "UTC"
+    )
+
+    assert_empty RecordingStudioApi.metrics_for("User", api: :operations)
+    refute_includes RecordingStudioApi.api(:operations).recordable_registry.to_h.keys, "User"
+
+    get "#{OPERATIONS_ROOT}/users",
+        headers: auth(@viewer_token),
+        params: { page: 1, per_page: 50 },
+        as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert_equal %w[records meta], body.keys
+    assert_includes body.fetch("records").map { |row| row.fetch("email") }, listed.email
+    assert_equal User.count, body.fetch("meta").fetch("total_count")
+
+    get "#{OPERATIONS_ROOT}/users/metrics", headers: auth(@viewer_token), as: :json
+    assert_includes [404, 422], response.status, response.body
+    refute_equal "users.total", response.parsed_body.dig("metrics", 0, "name")
+  end
+
   test "delete is not registered on operations users" do
     user = RecordingStudioUser.create_user!(
       email: "keep-#{SecureRandom.hex(4)}@example.com",
@@ -287,6 +378,13 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def assert_unknown_parameter_error(payload, field)
+    error = payload.fetch("error")
+    combined = [error["message"], *Array(error["details"])].join(" ")
+    assert_match(/Unknown parameters/, combined)
+    assert_match(/#{Regexp.escape(field)}/, combined)
+  end
 
   def refute_secret_fields(payload)
     %w[
