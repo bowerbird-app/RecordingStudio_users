@@ -184,7 +184,7 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes contents, 'tag: "v0.18.0"'
       refute_includes contents, 'RecordingStudio_accessible", tag: "v0.17.0"'
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_trashable"'
-      assert_includes contents, 'tag: "v0.10.0"'
+      assert_includes contents, 'tag: "v0.11.0"'
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_metrics"'
       assert_includes contents, 'tag: "v0.3.1"'
       assert_includes contents, "require: false"
@@ -197,7 +197,7 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes lock, "recording_studio_accessible (0.18.0)"
       refute_includes lock, "recording_studio_accessible (0.17.0)"
       refute_includes lock, "226c6a92472f6ddf1fabcb27ea52ef6a23e53f87"
-      assert_includes lock, "recording_studio_trashable (0.10.0)"
+      assert_includes lock, "recording_studio_trashable (0.11.0)"
       assert_includes lock, "tag: v0.3.1"
       assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
       refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
@@ -207,19 +207,22 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemspec, '"recording_studio_accessible", "~> 0.11"'
   end
 
-  def test_gemfiles_pin_recording_studio_v460_tag
+  def test_gemfiles_pin_recording_studio_v470_tag
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
-      assert_includes contents, 'github: "bowerbird-app/RecordingStudio", tag: "v4.6.0"'
+      assert_includes contents, 'github: "bowerbird-app/RecordingStudio", tag: "v4.7.0"'
+      refute_includes contents, 'RecordingStudio", tag: "v4.6.0"'
       refute_includes contents, 'RecordingStudio", tag: "v4.5.0"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v4.6.0"
-      assert_includes lock, "a6e42617e16647d91ddb70748e41774577f17b6c"
-      assert_includes lock, "recording_studio (4.6.0)"
+      assert_includes lock, "tag: v4.7.0"
+      assert_includes lock, "613501164c57b6f0bf6e8e356d593b1e5c151368"
+      assert_includes lock, "recording_studio (4.7.0)"
+      refute_includes lock, "recording_studio (4.6.0)"
+      refute_includes lock, "a6e42617e16647d91ddb70748e41774577f17b6c"
       refute_includes lock, "recording_studio (4.5.0)"
       refute_includes lock, "b34e59cbd4f56fbc76cf16965d4acda5aea60310"
     end
@@ -252,7 +255,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'tag: "v2.3.0"'
     refute_includes gemfile, 'tag: "v2.2.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
-    assert_includes gemfile, 'tag: "v0.10.0"'
+    assert_includes gemfile, 'tag: "v0.11.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics"'
     assert_includes gemfile, 'tag: "v0.3.1"'
     assert_includes gemfile, "require: false"
@@ -265,8 +268,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "flat_pack (0.1.213)"
     assert_includes lock, "9606a6f24717e8f98c22c73e7ed40b30523fdd3f"
     assert_includes lock, "recording_studio_admin (2.3.0)"
-    assert_includes lock, "recording_studio_trashable (0.10.0)"
-    assert_includes lock, "6f590d0b1ed6cd64515ae5ffec280b28bbbca20d"
+    assert_includes lock, "recording_studio_trashable (0.11.0)"
+    assert_includes lock, "436cbb838e9d30b7a91b6d25c74fb3b749e8afe5"
     assert_includes lock, "tag: v0.3.1"
     assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
     refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
@@ -284,7 +287,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'tag: "v2.3.0"'
     refute_includes gemfile, 'tag: "v2.2.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
-    assert_includes gemfile, 'tag: "v0.10.0"'
+    assert_includes gemfile, 'tag: "v0.11.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics"'
     assert_includes gemfile, 'tag: "v0.3.1"'
     assert_includes gemfile, "require: false"
@@ -296,8 +299,8 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "tag: v0.1.213"
     assert_includes lock, "flat_pack (0.1.213)"
     assert_includes lock, "recording_studio_admin (2.3.0)"
-    assert_includes lock, "recording_studio_trashable (0.10.0)"
-    assert_includes lock, "6f590d0b1ed6cd64515ae5ffec280b28bbbca20d"
+    assert_includes lock, "recording_studio_trashable (0.11.0)"
+    assert_includes lock, "436cbb838e9d30b7a91b6d25c74fb3b749e8afe5"
     assert_includes lock, "tag: v0.3.1"
     assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
     refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"
@@ -331,7 +334,7 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes gemfile, 'RecordingStudio_api", tag: "v0.7.0"'
     refute_includes gemfile, 'RecordingStudio_api", tag: "v0.6.7"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
-    assert_includes gemfile, 'tag: "v0.10.0"'
+    assert_includes gemfile, 'tag: "v0.11.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics"'
     assert_includes gemfile, 'tag: "v0.3.1"'
     assert_includes gemfile, "require: false"
@@ -342,7 +345,7 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes lock, "branch: cursor/recordable-metrics-hook-0fe9"
     refute_includes lock, "recording_studio_api (0.7.0)"
     refute_includes lock, "recording_studio_api (0.6.7)"
-    assert_includes lock, "recording_studio_trashable (0.10.0)"
+    assert_includes lock, "recording_studio_trashable (0.11.0)"
     assert_includes lock, "tag: v0.3.1"
     assert_includes lock, "a6cad79bcd2a82473db7b140cebdc1cc5e428d80"
     refute_includes lock, "b992b5d3a5ef0b5a96c98a2e1410810d7d872f20"

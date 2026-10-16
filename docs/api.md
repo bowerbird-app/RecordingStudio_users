@@ -51,7 +51,7 @@ The API client’s `AccessGrant.actor` is the Accessible actor. Grant that clien
 
 Public `/api/v1/users` is not registered (`404`). There is no `DELETE`.
 
-Users registers GET+POST on `users` and GET+PATCH on `users/:id`. There is no `users/count` route. Read the user total from the `users-total` MCP tool below. RecordingStudio_api **v0.6.5+** dispatches with `registered_endpoint_registry.match(path:, http_verb:)`, so POST and PATCH reach the right handlers. Pin **v0.11.0** in the host Gemfile (Trashable query helpers via `recording_studio_trashable` `v0.10.0`, `require: false`, plus Metrics `v0.3.1`, `require: false`). Users does not patch API dispatch.
+Users registers GET+POST on `users` and GET+PATCH on `users/:id`. There is no `users/count` route. Read the user total from the `users-total` MCP tool below. RecordingStudio_api **v0.6.5+** dispatches with `registered_endpoint_registry.match(path:, http_verb:)`, so POST and PATCH reach the right handlers. Pin **v0.11.0** in the host Gemfile (Trashable query helpers via `recording_studio_trashable` `v0.11.0`, `require: false`, plus Metrics `v0.3.1`, `require: false`). Users does not patch API dispatch.
 
 ## Routes
 
