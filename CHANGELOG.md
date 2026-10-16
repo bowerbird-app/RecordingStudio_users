@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.1] - 2026-10-16
+
+### Changed
+
+- Docs name the MCP 0.17 tools for the existing users metrics. An operations
+  client that passes `RecordingStudioUser::Api::Access.can_view?` sees
+  `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`,
+  and `users-confirmation`. `users-signups` and `users-total_over_time` accept
+  `from`, `to`, and `interval`. The other three accept none of those. None of
+  the five accept `group_by` or `filters`. The gem does not register the tools.
+  `RecordingStudioMcp::CatalogMetricTools.execute` of `users-total` for a client
+  that fails the check raises `RecordingStudioApi::AuthorizationError`.
+
+### Upgrade notes
+
+- Bump to `0.23.1`. No gemspec dependency change and no migration. Hosts that
+  want the tools install MCP `v0.17.0` with Metrics `>= 0.3.0` and `< 0.4`.
+
 ## [0.23.0] - 2026-10-14
 
 ### Added
