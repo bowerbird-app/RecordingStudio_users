@@ -31,6 +31,7 @@ module RecordingStudioUser
     config.after_initialize do
       require "omniauth/rails_csrf_protection"
       OmniAuth.config.request_validation_phase = OmniAuth::RailsCsrfProtection::TokenVerifier.new
+      RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
     end
 
     rake_tasks do

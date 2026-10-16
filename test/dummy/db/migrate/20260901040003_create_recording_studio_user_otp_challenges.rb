@@ -16,5 +16,10 @@ class CreateRecordingStudioUserOtpChallenges < ActiveRecord::Migration[8.1]
 
     add_index :recording_studio_user_otp_challenges, :expires_at
     add_index :recording_studio_user_otp_challenges, %i[user_id purpose]
+    add_index :recording_studio_user_otp_challenges,
+              %i[user_id purpose],
+              unique: true,
+              where: "consumed_at IS NULL AND revoked_at IS NULL",
+              name: "index_rs_user_otp_challenges_open_purpose"
   end
 end

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-10-16
+
+### Added
+
+- `RecordingStudioUser.request_otp!(email:, purpose:, request:, session:)` asks for a registration or login code. It normalizes the email, reserves the rate limit, finds or creates the unconfirmed user, then issues. Login does not create a user. A throttled request creates nothing.
+- Open OTP challenges have a partial unique index on `(user_id, purpose)` where the row is not consumed and not revoked (`index_rs_user_otp_challenges_open_purpose`).
+
+### Changed
+
+- `request_otp!` and `resend_otp!` return `IssueOtp::Result` with `status` `:issued`, `:throttled`, or `:suppressed`. They do not raise `RateLimited`.
+- Unknown, existing, disabled, and password-registered addresses get the same check-email response. Disabled addresses are skipped and no code is sent. OTP registration no longer redirects to sign-in with "email already taken".
+- The email rate-limit bucket is an HMAC-SHA256 of the normalized address. The HMAC key is derived from `secret_key_base`. Email, IP, and session are checked for a block before any of them is consumed.
+- `create_unconfirmed_user!` rescues `ActiveRecord::RecordNotUnique` and returns the existing row.
+- `resend_otp!` uses that same email digest.
+
+### Upgrade notes
+
+- Bump to `0.24.0`. Replace `issue_otp!` with `request_otp!`. Check `result.throttled?` instead of rescuing `RecordingStudioUser::RateLimited` around a code request.
+- Run `bin/rails generate recording_studio_user:migrations` and migrate. Hosts that already created `recording_studio_user_otp_challenges` pick up `add_open_otp_challenge_index`.
+- Add a case-insensitive unique index on `users.email` if the host does not have one yet. A unique index on `LOWER(email)` is the usual shape.
+- Point `Rails.cache` at a shared, atomic store (Redis or Memcached) before enabling one-time codes. A memory store or a null store logs a warning at boot and cannot enforce these limits across processes.
+
 ## [0.23.3] - 2026-10-16
 
 ### Fixed

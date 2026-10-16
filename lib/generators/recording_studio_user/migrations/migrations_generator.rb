@@ -23,6 +23,7 @@ module RecordingStudioUser
         "add_registered_with_to_users" => "add_registered_with_to_users.rb.tt",
         "add_devise_confirmable_to_users" => "add_devise_confirmable_to_users.rb.tt",
         "create_recording_studio_user_otp_challenges" => "create_recording_studio_user_otp_challenges.rb.tt",
+        "add_open_otp_challenge_index" => "add_open_otp_challenge_index.rb.tt",
         "allow_blank_profile_surname_and_time_zone" => "allow_blank_profile_surname_and_time_zone.rb.tt"
       }.freeze
 

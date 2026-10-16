@@ -122,8 +122,10 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       time_zone: "UTC"
     )
 
-    post "#{new_user_registration_path}/otp", params: { user: { email: email } }
-    assert_redirected_to new_user_session_path
+    assert_no_difference -> { RecordingStudioUser::OtpChallenge.count } do
+      post "#{new_user_registration_path}/otp", params: { user: { email: email } }
+    end
+    assert_redirected_to verify_user_registration_path
 
     sign_out_user!
     otp_email = "otp-cross-#{SecureRandom.hex(4)}@example.com"
@@ -150,13 +152,19 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     assert_equal 1, User.where(email: email).count
   end
 
-  test "confirmed email registration directs to sign-in" do
+  test "confirmed email registration shows the same check-email page" do
     email = "confirmed-reg-#{SecureRandom.hex(4)}@example.com"
     confirm_otp_user!(email)
     sign_out_user!
+    clear_otp_session!
 
-    post "#{new_user_registration_path}/otp", params: { user: { email: email } }
-    assert_redirected_to new_user_session_path
+    assert_no_difference -> { User.count } do
+      post "#{new_user_registration_path}/otp", params: { user: { email: email } }
+    end
+    assert_redirected_to verify_user_registration_path
+    follow_redirect!
+    assert_response :success
+    assert_select "input[name='code']"
   end
 
   test "unknown OTP login email gives same notice without creating user" do
@@ -258,7 +266,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     accept_pending_live_terms!(user)
     sign_in user
 
-    result = RecordingStudioUser.issue_otp!(user: user, purpose: :login)
+    result = request_login_code!(user)
     code = result.challenge.decrypt_delivery_code!
     notification = RecordingStudioNotifications::Notification
       .where(recipient: user, notification_type: "login_otp")
@@ -295,7 +303,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
     original = RecordingStudioUser.config.otp_expires_in
     RecordingStudioUser.config.otp_expires_in = 20.minutes
-    challenge = RecordingStudioUser.issue_otp!(user: user, purpose: :login).challenge
+    challenge = request_login_code!(user).challenge
 
     get recording_studio_users.otp_code_path(challenge)
 
@@ -322,7 +330,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     )
     accept_pending_live_terms!(owner)
     accept_pending_live_terms!(viewer)
-    challenge = RecordingStudioUser.issue_otp!(user: owner, purpose: :login).challenge
+    challenge = request_login_code!(owner).challenge
     code = challenge.decrypt_delivery_code!
     sign_in viewer
 
@@ -626,7 +634,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
     email = "cleanup-#{SecureRandom.hex(4)}@example.com"
     user = RecordingStudioUser.create_unconfirmed_user!(email: email)
-    RecordingStudioUser.issue_otp!(user: user, purpose: :registration)
+    RecordingStudioUser.request_otp!(email: email, purpose: :registration, request: nil, session: nil)
     notification = RecordingStudioNotifications::Notification.where(recipient: user).last
     assert notification
 
@@ -689,7 +697,106 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     Rails.application.reload_routes!
   end
 
+  test "otp registration and login respond the same for every kind of email" do
+    unknown = "kind-unknown-#{SecureRandom.hex(4)}@example.com"
+    existing = confirm_otp_user!("kind-existing-#{SecureRandom.hex(4)}@example.com")
+    sign_out_user!
+    clear_otp_session!
+    password = RecordingStudioUser.create_user!(
+      email: "kind-password-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Pass",
+      last_name: "Word",
+      time_zone: "UTC"
+    )
+    disabled = RecordingStudioUser.create_user!(
+      email: "kind-disabled-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Off",
+      last_name: "Line",
+      time_zone: "UTC"
+    )
+    with_disabled_email(disabled.email) do
+      registration = [ unknown, existing.email, password.email, disabled.email ].map do |email|
+        otp_registration_signature(email)
+      end
+      assert_equal [ registration.first ], registration.uniq
+
+      login = [ unknown, existing.email, password.email, disabled.email ].map do |email|
+        otp_login_signature(email)
+      end
+      assert_equal [ login.first ], login.uniq
+    end
+
+    assert User.find_by!(email: unknown).registered_with_otp?
+    assert_nil open_registration_challenge(password)
+    assert_nil open_registration_challenge(disabled)
+    assert open_login_challenge(password)
+    assert_nil open_login_challenge(disabled)
+  end
+
+  test "throttled registration of a new email creates no user" do
+    previous = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    email = "throttled-page-#{SecureRandom.hex(4)}@example.com"
+    digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(email)
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: digest)
+
+    assert_no_difference -> { User.count } do
+      post "#{new_user_registration_path}/otp", params: { user: { email: email } }
+    end
+
+    assert_response :too_many_requests
+    assert_nil User.find_by(email: email)
+  ensure
+    Rails.cache = previous
+  end
+
   private
+
+  def otp_registration_signature(email)
+    post "#{new_user_registration_path}/otp", params: { user: { email: email } }
+    signature = [ response.status, URI(response.location).path, flash[:alert], flash[:notice] ]
+    follow_redirect!
+    signature + [ response.status, response.body.include?("Check your email") ]
+  end
+
+  def otp_login_signature(email)
+    clear_otp_session!
+    post "#{new_user_session_path}/otp", params: { user: { email: email } }
+    signature = [ response.status, URI(response.location).path, flash[:alert], flash[:notice] ]
+    follow_redirect!
+    signature + [ response.status, response.body.include?("Enter your code") ]
+  end
+
+  def with_disabled_email(email)
+    User.class_eval do
+      alias_method :active_for_authentication_without_test_disable, :active_for_authentication?
+      define_method(:active_for_authentication?) do
+        return false if self.email == email
+
+        active_for_authentication_without_test_disable
+      end
+    end
+    yield
+  ensure
+    User.class_eval do
+      alias_method :active_for_authentication?, :active_for_authentication_without_test_disable
+      remove_method :active_for_authentication_without_test_disable
+    end
+  end
+
+  def open_registration_challenge(user)
+    RecordingStudioUser::OtpChallenge.find_by(user: user, purpose: "registration", consumed_at: nil, revoked_at: nil)
+  end
+
+  def open_login_challenge(user)
+    RecordingStudioUser::OtpChallenge.find_by(user: user, purpose: "login", consumed_at: nil, revoked_at: nil)
+  end
+
+  def request_login_code!(user)
+    RecordingStudioUser.request_otp!(email: user.email, purpose: :login, request: nil, session: nil)
+  end
 
   def clear_otp_session!
     session.delete(:otp_challenge_id)

@@ -13,8 +13,6 @@ module RecordingStudioUser
 
         store_pending_auth_email!(email)
         continue_with_primary_login!(email)
-      rescue Services::OtpRateLimiter::RateLimited
-        redirect_to otp_session_verify_path, notice: generic_login_notice
       end
 
       def password
@@ -37,9 +35,7 @@ module RecordingStudioUser
       def otp; end
 
       def create_otp
-        issue_login_otp!(resource_class.find_by(email: submitted_email))
-        redirect_to otp_session_verify_path, notice: generic_login_notice
-      rescue Services::OtpRateLimiter::RateLimited
+        request_login_otp!(submitted_email)
         redirect_to otp_session_verify_path, notice: generic_login_notice
       end
 
@@ -56,9 +52,10 @@ module RecordingStudioUser
       end
 
       def resend
-        issue_login_otp!(user_for_otp_resend, rate_limit_scope: :resend)
-        redirect_to otp_session_verify_path, notice: generic_login_notice
-      rescue Services::OtpRateLimiter::RateLimited
+        user = user_for_otp_resend
+        if eligible_for_sign_in?(user)
+          RecordingStudioUser.resend_otp!(user: user, purpose: :login, request: request, session: session)
+        end
         redirect_to otp_session_verify_path, notice: generic_login_notice
       end
 
@@ -69,7 +66,7 @@ module RecordingStudioUser
           RecordingStudioUser.config.primary_login_type_otp?
 
         require_otp_login_enabled!
-        issue_login_otp!(resource_class.find_by(email: email))
+        request_login_otp!(email)
         redirect_to otp_session_verify_path, notice: generic_login_notice
       end
 
@@ -94,15 +91,12 @@ module RecordingStudioUser
         { scope: :user, recall: "#{controller_path}#password" }
       end
 
-      def issue_login_otp!(user, rate_limit_scope: :issue)
-        return unless eligible_for_sign_in?(user)
-
-        RecordingStudioUser.issue_otp!(
-          user: user,
+      def request_login_otp!(email)
+        RecordingStudioUser.request_otp!(
+          email: email,
           purpose: :login,
           request: request,
-          session: session,
-          rate_limit_scope: rate_limit_scope
+          session: session
         )
       end
 

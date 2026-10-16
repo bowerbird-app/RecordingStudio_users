@@ -22,7 +22,12 @@ class CompleteRegistrationTest < ActiveSupport::TestCase
   test "complete_registration confirms OTP user and creates profile" do
     email = "service-confirmed-#{SecureRandom.hex(4)}@example.com"
     user = RecordingStudioUser.create_unconfirmed_user!(email: email)
-    challenge = RecordingStudioUser.issue_otp!(user: user, purpose: :registration).challenge
+    challenge = RecordingStudioUser.request_otp!(
+      email: user.email,
+      purpose: :registration,
+      request: nil,
+      session: nil
+    ).challenge
     code = challenge.decrypt_delivery_code!
     result = RecordingStudioUser.verify_otp!(
       challenge_id: challenge.id,

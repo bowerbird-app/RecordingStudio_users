@@ -349,16 +349,17 @@ Mount the auth screens with `recording_studio_user_auth_for :users` (see Auth sc
 
 Hosts that prove an email address from another gem call these methods. They never load `OtpChallenge` or the rate limiter.
 
+`request_otp!` is the call for both registration and login. It normalizes the email, reserves the rate limit, finds or creates the unconfirmed user, then issues the code. Login does not create a user. A throttled request creates nothing. Unknown, existing, disabled, and password-registered addresses get the same check-email response. Disabled addresses are skipped and no code is sent. The result status is `:issued`, `:throttled`, or `:suppressed`.
+
 ```ruby
-issued = RecordingStudioUser.issue_otp!(
-  user: user,
+issued = RecordingStudioUser.request_otp!(
+  email: email,
   purpose: :registration, # or :login
   request: request,
-  session: session,
-  rate_limit_scope: :issue
+  session: session
 )
-issued.challenge_id
-issued.challenge # existing callers
+issued.status # :issued, :throttled, or :suppressed
+issued.challenge_id if issued.issued?
 
 proof = RecordingStudioUser.otp_proof(issued.challenge_id)
 # proof.purpose is "registration" or "login"; missing/consumed/revoked is nil
@@ -366,17 +367,17 @@ proof = RecordingStudioUser.otp_proof(issued.challenge_id)
 RecordingStudioUser.otp_message(issued.challenge_id)
 # { title:, body:, url: } while the challenge is deliverable, otherwise nil
 
-result = RecordingStudioUser.verify_otp!(
+verified = RecordingStudioUser.verify_otp!(
   challenge_id: issued.challenge_id,
   code: code,
   purpose: proof.purpose,
   session: session
 )
-result.success?
-result.user
+verified.success?
+verified.user
 
 RecordingStudioUser.complete_email_proof!(
-  user: result.user,
+  user: verified.user,
   challenge_id: issued.challenge_id,
   profile_attributes: { first_name: "Ada", last_name: "Lovelace" }
 )
@@ -389,7 +390,13 @@ RecordingStudioUser.resend_otp!(
 )
 ```
 
-`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. Rescue `RecordingStudioUser::RateLimited` when a code request is too soon. Issue and resend cooldowns use `RecordingStudioCache::RateLimiter` on `Rails.cache` (`otp_resend_cooldown` for resend, one minute otherwise).
+`resend_otp!` uses the same email digest as `request_otp!` and returns the same result object. Check `result.throttled?` when a code request is too soon.
+
+The email rate-limit bucket is an HMAC-SHA256 of the normalized address. The HMAC key is derived from `secret_key_base`, so the cache does not store the address. Email, IP, and session are all read before any of them is consumed: a block on one key does not spend the others. Those counters need a shared, atomic cache store (Redis or Memcached) because every app process has to see the same numbers. When one-time codes are on and `Rails.cache` is a memory store or a null store, the app logs a warning at boot.
+
+The host needs a case-insensitive unique index on `users.email` (a unique index on `LOWER(email)` is the usual shape). `create_unconfirmed_user!` rescues `ActiveRecord::RecordNotUnique` and returns the row that won the race. Open challenges — not consumed and not revoked — have a partial unique index on `recording_studio_user_otp_challenges` `(user_id, purpose)`.
+
+`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. Issue and resend cooldowns use `RecordingStudioCache::RateLimiter` on `Rails.cache` (`otp_resend_cooldown` for resend, one minute otherwise).
 
 `complete_registration!` is the Users sign-up path. It still requires an OTP account and still fills a default surname and UTC.
 
