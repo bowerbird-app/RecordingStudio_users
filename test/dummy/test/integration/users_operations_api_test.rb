@@ -233,6 +233,56 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_match(/email cannot be changed/, response.parsed_body.dig("error", "message"))
   end
 
+  test "operations editor rejects unknown fields on create and update and still accepts declared fields" do
+    email = "known-fields-#{SecureRandom.hex(4)}@example.com"
+
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@editor_token),
+         params: {
+           email: email,
+           password: "Password123!",
+           first_name: "Ada",
+           locale: "fr",
+           not_a_real_field: "boom"
+         },
+         as: :json
+    assert_response :unprocessable_entity
+    assert_unknown_parameter_error(response.parsed_body, "not_a_real_field")
+    assert_nil User.find_by(email: email)
+
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@editor_token),
+         params: {
+           email: email,
+           password: "Password123!",
+           first_name: "Ada",
+           locale: "fr"
+         },
+         as: :json
+    assert_response :success
+    created = response.parsed_body
+    user_id = created.fetch("id")
+    assert_equal "Ada", created.fetch("first_name")
+    assert_equal "fr", created.fetch("additional_profile_attributes").fetch("locale")
+
+    patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+          headers: auth(@editor_token),
+          params: { first_name: "Ada", locale: "en", not_a_real_field: "boom" },
+          as: :json
+    assert_response :unprocessable_entity
+    assert_unknown_parameter_error(response.parsed_body, "not_a_real_field")
+    assert_equal "Ada", User.find(user_id).then { |user| RecordingStudioUser.profile_for(user).first_name }
+
+    patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+          headers: auth(@editor_token),
+          params: { first_name: "Grace", locale: "en" },
+          as: :json
+    assert_response :success
+    updated = response.parsed_body
+    assert_equal "Grace", updated.fetch("first_name")
+    assert_equal "en", updated.fetch("additional_profile_attributes").fetch("locale")
+  end
+
   test "operations list uses offset paging in created_at desc order" do
     stamp = Time.utc(2026, 10, 8, 15, 0, 0)
     3.times do |index|
@@ -328,6 +378,13 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def assert_unknown_parameter_error(payload, field)
+    error = payload.fetch("error")
+    combined = [error["message"], *Array(error["details"])].join(" ")
+    assert_match(/Unknown parameters/, combined)
+    assert_match(/#{Regexp.escape(field)}/, combined)
+  end
 
   def refute_secret_fields(payload)
     %w[

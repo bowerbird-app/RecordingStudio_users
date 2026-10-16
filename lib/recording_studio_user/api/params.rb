@@ -62,11 +62,22 @@ module RecordingStudioUser
       end
 
       def create_input_contract
-        { reject_unknown: false, fields: create_input_fields }
+        { reject_unknown: true, fields: create_input_fields }
       end
 
       def update_input_contract
-        { reject_unknown: false, fields: profile_input_fields }
+        { reject_unknown: true, fields: update_input_fields }
+      end
+
+      def update_input_fields
+        {
+          id: { type: :string, required: false, description: "Path parameter id." },
+          email: {
+            type: :string,
+            required: false,
+            description: "Not accepted. Sending email returns 422."
+          }
+        }.merge(profile_input_fields)
       end
 
       def create_input_fields

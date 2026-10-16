@@ -119,7 +119,7 @@ class ApiTest < Minitest::Test
     RecordingStudioUser::Api.register!
 
     create = registration_named(api, :users_create).fetch(:input_contract)
-    assert_equal false, create.fetch(:reject_unknown)
+    assert_equal true, create.fetch(:reject_unknown)
     create_fields = create.fetch(:fields)
     assert_equal true, create_fields.fetch(:email).fetch(:required)
     assert_equal :string, create_fields.fetch(:email).fetch(:type)
@@ -134,14 +134,16 @@ class ApiTest < Minitest::Test
     refute create_fields.fetch(:first_name)[:required]
 
     update = registration_named(api, :users_update).fetch(:input_contract)
-    assert_equal false, update.fetch(:reject_unknown)
+    assert_equal true, update.fetch(:reject_unknown)
     update_fields = update.fetch(:fields)
     assert_equal :string, update_fields.fetch(:first_name).fetch(:type)
     assert_equal :string, update_fields.fetch(:last_name).fetch(:type)
     assert_equal :string, update_fields.fetch(:time_zone).fetch(:type)
     assert_equal :hash, update_fields.fetch(:additional_profile_attributes).fetch(:type)
     assert_equal :string, update_fields.fetch(:locale).fetch(:type)
-    refute update_fields.key?(:email)
+    assert_equal :string, update_fields.fetch(:id).fetch(:type)
+    assert_equal :string, update_fields.fetch(:email).fetch(:type)
+    refute update_fields.fetch(:email)[:required]
     refute update_fields.key?(:password)
     refute update_fields.key?(:password_confirmation)
     refute update_fields.fetch(:first_name)[:required]
@@ -233,6 +235,19 @@ class ApiTest < Minitest::Test
     assert_equal({ locale: "fr" }, attributes[:additional_profile_attributes])
     refute attributes.key?(:email)
     refute attributes.key?(:password)
+  end
+
+  def test_update_attributes_reject_email_before_other_unknown_keys
+    context = FakeContext.new(
+      actor: :staff,
+      params: { id: "user-1", email: "new@example.com", not_a_real_field: true }
+    )
+    error = with_api_errors do
+      assert_raises(RecordingStudioApi::InvalidActionInputError) do
+        RecordingStudioUser::Api::Params.update_attributes(context)
+      end
+    end
+    assert_match(/email cannot be changed/, error.message)
   end
 
   def test_query_normalizes_page_and_per_page

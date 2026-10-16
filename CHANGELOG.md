@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.3] - 2026-10-16
+
+### Fixed
+
+- `users_create` and `users_update` set `reject_unknown: true` on their `input_contract`. Extra keys return `422` with `Unknown parameters` naming the field. OpenAPI and MCP 0.17 set `additionalProperties` false on those tool schemas. Allowlisted profile keys (including top-level extras such as `locale`) still write. `PATCH` with `email` still returns `422` `email cannot be changed through the operations users API`.
+
+### Upgrade notes
+
+- Bump to `0.23.3`. No gemspec dependency change and no migration. Hosts or MCP clients that sent extra keys on create or update now get `422` instead of those keys being dropped. Pin MCP `v0.17.0` to pick up `additionalProperties: false` on the tools.
+
 ## [0.23.2] - 2026-10-16
 
 ### Fixed

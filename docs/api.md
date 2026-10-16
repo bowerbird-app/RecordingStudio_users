@@ -66,7 +66,7 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 
 Send writable fields at the JSON root. Do not wrap them in `attributes`.
 
-`users_create` and `users_update` pass those writable fields as `input_contract` on `RecordingStudioApi.register_endpoint`. OpenAPI and MCP 0.17 copy `input_contract` fields into the operation schema. `reject_unknown` is `false`, so extra keys still reach the handler. `email` is required on create. Update does not declare `email` or `password`. Sending `email` on update still returns `422`.
+`users_create` and `users_update` pass those writable fields as `input_contract` on `RecordingStudioApi.register_endpoint`. OpenAPI and MCP 0.17 copy `input_contract` fields into the operation schema. `reject_unknown` is `true`, so extra keys return `422` with `Unknown parameters` naming the field. MCP tool schemas set `additionalProperties` to `false`. `email` is required on create. Update declares `id` (path) and `email` so `PATCH` can still return the explicit email error. Update does not declare `password`. Sending `email` on update returns `422`.
 
 ## Metric tools
 
@@ -86,7 +86,7 @@ Never returned: password digests, password params, reset/confirmation/unlock tok
 
 Writable on create: `email` (required), `password`, `password_confirmation`, `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. Profile fields are applied only by `create_user!` (password present). `create_unconfirmed_user!` takes `email` only.
 
-Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. `email`, `password`, and `password_confirmation` are not accepted; sending `email` returns `422` with a clear error.
+Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. `password` and `password_confirmation` are unknown fields and return `422`. Sending `email` returns `422` with `email cannot be changed through the operations users API`.
 
 ## Create
 
