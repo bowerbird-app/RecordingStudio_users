@@ -211,6 +211,20 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_nil user.unconfirmed_email
     assert_equal "Patricia", RecordingStudioUser.profile_for(user).first_name
 
+    original_updated_at = user.updated_at
+    travel 1.minute do
+      patch "#{OPERATIONS_ROOT}/users/#{user_id}",
+            headers: auth(@editor_token),
+            params: { last_name: "Updated" },
+            as: :json
+      assert_response :success
+      payload_updated_at = response.parsed_body.fetch("updated_at")
+      payload_time = payload_updated_at.is_a?(String) ? Time.iso8601(payload_updated_at) : payload_updated_at
+      assert_operator payload_time, :>, original_updated_at
+      assert_operator user.reload.updated_at, :>, original_updated_at
+      assert_equal "Updated", response.parsed_body.fetch("last_name")
+    end
+
     patch "#{OPERATIONS_ROOT}/users/#{user_id}",
           headers: auth(@editor_token),
           params: { email: "reconfirm-#{SecureRandom.hex(4)}@example.com" },

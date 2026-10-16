@@ -66,6 +66,8 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 
 Send writable fields at the JSON root. Do not wrap them in `attributes`.
 
+`users_create` and `users_update` pass those writable fields as `input_contract` on `RecordingStudioApi.register_endpoint`. OpenAPI and MCP 0.17 copy `input_contract` fields into the operation schema. `reject_unknown` is `false`, so extra keys still reach the handler. `email` is required on create. Update does not declare `email` or `password`. Sending `email` on update still returns `422`.
+
 ## Metric tools
 
 MCP 0.17 lists one tool for each metric that RecordingStudioMetrics discovery exposes on the caller's API. Users does not add a registry entry for this, and `metrics_for("User", api: :operations)` stays empty.

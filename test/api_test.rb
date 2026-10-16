@@ -68,6 +68,7 @@ class ApiTest < Minitest::Test
     assert_includes registration, "handler: Create"
     assert_includes registration, "handler: Show"
     assert_includes registration, "handler: Update"
+    assert_includes registration, "input_contract:"
     assert_includes registration, "api: USERS_API"
     refute_includes registration, "UserCount"
     refute_includes registration, "OPERATIONS_API"
@@ -110,6 +111,45 @@ class ApiTest < Minitest::Test
     update = registration_named(api, :users_update)
     assert_equal :patch, update.fetch(:http_verb)
     assert_equal "users/:id", update.fetch(:path)
+  end
+
+  def test_create_and_update_register_input_contracts_for_writable_fields
+    api = install_test_recording_studio_api!
+
+    RecordingStudioUser::Api.register!
+
+    create = registration_named(api, :users_create).fetch(:input_contract)
+    assert_equal false, create.fetch(:reject_unknown)
+    create_fields = create.fetch(:fields)
+    assert_equal true, create_fields.fetch(:email).fetch(:required)
+    assert_equal :string, create_fields.fetch(:email).fetch(:type)
+    assert_equal :string, create_fields.fetch(:password).fetch(:type)
+    assert_equal :string, create_fields.fetch(:password_confirmation).fetch(:type)
+    assert_equal :string, create_fields.fetch(:first_name).fetch(:type)
+    assert_equal :string, create_fields.fetch(:last_name).fetch(:type)
+    assert_equal :string, create_fields.fetch(:time_zone).fetch(:type)
+    assert_equal :hash, create_fields.fetch(:additional_profile_attributes).fetch(:type)
+    assert_equal :string, create_fields.fetch(:locale).fetch(:type)
+    refute create_fields.fetch(:password)[:required]
+    refute create_fields.fetch(:first_name)[:required]
+
+    update = registration_named(api, :users_update).fetch(:input_contract)
+    assert_equal false, update.fetch(:reject_unknown)
+    update_fields = update.fetch(:fields)
+    assert_equal :string, update_fields.fetch(:first_name).fetch(:type)
+    assert_equal :string, update_fields.fetch(:last_name).fetch(:type)
+    assert_equal :string, update_fields.fetch(:time_zone).fetch(:type)
+    assert_equal :hash, update_fields.fetch(:additional_profile_attributes).fetch(:type)
+    assert_equal :string, update_fields.fetch(:locale).fetch(:type)
+    refute update_fields.key?(:email)
+    refute update_fields.key?(:password)
+    refute update_fields.key?(:password_confirmation)
+    refute update_fields.fetch(:first_name)[:required]
+
+    index = registration_named(api, :users)
+    show = registration_named(api, :users_show)
+    refute index[:input_contract]
+    refute show[:input_contract]
   end
 
   def test_serialize_omits_secrets_and_lists_identity_providers

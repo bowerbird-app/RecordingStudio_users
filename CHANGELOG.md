@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.2] - 2026-10-16
+
+### Fixed
+
+- `PATCH` users (`users_update`) touches the Devise user after `record_profile!`, so serialized `updated_at` moves.
+
+### Changed
+
+- `users_create` and `users_update` pass `input_contract` to `RecordingStudioApi.register_endpoint`. OpenAPI and MCP 0.17 list the real writable fields (`email`, `password`, `password_confirmation`, profile keys, and allowlisted extras such as `locale`). `reject_unknown` is `false`, so extra keys still reach the handler. Update does not declare `email` or `password`.
+
+### Upgrade notes
+
+- Bump to `0.23.2`. No gemspec dependency change and no migration. Hosts already on API 0.11 and MCP 0.17 pick up the tool fields after this gem bump. No change is required in RecordingStudio_api or RecordingStudio_mcp.
+
 ## [0.23.1] - 2026-10-16
 
 ### Changed

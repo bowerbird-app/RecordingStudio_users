@@ -62,6 +62,29 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     end
   end
 
+  test "users_create and users_update tool schemas list writable fields" do
+    surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
+
+    create_names = argument_names(surface, "users_create")
+    %w[email password password_confirmation first_name last_name time_zone additional_profile_attributes locale].each do |name|
+      assert_includes create_names, name
+    end
+    create_email = argument(surface, "users_create", :email)
+    assert_equal "string", create_email.fetch(:type)
+    create_required = surface.tool_definitions.find { |tool| tool.fetch(:name) == "users_create" }.dig(:inputSchema, :required)
+    assert_includes Array(create_required).map(&:to_s), "email"
+    refute_includes Array(create_required).map(&:to_s), "password"
+
+    update_names = argument_names(surface, "users_update")
+    %w[id first_name last_name time_zone additional_profile_attributes locale].each do |name|
+      assert_includes update_names, name
+    end
+    refute_includes update_names, "email"
+    refute_includes update_names, "password"
+    update_required = surface.tool_definitions.find { |tool| tool.fetch(:name) == "users_update" }.dig(:inputSchema, :required)
+    assert_includes Array(update_required).map(&:to_s), "id"
+  end
+
   test "users total runs through api authorize" do
     RecordingStudioUser.create_user!(
       email: "mcp-counted-#{SecureRandom.hex(4)}@example.com",
