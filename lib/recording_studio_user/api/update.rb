@@ -30,6 +30,7 @@ module RecordingStudioUser
         return if assignment.nil?
 
         Directory.record_profile!(user, actor: Access.actor_for(context), **assignment)
+        user.touch
       end
 
       def profile_revision(user, attributes)

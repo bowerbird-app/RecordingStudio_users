@@ -33,7 +33,8 @@ module RecordingStudioUser
 
       def register_create!
         register_users_endpoint!(USERS_CREATE_ENDPOINT, http_verb: :post, path: USERS_PATH, handler: Create,
-                                                        summary: "Create a user", description: create_description)
+                                                        summary: "Create a user", description: create_description,
+                                                        input_contract: Params.create_input_contract)
       end
 
       def register_show!
@@ -43,21 +44,20 @@ module RecordingStudioUser
 
       def register_update!
         register_users_endpoint!(USERS_UPDATE_ENDPOINT, http_verb: :patch, path: USER_PATH, handler: Update,
-                                                        summary: "Update a user", description: update_description)
+                                                        summary: "Update a user", description: update_description,
+                                                        input_contract: Params.update_input_contract)
       end
 
-      def register_users_endpoint!(name, http_verb:, path:, handler:, summary:, description:)
+      def register_users_endpoint!(name, http_verb:, path:, handler:, summary:, description:, input_contract: nil)
         return unless RecordingStudioApi.respond_to?(:register_endpoint)
         return if already_registered?(name)
 
-        RecordingStudioApi.register_endpoint(
-          name,
-          api: USERS_API,
-          http_verb: http_verb,
-          path: path,
-          handler: handler,
-          openapi: { tags: ["Users"], summary: summary, description: description }
-        )
+        options = {
+          api: USERS_API, http_verb: http_verb, path: path, handler: handler,
+          openapi: { tags: ["Users"], summary: summary, description: description },
+          input_contract: input_contract
+        }
+        RecordingStudioApi.register_endpoint(name, **options)
       end
 
       def index_description
