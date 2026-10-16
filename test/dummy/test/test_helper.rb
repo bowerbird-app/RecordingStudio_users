@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 ENV["RAILS_ENV"] ||= "test"
+ENV["RECORDING_STUDIO_MCP_POSTGRES_BUS"] = "0"
 
 require_relative "../config/environment"
 require "rails/test_help"

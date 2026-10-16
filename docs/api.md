@@ -4,6 +4,8 @@ How a host, person, or AI agent manages **users** over **Recording Studio API**.
 
 Users are Devise actors, not tree recordables. The gem registers named endpoints with `RecordingStudioApi.register_endpoint` on the host’s `:operations` API. It does **not** gemspec-depend on `recording_studio_api`. If that constant is missing, Users boots with no JSON user routes.
 
+Users does not pass `User` to `RecordingStudioApi.register_recordable_type_api`. On API 0.11 that call claims the `users` path, so the custom operations endpoints stop running, and the metric executor counts recordings of type `User`. This gem does not create those recordings. `metrics_for("User", api: :operations)` stays empty. The operations users routes stay the custom endpoints.
+
 There is no Users `ApiController`. Create with a password calls `RecordingStudioUser.create_user!`. Create without a password calls `RecordingStudioUser.create_unconfirmed_user!` when `otp_enabled?` is true, and returns `422` `password is required` when it is false. Profile writes on update go through `record_profile!`. List uses `RecordingStudioUser.config.user_class.order(created_at: :desc)`, the same order as the Admin users screen, with `page` / `per_page` offset paging. Access is **Accessible** only.
 
 Do not register these routes on the public API (`/recording_studio_api/api/v1`).
@@ -11,7 +13,7 @@ Do not register these routes on the public API (`/recording_studio_api/api/v1`).
 ## Install (host)
 
 ```ruby
-gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v0.7.0"
+gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v0.11.0"
 ```
 
 Name the Admin API `:operations` (`default_access :read_only`). Users registers collection and member endpoints on that API and passes each `operations:` registration only through `api: :operations`. Hosts that already define `config.api :operations` (for example featured_in) do not add a second named-API block in this gem.
@@ -38,18 +40,18 @@ Accept: application/json
 
 The API client’s `AccessGrant.actor` is the Accessible actor. Grant that client on **AdminRoot**.
 
-| Actor | `GET` list / show | `GET` count | `POST` / `PATCH` |
-| --- | --- | --- | --- |
-| Accessible `:edit` on **AdminRoot** (operations token) | Yes | Yes | Yes |
-| Accessible `:view` on **AdminRoot** (operations token) | Yes | Yes | No — `403` |
-| Operations token without AdminRoot `:view` | `403` | Yes — existing count endpoint | `403` |
-| Workspace-only grant, no AdminRoot | `403` | Rejected with the token | `403` |
-| Public token on operations | Rejected | Rejected | Rejected |
-| Missing token | `401` | `401` | `401` |
+| Actor | `GET` list / show | `POST` / `PATCH` |
+| --- | --- | --- |
+| Accessible `:edit` on **AdminRoot** (operations token) | Yes | Yes |
+| Accessible `:view` on **AdminRoot** (operations token) | Yes | `403` |
+| Operations token without AdminRoot `:view` | `403` | `403` |
+| Workspace-only grant, no AdminRoot | `403` | `403` |
+| Public token on operations | Rejected | Rejected |
+| Missing token | `401` | `401` |
 
 Public `/api/v1/users` is not registered (`404`). There is no `DELETE`.
 
-Users registers GET+POST on `users` and GET+PATCH on `users/:id`. RecordingStudio_api **v0.6.5+** dispatches with `registered_endpoint_registry.match(path:, http_verb:)`, so POST and PATCH reach the right handlers. Pin **v0.7.0** or newer in the host Gemfile (Trashable query helpers via `recording_studio_trashable` `v0.10.0`, `require: false`, plus Metrics `v0.3.1`, `require: false`, for API’s `>= 0.2.2` constraint). Users does not patch API dispatch.
+Users registers GET+POST on `users` and GET+PATCH on `users/:id`. There is no `users/count` route. Read the user total from the `users-total` MCP tool below. RecordingStudio_api **v0.6.5+** dispatches with `registered_endpoint_registry.match(path:, http_verb:)`, so POST and PATCH reach the right handlers. Pin **v0.11.0** in the host Gemfile (Trashable query helpers via `recording_studio_trashable` `v0.10.0`, `require: false`, plus Metrics `v0.3.1`, `require: false`). Users does not patch API dispatch.
 
 ## Routes
 
@@ -63,6 +65,16 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 | `PATCH` | `/recording_studio_api/apis/operations/v1/users/:id` | AdminRoot `:edit` | Profile fields only (`record_profile!`) |
 
 Send writable fields at the JSON root. Do not wrap them in `attributes`.
+
+## Metric tools
+
+MCP 0.17 lists one tool for each metric that RecordingStudioMetrics discovery exposes on the caller's API. Users does not add a registry entry for this, and `metrics_for("User", api: :operations)` stays empty.
+
+An operations client that passes `RecordingStudioUser::Api::Access.can_view?` sees `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, and `users-confirmation`.
+
+`users-signups` and `users-total_over_time` accept `from`, `to`, and `interval` (`day`, `week`, `month`, `year`). MCP also accepts `start` and `start_at` as aliases of `from`, and `end` and `end_at` as aliases of `to`. `users-total`, `users-by_method`, and `users-confirmation` accept none of those arguments. None of these five tools accept `group_by` or `filters`.
+
+A client that fails `can_view?` does not see the tools. `RecordingStudioMcp::Dispatcher.call` for `users-total` with a client that passes the check returns metric `users.total` and a `value` equal to the user count. `RecordingStudioMcp::CatalogMetricTools.execute` of that tool with a client that fails the check raises `RecordingStudioApi::AuthorizationError` with message `Not authorized to run this metric`.
 
 ## Fields
 
