@@ -8,20 +8,20 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     Rails.cache.clear
   end
 
-  test "issue_otp result exposes challenge_id without dropping challenge" do
+  test "request_otp result exposes challenge_id without dropping challenge" do
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("issued"))
     session = {}
 
-    issued = RecordingStudioUser.issue_otp!(user: user, purpose: :registration, session: session)
+    issued = request_registration!(user, session: session)
 
-    assert issued.issued
+    assert issued.issued?
     assert_equal issued.challenge.id, issued.challenge_id
     assert_equal issued.challenge_id, session[:otp_challenge_id]
   end
 
   test "otp_proof returns purpose and hides secrets" do
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("proof"))
-    issued = RecordingStudioUser.issue_otp!(user: user, purpose: :registration)
+    issued = request_registration!(user)
 
     proof = RecordingStudioUser.otp_proof(issued.challenge_id)
 
@@ -33,7 +33,7 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
 
   test "otp_proof is nil when the challenge is missing consumed or revoked" do
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("unusable"))
-    issued = RecordingStudioUser.issue_otp!(user: user, purpose: :registration)
+    issued = request_registration!(user)
     session = { otp_challenge_id: issued.challenge_id, otp_purpose: "registration" }
     code = otp_code(issued.challenge_id)
 
@@ -48,14 +48,14 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     assert_nil RecordingStudioUser.otp_proof(issued.challenge_id)
 
     later = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("revoked"))
-    revoked = RecordingStudioUser.issue_otp!(user: later, purpose: :registration)
+    revoked = request_registration!(later)
     revoked.challenge.revoke!
     assert_nil RecordingStudioUser.otp_proof(revoked.challenge_id)
   end
 
   test "otp_message returns the code body for a live challenge" do
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("message"))
-    issued = RecordingStudioUser.issue_otp!(user: user, purpose: :registration)
+    issued = request_registration!(user)
     message = RecordingStudioUser.otp_message(issued.challenge_id)
 
     assert_match(/\d{6}/, message.fetch(:body))
@@ -68,20 +68,23 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     Rails.cache = ActiveSupport::Cache::MemoryStore.new
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("resend"))
     session = {}
-    first = RecordingStudioUser.issue_otp!(user: user, purpose: :registration, session: session)
+    first = request_registration!(user, session: session)
 
     resent = RecordingStudioUser.resend_otp!(user: user, purpose: :registration, session: session)
 
     refute_equal first.challenge_id, resent.challenge_id
     assert_equal resent.challenge.id, resent.challenge_id
+    assert resent.issued?
     assert_equal "registration", RecordingStudioUser.otp_proof(resent.challenge_id).purpose
     assert_nil RecordingStudioUser.otp_proof(first.challenge_id)
 
-    error = assert_raises(RecordingStudioUser::RateLimited) do
-      RecordingStudioUser.resend_otp!(user: user, purpose: :registration, session: session)
-    end
-    assert_equal :resend, error.scope
-    assert_equal RecordingStudioUser::Services::OtpRateLimiter::RateLimited, error.class
+    digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(user.email)
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:resend:#{digest}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:#{user.email}")
+
+    again = RecordingStudioUser.resend_otp!(user: user, purpose: :registration, session: session)
+    assert again.throttled?
+    assert_nil again.challenge
   ensure
     Rails.cache = previous_cache
   end
@@ -171,7 +174,12 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
       time_zone: "UTC"
     )
     session = {}
-    issued = RecordingStudioUser.issue_otp!(user: user, purpose: :login, session: session)
+    issued = RecordingStudioUser.request_otp!(
+      email: user.email,
+      purpose: :login,
+      request: nil,
+      session: session
+    )
     result = RecordingStudioUser.verify_otp!(
       challenge_id: issued.challenge_id,
       code: otp_code(issued.challenge_id),
@@ -195,7 +203,7 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
 
   test "complete_email_proof raises when the challenge was not verified" do
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("unverified"))
-    issued = RecordingStudioUser.issue_otp!(user: user, purpose: :registration)
+    issued = request_registration!(user)
 
     assert_raises(ArgumentError) do
       RecordingStudioUser.complete_email_proof!(
@@ -234,9 +242,23 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     RecordingStudioUser.otp_message(challenge_id).fetch(:body)[/\d{6}/]
   end
 
+  def request_registration!(user, session: nil)
+    RecordingStudioUser.request_otp!(
+      email: user.email,
+      purpose: :registration,
+      request: nil,
+      session: session
+    )
+  end
+
   def verify_registration!(user)
     session = {}
-    issued = RecordingStudioUser.issue_otp!(user: user, purpose: :registration, session: session)
+    issued = RecordingStudioUser::Services::IssueOtp.call(
+      user: user,
+      purpose: :registration,
+      session: session,
+      checked_keys: []
+    )
     RecordingStudioUser.verify_otp!(
       challenge_id: issued.challenge_id,
       code: otp_code(issued.challenge_id),

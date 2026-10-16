@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
+require_relative "issue_otp/result"
+
 module RecordingStudioUser
   module Services
     class IssueOtp
-      Result = Struct.new(:challenge, :issued, keyword_init: true) { def challenge_id = challenge&.id }
-
       NOTIFICATION_TYPES = { "registration" => :registration_otp, "login" => :login_otp }.freeze
       TITLE_KEYS = {
         "registration" => "recording_studio_user.otp.verify_your_email",
@@ -15,56 +15,66 @@ module RecordingStudioUser
         new(...).call
       end
 
-      def initialize(user:, purpose:, request: nil, session: nil, channels: nil, rate_limit_scope: :issue)
+      # +checked_keys+ are email, IP, and session buckets that the caller
+      # already reserved. When they are passed, this service does not reserve
+      # them again.
+      def initialize(user:, purpose:, request: nil, session: nil, channels: nil, rate_limit_scope: :issue,
+                     checked_keys: nil)
         @user = user
         @purpose = purpose.to_s
         @request = request
         @session = session
         @channels = channels
         @rate_limit_scope = rate_limit_scope.to_sym
+        @checked_keys = checked_keys
       end
 
       def call
         OtpSetup.validate_schema!
-        validate_user!
-        apply_rate_limits!
+        raise ArgumentError, "unknown purpose" unless OtpChallenge::PURPOSES.include?(@purpose)
+        return Result.suppressed unless user_can_receive_code?
+        return Result.throttled unless reserve_rate_limit!
 
         challenge = issue_challenge!
         store_session!(challenge)
         deliver!(challenge)
         instrument!(:issued, challenge)
-
-        Result.new(challenge: challenge, issued: true)
+        Result.issued(challenge)
       end
 
       private
+
+      def user_can_receive_code?
+        return false if @user.blank?
+        return !@user.confirmed? if @purpose == "registration"
+
+        @user.confirmed? && @user.active_for_authentication?
+      end
+
+      def reserve_rate_limit!
+        return true if @checked_keys
+
+        OtpRateLimiter.allow_requests!(scope: @rate_limit_scope, keys: limiter_keys)
+        true
+      rescue OtpRateLimiter::RateLimited
+        false
+      end
+
+      def limiter_keys
+        [OtpRateLimiter.email_key(normalized_email), @request&.remote_ip, session_id].compact_blank
+      end
+
+      def session_id
+        return if @session.blank? || @session.is_a?(Hash) || !@session.respond_to?(:id)
+
+        @session.id
+      end
 
       def issue_challenge!
         ActiveRecord::Base.transaction do
           revoke_existing!
           OtpChallenge.issue_for!(user: @user, purpose: @purpose)
         end
-      end
-
-      def validate_user!
-        raise ArgumentError, "unknown purpose" unless OtpChallenge::PURPOSES.include?(@purpose)
-
-        @purpose == "registration" ? validate_registration_user! : validate_login_user!
-      end
-
-      def validate_registration_user!
-        raise ArgumentError, "registration OTP requires an unconfirmed user" if @user.confirmed?
-      end
-
-      def validate_login_user!
-        raise ArgumentError, "login OTP requires a confirmed user" unless @user.confirmed?
-        raise ArgumentError, "user is not active for authentication" unless @user.active_for_authentication?
-      end
-
-      def apply_rate_limits!
-        session_key = @session.id if @session.respond_to?(:id) && !@session.is_a?(Hash)
-        keys = [normalized_email, @request&.remote_ip, session_key].compact_blank
-        keys.each { |key| OtpRateLimiter.allow_request!(scope: @rate_limit_scope, key: key) }
       end
 
       def revoke_existing!
@@ -79,44 +89,8 @@ module RecordingStudioUser
         @session[:otp_user_id] = @user.id
       end
 
-      def deliver!(challenge)
-        RecordingStudioNotifications.notify(**notification_attributes(challenge))
-        instrument!(:delivery_queued, challenge)
-      end
-
-      def notification_attributes(challenge)
-        {
-          notification_type: NOTIFICATION_TYPES.fetch(@purpose),
-          recipient: @user,
-          title: I18n.t(TITLE_KEYS.fetch(@purpose)),
-          body: nil,
-          url: notification_url(challenge),
-          metadata: { "otp_challenge_id" => challenge.id },
-          channels: requested_channels,
-          idempotency_key: "otp/#{challenge.id}"
-        }
-      end
-
-      def requested_channels
-        Array(@channels || default_channels).map(&:to_sym)
-      end
-
-      def notification_url(challenge)
-        return unless @purpose == "login"
-
-        "#{RecordingStudioUser.config.mount_path}/otp_codes/#{challenge.id}"
-      end
-
-      def default_channels
-        if @purpose == "registration"
-          RecordingStudioUser.config.otp_registration_channels
-        else
-          RecordingStudioUser.config.otp_login_channels
-        end
-      end
-
       def normalized_email
-        @user.email.to_s.strip.downcase
+        OtpRateLimiter.normalize_email(@user.email)
       end
 
       def instrument!(event, challenge)

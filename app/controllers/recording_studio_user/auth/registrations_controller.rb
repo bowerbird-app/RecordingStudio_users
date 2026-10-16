@@ -50,7 +50,7 @@ module RecordingStudioUser
       end
 
       def verify
-        redirect_to host_new_user_registration_path unless session[:otp_challenge_id]
+        # Same page whether or not a code was sent.
       end
 
       def submit_verify
@@ -62,10 +62,13 @@ module RecordingStudioUser
       end
 
       def resend
-        issue_registration_resend!
+        result = issue_registration_resend!
+        if result&.throttled?
+          redirect_to otp_registration_verify_path, alert: I18n.t("recording_studio_user.auth.wait_for_code")
+          return
+        end
+
         redirect_to otp_registration_verify_path, notice: I18n.t("recording_studio_user.auth.fresh_code")
-      rescue Services::OtpRateLimiter::RateLimited
-        redirect_to otp_registration_verify_path, alert: I18n.t("recording_studio_user.auth.wait_for_code")
       end
 
       private

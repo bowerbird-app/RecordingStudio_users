@@ -108,6 +108,21 @@ class MigrationsGeneratorTest < Minitest::Test
     assert_includes template, "code_digest"
     assert_includes template, "delivery_code_ciphertext"
     assert_includes template, "expires_at"
+    assert_includes template, "index_rs_user_otp_challenges_open_purpose"
+    assert_includes template, "consumed_at IS NULL AND revoked_at IS NULL"
+  end
+
+  def test_open_otp_challenge_index_migration_is_idempotent
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/add_open_otp_challenge_index.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "index_exists?"
+    assert_includes template, "index_rs_user_otp_challenges_open_purpose"
+    assert_includes template, "consumed_at IS NULL AND revoked_at IS NULL"
   end
 
   def test_blank_profile_surname_and_time_zone_migration_template

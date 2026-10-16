@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative "unconfirmed_user"
+
 module RecordingStudioUser
   # Public write and lookup helpers for the shared People root and Profile snapshots.
   module Directory
+    extend UnconfirmedUser
+
     PROFILE_ATTRIBUTE_KEYS = %i[first_name last_name time_zone additional_profile_attributes].freeze
 
     module_function
@@ -81,18 +85,6 @@ module RecordingStudioUser
       return unless user.respond_to?(:skip_confirmation!)
 
       user.skip_confirmation!
-    end
-
-    def create_unconfirmed_user!(email:)
-      raise ArgumentError, "OTP is not enabled" unless RecordingStudioUser.config.otp_enabled?
-
-      user = RecordingStudioUser.config.user_class.new(
-        email: email,
-        registered_with: "otp"
-      )
-      user.skip_confirmation_notification! if user.respond_to?(:skip_confirmation_notification!)
-      user.save!
-      user
     end
 
     def write_profile_recording(user, actor, assignment)

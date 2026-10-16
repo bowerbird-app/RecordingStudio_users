@@ -56,8 +56,14 @@ New templates:
 
 1. **`add_registered_with_to_users`** — adds `registered_with` (`password` or `otp`) with a check constraint. Backfills existing rows to `password`. If `authentication_method` is still present, it is renamed instead.
 2. **`add_devise_confirmable_to_users`** — adds Devise confirmable columns. Backfills `confirmed_at` for existing users so password accounts stay signed-in.
-3. **`create_recording_studio_user_otp_challenges`** — stores hashed OTP codes, expiry, attempts, and encrypted delivery ciphertext.
-4. **`allow_blank_profile_surname_and_time_zone`** — lets Profile `last_name` and `time_zone` be null so a one-word name can be stored without inventing a surname or time zone.
+3. **`create_recording_studio_user_otp_challenges`** — stores hashed OTP codes, expiry, attempts, and encrypted delivery ciphertext. Open challenges (not consumed, not revoked) also have a partial unique index on `(user_id, purpose)`.
+4. **`add_open_otp_challenge_index`** — adds that partial unique index when the challenges table already exists. It does nothing if the index is already there.
+
+The host users table needs a case-insensitive unique index on `email`. A unique index on `LOWER(email)` is the usual shape. `create_unconfirmed_user!` rescues a unique violation and returns the row that won.
+
+OTP rate limits read and increment `Rails.cache`. Use a shared, atomic store (Redis or Memcached). A memory store or a null store cannot enforce the limits across processes, and the app warns at boot when one-time codes are on and the cache is one of those.
+
+5. **`allow_blank_profile_surname_and_time_zone`** — lets Profile `last_name` and `time_zone` be null so a one-word name can be stored without inventing a surname or time zone.
 
 Install and migrate the notifications gems before enabling OTP.
 

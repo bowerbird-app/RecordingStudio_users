@@ -177,4 +177,88 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
       assert_equal true, Rails.cache.read(storage_key)
     end
   end
+
+  test "email key is an hmac of the normalized address and omits the address" do
+    limiter = RecordingStudioUser::Services::OtpRateLimiter
+    folded = limiter.email_key("  Person@Example.com ")
+    plain = limiter.email_key("person@example.com")
+
+    assert_equal plain, folded
+    assert_match(/\A[0-9a-f]{64}\z/, plain)
+    refute_includes plain, "person@"
+    refute_equal plain, limiter.email_key("other@example.com")
+  end
+
+  test "a block on one key does not consume the others" do
+    limiter = RecordingStudioUser::Services::OtpRateLimiter
+    email_key = limiter.email_key("person@example.com")
+    ip = "203.0.113.9"
+    session_id = "session-9"
+    limiter.allow_request!(scope: :issue, key: ip)
+
+    assert_raises(RecordingStudioUser::RateLimited) do
+      limiter.allow_requests!(scope: :issue, keys: [ email_key, ip, session_id ])
+    end
+
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{session_id}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{ip}")
+  end
+
+  test "allow_requests consumes every key only when none is blocked" do
+    limiter = RecordingStudioUser::Services::OtpRateLimiter
+    email_key = limiter.email_key("open@example.com")
+    ip = "203.0.113.10"
+    session_id = "session-10"
+
+    limiter.allow_requests!(scope: :issue, keys: [ email_key, ip, session_id ])
+
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{ip}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{session_id}")
+  end
+
+  test "warns when OTP is on and the cache is a memory or null store" do
+    previous_logger = Rails.logger
+    io = StringIO.new
+    Rails.logger = Logger.new(io)
+
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    assert_match(/shared, atomic cache store/, io.string)
+    assert_match(/MemoryStore/, io.string)
+
+    io.truncate(0)
+    io.rewind
+    Rails.cache = ActiveSupport::Cache::NullStore.new
+    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    assert_match(/NullStore/, io.string)
+
+    io.truncate(0)
+    io.rewind
+    Rails.cache = quiet_cache_store
+    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    assert_empty io.string
+
+    RecordingStudioUser.config.otp_enabled = false
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    assert_empty io.string
+  ensure
+    RecordingStudioUser.config.otp_enabled = true
+    Rails.logger = previous_logger
+  end
+
+  def quiet_cache_store
+    store_class = Class.new(ActiveSupport::Cache::Store) do
+      def read(*)
+        nil
+      end
+
+      def write(*)
+        nil
+      end
+    end
+    store_class.new
+  end
 end

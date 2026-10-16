@@ -18,6 +18,7 @@ require "recording_studio_user/otp_notifications"
 require "recording_studio_user/otp_delivery_payload"
 require "recording_studio_user/services/otp_rate_limiter"
 require "recording_studio_user/services/issue_otp"
+require "recording_studio_user/services/request_otp"
 require "recording_studio_user/services/verify_otp"
 require "recording_studio_user/services/complete_registration"
 require "recording_studio_user/services/complete_email_proof"
@@ -95,8 +96,8 @@ module RecordingStudioUser
       Directory.create_unconfirmed_user!(email: email)
     end
 
-    def issue_otp!(...)
-      Services::IssueOtp.call(...)
+    def request_otp!(email:, purpose:, request:, session:)
+      Services::RequestOtp.call(email: email, purpose: purpose, request: request, session: session)
     end
 
     def verify_otp!(...)
