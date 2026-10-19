@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.1] - 2026-10-19
+
+### Added
+
+- Users Admin section shows a `widgets.otp_challenges.failed_over_time` chart of locked one-time codes. It reads `otp_challenges.failed_over_time` through `RecordingStudioMetrics::Admin.chart_series` and links to the Users screen.
+
+### Upgrade notes
+
+- Bump to `0.24.1`. No gemspec dependency change and no migration. Hosts that already mount the Users Admin section pick up the chart after this gem bump.
+
 ## [0.24.0] - 2026-10-16
 
 ### Added

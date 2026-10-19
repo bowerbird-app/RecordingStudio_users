@@ -427,7 +427,7 @@ Show puts **Edit** in the PageTitle actions slot (not in the card) and one Flatp
 
 ## Users administration
 
-The engine still registers a reusable `users` section, a site-level `recording_studio_users` screen, and a compact total-users widget with `RecordingStudioAdmin`. The read-only screen lists name, email, and created-at. The gem does not add user editing, deletion, impersonation, password operations, or admin/role columns.
+The engine still registers a reusable `users` section, a site-level `recording_studio_users` screen, a compact total-users widget, and a locked-codes chart widget (`widgets.otp_challenges.failed_over_time`) with `RecordingStudioAdmin`. The chart reads `otp_challenges.failed_over_time` through `RecordingStudioMetrics::Admin.chart_series` and links to the Users screen. The read-only screen lists name, email, and created-at. The gem does not add user editing, deletion, impersonation, password operations, or admin/role columns.
 
 When Recording Studio API is present, the engine registers users endpoints on the host's named `:operations` API. Hosts that already define `config.api :operations` (for example featured_in) do not need a second named-API block in this gem. The gemspec does not depend on `recording_studio_api`. There is no `users/count` endpoint; read the user total from the `users.total` metric (see below).
 

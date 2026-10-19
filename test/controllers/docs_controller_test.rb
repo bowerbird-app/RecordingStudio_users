@@ -149,6 +149,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "RecordingStudioUser.configure"
     assert_includes response.body, "recording_studio_users.profile_path"
     assert_includes response.body, "widgets.users.total"
+    assert_includes response.body, "widgets.otp_challenges.failed_over_time"
     assert_includes response.body, "RecordingStudioAccessible"
     refute_includes response.body, "recordingstudio_addon.example_method"
   end
