@@ -219,8 +219,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   end
 
   test "locked-codes series reads RecordingStudioMetrics for the widget window" do
-    travel_to Time.utc(2026, 3, 10) { lock_out_otp!("login") }
-    travel_to Time.utc(2026, 4, 10) { lock_out_otp!("registration") }
+    insert_locked_otp!("login", revoked_at: Time.utc(2026, 3, 10))
+    insert_locked_otp!("registration", revoked_at: Time.utc(2026, 4, 10))
 
     context = Struct.new(:current_actor) do
       def widget_time_range(*)
@@ -283,17 +283,18 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   end
 
   def lock_out_otp!(purpose)
+    insert_locked_otp!(purpose, revoked_at: Time.current)
+  end
+
+  def insert_locked_otp!(purpose, revoked_at:)
     user = create_user("otp-lock-#{SecureRandom.hex(4)}@example.com")
-    challenge = RecordingStudioUser::OtpChallenge.issue_for!(user: user, purpose: purpose)
-    RecordingStudioUser.config.otp_max_attempts.times do
-      code = challenge.verify_code!("000000") ? "999999" : "000000"
-      RecordingStudioUser::Services::VerifyOtp.call(
-        challenge_id: challenge.id,
-        code: code,
-        purpose: purpose,
-        session: { otp_challenge_id: challenge.id, otp_purpose: purpose }
-      )
-    end
-    assert challenge.reload.revoked?
+    RecordingStudioUser::OtpChallenge.create!(
+      user: user,
+      purpose: purpose,
+      code_digest: RecordingStudioUser::OtpChallenge.digest_code("000000"),
+      expires_at: revoked_at + 10.minutes,
+      attempts_count: RecordingStudioUser.config.otp_max_attempts,
+      revoked_at: revoked_at
+    )
   end
 end
