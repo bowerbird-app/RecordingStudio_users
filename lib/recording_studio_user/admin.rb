@@ -92,20 +92,29 @@ module RecordingStudioUser
       end
 
       def failed_otp_chart_series(context)
-        range = context.widget_time_range
-        interval = context.widget_group_by(default: :day)
-        params = { site_authorized: true, scope: :site }
-        params[:interval] = interval if FAILED_OTP_INTERVALS.include?(interval)
-        if range.respond_to?(:begin) && range.respond_to?(:end) && range.begin && range.end
-          params[:start_at] = range.begin
-          params[:end_at] = range.end
-        end
-
         RecordingStudioMetrics::Admin.chart_series(
           FAILED_OTP_METRIC,
           admin_context: context,
-          **params
+          **failed_otp_metric_params(context)
         )
+      end
+
+      def failed_otp_metric_params(context)
+        range = context.widget_time_range
+        interval = context.widget_group_by(default: :day)
+        {
+          site_authorized: true,
+          scope: :site,
+          interval: (interval if FAILED_OTP_INTERVALS.include?(interval)),
+          start_at: range_edge(range, :begin),
+          end_at: range_edge(range, :end)
+        }.compact
+      end
+
+      def range_edge(range, edge)
+        return unless range.respond_to?(:begin) && range.respond_to?(:end)
+
+        range.public_send(edge)
       end
     end
   end
