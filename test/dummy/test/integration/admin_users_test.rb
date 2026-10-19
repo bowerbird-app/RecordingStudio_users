@@ -16,7 +16,6 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_equal RecordingStudioUser::Admin::UsersSection, RecordingStudioAdmin.section_for("users")
     assert_equal RecordingStudioUser::Admin::UsersScreen, RecordingStudioAdmin.screen_for("recording_studio_users")
     assert RecordingStudioAdmin.widget_for("widgets.users.total")
-    assert RecordingStudioAdmin.widget_for("widgets.otp_challenges.failed_over_time")
     assert_equal :site, RecordingStudioUser::Admin::UsersScreen.blast_radius
     assert_equal :site, RecordingStudioUser::Admin::UsersSection.blast_radius
   end
@@ -59,8 +58,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       "/admin/screens/recording_studio_users/chart",
       "/admin/screens/recording_studio_users/table",
       "/admin/screens/recording_studio_users/table_count",
-      "/admin/screens/recording_studio_users/widgets/widgets.users.total",
-      "/admin/sections/users/widgets/widgets.otp_challenges.failed_over_time"
+      "/admin/screens/recording_studio_users/widgets/widgets.users.total"
     ].each do |path|
       get path
       assert_response :forbidden, path
@@ -95,8 +93,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
       "/admin/screens/recording_studio_users/table_count" => "/admin/screens/recording_studio_users",
       "/admin/screens/recording_studio_users/widgets/widgets.users.total" =>
         "/admin/screens/recording_studio_users",
-      "/admin/sections/users/widgets/widgets.users.total" => "/admin/sections/users",
-      "/admin/sections/users/widgets/widgets.otp_challenges.failed_over_time" => "/admin/sections/users"
+      "/admin/sections/users/widgets/widgets.users.total" => "/admin/sections/users"
     }.each do |frame_path, owning_page|
       get frame_path, headers: { "Sec-Fetch-Dest" => "document" }
 
@@ -196,50 +193,6 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_operator page_two_rows, :<=, 50
   end
 
-  test "users section renders the locked-codes chart from the OTP metric" do
-    travel_to Time.utc(2026, 10, 10, 12, 0, 0) do
-      lock_out_otp!("login")
-      lock_out_otp!("registration")
-    end
-
-    sign_in @admin
-    bootstrap_owner_access!(@admin, @admin_recording)
-
-    get "/admin/sections/users"
-
-    assert_response :success
-    assert_includes response.body, "widgets.otp_challenges.failed_over_time"
-
-    get "/admin/sections/users/widgets/widgets.otp_challenges.failed_over_time"
-
-    assert_response :success
-    assert_includes response.body, "Locked codes"
-    assert_includes response.body, "How many one-time codes locked after too many wrong tries"
-    assert_includes response.body, "/admin/screens/recording_studio_users"
-  end
-
-  test "locked-codes series reads RecordingStudioMetrics for the widget window" do
-    insert_locked_otp!("login", revoked_at: Time.utc(2026, 3, 10))
-    insert_locked_otp!("registration", revoked_at: Time.utc(2026, 4, 10))
-
-    context = Struct.new(:current_actor) do
-      def widget_time_range(*)
-        Time.utc(2026, 3, 1)...Time.utc(2026, 5, 1)
-      end
-
-      def widget_group_by(default: :day)
-        :month
-      end
-    end.new(@admin)
-
-    series = RecordingStudioUser::Admin.failed_otp_chart_series(context)
-    points = series.first.fetch(:data).to_h { |date, value| [date, value] }
-
-    assert_equal "Failed OTP challenges over time", series.first.fetch(:name)
-    assert_equal 1, points["2026-03-01"]
-    assert_equal 1, points["2026-04-01"]
-  end
-
   test "users administration goes through the Admin root and Accessible, not user.admin?" do
     admin_controller = File.read(
       RecordingStudioUser::Engine.root.join("app/controllers/recording_studio_user/admin/users_controller.rb")
@@ -280,21 +233,5 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
     user.save!
     user
-  end
-
-  def lock_out_otp!(purpose)
-    insert_locked_otp!(purpose, revoked_at: Time.current)
-  end
-
-  def insert_locked_otp!(purpose, revoked_at:)
-    user = create_user("otp-lock-#{SecureRandom.hex(4)}@example.com")
-    RecordingStudioUser::OtpChallenge.create!(
-      user: user,
-      purpose: purpose,
-      code_digest: RecordingStudioUser::OtpChallenge.digest_code("000000"),
-      expires_at: revoked_at + 10.minutes,
-      attempts_count: RecordingStudioUser.config.otp_max_attempts,
-      revoked_at: revoked_at
-    )
   end
 end
