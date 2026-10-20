@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.1] - 2026-10-20
+
+### Changed
+
+- Runtime dependency `recording_studio_metrics` is now `>= 0.3, < 0.6`. The
+  development Gemfile pins GitHub tag `v0.5.0`. Dummy stays on `v0.3.1` because
+  MCP `v0.17.0` still requires Metrics `< 0.4`.
+
+### Upgrade notes
+
+- Bump to `0.24.1`. No migration. Pin Metrics `v0.5.0` when every other
+  Recording Studio gem in the bundle allows Metrics `< 0.6`. Hosts may stay on
+  Metrics `0.3.x`. Dummy MCP `v0.17.0` cannot take Metrics `0.5.0` yet.
+
 ## [0.24.0] - 2026-10-16
 
 ### Added
