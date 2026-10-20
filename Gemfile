@@ -18,7 +18,7 @@ gem "recording_studio_cache",
     tag: "v0.5.0"
 gem "recording_studio_metrics",
     github: "bowerbird-app/RecordingStudio_metrics",
-    tag: "v0.3.1",
+    tag: "v0.5.0",
     require: false
 gem "recording_studio_trashable",
     github: "bowerbird-app/RecordingStudio_trashable",
