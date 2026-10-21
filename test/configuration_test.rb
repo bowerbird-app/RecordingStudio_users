@@ -23,6 +23,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal :square, @configuration.auth_logo
     assert_predicate @configuration, :auth_logo_square?
     refute_predicate @configuration, :auth_logo_wide?
+    assert_nil @configuration.auth_body_start_partial
     assert_empty @configuration.omniauth_providers
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?
@@ -119,6 +120,16 @@ class ConfigurationTest < Minitest::Test
     assert_equal %i[email], @configuration.otp_registration_channels
     assert_equal %i[email push], @configuration.otp_login_channels
     assert_equal 7.days, @configuration.unconfirmed_user_retention
+  end
+
+  def test_auth_body_start_partial_defaults_to_nil_and_strips_blank
+    assert_nil @configuration.auth_body_start_partial
+
+    @configuration.auth_body_start_partial = " shared/views_tracking "
+    assert_equal "shared/views_tracking", @configuration.auth_body_start_partial
+
+    @configuration.auth_body_start_partial = "  "
+    assert_nil @configuration.auth_body_start_partial
   end
 
   def test_auth_logo_defaults_to_square

@@ -28,6 +28,7 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes initializer, "config.login_title"
     assert_includes initializer, "primary_login_type"
     assert_includes initializer, "config.auth_logo"
+    assert_includes initializer, "config.auth_body_start_partial"
     assert_includes initializer, "omniauth_providers"
     assert_includes initializer, "omniauth_create_account"
     assert_includes initializer, "recording_studio_user/omniauth_callbacks"

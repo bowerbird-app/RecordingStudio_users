@@ -23,6 +23,11 @@ RecordingStudioUser.configure do |config|
   # Site mark on unsigned auth screens. :square (default) or :wide.
   # Blank wide omits the mark. Do not copy _shell to switch shapes.
   # config.auth_logo = :square
+  # Markup at the start of every unsigned auth <body>. Leave unset (default)
+  # when you do not need it. A view that already filled
+  # content_for :recording_studio_user_auth_body_start wins, so the partial
+  # is not rendered twice.
+  # config.auth_body_start_partial = "shared/views_tracking"
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
   # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in

@@ -104,6 +104,15 @@ class AuthLayoutBodyStartTest < ActionDispatch::IntegrationTest
   include HostViewOverrideHelpers
 
   HOOK_VIEW = "recording_studio_user/auth/sessions/new.html.erb"
+  AUTH_PAGES = %i[
+    new_user_session_path
+    new_user_registration_path
+    new_user_password_path
+  ].freeze
+
+  teardown do
+    RecordingStudioUser.config.auth_body_start_partial = nil
+  end
 
   test "unused auth body start hook adds no extra markup in body" do
     get new_user_session_path
@@ -112,7 +121,9 @@ class AuthLayoutBodyStartTest < ActionDispatch::IntegrationTest
     body = Nokogiri::HTML(response.body).at("body")
     assert_equal ["main"], body.element_children.map(&:name)
     assert_select "#auth-body-start-hook", count: 0
+    assert_select "#auth-body-start-partial", count: 0
     refute_includes response.body, "auth-body-start-hook"
+    refute_includes response.body, "configured partial"
   end
 
   test "auth body start hook renders inside body before main" do
@@ -136,6 +147,44 @@ class AuthLayoutBodyStartTest < ActionDispatch::IntegrationTest
     assert_equal "sign-in tracking", children.first.text
     assert_equal "main", children[1].name
     assert_includes children[1].text, "Welcome back"
+  ensure
+    remove_host_override!(HOOK_VIEW)
+  end
+
+  test "configured auth body start partial renders once on auth pages" do
+    RecordingStudioUser.config.auth_body_start_partial = "shared/auth_body_start"
+
+    AUTH_PAGES.each do |helper|
+      get public_send(helper)
+
+      assert_response :success, helper.to_s
+      assert_select "#auth-body-start-partial", text: "configured partial", count: 1
+      body = Nokogiri::HTML(response.body).at("body")
+      children = body.element_children
+      assert_equal "auth-body-start-partial", children.first["id"]
+      assert_equal "main", children[1].name
+    end
+  end
+
+  test "content_for auth body start wins over the configured partial" do
+    RecordingStudioUser.config.auth_body_start_partial = "shared/auth_body_start"
+    gem_view = RecordingStudioUser::Engine.root.join("app/views", HOOK_VIEW)
+    destination = HOST_VIEWS.join(HOOK_VIEW)
+    FileUtils.mkdir_p(destination.dirname)
+    File.write(destination, <<~ERB)
+      <% content_for :recording_studio_user_auth_body_start do %>
+        <div id="auth-body-start-hook">sign-in tracking</div>
+      <% end %>
+      #{File.read(gem_view)}
+    ERB
+    clear_view_resolver_cache!
+
+    get new_user_session_path
+
+    assert_response :success
+    assert_select "#auth-body-start-hook", text: "sign-in tracking", count: 1
+    assert_select "#auth-body-start-partial", count: 0
+    refute_includes response.body, "configured partial"
   ensure
     remove_host_override!(HOOK_VIEW)
   end
