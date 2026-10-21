@@ -15,7 +15,11 @@
   </head>
 
   <body class="bg-[var(--surface-page-background-color)] text-[var(--surface-content-color)]">
-    <%= yield :recording_studio_user_auth_body_start %>
+    <% if content_for?(:recording_studio_user_auth_body_start) %>
+      <%= yield :recording_studio_user_auth_body_start %>
+    <% elsif RecordingStudioUser.config.auth_body_start_partial.present? %>
+      <%= render RecordingStudioUser.config.auth_body_start_partial %>
+    <% end %>
     <main class="flex min-h-dvh items-center justify-center p-6">
       <%= yield %>
     </main>

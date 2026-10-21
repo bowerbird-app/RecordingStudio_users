@@ -45,7 +45,7 @@ module RecordingStudioUser
     }.freeze
 
     attr_accessor :user_class_name, :layout, :auth_site_root_resolver
-    attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]), :after_registration_hooks)
+    attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]), :after_registration_hooks, :auth_body_start_partial)
 
     BOOLEAN_SETTINGS.each do |setting|
       define_method("#{setting}=") do |value|
@@ -77,6 +77,7 @@ module RecordingStudioUser
     def initialize
       DEFAULTS.each { |setting, value| instance_variable_set("@#{setting}", value) }
       @login_title = nil
+      @auth_body_start_partial = nil
       @omniauth_providers = {}
       @auth_site_root_resolver = nil
       @after_registration_hooks = []
@@ -172,6 +173,10 @@ module RecordingStudioUser
 
     def login_title=(value)
       @login_title = value.to_s.strip.presence
+    end
+
+    def auth_body_start_partial=(value)
+      @auth_body_start_partial = value&.to_s&.strip.presence
     end
 
     def omniauth_create_account=(value)

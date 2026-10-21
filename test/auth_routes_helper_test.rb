@@ -121,6 +121,8 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_equal 1, layout.scan("min-h-dvh").length
     assert_includes layout, 'stylesheet_link_tag "flat_pack/application"'
     assert_includes layout, "yield :recording_studio_user_auth_body_start"
+    assert_includes layout, "content_for?(:recording_studio_user_auth_body_start)"
+    assert_includes layout, "auth_body_start_partial"
     body_open = layout.index("<body")
     hook = layout.index("yield :recording_studio_user_auth_body_start")
     main = layout.index("<main")

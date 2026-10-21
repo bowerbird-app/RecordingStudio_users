@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.1] - 2026-10-21
+
+### Added
+
+- `config.auth_body_start_partial` (default `nil`). When set, the auth layout
+  renders that host partial at the start of `<body>` on every unsigned auth
+  page, unless a view already filled
+  `:recording_studio_user_auth_body_start` with `content_for`.
+
+### Upgrade notes
+
+- Bump to `0.25.1`. No migration. Leave the option unset and auth HTML stays
+  as in `0.25.0`. To inject the same markup on sign in, sign up, and the other
+  auth screens without copying the layout or overriding `auth_site_logo`:
+
+```ruby
+config.auth_body_start_partial = "shared/views_tracking"
+```
+
+- A filled `content_for :recording_studio_user_auth_body_start` still wins, so
+  the partial is not rendered twice.
+
 ## [0.25.0] - 2026-10-21
 
 ### Added
@@ -1043,7 +1065,9 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.1...HEAD
+[0.25.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.0...v0.25.1
+[0.25.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.24.1...v0.25.0
 [0.20.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.18.3...v0.19.0
 [0.17.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.16.1...v0.17.0
