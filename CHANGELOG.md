@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `:recording_studio_user_auth_body_start` at the top of `<body>`. Hosts can
   inject markup there without copying the layout.
 
+### Changed
+
+- `.ruby-version` (root and dummy) is `3.3.12` so GitHub `ubuntu-latest`
+  (`ubuntu-26.04`) can still install Ruby for lint and security jobs.
+
 ### Upgrade notes
 
 - Bump to `0.25.0`. No migration. Unused, the slot is empty and the auth HTML
