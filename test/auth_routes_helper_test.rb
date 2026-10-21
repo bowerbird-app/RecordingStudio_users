@@ -120,5 +120,10 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes layout, "items-center"
     assert_equal 1, layout.scan("min-h-dvh").length
     assert_includes layout, 'stylesheet_link_tag "flat_pack/application"'
+    assert_includes layout, "yield :recording_studio_user_auth_body_start"
+    assert_match(
+      %r{<body[^>]*>\s*<%= yield :recording_studio_user_auth_body_start %>}m,
+      layout
+    )
   end
 end

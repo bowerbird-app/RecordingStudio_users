@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-10-21
+
+### Added
+
+- Auth layout `layouts/recording_studio_user/auth` yields
+  `:recording_studio_user_auth_body_start` at the top of `<body>`. Hosts can
+  inject markup there without copying the layout.
+
+### Upgrade notes
+
+- Bump to `0.25.0`. No migration. Unused, the slot is empty and the auth HTML
+  is unchanged. To inject at the start of the auth body from a view that layout
+  wraps (sign-in, for example):
+
+```erb
+<% content_for :recording_studio_user_auth_body_start do %>
+  <%= recording_studio_track_views %>
+<% end %>
+```
+
+- Do not copy `app/views/layouts/recording_studio_user/auth.html.erb` only to
+  add that markup. The helper in the example is a host helper (for example from
+  RecordingStudio_views). This gem does not depend on it.
+
 ## [0.24.1] - 2026-10-20
 
 ### Changed
