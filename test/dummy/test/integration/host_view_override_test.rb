@@ -99,3 +99,44 @@ class HostViewOverrideAbsentTest < ActionDispatch::IntegrationTest
     assert_select "#host-registration-new-override", count: 0
   end
 end
+
+class AuthLayoutBodyStartTest < ActionDispatch::IntegrationTest
+  include HostViewOverrideHelpers
+
+  HOOK_VIEW = "recording_studio_user/auth/sessions/new.html.erb"
+
+  test "unused auth body start hook adds no extra markup in body" do
+    get new_user_session_path
+
+    assert_response :success
+    body = Nokogiri::HTML(response.body).at("body")
+    assert_equal ["main"], body.element_children.map(&:name)
+    assert_select "#auth-body-start-hook", count: 0
+    refute_includes response.body, "auth-body-start-hook"
+  end
+
+  test "auth body start hook renders inside body before main" do
+    gem_view = RecordingStudioUser::Engine.root.join("app/views", HOOK_VIEW)
+    destination = HOST_VIEWS.join(HOOK_VIEW)
+    FileUtils.mkdir_p(destination.dirname)
+    File.write(destination, <<~ERB)
+      <% content_for :recording_studio_user_auth_body_start do %>
+        <div id="auth-body-start-hook">sign-in tracking</div>
+      <% end %>
+      #{File.read(gem_view)}
+    ERB
+    clear_view_resolver_cache!
+
+    get new_user_session_path
+
+    assert_response :success
+    body = Nokogiri::HTML(response.body).at("body")
+    children = body.element_children
+    assert_equal "auth-body-start-hook", children.first["id"]
+    assert_equal "sign-in tracking", children.first.text
+    assert_equal "main", children[1].name
+    assert_includes children[1].text, "Welcome back"
+  ensure
+    remove_host_override!(HOOK_VIEW)
+  end
+end
