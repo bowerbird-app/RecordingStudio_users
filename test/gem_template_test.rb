@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.25.1", RecordingStudioUser::VERSION
+    assert_equal "0.25.2", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -210,7 +210,7 @@ class RecordingStudioUserTest < Minitest::Test
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
     assert_includes gemspec, '"recording_studio_accessible", "~> 0.11"'
-    assert_includes gemspec, '"recording_studio_metrics", ">= 0.3", "< 0.6"'
+    assert_includes gemspec, '"recording_studio_metrics", ">= 0.3", "< 1.0"'
   end
 
   def test_gemfiles_pin_recording_studio_v470_tag
