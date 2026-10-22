@@ -210,7 +210,7 @@ class RecordingStudioUserTest < Minitest::Test
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
     assert_includes gemspec, '"recording_studio_accessible", "~> 0.11"'
-    assert_includes gemspec, '"recording_studio_metrics", ">= 0.3", "< 0.6"'
+    assert_includes gemspec, '"recording_studio_metrics", ">= 0.3", "< 1.0"'
   end
 
   def test_gemfiles_pin_recording_studio_v470_tag

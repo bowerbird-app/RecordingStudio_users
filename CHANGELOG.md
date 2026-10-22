@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.2] - 2026-10-22
+
+### Changed
+
+- Runtime dependency `recording_studio_metrics` is now `>= 0.3, < 1.0` so hosts
+  can use Metrics `0.6.1` and Logs `0.7.0`. No code change.
+
+### Upgrade notes
+
+- Bump to `0.25.2`. No migration. No code change. The Metrics ceiling is now
+  `< 1.0`.
+
 ## [0.25.1] - 2026-10-21
 
 ### Added
