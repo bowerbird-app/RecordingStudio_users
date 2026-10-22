@@ -1077,7 +1077,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.2...HEAD
+[0.25.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.1...v0.25.2
 [0.25.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.0...v0.25.1
 [0.25.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.24.1...v0.25.0
 [0.20.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.19.0...v0.20.0
