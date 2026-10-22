@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Runtime dependency `recording_studio_metrics` is now `>= 0.3, < 1.0` so hosts
-  can use Metrics `0.6.1` and Logs `0.7.0`. No code change.
+- Runtime dependency `recording_studio_metrics >= 0.3, < 1.0` (CI tested with
+  `0.5.0`). No code change.
 
 ### Upgrade notes
 
