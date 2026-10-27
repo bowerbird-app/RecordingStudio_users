@@ -129,3 +129,5 @@ Page chrome on the rebuilt default template:
 - `recording_studio_page_nav` and the old `:page_nav_back_*` / `:page_nav_anchor_*` slots are gone.
 
 Register `RecordingStudioAttachable::Attachment`. Do not register Library or Placement. Attachable 0.22 dropped those recordables.
+
+Edit Profile uses `FlatPack::ImageInput::Component` (FlatPack >= 0.1.320). The file is direct-uploaded to the profile recording, and the profile form submits `profile_image[signed_blob_id]`. `assign_profile_image!` attaches or replaces it. `remove_profile_image!` clears a saved photo. Do not write attachment rows from the controller.

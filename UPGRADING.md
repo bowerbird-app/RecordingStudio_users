@@ -4,7 +4,9 @@
 
 Bump to `0.26.0`. No Users migration.
 
-Require Recording Studio >= 6.1.0, FlatPack >= 0.1.315, and ViewComponent >= 4.14, < 5. Pin the host Gemfile to Recording Studio `v6.1.0`. FlatPack `0.1.319` is commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56`.
+Require Recording Studio >= 6.1.0, FlatPack >= 0.1.320, and ViewComponent >= 4.14, < 5. Pin the host Gemfile to Recording Studio `v6.1.0`. FlatPack `0.1.324` is commit `d005941bf5a09a51582d5b7418fe5486738474eb`. `FlatPack::ImageInput::Component` shipped in 0.1.320.
+
+Edit Profile draws that component at `size: :"2xl"` and `shape: :circle`. The form direct-uploads through Attachable, then **Update profile** calls `assign_profile_image!(user, signed_blob_id:, actor:)`. Clearing a saved photo posts `profile_image[remove]=1` and calls `remove_profile_image!`. The submit row uses `pt-4`.
 
 `RecordingStudioUser.configuration.layout` defaults to `nil`. `nil` uses `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. A String names a layout. `false` renders with no layout. A callable must be `call(controller:)` and return one of those values. Invalid values raise `ArgumentError` at assignment.
 

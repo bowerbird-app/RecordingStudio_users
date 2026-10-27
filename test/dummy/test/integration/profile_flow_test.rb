@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "cgi"
+require "digest/md5"
 require "test_helper"
 require "devise/test/integration_helpers"
 
@@ -89,6 +90,38 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_equal recording.id, RecordingStudioUser.profile_recording_for(@user).id
     refute_equal original_profile_id, RecordingStudioUser.profile_for(@user).id
     refute @user.reload.has_attribute?(:first_name)
+  end
+
+  test "profile update assigns a signed photo and can clear it" do
+    sign_in @user
+    recording = RecordingStudioUser.profile_recording_for(@user)
+    bytes = File.binread(profile_photo_fixture_path)
+    blob = RecordingStudioAttachable::DirectUpload.prepare!(
+      recording: recording,
+      actor: @user,
+      filename: "from-form.png",
+      byte_size: bytes.bytesize,
+      checksum: Digest::MD5.base64digest(bytes),
+      content_type: "image/png"
+    )
+    blob.upload(StringIO.new(bytes), identify: false)
+
+    patch recording_studio_users.profile_path, params: {
+      user: { first_name: "Profile", last_name: "User", time_zone: "UTC" },
+      profile_image: { signed_blob_id: RecordingStudioAttachable::DirectUpload.sign(blob) }
+    }
+
+    assert_redirected_to recording_studio_users.profile_path
+    image = RecordingStudioUser.profile_image_recording_for(@user)
+    assert_equal "from-form.png", image.recordable.original_filename
+
+    patch recording_studio_users.profile_path, params: {
+      user: { first_name: "Profile", last_name: "User", time_zone: "UTC" },
+      profile_image: { remove: "1" }
+    }
+
+    assert_redirected_to recording_studio_users.profile_path
+    assert_nil RecordingStudioUser.profile_image_recording_for(@user)
   end
 
   test "signed-in users without an Accessible grant are forbidden" do
@@ -201,26 +234,23 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "[&>*:first-child]:rounded-l-md"
     assert_includes response.body, "Update profile"
     assert_includes response.body, "Cancel"
-    assert_includes response.body, "turbo-frame"
-    assert_select "turbo-frame#profile-photo"
-    assert_select "input[type='file'].hidden"
-    assert_select "#profile-photo button", text: "Add"
+    assert_includes response.body, "pt-4"
+    assert_select "#profile-photo"
+    assert_select %(form[data-controller="recording-studio-attachable--attachment-revision-upload"])
+    assert_select %(input[type="file"][name="profile_image[file]"][accept="image/*"])
+    assert_select %[div[data-controller="flat-pack--image-input"]]
+    refute_includes response.body, ">Add<"
     refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, "attachment-chrome-image_slot"
     refute_includes response.body, "render_attachment_image_slot"
-    refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
+    assert_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_includes response.body, "h-24 w-24"
     assert_includes response.body, "mb-8"
-    assert_includes unescaped_page, recording_studio_attachable.recording_attachment_imports_path(
-      recording,
-      redirect_mode: "return_to",
-      return_to: recording_studio_users.edit_profile_path
-    )
-    refute_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
+    assert_includes unescaped_page, recording_studio_attachable.recording_direct_uploads_path(recording)
+    refute_includes response.body, recording_studio_attachable.recording_attachment_imports_path(recording)
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.recording_attachments_path(recording))}"}, response.body)
     refute_includes response.body, 'name="attachment[name]"'
     refute_includes response.body, 'name="attachment[description]"'
-    assert_includes response.body, "M12 2C6.48 2 2 6.48"
   end
 
   test "profile show and edit display one attached image and a replace path" do
@@ -254,19 +284,16 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Swap this photo"
     refute_includes response.body, "Choose File"
     assert_includes response.body, "profile-photo"
-    assert_select "turbo-frame#profile-photo"
-    assert_select "#profile-photo button", text: "Change"
+    assert_select "#profile-photo"
+    assert_select %(input[type="file"][name="profile_image[file]"])
+    assert_select %(input[type="hidden"][name="profile_image[remove]"][value="0"])
+    assert_select %[div[data-controller="flat-pack--image-input"]]
+    refute_includes response.body, ">Change<"
     refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, "attachment-chrome-image_slot"
-    refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
     assert_includes response.body, "h-24 w-24"
-    assert_select "input[type='file'].hidden"
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(image))}"}, response.body)
-    assert_includes unescaped_page, recording_studio_attachable.attachment_path(
-      image,
-      redirect_mode: "return_to",
-      return_to: recording_studio_users.edit_profile_path
-    )
+    assert_includes unescaped_page, recording_studio_attachable.recording_direct_uploads_path(recording)
     refute_includes response.body, "Manage access"
     refute_includes response.body, 'name="attachment[name]"'
     refute_includes response.body, 'name="attachment[description]"'

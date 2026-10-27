@@ -76,13 +76,13 @@ module RecordingStudioUser
       ProfileImage.recording_for(user)
     end
 
-    def attach_profile_image!(...)
-      ProfileImage.attach!(...)
-    end
+    def attach_profile_image!(...) = ProfileImage.attach!(...)
 
-    def replace_profile_image!(...)
-      ProfileImage.replace!(...)
-    end
+    def replace_profile_image!(...) = ProfileImage.replace!(...)
+
+    def assign_profile_image!(...) = ProfileImage.assign_signed!(...)
+
+    def remove_profile_image!(...) = ProfileImage.remove!(...)
 
     def create_user!(...)
       Directory.create_user!(...)

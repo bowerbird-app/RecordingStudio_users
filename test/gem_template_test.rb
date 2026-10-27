@@ -105,10 +105,15 @@ class RecordingStudioUserTest < Minitest::Test
     refute_includes edit, 'render "photo"'
     refute_includes edit, "render_parent_attachment"
     refute_includes edit, "render_attachment_image_slot"
-    assert_includes edit, 'turbo_frame_tag "profile-photo"'
+    assert_includes edit, 'id="profile-photo"'
+    assert_includes edit, "FlatPack::ImageInput::Component"
     assert_includes edit, "attachment_preview_url(@profile_recording, variant: :square_med)"
-    assert_includes edit, "render_attachment_file_button(@profile_recording, return_to: edit_profile_path)"
+    assert_includes edit, "profile_image_upload_data(@profile_recording)"
+    assert_includes edit, 'name: "profile_image[file]"'
+    assert_includes edit, "shape: :circle"
     assert_includes edit, "size: :\"2xl\""
+    refute_includes edit, "render_attachment_file_button"
+    refute_includes edit, "FlatPack::Avatar::Component"
     refute_includes edit, "FlatPack::Card::Component"
     assert_includes edit, "recording_studio_user.profile.subtitle_with_language"
     assert_includes edit, "profile_locale_allowlisted?"
@@ -118,6 +123,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes show, "profile_language_name(@profile)"
     assert_includes edit, "FlatPack::Grid::Component.new(cols: 2)"
     assert_includes edit, %(class="mb-8")
+    assert_includes edit, "gap-3 pt-4"
     refute_includes edit, %(class="mb-16")
     refute_includes edit, "space-y-8"
     refute_includes edit, "icon_only"
@@ -237,7 +243,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "recording_studio_root_switchable (0.9.0)"
   end
 
-  def test_gemfiles_pin_admin_v270_and_flatpack_01319
+  def test_gemfiles_pin_admin_v270_and_flatpack_01324
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
@@ -247,7 +253,7 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_logs"'
       assert_includes contents, 'tag: "v0.7.0"'
       assert_includes contents, 'github: "bowerbird-app/flatpack"'
-      assert_includes contents, 'ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"'
+      assert_includes contents, 'ref: "d005941bf5a09a51582d5b7418fe5486738474eb"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
@@ -259,12 +265,12 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes lock, "tag: v0.7.0"
       assert_includes lock, "3127366cfccc882b20a01f76811adc8c055e248d"
       assert_includes lock, "recording_studio_logs (0.7.0)"
-      assert_includes lock, "ref: 1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
-      assert_includes lock, "flat_pack (0.1.319)"
+      assert_includes lock, "ref: d005941bf5a09a51582d5b7418fe5486738474eb"
+      assert_includes lock, "flat_pack (0.1.324)"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"flat_pack", ">= 0.1.315"'
+    assert_includes gemspec, '"flat_pack", ">= 0.1.320"'
     assert_includes gemspec, '"recording_studio_admin", "~> 2.0"'
   end
 

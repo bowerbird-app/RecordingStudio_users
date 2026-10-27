@@ -2,6 +2,16 @@
 
 module RecordingStudioUser
   module ProfilesHelper
+    PROFILE_IMAGE_UPLOAD_CONTROLLER = "recording-studio-attachable--attachment-revision-upload"
+    PROFILE_IMAGE_UPLOAD_OPTIONS = %i[
+      allowed_content_types
+      max_file_size
+      image_processing_enabled
+      image_processing_max_width
+      image_processing_max_height
+      image_processing_quality
+    ].freeze
+
     def profile_display_name(user)
       RecordingStudioUser.display_name_for(user)
     end
@@ -30,6 +40,19 @@ module RecordingStudioUser
       recording_studio_attachable.recording_direct_uploads_path(recording)
     end
 
+    def profile_image_accept
+      types = profile_image_upload_options[:allowed_content_types]
+      list = Array(types).join(",")
+      list.presence || "image/*"
+    end
+
+    def profile_image_upload_data(recording)
+      prefix = PROFILE_IMAGE_UPLOAD_CONTROLLER.tr("-", "_")
+      values = profile_image_upload_values(recording)
+      base = { controller: PROFILE_IMAGE_UPLOAD_CONTROLLER, action: profile_image_upload_action }
+      base.merge(values.compact.transform_keys { |key| :"#{prefix}_#{key}_value" })
+    end
+
     def profile_image_preview_path(attachment_recording, variant: :square_med)
       return if attachment_recording.blank?
 
@@ -45,6 +68,26 @@ module RecordingStudioUser
 
     def attachable_routes
       recording_studio_attachable
+    end
+
+    def profile_image_upload_action
+      "submit->#{PROFILE_IMAGE_UPLOAD_CONTROLLER}#handleSubmit"
+    end
+
+    def profile_image_upload_values(recording)
+      {
+        direct_upload_url: recording_direct_uploads_path(recording),
+        signed_blob_field_name: "profile_image[signed_blob_id]",
+        auto_submit: false,
+        **profile_image_upload_options.except(:allowed_content_types)
+      }
+    end
+
+    def profile_image_upload_options
+      configured = RecordingStudio.capability_options(:attachable, for_type: "RecordingStudioUser::Profile").to_h
+      PROFILE_IMAGE_UPLOAD_OPTIONS.index_with do |option|
+        configured.fetch(option) { RecordingStudioAttachable.configuration.public_send(option) }
+      end
     end
   end
 end

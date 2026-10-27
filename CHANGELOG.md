@@ -11,9 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Require `recording_studio` >= 6.1.0 and `flat_pack` >= 0.1.315. Development
-  pins Recording Studio `v6.1.0` and FlatPack `0.1.319`
-  (`1fcbafe94f8eb118f0a22182f63f5110fcc97a56`).
+- Require `recording_studio` >= 6.1.0 and `flat_pack` >= 0.1.320. Development
+  pins Recording Studio `v6.1.0` and FlatPack `0.1.324`
+  (`d005941bf5a09a51582d5b7418fe5486738474eb`).
 - Require `view_component` >= 4.14, < 5.
 - `config.layout` defaults to `nil`. Assignments go through
   `RecordingStudio::Layout.accept`. Signed-in controllers use
@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `config.recordable_types`.
 - `replace_profile_image!` signs the replacement blob with
   `RecordingStudioAttachable::DirectUpload::PURPOSE` (`:attachable_upload`).
+- Edit Profile uses `FlatPack::ImageInput::Component` (`shape: :circle`,
+  `size: :"2xl"`) with Attachable's revision-upload controller. Choosing a
+  file direct-uploads to the profile recording. **Update profile** calls
+  `assign_profile_image!`. The clear control calls `remove_profile_image!`
+  when a photo is already saved. The submit row has `pt-4`.
 
 ### Upgrade notes
 
@@ -48,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `layout`.
 - Hosts that post a `signed_blob_id` to Attachable sign it with purpose
   `:attachable_upload`. `replace_profile_image!` does that.
+- Edit Profile no longer renders `render_attachment_file_button`. Overrides
+  of that screen should use `FlatPack::ImageInput::Component` and post
+  `profile_image[signed_blob_id]` (or `profile_image[remove]=1`) with the
+  profile form. FlatPack must be >= 0.1.320.
 
 ## [0.25.2] - 2026-10-22
 

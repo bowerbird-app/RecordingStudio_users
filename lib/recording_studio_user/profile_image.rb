@@ -23,6 +23,29 @@ module RecordingStudioUser
       import!(recording, io:, filename:, content_type:, actor: actor || user)
     end
 
+    def assign_signed!(user, signed_blob_id:, actor: nil)
+      recording = require_profile_recording!(user)
+      actor ||= user
+      existing = recording_for(user)
+      result = if existing.present?
+                 replace_signed!(existing, signed_blob_id, actor)
+               else
+                 upload_signed!(recording, signed_blob_id, actor)
+               end
+      finish!(result)
+    end
+
+    def remove!(user, actor: nil)
+      existing = recording_for(user)
+      return if existing.blank?
+
+      result = RecordingStudioAttachable::Services::RemoveAttachment.call(
+        attachment_recording: existing,
+        actor: actor || user
+      )
+      finish!(result)
+    end
+
     def replace!(user, io:, filename:, content_type:, actor: nil)
       recording = require_profile_recording!(user)
       existing = recording_for(user)
@@ -60,6 +83,32 @@ module RecordingStudioUser
       )
       blob.upload(StringIO.new(bytes), identify: false)
       blob
+    end
+
+    def replace_signed!(existing, signed_blob_id, actor)
+      RecordingStudioAttachable::Services::ReplaceAttachmentFile.call(
+        attachment_recording: existing,
+        signed_blob_id: signed_blob_id,
+        actor: actor
+      )
+    end
+
+    def upload_signed!(recording, signed_blob_id, actor)
+      RecordingStudioAttachable::Services::RecordAttachmentUpload.call(
+        parent_recording: recording,
+        signed_blob_id: signed_blob_id,
+        actor: actor,
+        name: "Profile"
+      )
+    end
+
+    def finish!(result)
+      return result.value if result.success?
+
+      error = result.error
+      raise error if error.is_a?(Exception)
+
+      raise ArgumentError, error.to_s
     end
 
     def import!(recording, io:, filename:, content_type:, actor:)
