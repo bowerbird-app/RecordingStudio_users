@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.25.2", RecordingStudioUser::VERSION
+    assert_equal "0.25.3", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -234,7 +234,13 @@ class RecordingStudioUserTest < Minitest::Test
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"recording_studio", "~> 4.2"'
+    assert_includes gemspec, '"recording_studio", ">= 4.2", "< 7"'
+    requirement = Gem::Requirement.new(">= 4.2", "< 7")
+    assert requirement.satisfied_by?(Gem::Version.new("4.2.0"))
+    assert requirement.satisfied_by?(Gem::Version.new("5.0.0"))
+    assert requirement.satisfied_by?(Gem::Version.new("6.1.0"))
+    refute requirement.satisfied_by?(Gem::Version.new("4.1.99"))
+    refute requirement.satisfied_by?(Gem::Version.new("7.0.0"))
   end
 
   def test_dummy_gemfile_pins_root_switchable_v090_tag
