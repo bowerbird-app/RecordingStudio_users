@@ -21,7 +21,6 @@ Layout/LineLength:
 Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
-    - 'lib/gem_template/hooks.rb'
     - 'lib/recording_studio_user/configuration.rb'
 
 Metrics/MethodLength:
@@ -57,5 +56,4 @@ Metrics/ParameterLists:
 # Don't require super in service initialize methods
 Lint/MissingSuper:
   Exclude:
-    - 'lib/gem_template/services/**/*'
     - 'test/services/**/*'

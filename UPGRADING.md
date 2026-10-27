@@ -1,5 +1,12 @@
 # Upgrading
 
+## 0.26.1
+
+Bump to `0.26.1`. No Users migration. No host code changes.
+
+The packaged gem no longer includes leftover gem-template generator files or
+the example `gem_template_pages` migration.
+
 ## 0.26.0
 
 Bump to `0.26.0`. No Users migration.
