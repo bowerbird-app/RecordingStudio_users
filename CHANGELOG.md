@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`lib/generators/gem_template/` and the example
   `db/migrate/20250101000001_create_gem_template_pages.rb`). They were never
   part of Users install.
+- Remove `bin/rename_gem`, `test/rename_verification_test.rb`, and the
+  rename rake tasks (including `rake test:rename_verification`).
 
 ### Upgrade notes
 
