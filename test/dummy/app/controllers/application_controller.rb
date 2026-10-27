@@ -1,6 +1,5 @@
 class ApplicationController < ActionController::Base
   include RecordingStudio::RootSwitchable::ControllerSupport
-  include RecordingStudio::UsesDefaultLayout
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
@@ -9,8 +8,9 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   # Users auth controllers bring their own layout. Any other Devise screen keeps
-  # layouts/application. Everything else uses core default layout.
-  layout :application_layout
+  # layouts/application. Everything else falls through to the core layout.
+  # Home and docs set layout "flat_pack_sidebar" on their own controllers.
+  recording_studio_layout { devise_controller? ? "application" : nil }
 
   before_action :authenticate_user!
   skip_before_action :authenticate_user!, if: :letter_opener_request?
@@ -22,6 +22,7 @@ class ApplicationController < ActionController::Base
     defined?(LetterOpenerWeb) && request.path.start_with?("/letter_opener")
   end
 
+  # Root Switchable calls this method by name (config.layout = :application_layout).
   def application_layout
     return "application" if devise_controller?
 

@@ -76,7 +76,7 @@ An operations client that passes `RecordingStudioUser::Api::Access.can_view?` se
 
 `users-signups` and `users-total_over_time` accept `from`, `to`, and `interval` (`day`, `week`, `month`, `year`). MCP also accepts `start` and `start_at` as aliases of `from`, and `end` and `end_at` as aliases of `to`. `users-total`, `users-by_method`, and `users-confirmation` accept none of those arguments. None of these five tools accept `group_by` or `filters`.
 
-A client that fails `can_view?` does not see the tools. `RecordingStudioMcp::Dispatcher.call` for `users-total` with a client that passes the check returns metric `users.total` and a `value` equal to the user count. `RecordingStudioMcp::CatalogMetricTools.execute` of that tool with a client that fails the check raises `RecordingStudioApi::AuthorizationError` with message `Not authorized to run this metric`.
+A client that fails `can_view?` does not see the tools. `RecordingStudioMcp::Dispatcher.call` for `users-total` with a client that passes the check returns metric `users.total` and a `value` equal to the user count. `RecordingStudioMcp::MetricTools.execute` of that tool with a client that fails the check raises `RecordingStudioApi::AuthorizationError` with message `Not authorized to run this metric`.
 
 ## Fields
 

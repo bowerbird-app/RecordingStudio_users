@@ -1,3 +1,9 @@
+# Update summary
+
+## 0.26.0 profile photo
+
+Edit Profile uses `FlatPack::ImageInput::Component` from FlatPack `0.1.324` (gemspec `flat_pack >= 0.1.320`). The form's Attachable revision-upload controller direct-uploads the file. **Update profile** calls `assign_profile_image!`. Clear calls `remove_profile_image!` when a photo is already saved. The submit row has `pt-4`. Attachable stays on tag `v0.22.0`; that tag already exposes the revision-upload controller and `RecordAttachmentUpload` / `ReplaceAttachmentFile` / `RemoveAttachment`.
+
 # RecordingStudio Core v3.0.0 Update Summary
 
 ## Changes Made

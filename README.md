@@ -17,7 +17,7 @@ Add the engine to the host application's Gemfile:
 gem "recording_studio_user"
 ```
 
-`recording_studio` (~> 4.2), `recording_studio_accessible` (~> 0.11), `recording_studio_attachable` (~> 0.7), `recording_studio_admin` (~> 2.0), `recording_studio_metrics` (>= 0.3, < 0.6), `flat_pack` (>= 0.1.144), `devise`, the supported OmniAuth strategies, and `omniauth-rails_csrf_protection` (~> 2.0) are runtime dependencies. Admin `2.3+` and Accessible `0.17+` also need `recording_studio_trashable` `~> 0.10` (git tag `v0.11.0`, `require: false`) for query-only kept-SQL helpers — pin it next to Metrics (`v0.5.0`, `require: false`) in the host Gemfile. This gem enables Accessible and Attachable on Profile only. It does not enable either on People. Hosts upgrading Accessible through 0.18 need string roles, Accessible’s 0.8–0.14 migrations (0.14 adds audience constraint and rule tables; 0.15–0.17 are translation/query-helper only; 0.18 adds `ControllerAuth` for sibling engines), Trashable query helpers for kept-row filters, and grants through `bootstrap_owner_access!` / `grant_access` (`RecordingStudio::Access` is readonly). Attachable `0.12+` needs Flatpack `>= 0.1.213`, its library and placement migrations, and `RecordingStudioAttachable::Library` plus `RecordingStudioAttachable::Placement` in `recordable_types` (image libraries stay opt-in via `ImageLibrary` / `LibraryPlacement`). Attachable through `0.15` adds no further migrations (`0.15` is translation-only; `0.14` registers site-wide attachment metrics when Metrics is present).
+`recording_studio` (>= 6.1.0), `recording_studio_accessible` (~> 0.11), `recording_studio_attachable` (~> 0.7), `recording_studio_admin` (~> 2.0), `recording_studio_metrics` (>= 0.3, < 1.0), `flat_pack` (>= 0.1.320), `view_component` (>= 4.14, < 5), `devise`, the supported OmniAuth strategies, and `omniauth-rails_csrf_protection` (~> 2.0) are runtime dependencies. Development pins Recording Studio `v6.1.0`, FlatPack commit `d005941bf5a09a51582d5b7418fe5486738474eb` (version 0.1.324), Accessible `v0.22.0`, Admin `v2.7.0`, Attachable `v0.22.0`, Cache `v0.5.1`, Metrics `v0.6.1`, and Trashable `v0.12.0`. Admin and Accessible need `recording_studio_trashable` (`require: false`) for kept-SQL helpers. This gem enables Accessible and Attachable on Profile only. It does not enable either on People. Grants go through `bootstrap_owner_access!` / `grant_access` (`RecordingStudio::Access` is readonly). Attachable 0.22 registers `RecordingStudioAttachable::Attachment` only. Do not register `Library` or `Placement`.
 
 The host remains responsible for its existing User and Devise setup, Active Storage, and the Attachable mount.
 
@@ -31,7 +31,7 @@ bin/rails generate recording_studio_attachable:migrations
 bin/rails db:migrate
 ```
 
-Register the gem's recordables next to the host's types, including Attachable's attachment, library, and placement types:
+Register the gem's recordables next to the host's types, including Attachable's attachment type:
 
 ```ruby
 RecordingStudio.configure do |config|
@@ -39,9 +39,7 @@ RecordingStudio.configure do |config|
     "Workspace",
     "RecordingStudioUser::People",
     "RecordingStudioUser::Profile",
-    "RecordingStudioAttachable::Attachment",
-    "RecordingStudioAttachable::Library",
-    "RecordingStudioAttachable::Placement"
+    "RecordingStudioAttachable::Attachment"
   ]
 end
 ```
@@ -80,7 +78,7 @@ default. `doc/review/users_sign_in_wide.png` and
 `doc/review/users_sign_up_wide.png` are a temporary `:wide` flip against the
 seeded wordmark.
 
-Auth screens render inside the gem layout `layouts/recording_studio_user/auth`, not the host `layouts/application`. That layout is the one full-viewport centered auth chrome (`min-h-dvh` on its own `main`), loads `tailwind` and the Flatpack stylesheets, and puts `data-theme` on `html` (`rounded` unless the page sets `content_for :body_theme`). It also yields `:recording_studio_user_auth_body_start` at the top of `<body>` so a host can inject markup without copying the layout — unused, the slot is empty.
+Auth screens render inside the gem layout `layouts/recording_studio_user/auth`, not the host `layouts/application`. That layout is the one full-viewport centered auth chrome (`min-h-dvh` on its own `main`). Load the FlatPack stylesheets (`flat_pack/variables`, `flat_pack/application`, `flat_pack/rich_text`) before `tailwind`. The layout puts `data-theme` on `html` (`rounded` unless the page sets `content_for :body_theme`). It also yields `:recording_studio_user_auth_body_start` at the top of `<body>` so a host can inject markup without copying the layout. Unused, the slot is empty.
 
 To render the same partial on every unsigned auth page (sign in, sign up, and the rest), set `config.auth_body_start_partial` (default `nil`):
 
@@ -106,7 +104,10 @@ RecordingStudioUser.configure do |config|
   config.mount_path = "/account"
   config.profile_route_path = "me"
   config.admin_route_path = "user-reporting"
-  config.layout = "application"
+  # nil uses RecordingStudio.configuration.layout, then
+  # "recording_studio/default_layout". A String names a layout. false
+  # renders with no layout. A callable is call(controller:).
+  # config.layout = "application"
   config.additional_profile_attributes = [:locale]
   # config.additional_profile_attributes |= [:nickname]
   config.require_password_confirmation = false
@@ -312,7 +313,7 @@ RecordingStudioUser.profile_image_recording_for(user)
 
 `create_user!` creates the Devise user, then `people_root.record(Profile)`, then `RecordingStudioAccessible.bootstrap_owner_access!` on that Profile recording (role `:admin`). Do not bootstrap People — Accessible rejects the shared root on purpose. Later membership uses `grant_access`. Later profile changes `revise` the existing recording so a new snapshot row is created. `display_name_for` reads the current Profile, then a custom `full_name` / `name`, then email.
 
-`attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. `replace_profile_image!` swaps the file on that same attachment through `replace_attachment_file`. Edit Profile hosts a `profile-photo` Turbo frame: Flatpack Avatar via `attachment_preview_url` (circle, 2xl) plus Attachable `render_attachment_file_button` so Add/Change stays on that page. My Profile shows the Avatar only. Neither screen opens Attachable's Name / Description record edit.
+`attach_profile_image!` calls Attachable's `ImportAttachment` on the Profile recording. A second call returns the existing image. `replace_profile_image!` swaps the file on that same attachment through `replace_attachment_file`. `assign_profile_image!(user, signed_blob_id:, actor:)` attaches or replaces a blob already issued by Attachable direct upload. `remove_profile_image!` trashes that attachment. Edit Profile uses `FlatPack::ImageInput::Component` (`shape: :circle`, `size: :"2xl"`) inside the profile form. Choosing a file direct-uploads through `recording-studio-attachable--attachment-revision-upload`; **Update profile** submits the signed id. Clear is available only when a photo is already saved. My Profile shows the Avatar only. Neither screen opens Attachable's Name / Description record edit.
 
 `additional_profile_attributes` on configuration is an allowlist of extra keys stored in the Profile jsonb column. `:locale` is on that list by default so a signed-in preferred language can persist for Recording Studio Internationalization (`additional_profile_attributes["locale"]`). Identity, credential, authorization, membership, root, recording, and recordable fields stay protected. Edit Profile shows a Language select when `:locale` is allowlisted. Blank unsets the key so the host can fall back. Add more keys with `|=` so you do not drop locale:
 
@@ -438,9 +439,9 @@ Mounted profile show/edit/update still authenticate with Devise, then authorize 
 
 Flash notices come from the host layout. Profile show does not render `notice` again. When the host uses Recording Studio's default layout, that layout already draws `flash[:notice]` as a FlatPack alert.
 
-The profile PageNav right slot stays empty. Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded; do not put `recording_access_management_link` on these screens.
+Profile is not a place to grant other actors. First-owner bootstrap is how the owner is recorded. Do not put `recording_access_management_link` on these screens.
 
-Show puts **Edit** in the PageTitle actions slot (not in the card) and one Flatpack elevated Card. A Grid `cols: 2` wraps the Card only so it occupies one cell on a wide screen. Inside the card, Avatar sits above unlabeled name, email, and time zone — one column on desktop and phone. Empty photos use Avatar's person icon, not initials. There is no show subtitle and no city field. Edit hosts a `profile-photo` Turbo frame with Flatpack Avatar (`attachment_preview_url(..., variant: :square_med)`, `size: :"2xl"`, `shape: :circle`) plus Attachable `render_attachment_file_button` for Add/Change, then stacked fields, in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. An `mb-8` wrapper under the helper puts a field of air between the avatar and First name. First name, Last name, and Time zone stay full-width rows — not side by side. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. Edit keeps a short subtitle that names name, time zone, photo, and language when locale is allowlisted.
+Show sets `content_for :title` to **My Profile**. The default layout draws that string once, as the page `<h1>`. There is no second `FlatPack::PageTitle` in the view. `flat_pack_page_nav` puts Close on the left. `register_page_nav` puts **Edit** (`role: :primary`) on the right, and **Sign-in methods** (`role: :secondary`) when OmniAuth is configured. The card uses `shadow: :md`. A Grid `cols: 2` wraps the Card only so it occupies one cell on a wide screen. Inside the card, Avatar sits above unlabeled name, email, and time zone — one column on desktop and phone. Empty photos use Avatar's person icon, not initials. There is no show subtitle and no city field. Edit sets `content_for :title` and a short `content_for :subtitle`, and `flat_pack_page_nav` adds Back to the profile plus Close. Edit hosts `#profile-photo` with `FlatPack::ImageInput::Component` (`attachment_preview_url(..., variant: :square_med)`, `size: :"2xl"`, `shape: :circle`) wired to Attachable direct upload. The submit row uses `pt-4`, then stacked fields, in a Flatpack Grid `cols: 2` so the form sits in one cell on large screens. An `mb-8` wrapper under the helper puts a field of air between the avatar and First name. First name, Last name, and Time zone stay full-width rows. Update profile and Cancel are two separate Flatpack buttons sitting next to each other, not a ButtonGroup. The edit subtitle names name, time zone, photo, and language when locale is allowlisted.
 
 ## Users administration
 
@@ -454,7 +455,7 @@ The engine also registers a `:users` metrics resource with RecordingStudioMetric
 
 API 0.11 can list metrics with `register_recordable_type_api` and `metrics:`. Users does not call it for `User`. That registration takes `GET` and `POST /users` off the custom handlers, and `GET /users/metrics/users.total` counts recordings of type `User`, which this gem does not create. The operations users routes stay the custom endpoints. `metrics_for("User", api: :operations)` stays empty.
 
-MCP 0.17 lists one tool per metric that discovery exposes on the caller's API. Users does not register those tools. An operations client that passes `RecordingStudioUser::Api::Access.can_view?` sees `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, and `users-confirmation`. `users-signups` and `users-total_over_time` accept `from`, `to`, and `interval`. The other three accept none of those. None of the five accept `group_by` or `filters`. A client that fails the check does not see the tools. `RecordingStudioMcp::CatalogMetricTools.execute` of `users-total` for that client raises `RecordingStudioApi::AuthorizationError`. Contract: **[docs/api.md](docs/api.md)**.
+MCP 0.17 lists one tool per metric that discovery exposes on the caller's API. Users does not register those tools. An operations client that passes `RecordingStudioUser::Api::Access.can_view?` sees `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, and `users-confirmation`. `users-signups` and `users-total_over_time` accept `from`, `to`, and `interval`. The other three accept none of those. None of the five accept `group_by` or `filters`. A client that fails the check does not see the tools. `RecordingStudioMcp::MetricTools.execute` of `users-total` for that client raises `RecordingStudioApi::AuthorizationError`. Contract: **[docs/api.md](docs/api.md)**.
 
 `otp_challenges.failed_over_time` (unit `count`) is a time series of failed OTP challenges. A challenge counts as failed when `VerifyOtp` locks it: each wrong code calls `OtpChallenge#increment_attempts!`, which revokes the challenge once `attempts_count` reaches `otp_max_attempts`. Each locked challenge counts once, in the bucket of its `revoked_at`. These are not counted: challenges revoked because `IssueOtp` sent a new code (they are revoked below the limit), challenges that expired unused, and single wrong codes on a challenge that was not locked. None of these has a failure timestamp. The scope reads the current `otp_max_attempts`, so lowering it later also counts older superseded challenges that already had that many wrong codes. The metric takes `from`, `to` and `interval` (`day`, `week`, `month`, `year`). It can be grouped by `purpose` (`registration` or `login`). Groups with fewer than 5 challenges in the period fold into `other`. There is no failure-reason column, so it cannot be grouped by reason. It cannot be grouped by user, email or phone. No OTP list endpoint exists, so the metric has no filters.
 
@@ -472,7 +473,7 @@ The dummy mounts Users auth with `recording_studio_user_auth_for :users`. Login,
 
 Dummy also installs released `recording_studio_terms_and_conditions` `v0.8.1` (Publishable `v0.8.0`, and Flatpack `v0.1.207`) as an end-to-end signup demo. That pin lives in `test/dummy/Gemfile` only. The Users gemspec and root Gemfile stay free of TnC. The path gem satisfies TnC’s `recording_studio_user >= 0.12.1` requirement. Dummy seeds one live Terms record under **My workspace**. Users then detects the installed gem and the live record, so create-password shows the continue-notice without a host `extra_fields` override. Dummy does not override the Accept screen. The same dummy Gemfile pins `recording_studio_root_switchable` `v0.9.0` for the top-nav switcher (switch rate limit via RecordingStudioCache; no host code change). Root and dummy also pin Recording Studio core `v4.7.0` (English fallback for shipped `recording_studio.*` keys via `RecordingStudio.t`).
 
-Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit at `:xl`. Edit hosts a `profile-photo` Turbo frame at `:"2xl"` (Flatpack `v0.1.143`) with Attachable's file button for Add/Change. Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
+Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit at `:xl`. Edit hosts `#profile-photo` with `FlatPack::ImageInput::Component` at `:"2xl"` (FlatPack `0.1.324`). Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 
 | Email | Password |
 | --- | --- |

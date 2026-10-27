@@ -6,9 +6,12 @@ RecordingStudioUser.configure do |config|
   config.mount_path = "/recording_studio_users"
   config.profile_route_path = "profile"
   config.admin_route_path = "admin"
-  # Layout for the engine's signed-in screens. Sign in and sign up keep the
-  # gem's own centered layout, "recording_studio_user/auth".
-  config.layout = "application"
+  # Layout for the engine's signed-in screens. Leave unset (nil) to use
+  # RecordingStudio.configuration.layout, then "recording_studio/default_layout".
+  # A String names a layout. false renders with no layout. A callable is
+  # invoked as call(controller:) and returns a String, nil, or false.
+  # Sign in and sign up keep the gem layout "recording_studio_user/auth".
+  # config.layout = "application"
   # :locale is allowlisted by default so a signed-in preferred language can
   # persist for Recording Studio Internationalization. Add more keys with |=
   # so you do not drop locale:

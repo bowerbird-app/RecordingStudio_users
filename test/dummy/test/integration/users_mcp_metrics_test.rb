@@ -3,6 +3,7 @@
 require "test_helper"
 
 class UsersMcpMetricsTest < ActiveSupport::TestCase
+  include AccessGrantTestHelper
   WINDOW_ARGUMENTS = %w[end end_at from interval start start_at to].freeze
   PLAIN_METRICS = %w[users-by_method users-confirmation users-total].freeze
   SERIES_METRICS = %w[users-signups users-total_over_time].freeze
@@ -171,12 +172,12 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     assert_equal "users.total", result.dig(:structuredContent, "metric")
     assert_equal User.count, result.dig(:structuredContent, "value")
 
-    tool = RecordingStudioMcp::CatalogMetricTools.collect(
+    tool = RecordingStudioMcp::MetricTools.collect_catalog(
       RecordingStudioMcp::Catalog.new(api: "operations"),
       @viewer_grant
     ).find { |candidate| candidate.name.to_s == "users-total" }
     error = assert_raises(RecordingStudioApi::AuthorizationError) do
-      RecordingStudioMcp::CatalogMetricTools.execute(tool, {}, @denied_grant)
+      RecordingStudioMcp::MetricTools.execute(tool, {}, @denied_grant)
     end
     assert_equal "Not authorized to run this metric", error.message
 
@@ -256,16 +257,25 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
   def grant!(recording, actor, role)
     return if RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: role)
 
-    original = RecordingStudioAccessible.configuration.access_management_authorizer
-    RecordingStudioAccessible.configuration.access_management_authorizer = ->(**) { true }
-    result = RecordingStudioAccessible.grant_access(
-      recording: recording,
-      actor: actor,
-      role: role,
-      manager_actor: actor
-    )
-    raise result.error if result.failure?
-  ensure
-    RecordingStudioAccessible.configuration.access_management_authorizer = original
+    if role.to_s == "admin"
+      bootstrap_owner_access!(actor, recording)
+      return if RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: role)
+    end
+
+    with_open_access_authorizer do
+      result = RecordingStudioAccessible.grant_access(
+        recording: recording,
+        actor: actor,
+        role: role,
+        manager_actor: grant_manager_for(recording, role)
+      )
+      raise result.error if result.failure?
+    end
+  end
+
+  def grant_manager_for(recording, role)
+    [@staff, User.find_by(email: "admin@admin.com")].compact.find do |manager|
+      RecordingStudioAccessible::RoleCeiling.allowed?(recording: recording, manager: manager, role: role)
+    end || @staff
   end
 end

@@ -10,8 +10,7 @@ module RecordingStudioUser
     end
 
     protect_from_forgery with: :exception
-    layout -> { RecordingStudioUser.config.layout }
-    helper RecordingStudio::LayoutHelper
+    recording_studio_layout { RecordingStudioUser.configuration.layout }
     helper RecordingStudioUser::AuthRoutesHelper
     helper RecordingStudioUser::OmniauthHelper
     include Rails.application.routes.mounted_helpers

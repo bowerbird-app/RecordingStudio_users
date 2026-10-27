@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "digest/md5"
+require "stringio"
+
 module RecordingStudioUser
   # Public helpers for the single Attachable image under a Profile recording.
   module ProfileImage
@@ -20,6 +23,29 @@ module RecordingStudioUser
       import!(recording, io:, filename:, content_type:, actor: actor || user)
     end
 
+    def assign_signed!(user, signed_blob_id:, actor: nil)
+      recording = require_profile_recording!(user)
+      actor ||= user
+      existing = recording_for(user)
+      result = if existing.present?
+                 replace_signed!(existing, signed_blob_id, actor)
+               else
+                 upload_signed!(recording, signed_blob_id, actor)
+               end
+      finish!(result)
+    end
+
+    def remove!(user, actor: nil)
+      existing = recording_for(user)
+      return if existing.blank?
+
+      result = RecordingStudioAttachable::Services::RemoveAttachment.call(
+        attachment_recording: existing,
+        actor: actor || user
+      )
+      finish!(result)
+    end
+
     def replace!(user, io:, filename:, content_type:, actor: nil)
       recording = require_profile_recording!(user)
       existing = recording_for(user)
@@ -37,8 +63,52 @@ module RecordingStudioUser
     end
 
     def replace_existing!(existing, io:, filename:, content_type:, actor:)
-      blob = ActiveStorage::Blob.create_and_upload!(io:, filename:, content_type:)
-      existing.replace_attachment_file(signed_blob_id: blob.signed_id, actor: actor)
+      owner = existing.parent_recording
+      blob = issued_blob!(owner, io:, filename:, content_type:, actor:)
+      result = RecordingStudioAttachable::Services::ReplaceAttachmentFile.call(
+        attachment_recording: existing,
+        signed_blob_id: RecordingStudioAttachable::DirectUpload.sign(blob),
+        actor: actor
+      )
+      raise result.error if result.failure?
+
+      result.value
+    end
+
+    def issued_blob!(recording, io:, filename:, content_type:, actor:)
+      bytes = io.read
+      blob = RecordingStudioAttachable::DirectUpload.prepare!(
+        recording: recording, actor: actor, filename: filename, content_type: content_type,
+        byte_size: bytes.bytesize, checksum: Digest::MD5.base64digest(bytes)
+      )
+      blob.upload(StringIO.new(bytes), identify: false)
+      blob
+    end
+
+    def replace_signed!(existing, signed_blob_id, actor)
+      RecordingStudioAttachable::Services::ReplaceAttachmentFile.call(
+        attachment_recording: existing,
+        signed_blob_id: signed_blob_id,
+        actor: actor
+      )
+    end
+
+    def upload_signed!(recording, signed_blob_id, actor)
+      RecordingStudioAttachable::Services::RecordAttachmentUpload.call(
+        parent_recording: recording,
+        signed_blob_id: signed_blob_id,
+        actor: actor,
+        name: "Profile"
+      )
+    end
+
+    def finish!(result)
+      return result.value if result.success?
+
+      error = result.error
+      raise error if error.is_a?(Exception)
+
+      raise ArgumentError, error.to_s
     end
 
     def import!(recording, io:, filename:, content_type:, actor:)

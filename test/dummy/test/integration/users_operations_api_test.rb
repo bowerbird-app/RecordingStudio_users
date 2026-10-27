@@ -443,16 +443,25 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
   def grant!(recording, actor, role)
     return if RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: role)
 
-    original = RecordingStudioAccessible.configuration.access_management_authorizer
-    RecordingStudioAccessible.configuration.access_management_authorizer = ->(**) { true }
-    result = RecordingStudioAccessible.grant_access(
-      recording: recording,
-      actor: actor,
-      role: role,
-      manager_actor: @staff
-    )
-    raise result.error if result.failure?
-  ensure
-    RecordingStudioAccessible.configuration.access_management_authorizer = original
+    if role.to_s == "admin"
+      bootstrap_owner_access!(actor, recording)
+      return if RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: role)
+    end
+
+    with_open_access_authorizer do
+      result = RecordingStudioAccessible.grant_access(
+        recording: recording,
+        actor: actor,
+        role: role,
+        manager_actor: grant_manager_for(recording, role)
+      )
+      raise result.error if result.failure?
+    end
+  end
+
+  def grant_manager_for(recording, role)
+    [@staff, User.find_by(email: "admin@admin.com")].compact.find do |manager|
+      RecordingStudioAccessible::RoleCeiling.allowed?(recording: recording, manager: manager, role: role)
+    end || @staff
   end
 end

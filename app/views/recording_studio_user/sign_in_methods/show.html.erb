@@ -1,20 +1,13 @@
-<% content_for :title, t(
-  "recording_studio_user.profile.document_title",
-  page: t("recording_studio_user.profile.sign_in_methods")
-) %>
+<% content_for :title, t("recording_studio_user.profile.sign_in_methods") %>
+<% content_for :subtitle, profile_display_name(@user) %>
 
-<% recording_studio_page_nav(
-  title: t("recording_studio_user.profile.sign_in_methods"),
-  page_nav_back_url: profile_path,
-  page_nav_back_label: t("recording_studio_user.profile.my_profile"),
-  page_nav_anchor_url: main_app.root_path,
-  page_nav_anchor_label: t("recording_studio_user.profile.close")
-) %>
-
-<%= render FlatPack::PageTitle::Component.new(
-  title: t("recording_studio_user.profile.sign_in_methods"),
-  subtitle: profile_display_name(@user),
-  variant: :h1
+<% flat_pack_page_nav(
+  round: true,
+  style: :default,
+  back_href: profile_path,
+  back_tooltip: t("recording_studio_user.profile.my_profile"),
+  anchor_href: main_app.root_path,
+  anchor_tooltip: t("recording_studio_user.profile.close")
 ) %>
 
 <%= render FlatPack::Grid::Component.new(cols: 2) do %>
@@ -23,7 +16,7 @@
          recording_studio_user_provider_connected?(@user, provider)
        } %>
     <% if @identities.any? || connectable_providers.any? %>
-      <%= render FlatPack::Card::Component.new(style: :elevated) do |card| %>
+      <%= render FlatPack::Card::Component.new(shadow: :md) do |card| %>
         <% card.body do %>
           <%= render FlatPack::List::Component.new(divider: true) do %>
             <% @identities.each do |identity| %>

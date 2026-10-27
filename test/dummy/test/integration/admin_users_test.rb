@@ -131,8 +131,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
   test "renders mounted profile links from the shared admin sidebar layout" do
     admin_surface = RecordingStudioAdmin.configuration.surface(:admin)
-    original_layout = admin_surface.engine_layout
-    admin_surface.engine_layout = "flat_pack_sidebar"
+    original_layout = admin_surface.layout
+    admin_surface.layout = "flat_pack_sidebar"
     sign_in @admin
     bootstrap_owner_access!(@admin, @admin_recording)
 
@@ -142,7 +142,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_select %(a[href="/recording_studio_users/profile"]), count: 1
     assert_select %(a[href="/recording_studio_users/admin"]), count: 0
   ensure
-    admin_surface.engine_layout = original_layout
+    admin_surface.layout = original_layout
   end
 
   test "users over time series counts every user when there is more than one page" do
