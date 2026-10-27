@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.26.0", RecordingStudioUser::VERSION
+    assert_equal "0.26.1", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -285,6 +285,27 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "tag: v0.7.0"
     assert_includes lock, "6fd2a4e01dd1e5a7c1cbce340152eae9e65bf8f6"
     assert_includes lock, "recording_studio_notifications (0.7.0)"
+  end
+
+  def test_ci_uses_recording_studio_user_test_database
+    ci = File.read(File.expand_path("../.github/workflows/ci.yml", __dir__))
+
+    assert_includes ci, "POSTGRES_DB: recording_studio_user_test"
+    assert_includes ci, "postgres://postgres:postgres@localhost:5432/recording_studio_user_test"
+    refute_includes ci, "gem_template_test"
+  end
+
+  def test_dummy_gemfile_pins_notifications_email_v030_tag
+    gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+    lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
+
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_notifications_email"'
+    assert_includes gemfile, 'tag: "v0.3.0"'
+    refute_includes gemfile, 'path: "../../vendor/recording_studio_notifications_email"'
+    assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_notifications_email.git"
+    assert_includes lock, "tag: v0.3.0"
+    assert_includes lock, "recording_studio_notifications_email (0.3.0)"
+    refute_includes lock, "remote: ../../vendor/recording_studio_notifications_email"
   end
 
   def test_dummy_gemfile_pins_api_v0160_tag
