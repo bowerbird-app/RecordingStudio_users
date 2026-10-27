@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.25.3] - 2026-10-27
+## [0.26.1] - 2026-10-27
 
 ### Changed
 
@@ -17,9 +17,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrade notes
 
-- Bump to `0.25.3`. No migration. No code change. The Recording Studio
+- Bump to `0.26.1`. No migration. No code change. The Recording Studio
   constraint now allows 6.x.
 
+## [0.26.0] - 2026-10-27
+
+### Changed
+
+- Require `recording_studio` >= 6.1.0 and `flat_pack` >= 0.1.320. Development
+  pins Recording Studio `v6.1.0` and FlatPack `0.1.324`
+  (`d005941bf5a09a51582d5b7418fe5486738474eb`).
+- Require `view_component` >= 4.14, < 5.
+- `config.layout` defaults to `nil`. Assignments go through
+  `RecordingStudio::Layout.accept`. Signed-in controllers use
+  `recording_studio_layout`. Sign-in, sign-up, and password screens stay on
+  `recording_studio_user/auth`.
+- Profile, OTP code, and sign-in method screens set `content_for :title`
+  (and `:subtitle` where the page has one). Left chrome uses
+  `flat_pack_page_nav`. Right actions use `register_page_nav`. Cards use
+  `shadow: :md`.
+- Development pins Admin `v2.7.0` and Attachable `v0.22.0`. Attachable no
+  longer ships Library or Placement recordables. Drop those names from
+  `config.recordable_types`.
+- `replace_profile_image!` signs the replacement blob with
+  `RecordingStudioAttachable::DirectUpload::PURPOSE` (`:attachable_upload`).
+- Edit Profile uses `FlatPack::ImageInput::Component` (`shape: :circle`,
+  `size: :"2xl"`) with Attachable's revision-upload controller. Choosing a
+  file direct-uploads to the profile recording. **Update profile** calls
+  `assign_profile_image!`. The clear control calls `remove_profile_image!`
+  when a photo is already saved. The submit row has `pt-4`.
+
+### Upgrade notes
+
+- Bump to `0.26.0`. No Users migration.
+- Remove `include RecordingStudio::UsesDefaultLayout` and any
+  `layout "recording_studio/default_layout"` on host controllers that should
+  follow the core layout. Set `RecordingStudioUser.configuration.layout` to
+  `nil`, a layout name, `false`, or `->(controller:) { ... }`.
+- Replace `recording_studio_page_nav` and inline page titles on overrides of
+  these screens with `content_for :title`, `flat_pack_page_nav`, and
+  `register_page_nav`. Load FlatPack stylesheets before Tailwind.
+- Remove `RecordingStudioAttachable::Library` and
+  `RecordingStudioAttachable::Placement` from `recordable_types` when you
+  move to Attachable 0.22.
+- Sibling engines that still call `RecordingStudio::UsesDefaultLayout` need
+  a host shim until those gems drop the concern. Site Settings `v0.2.1` and
+  OAuth `v0.17.0` are in that set. Admin `2.7.0` renamed `engine_layout` to
+  `layout`.
+- Hosts that post a `signed_blob_id` to Attachable sign it with purpose
+  `:attachable_upload`. `replace_profile_image!` does that.
+- Edit Profile no longer renders `render_attachment_file_button`. Overrides
+  of that screen should use `FlatPack::ImageInput::Component` and post
+  `profile_image[signed_blob_id]` (or `profile_image[remove]=1`) with the
+  profile form. FlatPack must be >= 0.1.320.
 ## [0.25.2] - 2026-10-22
 
 ### Changed
@@ -1090,8 +1140,9 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.3...HEAD
-[0.25.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.2...v0.25.3
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.1...HEAD
+[0.26.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.0...v0.26.1
+[0.26.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.2...v0.26.0
 [0.25.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.1...v0.25.2
 [0.25.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.0...v0.25.1
 [0.25.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.24.1...v0.25.0

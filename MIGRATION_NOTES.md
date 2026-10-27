@@ -116,3 +116,18 @@ Hosts using Devise `:confirmable` should map confirmations as shown so the
 resend-confirmation screen shares the Users auth chrome.
 
 `primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths are not drawn while `otp_enabled` (or the matching registration / login OTP flag) is false — set those flags in the initializer before routes draw.
+
+## Recording Studio 6.1 layout
+
+`RecordingStudio::UsesDefaultLayout` is gone. `config.layout` on this gem is `nil` unless the host sets it. Controllers that should follow that value call `recording_studio_layout { RecordingStudioUser.configuration.layout }`.
+
+Page chrome on the rebuilt default template:
+
+- `content_for :title` is the document title and the only `<h1>`.
+- `flat_pack_page_nav` draws Back and Close.
+- `register_page_nav` draws right-hand actions.
+- `recording_studio_page_nav` and the old `:page_nav_back_*` / `:page_nav_anchor_*` slots are gone.
+
+Register `RecordingStudioAttachable::Attachment`. Do not register Library or Placement. Attachable 0.22 dropped those recordables.
+
+Edit Profile uses `FlatPack::ImageInput::Component` (FlatPack >= 0.1.320). The file is direct-uploaded to the profile recording, and the profile form submits `profile_image[signed_blob_id]`. `assign_profile_image!` attaches or replaces it. `remove_profile_image!` clears a saved photo. Do not write attachment rows from the controller.

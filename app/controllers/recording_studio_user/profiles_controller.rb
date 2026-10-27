@@ -11,14 +11,14 @@ module RecordingStudioUser
     def edit; end
 
     def update
-      RecordingStudioUser.record_profile!(
-        current_user,
-        actor: current_user,
-        **profile_write_attributes
-      )
+      save_profile!
+      apply_profile_image!
       redirect_to profile_path, notice: updated_notice
     rescue ActiveRecord::RecordInvalid => e
       @profile = e.record
+      render :edit, status: :unprocessable_entity
+    rescue ArgumentError, RecordingStudioAttachable::Error => e
+      flash.now[:alert] = e.message
       render :edit, status: :unprocessable_entity
     end
 
@@ -50,6 +50,26 @@ module RecordingStudioUser
 
     def permitted_profile_attributes
       %i[first_name last_name time_zone] + RecordingStudioUser.config.additional_profile_attributes
+    end
+
+    def save_profile!
+      RecordingStudioUser.record_profile!(current_user, actor: current_user, **profile_write_attributes)
+    end
+
+    def apply_profile_image!
+      blob_id = profile_image_param(:signed_blob_id)
+      if blob_id.present?
+        RecordingStudioUser.assign_profile_image!(current_user, signed_blob_id: blob_id, actor: current_user)
+      elsif profile_image_param(:remove) == "1"
+        RecordingStudioUser.remove_profile_image!(current_user, actor: current_user)
+      end
+    end
+
+    def profile_image_param(key)
+      image = params[:profile_image]
+      return if image.blank?
+
+      image[key].to_s.strip.presence
     end
 
     def profile_write_attributes

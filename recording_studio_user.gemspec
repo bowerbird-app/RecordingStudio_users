@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "devise", "~> 5.0"
-  spec.add_dependency "flat_pack", ">= 0.1.144"
+  spec.add_dependency "flat_pack", ">= 0.1.320"
   spec.add_dependency "omniauth", "~> 2.1"
   spec.add_dependency "omniauth-apple", "~> 1.3"
   spec.add_dependency "omniauth-google-oauth2", "~> 1.2"
@@ -38,4 +38,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "recording_studio_attachable", "~> 0.7"
   spec.add_dependency "recording_studio_cache", "~> 0.5"
   spec.add_dependency "recording_studio_metrics", ">= 0.3", "< 1.0"
+  spec.add_dependency "view_component", ">= 4.14", "< 5"
 end

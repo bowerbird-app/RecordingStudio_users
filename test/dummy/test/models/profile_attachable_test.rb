@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "digest/md5"
 require "test_helper"
 
 class ProfileAttachableTest < ActiveSupport::TestCase
@@ -16,8 +17,8 @@ class ProfileAttachableTest < ActiveSupport::TestCase
     assert_equal 1, options[:max_file_count]
     refute_includes RecordingStudio.capability_allowed_parent_types_for("RecordingStudioAttachable::Attachment"),
                     "RecordingStudioUser::People"
-    assert_includes types, "RecordingStudioAttachable::Library"
-    assert_includes types, "RecordingStudioAttachable::Placement"
+    refute_includes types, "RecordingStudioAttachable::Library"
+    refute_includes types, "RecordingStudioAttachable::Placement"
     refute RecordingStudio.capability_enabled?(:image_library, for: "RecordingStudioUser::Profile")
     refute RecordingStudio.capability_enabled?(:library_placement, for: "RecordingStudioUser::Profile")
   end
@@ -68,10 +69,60 @@ class ProfileAttachableTest < ActiveSupport::TestCase
     assert_equal "swapped.png", current.recordable.original_filename
   end
 
+  test "assign_profile_image! attaches then replaces a signed upload, and remove_profile_image! clears it" do
+    user = RecordingStudioUser.create_user!(
+      email: "signed-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Signed",
+      last_name: "Owner",
+      time_zone: "UTC"
+    )
+    recording = RecordingStudioUser.profile_recording_for(user)
+    first = issued_profile_blob!(recording, user, filename: "first.png")
+    assigned = RecordingStudioUser.assign_profile_image!(
+      user,
+      signed_blob_id: RecordingStudioAttachable::DirectUpload.sign(first),
+      actor: user
+    )
+
+    assert_equal "first.png", assigned.recordable.original_filename
+    assert_equal recording.id, assigned.parent_recording_id
+
+    second = issued_profile_blob!(recording, user, filename: "second.png")
+    replaced = RecordingStudioUser.assign_profile_image!(
+      user,
+      signed_blob_id: RecordingStudioAttachable::DirectUpload.sign(second),
+      actor: user
+    )
+
+    assert_equal assigned.id, replaced.id
+    assert_equal "second.png", RecordingStudioUser.profile_image_recording_for(user).recordable.original_filename
+
+    RecordingStudioUser.remove_profile_image!(user, actor: user)
+
+    assert_nil RecordingStudioUser.profile_image_recording_for(user)
+  end
+
   test "People is not attachable" do
     people = File.read(RecordingStudioUser::Engine.root.join("app/models/recording_studio_user/people.rb"))
 
     refute_includes people, "Capabilities::Attachable"
     refute RecordingStudio.capability_enabled?(:attachable, for: RecordingStudioUser::People)
+  end
+
+  private
+
+  def issued_profile_blob!(recording, actor, filename:)
+    bytes = File.binread(profile_photo_fixture_path)
+    blob = RecordingStudioAttachable::DirectUpload.prepare!(
+      recording: recording,
+      actor: actor,
+      filename: filename,
+      byte_size: bytes.bytesize,
+      checksum: Digest::MD5.base64digest(bytes),
+      content_type: "image/png"
+    )
+    blob.upload(StringIO.new(bytes), identify: false)
+    blob
   end
 end

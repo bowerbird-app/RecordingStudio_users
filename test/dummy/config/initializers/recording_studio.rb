@@ -1,5 +1,21 @@
 # frozen_string_literal: true
 
+# Site Settings and OAuth still include this concern. Recording Studio 6.1
+# removed it. Keep the old layout contract for those engines until they move
+# to recording_studio_layout.
+unless defined?(RecordingStudio::UsesDefaultLayout)
+  module RecordingStudio
+    module UsesDefaultLayout
+      extend ActiveSupport::Concern
+
+      included do
+        layout "recording_studio/default_layout"
+        helper RecordingStudio::LayoutHelper
+      end
+    end
+  end
+end
+
 RecordingStudio.configure do |config|
   # Registered delegated_type recordables (strings or classes)
   config.recordable_types = [
@@ -10,8 +26,6 @@ RecordingStudio.configure do |config|
     "RecordingStudioUser::People",
     "RecordingStudioUser::Profile",
     "RecordingStudioAttachable::Attachment",
-    "RecordingStudioAttachable::Library",
-    "RecordingStudioAttachable::Placement",
     "RecordingStudioSiteSettings::SiteSetting",
     "RecordingStudioTermsAndConditions::Terms",
     "RecordingStudioPublishable::Publishable"
