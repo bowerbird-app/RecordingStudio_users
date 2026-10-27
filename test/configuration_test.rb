@@ -12,7 +12,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal "/recording_studio_users", @configuration.mount_path
     assert_equal "profile", @configuration.profile_route_path
     assert_equal "admin", @configuration.admin_route_path
-    assert_equal "application", @configuration.layout
+    assert_nil @configuration.layout
     assert_equal %i[locale], @configuration.additional_profile_attributes
     refute @configuration.require_password_confirmation
     refute_predicate @configuration, :require_password_confirmation?
@@ -205,6 +205,29 @@ class ConfigurationTest < Minitest::Test
     assert_raises(ArgumentError) { @configuration.otp_max_attempts = 0 }
     assert_raises(ArgumentError) { @configuration.otp_resend_cooldown = 0 }
     assert_raises(ArgumentError) { @configuration.unconfirmed_user_retention = 0 }
+  end
+
+  def test_layout_accepts_nil_false_a_name_and_a_keyword_callable
+    assert_nil @configuration.layout
+
+    @configuration.layout = nil
+    assert_nil @configuration.layout
+
+    @configuration.layout = false
+    assert_equal false, @configuration.layout
+
+    @configuration.layout = "application"
+    assert_equal "application", @configuration.layout
+
+    callable = ->(controller:) { controller && "application" }
+    @configuration.layout = callable
+    assert_equal callable, @configuration.layout
+  end
+
+  def test_layout_rejects_invalid_values
+    assert_raises(ArgumentError) { @configuration.layout = 1 }
+    assert_raises(ArgumentError) { @configuration.layout = "  " }
+    assert_raises(ArgumentError) { @configuration.layout = ->(controller) { controller && "application" } }
   end
 
   def test_mounted_admin_path_uses_configured_paths

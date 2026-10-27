@@ -12,6 +12,10 @@ class EngineTest < Minitest::Test
     assert_equal ["en.yml"], Dir.children(locale_dir).sort
   end
 
+  def test_engine_controllers_do_not_hard_code_a_recording_studio_layout
+    assert_empty RecordingStudio::Layout.hardcoded_layout_paths(RecordingStudioUser::Engine.root)
+  end
+
   def test_engine_is_isolated_under_recording_studio_user
     assert_predicate RecordingStudioUser::Engine, :isolated?
   end

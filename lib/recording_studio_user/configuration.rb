@@ -25,7 +25,7 @@ module RecordingStudioUser
       mount_path: "/recording_studio_users",
       profile_route_path: "profile",
       admin_route_path: "admin",
-      layout: "application",
+      layout: nil,
       additional_profile_attributes: [:locale],
       require_password_confirmation: false,
       primary_login_type: :email,
@@ -44,8 +44,13 @@ module RecordingStudioUser
       omniauth_create_account: true
     }.freeze
 
-    attr_accessor :user_class_name, :layout, :auth_site_root_resolver
-    attr_reader(*(DEFAULTS.keys - %i[user_class_name layout]), :after_registration_hooks, :auth_body_start_partial)
+    attr_accessor :user_class_name, :auth_site_root_resolver
+    attr_reader(
+      :layout,
+      *(DEFAULTS.keys - %i[user_class_name layout]),
+      :after_registration_hooks,
+      :auth_body_start_partial
+    )
 
     BOOLEAN_SETTINGS.each do |setting|
       define_method("#{setting}=") do |value|
@@ -72,6 +77,10 @@ module RecordingStudioUser
       define_method("#{setting}=") do |value|
         instance_variable_set("@#{setting}", Array(value).map(&:to_sym))
       end
+    end
+
+    def layout=(value)
+      @layout = RecordingStudio::Layout.accept(value)
     end
 
     def initialize

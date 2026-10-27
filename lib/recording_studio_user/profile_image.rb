@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "digest/md5"
+require "stringio"
+
 module RecordingStudioUser
   # Public helpers for the single Attachable image under a Profile recording.
   module ProfileImage
@@ -37,8 +40,26 @@ module RecordingStudioUser
     end
 
     def replace_existing!(existing, io:, filename:, content_type:, actor:)
-      blob = ActiveStorage::Blob.create_and_upload!(io:, filename:, content_type:)
-      existing.replace_attachment_file(signed_blob_id: blob.signed_id, actor: actor)
+      owner = existing.parent_recording
+      blob = issued_blob!(owner, io:, filename:, content_type:, actor:)
+      result = RecordingStudioAttachable::Services::ReplaceAttachmentFile.call(
+        attachment_recording: existing,
+        signed_blob_id: RecordingStudioAttachable::DirectUpload.sign(blob),
+        actor: actor
+      )
+      raise result.error if result.failure?
+
+      result.value
+    end
+
+    def issued_blob!(recording, io:, filename:, content_type:, actor:)
+      bytes = io.read
+      blob = RecordingStudioAttachable::DirectUpload.prepare!(
+        recording: recording, actor: actor, filename: filename, content_type: content_type,
+        byte_size: bytes.bytesize, checksum: Digest::MD5.base64digest(bytes)
+      )
+      blob.upload(StringIO.new(bytes), identify: false)
+      blob
     end
 
     def import!(recording, io:, filename:, content_type:, actor:)

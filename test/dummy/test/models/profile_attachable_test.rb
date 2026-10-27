@@ -16,8 +16,8 @@ class ProfileAttachableTest < ActiveSupport::TestCase
     assert_equal 1, options[:max_file_count]
     refute_includes RecordingStudio.capability_allowed_parent_types_for("RecordingStudioAttachable::Attachment"),
                     "RecordingStudioUser::People"
-    assert_includes types, "RecordingStudioAttachable::Library"
-    assert_includes types, "RecordingStudioAttachable::Placement"
+    refute_includes types, "RecordingStudioAttachable::Library"
+    refute_includes types, "RecordingStudioAttachable::Placement"
     refute RecordingStudio.capability_enabled?(:image_library, for: "RecordingStudioUser::Profile")
     refute RecordingStudio.capability_enabled?(:library_placement, for: "RecordingStudioUser::Profile")
   end

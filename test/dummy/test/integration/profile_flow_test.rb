@@ -133,8 +133,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal recording_studio_users.profile_path, path
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
-    assert_select %(body[data-theme="rounded"]), count: 1
-    assert_includes response.body, 'document.documentElement.setAttribute("data-theme", "rounded")'
+    assert_select %(html[data-theme="rounded"]), count: 1
     assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
     refute_includes response.body, "Manage access"
     refute_includes response.body, "Sign out"
@@ -146,8 +145,9 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Replace photo"
     refute_includes response.body, "Your name, email, and photo."
     refute_includes response.body, "Just you."
-    assert_includes response.body, "page-title-actions"
-    assert_includes response.body, "shadow-md"
+    assert_select "h1", text: "My Profile", count: 1
+    assert_select "header a", text: "Edit"
+    assert_includes response.body, "shadow-[var(--shadow-md)]"
     assert_equal 1, response.body.scan("md:grid-cols-2").size
     refute_includes response.body, "inline-flex flex-wrap items-center"
     assert_select "dt", count: 0
@@ -176,8 +176,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
-    assert_select %(body[data-theme="rounded"]), count: 1
-    assert_includes response.body, 'document.documentElement.setAttribute("data-theme", "rounded")'
+    assert_select %(html[data-theme="rounded"]), count: 1
     assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
     refute_includes response.body, "Manage access"
     refute_includes response.body, "Sign out"
@@ -296,18 +295,23 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     first = RecordingStudioUser.profile_image_recording_for(@user)
     assert_equal "profile.png", first.recordable.original_filename
 
-    blob = ActiveStorage::Blob.create_and_upload!(
-      io: File.open(profile_photo_fixture_path),
+    bytes = File.binread(profile_photo_fixture_path)
+    blob = RecordingStudioAttachable::DirectUpload.prepare!(
+      recording: recording,
+      actor: @user,
       filename: "swapped.png",
+      byte_size: bytes.bytesize,
+      checksum: Digest::MD5.base64digest(bytes),
       content_type: "image/png"
     )
+    blob.upload(StringIO.new(bytes), identify: false)
 
     patch recording_studio_attachable.attachment_path(
       first,
       redirect_mode: "return_to",
       return_to: edit_path
     ), params: {
-      attachment: { signed_blob_id: blob.signed_id }
+      attachment: { signed_blob_id: RecordingStudioAttachable::DirectUpload.sign(blob) }
     }
 
     assert_redirected_to edit_path
@@ -340,10 +344,9 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes File.read(override), "FlatPack::PageNav"
     refute File.exist?(Rails.root.join("app/views/layouts/recording_studio/default_layout.html.erb"))
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
-    assert_select %(body[data-theme="rounded"]), count: 1
-    assert_includes response.body, 'document.documentElement.setAttribute("data-theme", "rounded")'
+    assert_select %(html[data-theme="rounded"]), count: 1
     assert_select "nav.flat-pack-page-nav", count: 1
-    assert_match(/flat-pack--page-nav#back/, response.body)
+    assert_select %(nav.flat-pack-page-nav a[aria-label="Back"]), count: 1
     assert_select %(a[href="#{recording_studio_accessible.recording_accesses_path(recording)}"]), count: 0
     refute_includes response.body, "Manage access"
     refute_includes response.body, "Sign out"

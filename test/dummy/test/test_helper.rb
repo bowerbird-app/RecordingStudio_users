@@ -42,6 +42,17 @@ module AccessGrantTestHelper
 
     User.where.not(id: actor.id).first
   end
+
+  # Early returns must not reach an ensure that assigns an unset local. That
+  # writes nil over the default authorizer for every later example.
+  def with_open_access_authorizer
+    configuration = RecordingStudioAccessible.configuration
+    original = configuration.access_management_authorizer
+    configuration.access_management_authorizer = ->(**) { true }
+    yield
+  ensure
+    configuration.access_management_authorizer = original
+  end
 end
 
 module SignupTermsTestHelper

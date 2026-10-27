@@ -1,8 +1,7 @@
-<%# Core default_layout puts data-theme on body. Flatpack named themes
-    must live on html/:root so --button-primary-* aliases inherit charcoal,
-    not :root's default blue. This hook does not fork the layout.
-    flat_pack/application owns .fp-button paint (primary filled CTAs). %>
-<%= stylesheet_link_tag "flat_pack/application", "data-turbo-track": "reload" %>
+<%# Recording Studio 6.1 already sets data-theme="rounded" on <html> and
+    links FlatPack stylesheets before Tailwind. This hook only repeats the
+    attribute. Do not link stylesheets here: the layout renders this partial
+    after Tailwind. %>
 <script>
   document.documentElement.setAttribute("data-theme", "rounded");
 </script>

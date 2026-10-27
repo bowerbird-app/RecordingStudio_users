@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-10-27
+
+### Changed
+
+- Require `recording_studio` >= 6.1.0 and `flat_pack` >= 0.1.315. Development
+  pins Recording Studio `v6.1.0` and FlatPack `0.1.319`
+  (`1fcbafe94f8eb118f0a22182f63f5110fcc97a56`).
+- Require `view_component` >= 4.14, < 5.
+- `config.layout` defaults to `nil`. Assignments go through
+  `RecordingStudio::Layout.accept`. Signed-in controllers use
+  `recording_studio_layout`. Sign-in, sign-up, and password screens stay on
+  `recording_studio_user/auth`.
+- Profile, OTP code, and sign-in method screens set `content_for :title`
+  (and `:subtitle` where the page has one). Left chrome uses
+  `flat_pack_page_nav`. Right actions use `register_page_nav`. Cards use
+  `shadow: :md`.
+- Development pins Admin `v2.7.0` and Attachable `v0.22.0`. Attachable no
+  longer ships Library or Placement recordables. Drop those names from
+  `config.recordable_types`.
+- `replace_profile_image!` signs the replacement blob with
+  `RecordingStudioAttachable::DirectUpload::PURPOSE` (`:attachable_upload`).
+
+### Upgrade notes
+
+- Bump to `0.26.0`. No Users migration.
+- Remove `include RecordingStudio::UsesDefaultLayout` and any
+  `layout "recording_studio/default_layout"` on host controllers that should
+  follow the core layout. Set `RecordingStudioUser.configuration.layout` to
+  `nil`, a layout name, `false`, or `->(controller:) { ... }`.
+- Replace `recording_studio_page_nav` and inline page titles on overrides of
+  these screens with `content_for :title`, `flat_pack_page_nav`, and
+  `register_page_nav`. Load FlatPack stylesheets before Tailwind.
+- Remove `RecordingStudioAttachable::Library` and
+  `RecordingStudioAttachable::Placement` from `recordable_types` when you
+  move to Attachable 0.22.
+- Sibling engines that still call `RecordingStudio::UsesDefaultLayout` need
+  a host shim until those gems drop the concern. Site Settings `v0.2.1` and
+  OAuth `v0.17.0` are in that set. Admin `2.7.0` renamed `engine_layout` to
+  `layout`.
+- Hosts that post a `signed_blob_id` to Attachable sign it with purpose
+  `:attachable_upload`. `replace_profile_image!` does that.
+
 ## [0.25.2] - 2026-10-22
 
 ### Changed

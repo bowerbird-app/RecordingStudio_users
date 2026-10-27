@@ -24,6 +24,12 @@ module RecordingStudioUser
       profile_recording.images(per_page: 1).first
     end
 
+    # The file-button partial calls this from a Users view. Attachable only
+    # mixes the helper into its own controllers.
+    def recording_direct_uploads_path(recording)
+      recording_studio_attachable.recording_direct_uploads_path(recording)
+    end
+
     def profile_image_preview_path(attachment_recording, variant: :square_med)
       return if attachment_recording.blank?
 

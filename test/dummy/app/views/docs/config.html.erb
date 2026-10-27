@@ -36,7 +36,8 @@
       # config/initializers/recording_studio_user.rb
       RecordingStudioUser.configure do |config|
         config.user_class_name = "User"
-        config.layout = "application"
+        # nil uses RecordingStudio.configuration.layout, then the core default layout.
+        # config.layout = "application"
         config.additional_profile_attributes |= %i[display_name]
         config.require_password_confirmation = false
         # config.login_title = "Welcome back"
@@ -51,7 +52,7 @@
     <code>:otp</code> requires OTP to be fully enabled.
   </p>
   <p class="text-sm leading-6 text-(--surface-content-color)">
-    Defaults are <code>User</code>, <code>application</code>, <code>/recording_studio_users</code>,
+    Defaults are <code>User</code>, a nil layout, <code>/recording_studio_users</code>,
     <code>profile</code>, and <code>admin</code>. A conventional initializer runs too late to change an already
     mounted engine path or its already-drawn profile and admin routes.
   </p>
