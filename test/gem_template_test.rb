@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.26.2", RecordingStudioUser::VERSION
+    assert_equal "0.26.3", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -243,7 +243,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "recording_studio_root_switchable (0.9.0)"
   end
 
-  def test_gemfiles_pin_admin_v270_and_flatpack_01324
+  def test_gemfiles_pin_admin_v270_and_flatpack_01328
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
@@ -253,7 +253,8 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_logs"'
       assert_includes contents, 'tag: "v0.7.0"'
       assert_includes contents, 'github: "bowerbird-app/flatpack"'
-      assert_includes contents, 'ref: "d005941bf5a09a51582d5b7418fe5486738474eb"'
+      assert_includes contents, 'ref: "d1206e7c515bff9c25c01a2f5c6399d208ba667e"'
+      refute_includes contents, "d005941bf5a09a51582d5b7418fe5486738474eb"
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
@@ -265,12 +266,13 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes lock, "tag: v0.7.0"
       assert_includes lock, "3127366cfccc882b20a01f76811adc8c055e248d"
       assert_includes lock, "recording_studio_logs (0.7.0)"
-      assert_includes lock, "ref: d005941bf5a09a51582d5b7418fe5486738474eb"
-      assert_includes lock, "flat_pack (0.1.324)"
+      assert_includes lock, "ref: d1206e7c515bff9c25c01a2f5c6399d208ba667e"
+      assert_includes lock, "flat_pack (0.1.328)"
+      refute_includes lock, "d005941bf5a09a51582d5b7418fe5486738474eb"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"flat_pack", ">= 0.1.320"'
+    assert_includes gemspec, '"flat_pack", ">= 0.1.328"'
     assert_includes gemspec, '"recording_studio_admin", "~> 2.0"'
   end
 

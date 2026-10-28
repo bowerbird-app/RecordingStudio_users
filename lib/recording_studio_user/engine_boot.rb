@@ -30,14 +30,6 @@ module RecordingStudioUser
       ActionController::Base.prepend_view_path(host_views)
     end
 
-    def apply_flatpack_button_svg_icon!
-      require "recording_studio_user/flatpack_button_svg_icon"
-      return unless defined?(FlatPack::Button::Component)
-      return if FlatPack::Button::Component.ancestors.include?(RecordingStudioUser::FlatpackButtonSvgIcon)
-
-      FlatPack::Button::Component.prepend(RecordingStudioUser::FlatpackButtonSvgIcon)
-    end
-
     def apply_profiled_user!
       require_dependency engine_root.join(
         "app/models/concerns/recording_studio_user/profiled_user.rb"

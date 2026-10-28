@@ -77,15 +77,8 @@ module RecordingStudioUser
       app.config.filter_parameters += %i[otp code login_code]
     end
 
-    # Flatpack Button `icon:` is Heroicon-only; List::Item already accepts inline SVG.
-    # Continue-with provider logos need the same SVG branch on Button.
-    initializer "recording_studio_user.flatpack_button_svg_icon" do
-      config.to_prepare { RecordingStudioUser::EngineBoot.apply_flatpack_button_svg_icon! }
-    end
-
     def self.load_view_helpers! = EngineBoot.load_view_helpers!
     def self.prefer_signup_view_paths! = EngineBoot.prefer_signup_view_paths!
-    def self.apply_flatpack_button_svg_icon! = EngineBoot.apply_flatpack_button_svg_icon!
     def self.apply_profiled_user! = EngineBoot.apply_profiled_user!
     def self.apply_otp_setup!(user_class) = EngineBoot.apply_otp_setup!(user_class)
     def self.load_user_class = EngineBoot.load_user_class
