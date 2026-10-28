@@ -19,13 +19,13 @@
 <%= render FlatPack::Grid::Component.new(cols: 2) do %>
   <%= render FlatPack::Card::Component.new(shadow: :md) do %>
     <%= render "avatar" %>
-    <div>
-      <p class="font-semibold"><%= profile_display_name(@user) %></p>
-      <p class="text-[var(--surface-muted-content-color)]"><%= @user.email %></p>
-      <p class="text-[var(--surface-muted-content-color)]"><%= @profile.time_zone %></p>
-      <% if (language = profile_language_name(@profile)).present? %>
-        <p class="text-[var(--surface-muted-content-color)]"><%= language %></p>
-      <% end %>
-    </div>
+    <%= render FlatPack::SectionTitle::Component.new(
+      title: profile_display_name(@user),
+      subtitle: [
+        @user.email,
+        @profile.time_zone,
+        profile_language_name(@profile)
+      ].compact_blank.join(" · ")
+    ) %>
   <% end %>
 <% end %>

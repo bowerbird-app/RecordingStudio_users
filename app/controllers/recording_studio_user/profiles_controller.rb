@@ -15,11 +15,11 @@ module RecordingStudioUser
       apply_profile_image!
       redirect_to profile_path, notice: updated_notice
     rescue ActiveRecord::RecordInvalid => e
-      @profile = e.record
-      render :edit, status: :unprocessable_entity
+      render_invalid_profile(e.record)
+    rescue RecordingStudioAttachable::Authorization::NotAuthorizedError
+      head :forbidden
     rescue ArgumentError, RecordingStudioAttachable::Error => e
-      flash.now[:alert] = e.message
-      render :edit, status: :unprocessable_entity
+      render_attachable_error(e)
     end
 
     private
@@ -52,6 +52,16 @@ module RecordingStudioUser
       %i[first_name last_name time_zone] + RecordingStudioUser.config.additional_profile_attributes
     end
 
+    def render_invalid_profile(profile)
+      @profile = profile
+      render :edit, status: :unprocessable_entity
+    end
+
+    def render_attachable_error(error)
+      flash.now[:alert] = error.message
+      render :edit, status: :unprocessable_entity
+    end
+
     def save_profile!
       RecordingStudioUser.record_profile!(current_user, actor: current_user, **profile_write_attributes)
     end
@@ -59,10 +69,21 @@ module RecordingStudioUser
     def apply_profile_image!
       blob_id = profile_image_param(:signed_blob_id)
       if blob_id.present?
+        authorize_provider_upload!
         RecordingStudioUser.assign_profile_image!(current_user, signed_blob_id: blob_id, actor: current_user)
       elsif profile_image_param(:remove) == "1"
         RecordingStudioUser.remove_profile_image!(current_user, actor: current_user)
       end
+    end
+
+    # Attachable's supported upload authorization helper. Finds the Profile
+    # recording (already loaded for this screen) and authorizes :upload.
+    def authorize_provider_upload!
+      RecordingStudioAttachable::Authorization.authorize!(
+        action: :upload,
+        actor: current_user,
+        recording: @profile_recording
+      )
     end
 
     def profile_image_param(key)

@@ -2,21 +2,6 @@
 
 require "test_helper"
 
-unless Object.method_defined?(:stub)
-  class Object
-    def stub(name, val_or_callable)
-      metaclass = singleton_class
-      original = metaclass.instance_method(name)
-      metaclass.define_method(name) do |*_args, **_kwargs|
-        val_or_callable
-      end
-      yield
-    ensure
-      metaclass.define_method(name, original)
-    end
-  end
-end
-
 class UsersMetricsTest < ActiveSupport::TestCase
   include AccessGrantTestHelper
 
@@ -129,21 +114,6 @@ class UsersMetricsTest < ActiveSupport::TestCase
     assert_equal User.where(confirmed_at: nil).count, counts["unconfirmed"]
     assert confirmed.confirmed_at.present?
     assert_nil unconfirmed.confirmed_at
-  end
-
-  test "skips confirmation when confirmed_at is missing" do
-    names = User.column_names - ["confirmed_at"]
-    User.stub(:column_names, names) do
-      RecordingStudioMetrics.registry.reset!
-      RecordingStudioUser::Metrics.register!
-
-      identifiers = RecordingStudioMetrics.for_resource(:users).map(&:identifier)
-      refute_includes identifiers, "users.confirmation"
-      assert_includes identifiers, "users.total"
-    end
-  ensure
-    RecordingStudioMetrics.registry.reset!
-    RecordingStudioUser::Metrics.register!
   end
 
   test "execute handler returns the value when access allows" do

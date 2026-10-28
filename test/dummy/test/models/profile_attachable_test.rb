@@ -104,10 +104,40 @@ class ProfileAttachableTest < ActiveSupport::TestCase
   end
 
   test "People is not attachable" do
-    people = File.read(RecordingStudioUser::Engine.root.join("app/models/recording_studio_user/people.rb"))
-
-    refute_includes people, "Capabilities::Attachable"
     refute RecordingStudio.capability_enabled?(:attachable, for: RecordingStudioUser::People)
+  end
+
+  test "replace_profile_image! authorizes the actor through Attachable" do
+    owner = RecordingStudioUser.create_user!(
+      email: "owner-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Owner",
+      last_name: "Photo",
+      time_zone: "UTC"
+    )
+    stranger = RecordingStudioUser.create_user!(
+      email: "stranger-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Other",
+      last_name: "Person",
+      time_zone: "UTC"
+    )
+    attach_profile_photo!(owner)
+
+    error = assert_raises(RecordingStudioAttachable::Authorization::NotAuthorizedError) do
+      File.open(profile_photo_fixture_path, "rb") do |io|
+        RecordingStudioUser.replace_profile_image!(
+          owner,
+          io: io,
+          filename: "stolen.png",
+          content_type: "image/png",
+          actor: stranger
+        )
+      end
+    end
+
+    assert_match(/Not authorized to upload/, error.message)
+    assert_equal "profile.png", RecordingStudioUser.profile_image_recording_for(owner).recordable.original_filename
   end
 
   private

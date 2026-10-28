@@ -1,5 +1,19 @@
 # Upgrading
 
+## 0.26.3
+
+Bump to `0.26.3`. No Users migration. No host code changes.
+
+Profile photo assign and replace go through Attachable upload authorization
+(`authorize_provider_upload!` on the profile screen, and
+`RecordingStudioAttachable::Authorization.authorize!(action: :upload)` when
+issuing a replacement blob). An actor who cannot upload to that Profile
+recording is forbidden. Owner bootstrap still grants `:admin`, which includes
+upload.
+
+Auth footers, profile identity, OTP codes, and sign-in method labels use
+Flatpack components. Override those views if you copied the old `<p>` markup.
+
 ## 0.26.1
 
 Bump to `0.26.1`. No Users migration. No host code changes.

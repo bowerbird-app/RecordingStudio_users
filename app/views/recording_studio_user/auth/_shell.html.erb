@@ -9,14 +9,10 @@
   <div class="flex justify-center text-center">
     <%= render FlatPack::PageTitle::Component.new(
       title: title,
+      subtitle: local_assigns[:subtitle].presence,
       variant: :h2,
       class: "mb-0 pb-0 w-auto text-center"
     ) %>
   </div>
-  <% if local_assigns[:subtitle].present? %>
-    <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
-      <%= subtitle %>
-    </p>
-  <% end %>
   <%= yield %>
 </div>

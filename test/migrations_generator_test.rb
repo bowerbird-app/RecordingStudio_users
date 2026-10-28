@@ -48,7 +48,7 @@ class MigrationsGeneratorTest < Minitest::Test
   end
 
   def test_generator_skips_when_the_host_already_has_the_migration
-    generator = RecordingStudioUser::Generators::MigrationsGenerator.new
+    generator = RecordingStudioUser::Generators::MigrationsGenerator.new([], { skip_existing: true })
     Dir.mktmpdir do |dir|
       FileUtils.mkdir_p(File.join(dir, "db/migrate"))
       File.write(
@@ -59,11 +59,18 @@ class MigrationsGeneratorTest < Minitest::Test
         File.join(dir, "db/migrate/20260831000000_restore_recording_studio_user_identities.rb"),
         "# existing\n"
       )
-      generator.define_singleton_method(:destination_root) { dir }
+      generator.destination_root = dir
+      capture_io { generator.copy_migrations }
 
-      assert generator.send(:migration_already_exists?, "create_recording_studio_user_people_and_profiles")
-      assert generator.send(:people_profiles_migration_exists?)
-      assert generator.send(:identities_migration_exists?)
+      people = Dir.glob(File.join(dir, "db/migrate", "*create_recording_studio_user_people_and_profiles.rb"))
+      identities = Dir.glob(File.join(dir, "db/migrate", "*restore_recording_studio_user_identities.rb"))
+      copied = Dir.glob(File.join(dir, "db/migrate", "*.rb"))
+
+      assert_equal 1, people.size
+      assert_equal 1, identities.size
+      assert_equal "# existing\n", File.read(people.first)
+      assert_equal "# existing\n", File.read(identities.first)
+      assert_operator copied.size, :>, 2
     end
   end
 

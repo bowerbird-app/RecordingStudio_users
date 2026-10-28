@@ -45,10 +45,10 @@
                   end
                 }
               ) do %>
-                <p class="font-medium"><%= recording_studio_user_provider_label(identity.provider) %></p>
-                <% if identity.email.present? %>
-                  <p class="text-sm text-[var(--surface-muted-content-color)]"><%= identity.email %></p>
-                <% end %>
+                <%= render FlatPack::SectionTitle::Component.new(
+                  title: recording_studio_user_provider_label(identity.provider),
+                  subtitle: identity.email.presence
+                ) %>
               <% end %>
             <% end %>
 
@@ -74,7 +74,9 @@
                   end
                 }
               ) do %>
-                <p class="font-medium"><%= recording_studio_user_provider_label(provider) %></p>
+                <%= render FlatPack::SectionTitle::Component.new(
+                  title: recording_studio_user_provider_label(provider)
+                ) %>
               <% end %>
             <% end %>
           <% end %>

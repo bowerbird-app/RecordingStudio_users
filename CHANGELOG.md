@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.3] - 2026-10-28
+
+### Changed
+
+- Draw engine routes and boot helpers in smaller units so RuboCop metrics
+  apply. No `rubocop:disable` on those files.
+- Profile photo writes authorize through Attachable
+  (`authorize_provider_upload!` / `Authorization.authorize!(action: :upload)`).
+- Auth, profile, OTP code, and sign-in method copy uses Flatpack
+  `PageTitle`, `Content`, and `SectionTitle` instead of raw `<p>` tags.
+
+### Upgrade notes
+
+- Bump to `0.26.3`. No Users migration. Hosts that already run Users 0.26.1
+  need no code changes. Profile image assign/replace still requires Accessible
+  access that Attachable treats as upload (normally `:edit`).
+
 ## [0.26.1] - 2026-10-27
 
 ### Removed
@@ -1144,7 +1161,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.3...HEAD
+[0.26.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.1...v0.26.3
 [0.26.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.0...v0.26.1
 [0.26.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.2...v0.26.0
 [0.25.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.1...v0.25.2
