@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.26.3", RecordingStudioUser::VERSION
+    assert_equal "0.26.4", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -28,7 +28,12 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes continue_partial, "recording_studio_user.omniauth.continue_with"
     assert_includes continue_partial, "form_with"
     assert_includes continue_partial, "FlatPack::Button::Component"
+    assert_includes continue_partial, "icon: button_icon"
     assert_includes continue_partial, 't("recording_studio_user.omniauth.or")'
+    refute File.exist?(
+      File.expand_path("../lib/recording_studio_user/flatpack_button_svg_icon.rb", __dir__)
+    )
+    refute defined?(RecordingStudioUser::FlatpackButtonSvgIcon)
     refute File.exist?(
       File.expand_path("../app/views/recording_studio_user/omniauth/_continue_with_google.html.erb", __dir__)
     )
@@ -243,7 +248,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "recording_studio_root_switchable (0.9.0)"
   end
 
-  def test_gemfiles_pin_admin_v270_and_flatpack_01328
+  def test_gemfiles_pin_admin_v270_and_flatpack_01329
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
@@ -253,8 +258,9 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_logs"'
       assert_includes contents, 'tag: "v0.7.0"'
       assert_includes contents, 'github: "bowerbird-app/flatpack"'
-      assert_includes contents, 'ref: "d1206e7c515bff9c25c01a2f5c6399d208ba667e"'
+      assert_includes contents, 'tag: "v0.1.329"'
       refute_includes contents, "d005941bf5a09a51582d5b7418fe5486738474eb"
+      refute_includes contents, "d1206e7c515bff9c25c01a2f5c6399d208ba667e"
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
@@ -266,9 +272,10 @@ class RecordingStudioUserTest < Minitest::Test
       assert_includes lock, "tag: v0.7.0"
       assert_includes lock, "3127366cfccc882b20a01f76811adc8c055e248d"
       assert_includes lock, "recording_studio_logs (0.7.0)"
-      assert_includes lock, "ref: d1206e7c515bff9c25c01a2f5c6399d208ba667e"
-      assert_includes lock, "flat_pack (0.1.328)"
+      assert_includes lock, "tag: v0.1.329"
+      assert_includes lock, "flat_pack (0.1.329)"
       refute_includes lock, "d005941bf5a09a51582d5b7418fe5486738474eb"
+      refute_includes lock, "d1206e7c515bff9c25c01a2f5c6399d208ba667e"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
