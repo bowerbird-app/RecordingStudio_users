@@ -63,7 +63,7 @@ class UsersTncBoundaryTest < Minitest::Test
     assert_includes dummy_gemfile, 'tag: "v0.8.1"'
     assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_publishable"'
     assert_includes dummy_gemfile, 'tag: "v0.8.0"'
-    assert_includes dummy_gemfile, 'ref: "d005941bf5a09a51582d5b7418fe5486738474eb"'
+    assert_includes dummy_gemfile, 'ref: "d1206e7c515bff9c25c01a2f5c6399d208ba667e"'
     refute_match(/recording_studio_terms_and_conditions.*ref:/, dummy_gemfile)
     assert_includes dummy_lock, "tag: v0.8.1"
     assert_includes dummy_lock, "recording_studio_terms_and_conditions (0.8.0)"
@@ -73,6 +73,6 @@ class UsersTncBoundaryTest < Minitest::Test
     assert_includes dummy_lock, "059a41ad0b821bbd978c0d0ad22a46013c8867e1"
     refute_includes dummy_lock, "recording_studio_publishable (0.6.0)"
     refute_includes dummy_lock, "6e7da3c8a9359dfcde7a177d29a49886f85fdbf8"
-    assert_includes dummy_lock, "flat_pack (0.1.324)"
+    assert_includes dummy_lock, "flat_pack (0.1.328)"
   end
 end

@@ -83,10 +83,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/flatpack.git
-  revision: d005941bf5a09a51582d5b7418fe5486738474eb
-  ref: d005941bf5a09a51582d5b7418fe5486738474eb
+  revision: d1206e7c515bff9c25c01a2f5c6399d208ba667e
+  ref: d1206e7c515bff9c25c01a2f5c6399d208ba667e
   specs:
-    flat_pack (0.1.324)
+    flat_pack (0.1.328)
       pagy (~> 9.0)
       rails (>= 7.1, < 9)
       tailwind_merge (~> 0.13)
@@ -95,9 +95,9 @@ GIT
 PATH
   remote: .
   specs:
-    recording_studio_user (0.26.2)
+    recording_studio_user (0.26.3)
       devise (~> 5.0)
-      flat_pack (>= 0.1.320)
+      flat_pack (>= 0.1.328)
       omniauth (~> 2.1)
       omniauth-apple (~> 1.3)
       omniauth-google-oauth2 (~> 1.2)
@@ -542,7 +542,7 @@ CHECKSUMS
   faraday (2.14.3) sha256=1882247e6766615c8220b4392bf1d27f6ebb63d8e28267587cef1fb0bf37f278
   faraday-follow_redirects (0.5.0) sha256=5cde93c894b30943a5d2b93c2fe9284216a6b756f7af406a1e55f211d97d10ad
   faraday-net_http (3.4.4) sha256=0e78af151747ed1b00f33e25973b4bc220d7f16c00c39676817c8b12331eb588
-  flat_pack (0.1.324)
+  flat_pack (0.1.328)
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   hashie (5.1.0) sha256=c266471896f323c446ea8207f8ffac985d2718df0a0ba98651a3057096ca3870
   i18n (1.15.2) sha256=00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5
@@ -613,7 +613,7 @@ CHECKSUMS
   recording_studio_logs (0.7.0)
   recording_studio_metrics (0.6.1)
   recording_studio_trashable (0.12.0)
-  recording_studio_user (0.26.2)
+  recording_studio_user (0.26.3)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
   reline (0.7.0) sha256=5b012d8e55dbf9d450f12bde2cf7d15ff546ae80b3f8f3b30e570d431815583d
   responders (3.2.1) sha256=c2772970cbda654c0e772d852e5a851e82cd8e96f5fa958650861ba75b8ffa84

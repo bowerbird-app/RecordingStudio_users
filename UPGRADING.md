@@ -1,5 +1,16 @@
 # Upgrading
 
+## 0.26.3
+
+Bump to `0.26.3`. No Users migration.
+
+Hosts must be on FlatPack >= 0.1.328. That release accepts a trusted
+inline SVG string on `FlatPack::Button` `icon:` (starts with `<svg`),
+sized like a Heroicon. Users no longer prepends Button for Continue-with
+provider logos. Pin the host Gemfile to FlatPack commit
+`d1206e7c515bff9c25c01a2f5c6399d208ba667e` (version 0.1.328) or a later
+tag that includes it.
+
 ## 0.26.2
 
 Bump to `0.26.2`. No Users migration. No host code changes.

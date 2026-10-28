@@ -50,6 +50,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     %w[Google Microsoft Apple LinkedIn Instagram].each do |label|
       assert_select "form[method='post'] button[type='submit']", text: "Continue with #{label}"
     end
+    assert_select "form[method='post'] button[type='submit'] svg", minimum: 5
+    refute_includes response.body, "&lt;svg"
   end
 
   test "login shows site square logo above the title when Site Settings has one" do

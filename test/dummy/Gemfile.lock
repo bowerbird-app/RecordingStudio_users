@@ -201,10 +201,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/flatpack.git
-  revision: d005941bf5a09a51582d5b7418fe5486738474eb
-  ref: d005941bf5a09a51582d5b7418fe5486738474eb
+  revision: d1206e7c515bff9c25c01a2f5c6399d208ba667e
+  ref: d1206e7c515bff9c25c01a2f5c6399d208ba667e
   specs:
-    flat_pack (0.1.324)
+    flat_pack (0.1.328)
       pagy (~> 9.0)
       rails (>= 7.1, < 9)
       tailwind_merge (~> 0.13)
@@ -221,9 +221,9 @@ PATH
 PATH
   remote: ../..
   specs:
-    recording_studio_user (0.26.2)
+    recording_studio_user (0.26.3)
       devise (~> 5.0)
-      flat_pack (>= 0.1.320)
+      flat_pack (>= 0.1.328)
       omniauth (~> 2.1)
       omniauth-apple (~> 1.3)
       omniauth-google-oauth2 (~> 1.2)
@@ -844,7 +844,7 @@ CHECKSUMS
   ffi (1.17.2-x86_64-darwin) sha256=981f2d4e32ea03712beb26e55e972797c2c5a7b0257955d8667ba58f2da6440e
   ffi (1.17.2-x86_64-linux-gnu) sha256=05d2026fc9dbb7cfd21a5934559f16293815b7ce0314846fee2ac8efbdb823ea
   ffi (1.17.2-x86_64-linux-musl) sha256=97c0eb3981414309285a64dc4d466bd149e981c279a56371ef811395d68cb95c
-  flat_pack (0.1.324)
+  flat_pack (0.1.328)
   fugit (1.12.1) sha256=5898f478ede9b415f0804e42b8f3fd53f814bd85eebffceebdbc34e1107aaf68
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   hashie (5.1.0) sha256=c266471896f323c446ea8207f8ffac985d2718df0a0ba98651a3057096ca3870
@@ -949,7 +949,7 @@ CHECKSUMS
   recording_studio_site_settings (0.2.0)
   recording_studio_terms_and_conditions (0.8.0)
   recording_studio_trashable (0.12.0)
-  recording_studio_user (0.26.2)
+  recording_studio_user (0.26.3)
   redis (5.4.1) sha256=b5e675b57ad22b15c9bcc765d5ac26f60b675408af916d31527af9bd5a81faae
   redis-client (0.31.0) sha256=6820cb2a21e6795a823141f50fd25e655de2b8dc8ff833b43509a27b0263fd75
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
