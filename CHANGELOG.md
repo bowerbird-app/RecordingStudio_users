@@ -7,21 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.26.3] - 2026-10-28
+## [0.26.2] - 2026-10-28
 
 ### Changed
 
 - Draw engine routes and boot helpers in smaller units so RuboCop metrics
-  apply. No `rubocop:disable` on those files.
-- Profile photo writes authorize through Attachable
-  (`authorize_provider_upload!` / `Authorization.authorize!(action: :upload)`).
-- Auth, profile, OTP code, and sign-in method copy uses Flatpack
-  `PageTitle`, `Content`, and `SectionTitle` instead of raw `<p>` tags.
+  apply. No `rubocop:disable` on those files. `Engine.apply_profiled_user!`,
+  `Engine.apply_otp_setup!`, and `Engine.load_user_class` remain as thin
+  delegators onto `EngineBoot`.
+- `replace_profile_image!` now authorizes Attachable `:upload` when it
+  issues a replacement blob (`ProfileImage::Blobs`). Previously that blob
+  was prepared without that check. Edit Profile does not duplicate the
+  check. `create_user!` still bootstraps `:admin` on the owner's Profile,
+  which includes upload. An actor without an access row on that Profile
+  is forbidden.
+- Auth, profile, and sign-in method copy uses Flatpack `PageTitle`,
+  `Content`, and `SectionTitle` instead of raw `<p>` tags. The OTP code
+  page still uses large monospace, select-all text for the code.
 
 ### Upgrade notes
 
-- Bump to `0.26.3`. No Users migration. Hosts that already run Users 0.26.1
-  need no code changes. Profile image assign/replace still requires Accessible
+- Bump to `0.26.2`. No Users migration. Hosts that already run Users 0.26.1
+  need no code changes. Profile image replace now requires Accessible
   access that Attachable treats as upload (normally `:edit`).
 
 ## [0.26.1] - 2026-10-27
@@ -1161,8 +1168,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.3...HEAD
-[0.26.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.1...v0.26.3
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.2...HEAD
+[0.26.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.1...v0.26.2
 [0.26.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.0...v0.26.1
 [0.26.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.2...v0.26.0
 [0.25.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.25.1...v0.25.2

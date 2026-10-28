@@ -83,16 +83,11 @@ module RecordingStudioUser
       config.to_prepare { RecordingStudioUser::EngineBoot.apply_flatpack_button_svg_icon! }
     end
 
-    def self.load_view_helpers!
-      EngineBoot.load_view_helpers!
-    end
-
-    def self.prefer_signup_view_paths!
-      EngineBoot.prefer_signup_view_paths!
-    end
-
-    def self.apply_flatpack_button_svg_icon!
-      EngineBoot.apply_flatpack_button_svg_icon!
-    end
+    def self.load_view_helpers! = EngineBoot.load_view_helpers!
+    def self.prefer_signup_view_paths! = EngineBoot.prefer_signup_view_paths!
+    def self.apply_flatpack_button_svg_icon! = EngineBoot.apply_flatpack_button_svg_icon!
+    def self.apply_profiled_user! = EngineBoot.apply_profiled_user!
+    def self.apply_otp_setup!(user_class) = EngineBoot.apply_otp_setup!(user_class)
+    def self.load_user_class = EngineBoot.load_user_class
   end
 end

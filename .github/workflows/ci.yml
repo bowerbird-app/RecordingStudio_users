@@ -79,21 +79,10 @@ jobs:
           cache-version: ${{ hashFiles('test/dummy/Gemfile.lock') }}
 
       - name: Install dummy app dependencies
+        run: bundle install
         working-directory: test/dummy
         env:
           BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
-        run: |
-          attempt=1
-          until bundle install; do
-            if [ "$attempt" -ge 4 ]; then
-              echo "dummy bundle install failed after ${attempt} attempts"
-              exit 1
-            fi
-            delay=$((attempt * 8))
-            echo "dummy bundle install failed (attempt ${attempt}); retrying in ${delay}s"
-            sleep "$delay"
-            attempt=$((attempt + 1))
-          done
 
       - name: Build dummy app Tailwind assets
         run: bundle exec rails tailwindcss:build

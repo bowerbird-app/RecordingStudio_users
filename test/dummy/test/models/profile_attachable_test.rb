@@ -104,6 +104,9 @@ class ProfileAttachableTest < ActiveSupport::TestCase
   end
 
   test "People is not attachable" do
+    people = File.read(RecordingStudioUser::Engine.root.join("app/models/recording_studio_user/people.rb"))
+
+    refute_includes people, "Capabilities::Attachable"
     refute RecordingStudio.capability_enabled?(:attachable, for: RecordingStudioUser::People)
   end
 

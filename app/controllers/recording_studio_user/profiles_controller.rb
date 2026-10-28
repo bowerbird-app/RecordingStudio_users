@@ -69,21 +69,10 @@ module RecordingStudioUser
     def apply_profile_image!
       blob_id = profile_image_param(:signed_blob_id)
       if blob_id.present?
-        authorize_provider_upload!
         RecordingStudioUser.assign_profile_image!(current_user, signed_blob_id: blob_id, actor: current_user)
       elsif profile_image_param(:remove) == "1"
         RecordingStudioUser.remove_profile_image!(current_user, actor: current_user)
       end
-    end
-
-    # Attachable's supported upload authorization helper. Finds the Profile
-    # recording (already loaded for this screen) and authorizes :upload.
-    def authorize_provider_upload!
-      RecordingStudioAttachable::Authorization.authorize!(
-        action: :upload,
-        actor: current_user,
-        recording: @profile_recording
-      )
     end
 
     def profile_image_param(key)

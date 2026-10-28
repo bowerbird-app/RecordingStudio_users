@@ -9,11 +9,12 @@
 ) %>
 
 <% if @code.present? %>
-  <%= render FlatPack::PageTitle::Component.new(
-    title: @code,
-    subtitle: t("recording_studio_user.otp.expires_in", time: time_ago_in_words(@challenge.expires_at)),
-    variant: :h2
-  ) %>
+  <p class="select-all font-mono text-5xl font-semibold tracking-[0.25em] text-(--surface-content-color)">
+    <%= @code %>
+  </p>
+  <p class="mt-2 text-sm text-(--surface-muted-content-color)">
+    <%= t("recording_studio_user.otp.expires_in", time: time_ago_in_words(@challenge.expires_at)) %>
+  </p>
 <% else %>
   <%= render FlatPack::Alert::Component.new(
     title: t("recording_studio_user.otp.no_longer_valid"),

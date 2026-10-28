@@ -62,6 +62,15 @@ class MetricsTest < Minitest::Test
     RecordingStudioUser::Metrics.define_confirmation(dsl, user_class)
 
     refute called
+
+    totals = []
+    core = Object.new
+    core.define_singleton_method(:count) { |id, **| totals << id }
+    core.define_singleton_method(:timeseries) { |*| }
+    core.define_singleton_method(:breakdown) { |*| }
+    RecordingStudioUser::Metrics.define_core(core)
+
+    assert_includes totals, :total
   end
 
   def test_access_can_view_is_false_without_actor_or_admin_root

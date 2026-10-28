@@ -444,6 +444,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
 
     assert_includes controller, "RecordingStudioAccessible.authorized?"
     assert_includes controller, "authorize_profile_access!"
+    refute_includes controller, "authorize_provider_upload!"
     refute_includes controller, "can_access?"
     refute_includes controller, "@user.update"
     refute_includes controller, "current_user.admin"
