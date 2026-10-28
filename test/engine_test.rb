@@ -68,6 +68,7 @@ class EngineTest < Minitest::Test
     refute_includes people, "enable_capability(:accessible"
     refute_includes people, "Capabilities::Attachable"
     assert_includes controller, "RecordingStudioAccessible.authorized?"
+    refute_includes controller, "authorize_provider_upload!"
     refute_includes controller, "update_photo"
     refute_includes controller, "photo_return_path"
     refute_includes controller, "can_access?"
@@ -92,5 +93,21 @@ class EngineTest < Minitest::Test
     refute_includes access, "AUTHORIZER_MUTEX"
     refute_includes access, "ensure_owner_access!"
     refute_includes directory, "bootstrap_owner_access!(recording: people_root"
+  end
+
+  def test_engine_keeps_public_boot_helpers
+    assert_respond_to RecordingStudioUser::Engine, :apply_profiled_user!
+    assert_respond_to RecordingStudioUser::Engine, :apply_otp_setup!
+    assert_respond_to RecordingStudioUser::Engine, :load_user_class
+    assert_equal 0, RecordingStudioUser::Engine.method(:apply_profiled_user!).arity
+    assert_equal 1, RecordingStudioUser::Engine.method(:apply_otp_setup!).arity
+    assert_equal 0, RecordingStudioUser::Engine.method(:load_user_class).arity
+  end
+
+  def test_otp_code_page_keeps_large_monospace_select_all_code
+    show = File.read(File.expand_path("../app/views/recording_studio_user/otp_codes/show.html.erb", __dir__))
+
+    assert_includes show, "select-all font-mono text-5xl font-semibold tracking-[0.25em]"
+    refute_includes show, "FlatPack::PageTitle::Component"
   end
 end

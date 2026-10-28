@@ -15,11 +15,11 @@ module RecordingStudioUser
       apply_profile_image!
       redirect_to profile_path, notice: updated_notice
     rescue ActiveRecord::RecordInvalid => e
-      @profile = e.record
-      render :edit, status: :unprocessable_entity
+      render_invalid_profile(e.record)
+    rescue RecordingStudioAttachable::Authorization::NotAuthorizedError
+      head :forbidden
     rescue ArgumentError, RecordingStudioAttachable::Error => e
-      flash.now[:alert] = e.message
-      render :edit, status: :unprocessable_entity
+      render_attachable_error(e)
     end
 
     private
@@ -50,6 +50,16 @@ module RecordingStudioUser
 
     def permitted_profile_attributes
       %i[first_name last_name time_zone] + RecordingStudioUser.config.additional_profile_attributes
+    end
+
+    def render_invalid_profile(profile)
+      @profile = profile
+      render :edit, status: :unprocessable_entity
+    end
+
+    def render_attachable_error(error)
+      flash.now[:alert] = error.message
+      render :edit, status: :unprocessable_entity
     end
 
     def save_profile!

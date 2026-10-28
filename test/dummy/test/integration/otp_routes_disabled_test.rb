@@ -38,8 +38,7 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
       otp_registration_enabled: @config.otp_registration_enabled,
       otp_login_enabled: @config.otp_login_enabled,
       primary_login_type: @config.primary_login_type,
-      registration_authentication_methods:
-        @config.instance_variable_get(:@registration_authentication_methods)
+      registration_authentication_methods: @config.registration_authentication_methods.dup
     }
   end
 
@@ -116,18 +115,15 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
 
   def disable_otp_login!
     @config.primary_login_type = :email
-    @config.instance_variable_set(:@registration_authentication_methods, %i[password])
-    @config.instance_variable_set(:@otp_login_enabled, false)
+    @config.registration_authentication_methods = %i[password]
+    @config.otp_login_enabled = false
   end
 
   def restore_otp_config!
-    @config.instance_variable_set(
-      :@registration_authentication_methods,
-      @originals[:registration_authentication_methods]
-    )
-    @config.instance_variable_set(:@otp_login_enabled, @originals[:otp_login_enabled])
-    @config.otp_registration_enabled = @originals[:otp_registration_enabled]
     @config.otp_enabled = @originals[:otp_enabled]
+    @config.otp_login_enabled = @originals[:otp_login_enabled]
+    @config.otp_registration_enabled = @originals[:otp_registration_enabled]
+    @config.registration_authentication_methods = @originals[:registration_authentication_methods]
     @config.primary_login_type = @originals[:primary_login_type]
   end
 

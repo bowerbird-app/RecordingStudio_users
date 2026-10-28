@@ -45,6 +45,34 @@ class MetricsTest < Minitest::Test
     assert RecordingStudioUser::Metrics.confirmable_column?(user_class)
   end
 
+  def test_define_confirmation_skips_without_confirmed_at
+    user_class = Class.new do
+      def self.column_names
+        %w[id email]
+      end
+
+      def self.table_exists?
+        true
+      end
+    end
+    called = false
+    dsl = Object.new
+    dsl.define_singleton_method(:custom) { |*| called = true }
+
+    RecordingStudioUser::Metrics.define_confirmation(dsl, user_class)
+
+    refute called
+
+    totals = []
+    core = Object.new
+    core.define_singleton_method(:count) { |id, **| totals << id }
+    core.define_singleton_method(:timeseries) { |*| }
+    core.define_singleton_method(:breakdown) { |*| }
+    RecordingStudioUser::Metrics.define_core(core)
+
+    assert_includes totals, :total
+  end
+
   def test_access_can_view_is_false_without_actor_or_admin_root
     context = Object.new
     def context.access_grant

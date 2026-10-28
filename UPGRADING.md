@@ -1,5 +1,19 @@
 # Upgrading
 
+## 0.26.2
+
+Bump to `0.26.2`. No Users migration. No host code changes.
+
+`replace_profile_image!` authorizes Attachable `:upload` when it issues a
+replacement blob (`ProfileImage::Blobs`). Edit Profile does not also call
+`authorize_provider_upload!`. `create_user!` still bootstraps `:admin` on
+the owner's Profile, which includes upload. An actor without an access row
+on that Profile is forbidden.
+
+Auth footers, profile identity, and sign-in method labels use Flatpack
+components. The OTP code page still draws the code in large monospace,
+select-all text. Override those views if you copied the old markup.
+
 ## 0.26.1
 
 Bump to `0.26.1`. No Users migration. No host code changes.

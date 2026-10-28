@@ -34,9 +34,9 @@
     </div>
   <% end %>
 
-  <p class="text-center text-sm text-[var(--surface-muted-content-color)]">
+  <%= render FlatPack::Content::Component.new(class: "text-center") do %>
     <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
       <%= t("recording_studio_user.auth.back_to_sign_in") %>
     <% end %>
-  </p>
+  <% end %>
 <% end %>

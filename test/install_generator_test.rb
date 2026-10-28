@@ -4,14 +4,6 @@ require "test_helper"
 require "generators/recording_studio_user/install/install_generator"
 
 class InstallGeneratorTest < Minitest::Test
-  def test_tailwind_sources_name_the_engine_and_flatpack
-    generator = RecordingStudioUser::Generators::InstallGenerator.new
-    sources = generator.send(:tailwind_sources)
-
-    assert(sources.any? { |line| line.include?("recording_studio_user") })
-    assert(sources.any? { |line| line.include?("flatpack") })
-  end
-
   def test_initializer_documents_route_load_timing
     initializer = File.read(
       File.expand_path(
@@ -64,6 +56,8 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes generator, "bootstrap_owner_access!"
     assert_includes generator, "recording_studio_attachable:install"
     assert_includes generator, "gem login chrome"
+    assert_includes generator, "recording_studio_user"
+    assert_includes generator, "flatpack"
     refute_includes generator, "access_management_authorizer"
     refute_includes generator, "AccessCreationContext"
   end

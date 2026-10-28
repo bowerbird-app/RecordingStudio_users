@@ -28,7 +28,7 @@ class AuthRoutesHelperTest < Minitest::Test
   end
 
   def test_engine_routes_gate_otp_on_config
-    source = File.read(File.expand_path("../config/routes.rb", __dir__))
+    source = File.read(File.expand_path("../lib/recording_studio_user/engine_routes.rb", __dir__))
 
     assert_includes source, "otp_enabled?"
     assert_includes source, "otp_registration_enabled?"

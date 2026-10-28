@@ -30,6 +30,18 @@ class ProfileAccessTest < ActiveSupport::TestCase
       recording: RecordingStudioUser.people_root,
       role: :view
     )
+
+    access_rows = RecordingStudio::Recording.where(
+      parent_recording_id: recording.id,
+      recordable_type: "RecordingStudio::Access",
+      trashed_at: nil
+    )
+    assert_operator access_rows.count, :>=, 1
+    RecordingStudioAttachable::Authorization.authorize!(
+      action: :upload,
+      actor: user,
+      recording: recording
+    )
   end
 
   test "record_profile! bootstraps missing owner access on an existing Profile recording" do
