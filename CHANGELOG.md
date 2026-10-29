@@ -11,14 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Allow `recording_studio_cache` >= 0.5, < 1 so hosts on core 6.x can use Cache 0.6.0.
+- Refresh development pins only. The root Gemfile now pins Recording Studio
+  `v6.3.0` and Cache `v0.6.0`. Dummy stays on core `v6.1.0` and Cache
+  `v0.5.1`. FlatPack stays on `v0.1.329`. The public
+  `recording_studio_cache` requirement is unchanged (`~> 0.5`).
 
 ### Upgrade notes
 
-- Bump to `0.26.5`. No Users migration. The OTP limiter still uses
-  `RecordingStudioCache::RateLimiter` (unchanged in Cache 0.6.0). Dummy stays
-  on Cache `v0.5.1` because Oauth and Root Switchable still require
-  `recording_studio_cache ~> 0.5`.
+- Bump to `0.26.5`. No Users migration. This release only refreshes
+  development pins. Hosts already matching `recording_studio_cache ~> 0.5`
+  do not need a Cache bump from this gemspec.
 
 ## [0.26.4] - 2026-10-28
 

@@ -4,9 +4,10 @@
 
 Bump to `0.26.5`. No Users migration.
 
-The gemspec accepts `recording_studio_cache` >= 0.5, < 1. Cache 0.6.0
-keeps `RateLimiter`. Dummy still pins Cache `v0.5.1` until Oauth and Root
-Switchable allow 0.6.
+This release only refreshes development pins: root Gemfile Recording Studio
+`v6.3.0` and Cache `v0.6.0`. Dummy stays on core `v6.1.0` and Cache
+`v0.5.1`. FlatPack stays on `v0.1.329`. The public
+`recording_studio_cache` requirement is unchanged (`~> 0.5`).
 
 ## 0.26.4
 

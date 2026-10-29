@@ -182,7 +182,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes dummy_lock, "tag: v0.5.1"
     assert_includes dummy_lock, "711cb9cf7074a3dcbe9b96b628d830e93dd46a5b"
     assert_includes dummy_lock, "recording_studio_cache (0.5.0)"
-    assert_includes gemspec, '"recording_studio_cache", ">= 0.5", "< 1"'
+    assert_includes gemspec, '"recording_studio_cache", "~> 0.5"'
   end
 
   def test_gemfiles_pin_accessible_v0220_tag
