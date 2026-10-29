@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.4] - 2026-10-28
+
+### Changed
+
+- Development pins FlatPack `v0.1.329`. The gemspec still requires
+  `flat_pack` >= 0.1.328. Button `icon:` still accepts a trusted `<svg`
+  string. Users does not prepend Button.
+
+### Upgrade notes
+
+- Bump to `0.26.4`. No Users migration. Hosts must stay on FlatPack >=
+  0.1.328. Dummy and development Gemfiles pin tag `v0.1.329`. Continue-with
+  provider buttons still pass inline SVG to `FlatPack::Button` `icon:`.
+
 ## [0.26.3] - 2026-10-28
 
 ### Removed
@@ -1186,7 +1200,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.4...HEAD
+[0.26.4]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.3...v0.26.4
 [0.26.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.2...v0.26.3
 [0.26.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.1...v0.26.2
 [0.26.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.0...v0.26.1

@@ -1,5 +1,13 @@
 # Upgrading
 
+## 0.26.4
+
+Bump to `0.26.4`. No Users migration.
+
+Hosts must stay on FlatPack >= 0.1.328. Dummy and development Gemfiles pin
+tag `v0.1.329`. Continue-with provider logos still pass a trusted inline SVG
+string on `FlatPack::Button` `icon:`. Users does not prepend Button.
+
 ## 0.26.3
 
 Bump to `0.26.3`. No Users migration.
