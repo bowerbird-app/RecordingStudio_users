@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.5] - 2026-10-29
+
+### Changed
+
+- Allow `recording_studio_cache` >= 0.5, < 1 so hosts on core 6.x can use Cache 0.6.0.
+
+### Upgrade notes
+
+- Bump to `0.26.5`. No Users migration. The OTP limiter still uses
+  `RecordingStudioCache::RateLimiter` (unchanged in Cache 0.6.0). Dummy stays
+  on Cache `v0.5.1` because Oauth and Root Switchable still require
+  `recording_studio_cache ~> 0.5`.
+
 ## [0.26.4] - 2026-10-28
 
 ### Changed
@@ -1200,7 +1213,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.4...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.5...HEAD
+[0.26.5]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.4...v0.26.5
 [0.26.4]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.3...v0.26.4
 [0.26.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.2...v0.26.3
 [0.26.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.1...v0.26.2

@@ -7,7 +7,7 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in recording_studio_user.gemspec
 gem "devise"
 gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.329"
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.22.0"
 gem "recording_studio_admin",
     github: "bowerbird-app/RecordingStudio_admin",
@@ -17,7 +17,7 @@ gem "recording_studio_attachable",
     tag: "v0.22.0"
 gem "recording_studio_cache",
     github: "bowerbird-app/RecordingStudio_cache",
-    tag: "v0.5.1"
+    tag: "v0.6.0"
 gem "recording_studio_logs",
     github: "bowerbird-app/RecordingStudio_logs",
     tag: "v0.7.0",

@@ -1,5 +1,13 @@
 # Upgrading
 
+## 0.26.5
+
+Bump to `0.26.5`. No Users migration.
+
+The gemspec accepts `recording_studio_cache` >= 0.5, < 1. Cache 0.6.0
+keeps `RateLimiter`. Dummy still pins Cache `v0.5.1` until Oauth and Root
+Switchable allow 0.6.
+
 ## 0.26.4
 
 Bump to `0.26.4`. No Users migration.
