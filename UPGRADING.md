@@ -1,5 +1,14 @@
 # Upgrading
 
+## 0.26.5
+
+Bump to `0.26.5`. No Users migration.
+
+This release only refreshes development pins: root Gemfile Recording Studio
+`v6.3.0` and Cache `v0.6.0`. Dummy stays on core `v6.1.0` and Cache
+`v0.5.1`. FlatPack stays on `v0.1.329`. The public
+`recording_studio_cache` requirement is unchanged (`~> 0.5`).
+
 ## 0.26.4
 
 Bump to `0.26.4`. No Users migration.
