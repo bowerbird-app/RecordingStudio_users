@@ -31,13 +31,13 @@ class AuthLayoutTest < ActionDispatch::IntegrationTest
     end
 
     controller = RecordingStudioUser::Auth::SessionsController.new
-    assert_equal RecordingStudio::DEFAULT_LAYOUT, controller.send(:recording_studio_resolved_layout)
+    assert_equal RecordingStudio::DEFAULT_LAYOUT, controller.recording_studio_resolved_layout
 
     confirmations = RecordingStudioUser::Auth::ConfirmationsController.new
-    assert_equal RecordingStudio::DEFAULT_LAYOUT, confirmations.send(:recording_studio_resolved_layout)
+    assert_equal RecordingStudio::DEFAULT_LAYOUT, confirmations.recording_studio_resolved_layout
 
     passwords = RecordingStudioUser::Auth::PasswordsController.new
-    assert_equal RecordingStudio::DEFAULT_LAYOUT, passwords.send(:recording_studio_resolved_layout)
+    assert_equal RecordingStudio::DEFAULT_LAYOUT, passwords.recording_studio_resolved_layout
   end
 
   test "a host Users layout override applies to signed-out auth screens" do
@@ -50,10 +50,10 @@ class AuthLayoutTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Welcome back"
 
     controller = RecordingStudioUser::Auth::SessionsController.new
-    assert_equal "application", controller.send(:recording_studio_resolved_layout)
+    assert_equal "application", controller.recording_studio_resolved_layout
 
     confirmations = RecordingStudioUser::Auth::ConfirmationsController.new
-    assert_equal "application", confirmations.send(:recording_studio_resolved_layout)
+    assert_equal "application", confirmations.recording_studio_resolved_layout
   end
 
   test "nil Users layout falls through to the core layout on signed-out auth" do
@@ -71,5 +71,18 @@ class AuthLayoutTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
+  end
+
+  test "core default layout still paints a flash on a signed-out auth page" do
+    post "#{new_user_session_path}/password", params: {
+      user: { email: "member@admin.com", password: "not-the-password" }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
+    alert = I18n.t("recording_studio_user.auth.email_or_password_mismatch")
+    assert_equal alert, flash[:alert]
+    assert_includes response.body, alert
+    assert_select "[role='alert']", text: alert
   end
 end
