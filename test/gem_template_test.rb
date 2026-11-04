@@ -145,10 +145,13 @@ class RecordingStudioUserTest < Minitest::Test
     [File.expand_path("../Gemfile", __dir__), File.expand_path("dummy/Gemfile", __dir__)].each do |gemfile|
       contents = File.read(gemfile)
 
-      assert_includes contents, 'github: "bowerbird-app/RecordingStudio_attachable"'
-      assert_includes contents, 'tag: "v0.22.0"'
-      refute_includes contents, 'RecordingStudio_attachable", tag: "v0.15.0"'
-      refute_includes contents, 'RecordingStudio_attachable", tag: "v0.13.0"'
+      attachable = contents[/gem "recording_studio_attachable".*?tag: "v[\d.]+"/m]
+
+      assert attachable, "expected an attachable GitHub pin"
+      assert_includes attachable, 'github: "bowerbird-app/RecordingStudio_attachable"'
+      assert_includes attachable, 'tag: "v0.22.0"'
+      refute_includes attachable, 'tag: "v0.15.0"'
+      refute_includes attachable, 'tag: "v0.13.0"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
@@ -173,15 +176,15 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache"'
     assert_includes gemfile, 'tag: "v0.6.2"'
     assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_cache"'
-    assert_includes dummy_gemfile, 'tag: "v0.6.2"'
+    assert_includes dummy_gemfile, 'tag: "v0.5.1"'
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_cache.git"
     assert_includes lock, "tag: v0.6.2"
     assert_includes lock, "4d123db79226a1f18ce1289e09c867a5f9ed335c"
     assert_includes lock, "recording_studio_cache (0.6.2)"
     assert_includes dummy_lock, "remote: https://github.com/bowerbird-app/RecordingStudio_cache.git"
-    assert_includes dummy_lock, "tag: v0.6.2"
-    assert_includes dummy_lock, "4d123db79226a1f18ce1289e09c867a5f9ed335c"
-    assert_includes dummy_lock, "recording_studio_cache (0.6.2)"
+    assert_includes dummy_lock, "tag: v0.5.1"
+    assert_includes dummy_lock, "711cb9cf7074a3dcbe9b96b628d830e93dd46a5b"
+    assert_includes dummy_lock, "recording_studio_cache (0.5.0)"
     assert_includes gemspec, '"recording_studio_cache", ">= 0.5", "< 1"'
   end
 
@@ -357,7 +360,7 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_Oauth"'
     assert_includes gemfile, 'tag: "v0.21.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_site_settings"'
-    assert_includes gemfile, 'tag: "v0.5.2"'
+    assert_includes gemfile, 'tag: "v0.2.1"'
     refute_includes gemfile, 'path: "../../vendor/recording_studio_site_settings"'
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_mcp.git"
     assert_includes lock, "tag: v0.23.2"
@@ -368,9 +371,9 @@ class RecordingStudioUserTest < Minitest::Test
     assert_includes lock, "a95d89719b52bba480dfe9acc36dd72723ed1ff5"
     assert_includes lock, "recording_studio_oauth (0.21.0)"
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_site_settings.git"
-    assert_includes lock, "tag: v0.5.2"
-    assert_includes lock, "8b83b1b905942a81962f1b068c27cfbfb06dc35f"
-    assert_includes lock, "recording_studio_site_settings (0.5.2)"
+    assert_includes lock, "tag: v0.2.1"
+    assert_includes lock, "db3f7d6cad9385021de99e8c026091bda51edaa9"
+    assert_includes lock, "recording_studio_site_settings (0.2.0)"
     refute_includes lock, "remote: ../../vendor/recording_studio_site_settings"
   end
 

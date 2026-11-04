@@ -6,8 +6,8 @@ RecordingStudioRootSwitchable.configure do |config|
   end
 
   # Render the mounted switcher pages inside the app shell when users visit them.
-  # Root Switchable 0.11+ rejects the old :application_layout symbol.
-  config.layout = ->(controller:) { controller.send(:application_layout) }
+  # Root Switchable 0.11+ rejects the :application_layout symbol.
+  config.layout = "recording_studio/default_layout"
 
   config.after_switch_redirect = lambda do |controller:, return_to:, **|
     candidate_path = return_to.presence

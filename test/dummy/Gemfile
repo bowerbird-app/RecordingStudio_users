@@ -14,7 +14,7 @@ gem "recording_studio_notifications_email",
 gem "recording_studio_notifications_push", path: "../../vendor/recording_studio_notifications_push"
 gem "recording_studio_site_settings",
     github: "bowerbird-app/RecordingStudio_site_settings",
-    tag: "v0.5.2"
+    tag: "v0.2.1"
 
 # RecordingStudio engine
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
@@ -27,7 +27,7 @@ gem "recording_studio_attachable",
     tag: "v0.22.0"
 gem "recording_studio_cache",
     github: "bowerbird-app/RecordingStudio_cache",
-    tag: "v0.6.2"
+    tag: "v0.5.1"
 gem "recording_studio_logs",
     github: "bowerbird-app/RecordingStudio_logs",
     tag: "v0.7.2",
