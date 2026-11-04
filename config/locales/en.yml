@@ -53,8 +53,11 @@ en:
       enter_email: Enter your email to continue.
       start_with_email: Start with your email.
       email_or_password_mismatch: Email or password did not match.
+      otp_account_password: This account signs in with email codes.
+      otp_account_reset: This account signs in with email codes. Use Email OTP on the sign-in page.
       eligible_code_sent: If an eligible account exists, we sent a code.
       that_code_did_not_work: That code did not work.
+      email_taken: That email already has an account. Try signing in.
       fresh_code: Fresh code on the way.
       wait_for_code: Please wait before requesting another code.
       give_it_a_minute: Give it a minute, then try again.

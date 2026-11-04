@@ -13,7 +13,7 @@ module RecordingStudioUser
         user = resource_class.find_for_database_authentication(email: resource_params[:email])
         return super if user && !user.registered_with_otp?
 
-        set_flash_message! :notice, :send_instructions
+        set_flash_message! :notice, (Devise.paranoid ? :send_paranoid_instructions : :send_instructions)
         redirect_to after_sending_reset_password_instructions_path_for(resource_name)
       end
 

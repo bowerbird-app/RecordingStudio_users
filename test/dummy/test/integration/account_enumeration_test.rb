@@ -75,6 +75,35 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
     assert_empty ActionMailer::Base.deliveries
   end
 
+  test "password reset uses the paranoid notice for every email when Devise.paranoid is on" do
+    original_paranoid = Devise.paranoid
+    Devise.paranoid = true
+
+    password_email = "enum-paranoid-#{SecureRandom.hex(4)}@example.com"
+    RecordingStudioUser.create_user!(
+      email: password_email,
+      password: "Password123!",
+      first_name: "Enum",
+      last_name: "Paranoid",
+      time_zone: "UTC"
+    )
+    otp_email = "enum-paranoid-otp-#{SecureRandom.hex(4)}@example.com"
+    confirm_otp_user!(otp_email)
+    sign_out :user
+    unknown = "enum-paranoid-unknown-#{SecureRandom.hex(4)}@example.com"
+    notice = I18n.t("devise.passwords.send_paranoid_instructions")
+
+    [unknown, password_email, otp_email].each do |email|
+      ActionMailer::Base.deliveries.clear
+      post user_password_path, params: { user: { email: email } }
+
+      assert_redirected_to new_user_session_path, email
+      assert_equal notice, flash[:notice], email
+    end
+  ensure
+    Devise.paranoid = original_paranoid
+  end
+
   test "password sign-up does not confirm that an existing email is taken" do
     email = "enum-signup-#{SecureRandom.hex(4)}@example.com"
     RecordingStudioUser.create_user!(

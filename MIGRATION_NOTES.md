@@ -1,0 +1,133 @@
+# Migration Notes - Private Gems to Public Gems
+
+## Completed Changes
+
+1. Removed repository access entries from `.devcontainer/devcontainer.json`.
+2. Updated Codespaces and private-gems notes for public dependencies.
+3. Replaced MakeupArtist with FlatPack in the dummy app dependency, views, layouts, and Tailwind sources.
+4. Pinned the dummy app to FlatPack `v0.1.133` in `test/dummy/Gemfile` and its lockfile.
+5. Regenerated the dummy app bundle and completed the FlatPack installation work.
+
+## Current Requirements
+
+- Ruby 3.3 or newer
+- Rails 8.1 or newer
+- Public RubyGems and GitHub access for dependency installation
+- No private gem credentials for the template dependencies
+
+## Verification
+
+Install both bundles and run the complete gem and dummy app test path:
+
+```bash
+bundle install
+BUNDLE_GEMFILE=test/dummy/Gemfile bundle install
+bundle exec rake test:all
+```
+
+Run the dummy app from its directory for browser verification:
+
+```bash
+cd test/dummy
+bin/dev
+```
+
+Use the [FlatPack repository](https://github.com/bowerbird-app/flatpack) and the live FlatPack demo linked from the top-level README for current component documentation.
+
+## Email OTP authentication
+
+### Dependencies
+
+- `recording_studio_cache` 0.5+ (OTP issue/resend cooldown via `RecordingStudioCache::RateLimiter`)
+- `recording_studio_notifications` 0.3+
+- `recording_studio_notifications_email` 0.3+ (required for email delivery)
+- `recording_studio_notifications_push` 0.2+ (optional; login OTP push channel)
+
+### Migrations
+
+Run the migrations generator after upgrading:
+
+```bash
+bin/rails generate recording_studio_user:migrations
+bin/rails db:migrate
+```
+
+New templates:
+
+1. **`add_registered_with_to_users`** — adds `registered_with` (`password` or `otp`) with a check constraint. Backfills existing rows to `password`. If `authentication_method` is still present, it is renamed instead.
+2. **`add_devise_confirmable_to_users`** — adds Devise confirmable columns. Backfills `confirmed_at` for existing users so password accounts stay signed-in.
+3. **`create_recording_studio_user_otp_challenges`** — stores hashed OTP codes, expiry, attempts, and encrypted delivery ciphertext. Open challenges (not consumed, not revoked) also have a partial unique index on `(user_id, purpose)`.
+4. **`add_open_otp_challenge_index`** — adds that partial unique index when the challenges table already exists. It does nothing if the index is already there.
+
+The host users table needs a case-insensitive unique index on `email`. A unique index on `LOWER(email)` is the usual shape. `create_unconfirmed_user!` rescues a unique violation and returns the row that won.
+
+OTP rate limits read and increment `Rails.cache`. Use a shared, atomic store (Redis or Memcached). A memory store or a null store cannot enforce the limits across processes, and the app warns at boot when one-time codes are on and the cache is one of those.
+
+5. **`allow_blank_profile_surname_and_time_zone`** — lets Profile `last_name` and `time_zone` be null so a one-word name can be stored without inventing a surname or time zone.
+
+Install and migrate the notifications gems before enabling OTP.
+
+### Enable after migrate
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.otp_enabled = true
+  config.otp_registration_enabled = true
+  config.otp_login_enabled = true
+  config.registration_authentication_methods = %i[password otp]
+end
+```
+
+`otp_enabled` must stay `false` until migrations have run; the engine validates schema on boot when OTP is on.
+
+### Route mapping
+
+Mount password and OTP auth with the host helper (dummy and new installs use this):
+
+```ruby
+devise_for :users,
+           skip: %i[sessions registrations passwords],
+           controllers: {
+             confirmations: "recording_studio_user/auth/confirmations",
+             omniauth_callbacks: "recording_studio_user/omniauth_callbacks"
+           }
+recording_studio_user_auth_for :users
+```
+
+| Path | Purpose |
+| --- | --- |
+| `GET /users/sign_in` | Email-only login entry (Continue with email) |
+| `POST /users/sign_in` | Continue: store email, then password or OTP verify per `primary_login_type` |
+| `GET/POST /users/sign_in/password` | Password screen / submit (`user_session`) |
+| `GET /users/sign_up` | Email-only registration entry |
+| `POST /users/sign_up` | Continue: store email, then password or OTP verify per `primary_login_type` |
+| `GET/POST /users/sign_up/password` | Password screen / submit (`user_registration`) |
+| `GET/POST /users/sign_up/otp` | Start OTP registration (deep link) |
+| `GET/POST /users/sign_up/verify` | Enter registration code |
+| `POST /users/sign_up/resend` | Resend registration code |
+| `GET/POST /users/sign_in/otp` | Start login OTP (deep link) |
+| `GET/POST /users/sign_in/verify` | Enter login code |
+| `POST /users/sign_in/resend` | Resend login code |
+| `GET/POST /users/password` | Request a password reset |
+| `GET /users/password/edit` | Choose a new password from the emailed reset link |
+| `PUT/PATCH /users/password` | Save the new password |
+
+Hosts using Devise `:confirmable` should map confirmations as shown so the
+resend-confirmation screen shares the Users auth chrome.
+
+`primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths are not drawn while `otp_enabled` (or the matching registration / login OTP flag) is false — set those flags in the initializer before routes draw.
+
+## Recording Studio 6.1 layout
+
+`RecordingStudio::UsesDefaultLayout` is gone. `config.layout` on this gem is `nil` unless the host sets it. Signed-in and signed-out Users controllers call `recording_studio_layout { RecordingStudioUser.configuration.layout }`. Confirmations and passwords include `RecordingStudio::ControllerLayout` because they inherit from Devise. Signed-out auth keeps `auth/_shell` as an in-page wrapper (logo above heading, no page nav). There is no `layouts/recording_studio_user/auth`.
+
+Page chrome on the rebuilt default template:
+
+- `content_for :title` is the document title and the only `<h1>` on signed-in screens. Auth screens skip it so the logo can sit above the heading.
+- `flat_pack_page_nav` draws Back and Close on signed-in screens. Auth screens skip it.
+- `register_page_nav` draws right-hand actions.
+- `recording_studio_page_nav` and the old `:page_nav_back_*` / `:page_nav_anchor_*` slots are gone.
+
+Register `RecordingStudioAttachable::Attachment`. Do not register Library or Placement. Attachable 0.22 dropped those recordables.
+
+Edit Profile uses `FlatPack::ImageInput::Component` (FlatPack >= 0.1.320). The file is direct-uploaded to the profile recording, and the profile form submits `profile_image[signed_blob_id]`. `assign_profile_image!` attaches or replaces it. `remove_profile_image!` clears a saved photo. Do not write attachment rows from the controller.

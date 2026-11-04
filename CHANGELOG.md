@@ -11,10 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Password sign-in uses one mismatch notice for an unknown email, a wrong
-  password, and an OTP-only account.
-- Password reset uses Devise's send-instructions notice for unknown and
-  OTP-only addresses, and does not email a reset to those addresses.
+- Password sign-in uses the same mismatch notice for an unknown email, a
+  wrong password, and an OTP-only account. Timing still differs: bcrypt
+  runs only for existing password accounts.
+- Password reset uses the same Devise send-instructions notice (or the
+  paranoid notice when `Devise.paranoid` is true) for unknown, password,
+  and OTP-only addresses, and does not email a reset to OTP-only or unknown
+  addresses.
 - OmniAuth sign-in rotates the session before `sign_in`, matching password
   and OTP.
 
@@ -22,11 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Password sign-up with an existing email uses the generic
   `signup_did_not_save` notice instead of confirming the address or that it
-  is OTP-only. New accounts still sign in immediately, so HTTP status can
-  still differ; a fully silent confirmable flow would be a larger redesign.
-- Dropped leftover `MIGRATION_NOTES.md` and `UPDATE_SUMMARY.md`. Dummy docs
-  Config copy now describes Default Layout plus `auth/_shell`, not a deleted
-  auth layout.
+  is OTP-only. Sign-up still returns an error for an existing email. New
+  accounts still sign in immediately, so HTTP status can still differ; a
+  fully silent confirmable flow would be a larger redesign.
 - Development pins: Accessible `v0.24.1`, Logs `v0.7.3`, Trashable
   `v0.12.2`, dummy Root Switchable `v0.11.4`. Recording Studio `v6.3.0`,
   FlatPack `v0.1.341`, and Metrics `v0.7.2` were already current. Admin,
@@ -35,10 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrade notes
 
 - Bump to `0.27.1`. No Users migration.
-- Hosts that overrode `otp_account_password`, `otp_account_reset`, or
-  `email_taken` can drop those keys. Password sign-in now always uses
+- Public i18n keys `otp_account_password`, `otp_account_reset`, and
+  `email_taken` stay in the locale files unused. Password sign-in uses
   `email_or_password_mismatch`. Password reset uses
-  `devise.passwords.send_instructions`. Password sign-up with an existing
+  `devise.passwords.send_instructions` (or `send_paranoid_instructions`
+  when `Devise.paranoid` is true). Password sign-up with an existing
   email uses `signup_did_not_save`.
 - This release does not add lockout or rate limiting for password sign-in.
 

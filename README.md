@@ -436,7 +436,7 @@ The host needs a case-insensitive unique index on `users.email` (a unique index 
 - **Password accounts** can sign in with their password *or* request an email code. Having a password is a capability, not a restriction.
 - **OTP accounts** have no usable password, so they sign in with email codes only.
 
-Password sign-in uses one mismatch notice for an unknown email, a wrong password, and an OTP-only account. Password reset uses Devise's send-instructions notice for those same cases and does not email a reset to OTP-only or unknown addresses. Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing, so the form cannot be used to discover which addresses exist.
+Password sign-in shows the same mismatch notice for an unknown email, a wrong password, and an OTP-only account. Timing still differs: bcrypt runs only for existing password accounts. Password reset shows the same Devise send-instructions notice for those same cases (or the paranoid notice when `Devise.paranoid` is true) and does not email a reset to OTP-only or unknown addresses. Sign-up still returns an error for an existing email. Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing.
 
 Login notifications link to a protected code page under the Users mount. The
 page decrypts the code only while its challenge is active and only for the

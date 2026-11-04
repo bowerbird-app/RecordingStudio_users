@@ -55,8 +55,10 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "omniauth sign-in rotates the session before sign_in" do
-    get new_user_session_path
-    session[:fixation] = "planted"
+    planted_email = "oauth-planted-#{SecureRandom.hex(4)}@example.com"
+    post new_user_session_path, params: { user: { email: planted_email } }
+
+    assert_equal planted_email, session[:auth_email]
 
     mock_provider_auth!(
       :google_oauth2,
@@ -67,7 +69,7 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     )
     get user_google_oauth2_omniauth_callback_path
 
-    assert_nil session[:fixation]
+    assert_nil session[:auth_email]
     assert_redirected_to root_path
     user = User.find_by!(email: OmniAuth.config.mock_auth[:google_oauth2].info.email)
     assert_equal user.id, session["warden.user.user.key"]&.dig(0, 0)
