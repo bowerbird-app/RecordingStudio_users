@@ -83,7 +83,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
 
     post "/users/sign_in/password", params: { user: { email: otp_email, password: "Password123!" } }
     assert_response :unprocessable_entity
-    assert_includes response.body, "email codes"
+    assert_equal I18n.t("recording_studio_user.auth.email_or_password_mismatch"), flash[:alert]
+    refute_includes response.body, "email codes"
   end
 
   test "password user can request a login OTP" do
@@ -102,14 +103,17 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     assert_equal User.find_by!(email: password_email).id, session[:otp_user_id]
   end
 
-  test "OTP user password reset redirects with generic OTP guidance" do
+  test "OTP user password reset uses the same notice as other reset requests" do
     email = "otp-reset-#{SecureRandom.hex(4)}@example.com"
     confirm_otp_user!(email)
     sign_out_user!
+    ActionMailer::Base.deliveries.clear
 
     post user_password_path, params: { user: { email: email } }
     assert_redirected_to new_user_session_path
-    assert_match(/email codes/i, flash[:notice])
+    assert_equal I18n.t("devise.passwords.send_instructions"), flash[:notice]
+    refute_match(/email codes/i, flash[:notice].to_s)
+    assert_empty ActionMailer::Base.deliveries
   end
 
   test "existing email cannot register with the other method" do
@@ -137,7 +141,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       user: { email: otp_email, password: "Password123!", password_confirmation: "Password123!" }
     }
     assert_response :unprocessable_entity
-    assert_includes response.body, "already has an account"
+    assert_equal I18n.t("recording_studio_user.auth.signup_did_not_save"), flash[:alert]
+    refute_includes response.body, "already has an account"
   end
 
   test "repeat OTP registration for same unconfirmed email reuses user" do

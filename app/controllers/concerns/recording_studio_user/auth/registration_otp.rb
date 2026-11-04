@@ -8,7 +8,7 @@ module RecordingStudioUser
       private
 
       def email_taken_message
-        I18n.t("recording_studio_user.auth.email_taken")
+        I18n.t("recording_studio_user.auth.signup_did_not_save")
       end
 
       # Unknown, existing, disabled, and password-registered addresses all land

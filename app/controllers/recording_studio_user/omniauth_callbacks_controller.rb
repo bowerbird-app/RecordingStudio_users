@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 
+require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/session_rotation.rb"
+).to_s
+
 module RecordingStudioUser
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     include Rails.application.routes.mounted_helpers
+    include RecordingStudioUser::Auth::SessionRotation
 
     # Devise routes each configured provider to a same-named action.
     Omniauth::PROVIDER_LABELS.each_key do |provider|
@@ -37,7 +42,9 @@ module RecordingStudioUser
     end
 
     def sign_in_from_omniauth!(auth)
-      sign_in_and_redirect Omniauth.find_or_create_user!(auth), event: :authentication
+      user = Omniauth.find_or_create_user!(auth)
+      sign_in_user!(user, event: :authentication)
+      redirect_to after_sign_in_path_for(user)
     end
 
     def after_sign_in_path_for(_resource)

@@ -56,11 +56,8 @@ fr:
       enter_email: Entrez votre e-mail pour continuer.
       start_with_email: Commencez par votre e-mail.
       email_or_password_mismatch: E-mail ou mot de passe incorrect.
-      otp_account_password: Ce compte se connecte avec un code par e-mail.
-      otp_account_reset: Ce compte se connecte avec un code par e-mail. Utilisez le code e-mail sur la page de connexion.
       eligible_code_sent: Si un compte admissible existe, nous avons envoyé un code.
       that_code_did_not_work: "Ce code n'a pas fonctionné."
-      email_taken: Cet e-mail a déjà un compte. Essayez de vous connecter.
       fresh_code: Nouveau code en route.
       wait_for_code: Patientez un peu avant de demander un autre code.
       give_it_a_minute: Attendez une minute, puis réessayez.

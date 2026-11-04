@@ -36,7 +36,7 @@ module RecordingStudioUser
 
       def create_password
         build_password_resource(sign_up_params)
-        return render_password_taken if otp_account?(submitted_email)
+        return render_password_taken if existing_account?(submitted_email)
         return render :password, status: :unprocessable_entity unless resource.save
 
         provision_password_account!
@@ -105,8 +105,8 @@ module RecordingStudioUser
         @submitted_email ||= sign_up_params[:email].to_s.strip.downcase
       end
 
-      def otp_account?(email)
-        resource_class.find_by(email: email)&.registered_with_otp?
+      def existing_account?(email)
+        resource_class.find_for_database_authentication(email: email).present?
       end
 
       def render_continue_failure(message)
