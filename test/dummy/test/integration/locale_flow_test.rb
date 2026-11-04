@@ -34,7 +34,7 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
     get new_user_session_path, params: { locale: "fr" }
 
     assert_response :success
-    assert_select "h2", text: "Sign in to Acme"
+    assert_select "h1", text: "Sign in to Acme"
   ensure
     RecordingStudioUser.config.login_title = nil
   end
@@ -43,7 +43,7 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
     get new_user_session_path, params: { locale: "fr" }
 
     assert_response :success
-    assert_select "h2", text: "Heureux de vous revoir"
+    assert_select "h1", text: "Heureux de vous revoir"
     assert_select "button[type='submit']", text: "Continuer avec l'e-mail"
     assert_includes response.body, "Pas encore de compte ?"
 

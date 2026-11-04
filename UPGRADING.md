@@ -1,5 +1,28 @@
 # Upgrading
 
+## Unreleased
+
+Signed-out auth screens (sign in, sign up, password reset, resend
+confirmation, and OTP steps) use `recording_studio_layout` like the rest of
+Users. They no longer ship `layouts/recording_studio_user/auth` or the
+`_shell` partial.
+
+Delete a host copy of `app/views/layouts/recording_studio_user/auth.html.erb`
+if you only kept it for centering. Set `RecordingStudioUser.configuration.layout`
+or `RecordingStudio.configure { |c| c.layout = ... }` when the host layout
+should differ from `RecordingStudio::DEFAULT_LAYOUT`. Confirmations and
+passwords inherit from Devise, so they call `recording_studio_layout` on
+those controllers. Do not add `layout "recording_studio/default_layout"`.
+
+`config.auth_body_start_partial` and `content_for :recording_studio_user_auth_body_start`
+still render, now at the start of the page body inside the default layout,
+not as the first child of `<body>`. Flash notice and alert come from the
+default layout. Auth views no longer paint those alerts themselves.
+
+The default layout draws the page title as `<h1>`. Viewport centering and a
+narrow `max-w-sm` column are gone until FlatPack has a dedicated auth page
+shape.
+
 ## 0.26.6
 
 Bump to `0.26.6`. No Users migration.
@@ -76,7 +99,7 @@ Edit Profile draws that component at `size: :"2xl"` and `shape: :circle`. The fo
 
 `RecordingStudioUser.configuration.layout` defaults to `nil`. `nil` uses `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. A String names a layout. `false` renders with no layout. A callable must be `call(controller:)` and return one of those values. Invalid values raise `ArgumentError` at assignment.
 
-Signed-in Users controllers call `recording_studio_layout`. Do not set `layout "recording_studio/default_layout"` on those controllers. Sign-in, sign-up, password reset, and confirmation stay on `layouts/recording_studio_user/auth`.
+Users controllers call `recording_studio_layout`. Do not set `layout "recording_studio/default_layout"` on those controllers. Signed-out auth screens use the same resolver. See **Unreleased**.
 
 On profile show, profile edit, the OTP code page, and sign-in methods:
 

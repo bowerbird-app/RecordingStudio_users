@@ -1,42 +1,42 @@
-<%= render layout: "recording_studio_user/auth/shell",
-           locals: {
-             title: t("recording_studio_user.auth.resend_confirmation"),
-             subtitle: t("recording_studio_user.auth.resend_confirmation_subtitle")
-           } do %>
-  <% if resource.errors.any? %>
-    <%= render FlatPack::Alert::Component.new(
-      title: t("recording_studio_user.auth.could_not_send_link"),
-      description: resource.errors.full_messages.join(", "),
-      style: :danger
+<%= render "recording_studio_user/auth/chrome",
+           title: t("recording_studio_user.auth.resend_confirmation"),
+           subtitle: t("recording_studio_user.auth.resend_confirmation_subtitle"),
+           back_href: auth_sign_in_path,
+           close_href: main_app.root_path %>
+
+<% if resource.errors.any? %>
+  <%= render FlatPack::Alert::Component.new(
+    title: t("recording_studio_user.auth.could_not_send_link"),
+    description: resource.errors.full_messages.join(", "),
+    style: :danger
+  ) %>
+<% end %>
+
+<%= form_with scope: resource_name, url: confirmation_path(resource_name), method: :post do %>
+  <div class="space-y-4">
+    <%= render FlatPack::EmailInput::Component.new(
+      name: "#{resource_name}[email]",
+      id: "#{resource_name}_email",
+      value: resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email,
+      placeholder: t("recording_studio_user.auth.email_placeholder"),
+      required: true,
+      autocomplete: "email",
+      aria: { label: t("recording_studio_user.auth.email") },
+      error: resource.errors[:email].first
     ) %>
-  <% end %>
 
-  <%= form_with scope: resource_name, url: confirmation_path(resource_name), method: :post do %>
-    <div class="space-y-4">
-      <%= render FlatPack::EmailInput::Component.new(
-        name: "#{resource_name}[email]",
-        id: "#{resource_name}_email",
-        value: resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email,
-        placeholder: t("recording_studio_user.auth.email_placeholder"),
-        required: true,
-        autocomplete: "email",
-        aria: { label: t("recording_studio_user.auth.email") },
-        error: resource.errors[:email].first
-      ) %>
+    <%= render FlatPack::Button::Component.new(
+      text: t("recording_studio_user.auth.resend_confirmation"),
+      style: :primary,
+      size: :md,
+      type: "submit",
+      class: "w-full"
+    ) %>
+  </div>
+<% end %>
 
-      <%= render FlatPack::Button::Component.new(
-        text: t("recording_studio_user.auth.resend_confirmation"),
-        style: :primary,
-        size: :md,
-        type: "submit",
-        class: "w-full"
-      ) %>
-    </div>
-  <% end %>
-
-  <%= render FlatPack::Content::Component.new(class: "text-center") do %>
-    <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
-      <%= t("recording_studio_user.auth.back_to_sign_in") %>
-    <% end %>
+<%= render FlatPack::Content::Component.new(class: "text-center") do %>
+  <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
+    <%= t("recording_studio_user.auth.back_to_sign_in") %>
   <% end %>
 <% end %>

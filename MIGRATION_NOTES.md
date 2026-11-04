@@ -119,7 +119,7 @@ resend-confirmation screen shares the Users auth chrome.
 
 ## Recording Studio 6.1 layout
 
-`RecordingStudio::UsesDefaultLayout` is gone. `config.layout` on this gem is `nil` unless the host sets it. Controllers that should follow that value call `recording_studio_layout { RecordingStudioUser.configuration.layout }`.
+`RecordingStudio::UsesDefaultLayout` is gone. `config.layout` on this gem is `nil` unless the host sets it. Signed-in and signed-out Users controllers call `recording_studio_layout { RecordingStudioUser.configuration.layout }`. Confirmations and passwords include `RecordingStudio::ControllerLayout` because they inherit from Devise.
 
 Page chrome on the rebuilt default template:
 

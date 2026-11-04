@@ -15,7 +15,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "html[data-theme='rounded']"
-    assert_select "h2", text: "Welcome back"
+    assert_select %(body[data-recording-studio-default-layout="true"])
+    assert_select "h1", text: "Welcome back"
     assert_select "input[type='email'][name='user[email]'][placeholder='you@company.com']"
     assert_select "label", text: "Email", count: 0
     assert_select "input[type='password'][name='user[password]']", count: 0
@@ -29,18 +30,18 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "place-content-center"
     refute_includes response.body, "Default: admin@admin.com / Password"
     source = File.read(AUTH_SESSIONS_VIEW)
-    shell = File.read(
-      RecordingStudioUser::Engine.root.join("app/views/recording_studio_user/auth/_shell.html.erb")
+    chrome = File.read(
+      RecordingStudioUser::Engine.root.join("app/views/recording_studio_user/auth/_chrome.html.erb")
     )
     refute_includes source, "FlatPack::Card::Component"
     refute_includes source, "otp_session_otp_path"
-    assert_includes source, 'layout: "recording_studio_user/auth/shell"'
-    refute_includes shell, "min-h-dvh"
-    assert_includes shell, "max-w-sm"
-    assert_includes shell, "text-center"
-    assert_includes shell, "auth_site_logo"
-    assert_equal 1, response.body.scan("min-h-dvh").length
-    assert_includes response.body, "max-w-sm"
+    assert_includes source, 'render "recording_studio_user/auth/chrome"'
+    refute_includes source, "FlatPack::PageTitle::Component"
+    refute_includes chrome, "min-h-dvh"
+    refute_includes chrome, "max-w-sm"
+    assert_includes chrome, "auth_site_logo"
+    assert_includes chrome, "flat_pack_page_nav"
+    refute_includes response.body, "min-h-dvh"
     assert_includes Nokogiri::HTML(response.body).text, "Don't have an account?"
     assert_includes response.body, "text-center"
     assert_includes response.body, 'href="/users/sign_up"'
@@ -54,7 +55,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "&lt;svg"
   end
 
-  test "login shows site square logo above the title when Site Settings has one" do
+  test "login shows site square logo when Site Settings has one" do
     skip "recording_studio_site_settings not loaded" unless defined?(RecordingStudioSiteSettings)
 
     admin_user = User.find_or_initialize_by(email: "admin@admin.com")
@@ -83,7 +84,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "img[alt='Studio'][src*='active_storage']"
-    assert_match %r{max-w-sm[\s\S]*active_storage[\s\S]*Welcome back}, response.body
+    assert_match %r{Welcome back[\s\S]*active_storage|active_storage[\s\S]*Welcome back}, response.body
     refute_includes response.body, "attachment_preview"
   end
 
@@ -103,7 +104,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_select "img[alt='Studio'][src*='active_storage'][class*='max-h-16']"
     refute_includes response.body, "object-cover"
     refute_includes response.body, "attachment_preview"
-    assert_match %r{max-w-sm[\s\S]*active_storage[\s\S]*Welcome back}, response.body
+    assert_select "img[alt='Studio'][src*='active_storage']"
 
     get new_user_registration_path
     assert_response :success
@@ -152,7 +153,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Continue with Google"
     password_source = File.read(AUTH_PASSWORD_VIEW)
     refute_includes password_source, "FlatPack::Card::Component"
-    assert_includes password_source, 'layout: "recording_studio_user/auth/shell"'
+    assert_includes password_source, 'render "recording_studio_user/auth/chrome"'
   ensure
     RecordingStudioUser.config.primary_login_type = original
   end
@@ -169,8 +170,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name='user[email]']"
     assert_select "button[type='submit']", text: "Send code"
-    assert_equal 1, response.body.scan("min-h-dvh").length
-    assert_includes response.body, "max-w-sm"
+    assert_select %(body[data-recording-studio-default-layout="true"])
+    refute_includes response.body, "min-h-dvh"
     refute_includes response.body, "Continue with password"
   end
 
@@ -183,7 +184,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
 
     get new_user_session_path
     assert_response :success
-    assert_select "h2", text: "Welcome back"
+    assert_select "h1", text: "Welcome back"
     assert_select "button[type='submit']", text: "Continue with email"
 
     post new_user_session_path, params: { user: { email: "member@admin.com" } }
@@ -226,7 +227,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     get new_user_session_path
 
     assert_response :success
-    assert_select "h2", text: "Sign in to Acme"
+    assert_select "h1", text: "Sign in to Acme"
   ensure
     RecordingStudioUser.config.login_title = nil
   end

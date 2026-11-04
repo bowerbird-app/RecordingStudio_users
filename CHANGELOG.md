@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Signed-out auth screens use core `recording_studio/default_layout` through
+  `recording_studio_layout { RecordingStudioUser.configuration.layout }`.
+  Confirmations and passwords include `RecordingStudio::ControllerLayout`
+  because they inherit from Devise. The gem no longer ships
+  `layouts/recording_studio_user/auth` or `auth/_shell`.
+
+### Upgrade notes
+
+- Drop a host copy of `layouts/recording_studio_user/auth.html.erb` if you
+  only kept it for viewport centering. Override `config.layout` (Users or
+  core) when the host layout should differ. `auth_body_start_partial` now
+  renders at the start of the page body, not before `<main>` on a custom
+  `<body>`.
+
 ## [0.26.6] - 2026-11-04
 
 ### Changed

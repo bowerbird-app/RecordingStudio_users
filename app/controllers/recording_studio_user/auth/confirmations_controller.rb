@@ -3,9 +3,11 @@
 module RecordingStudioUser
   module Auth
     class ConfirmationsController < Devise::ConfirmationsController
+      include Rails.application.routes.mounted_helpers
+      include RecordingStudio::ControllerLayout
       include RecordingStudioUser::AuthRoutesHelper
 
-      layout "recording_studio_user/auth"
+      recording_studio_layout { RecordingStudioUser.configuration.layout }
     end
   end
 end

@@ -11,8 +11,6 @@ module RecordingStudioUser
       include RecordingStudioUser::AuthRoutesHelper
       include RecordingStudioUser::Auth::PendingEmail
 
-      layout "recording_studio_user/auth"
-
       # Users before TnC extra_fields; host before Users (see prefer_signup_view_paths!).
       before_action :prefer_host_then_users_signup_views
 

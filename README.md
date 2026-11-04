@@ -62,23 +62,32 @@ recording_studio_user_auth_for :users
 ```
 
 That draws `/users/sign_in`, `/users/sign_up`, and the complete password-reset
-flow from `recording_studio_user/auth/*` — viewport-centered Flatpack forms, no
-Card. The first screen is email only (**Continue with email**), then social
-providers. Password or OTP is the second screen, driven by `primary_login_type`
-(default `:email`). The confirmations mapping gives Devise's resend screen the
-same chrome when `:confirmable` is enabled. When
-`recording_studio_site_settings` is installed, the site mark appears above
-the title via `auth_site_logo` (optional `config.auth_site_root_resolver`).
-`config.auth_logo` is `:square` by default (Flatpack Avatar). Set
-`config.auth_logo = :wide` for the wide mark as a centered `<img>` with an
-unsigned Active Storage blob path. That img uses `max-h-16`, the same height
-as square Avatar `:xl`. If the wide file is missing, the mark is
-omitted. Do not copy `_shell` to switch shapes. Dummy keeps the square
-default. `doc/review/users_sign_in_wide.png` and
-`doc/review/users_sign_up_wide.png` are a temporary `:wide` flip against the
-seeded wordmark.
+flow from `recording_studio_user/auth/*` — Flatpack forms on core
+`recording_studio/default_layout`, no Card. The first screen is email only
+(**Continue with email**), then social providers. Password or OTP is the
+second screen, driven by `primary_login_type` (default `:email`). The
+confirmations mapping gives Devise's resend screen the same chrome when
+`:confirmable` is enabled. When `recording_studio_site_settings` is
+installed, the site mark appears via `auth_site_logo` (optional
+`config.auth_site_root_resolver`). `config.auth_logo` is `:square` by
+default (Flatpack Avatar). Set `config.auth_logo = :wide` for the wide mark
+as a `<img>` with an unsigned Active Storage blob path. That img uses
+`max-h-16`, the same height as square Avatar `:xl`. If the wide file is
+missing, the mark is omitted. Dummy keeps the square default.
+`doc/review/users_sign_in_wide.png` and `doc/review/users_sign_up_wide.png`
+are a temporary `:wide` flip against the seeded wordmark.
 
-Auth screens render inside the gem layout `layouts/recording_studio_user/auth`, not the host `layouts/application`. That layout is the one full-viewport centered auth chrome (`min-h-dvh` on its own `main`). Load the FlatPack stylesheets (`flat_pack/variables`, `flat_pack/application`, `flat_pack/rich_text`) before `tailwind`. The layout puts `data-theme` on `html` (`rounded` unless the page sets `content_for :body_theme`). It also yields `:recording_studio_user_auth_body_start` at the top of `<body>` so a host can inject markup without copying the layout. Unused, the slot is empty.
+Auth screens call `recording_studio_layout { RecordingStudioUser.configuration.layout }`,
+the same resolver as signed-in Users screens. `nil` uses
+`RecordingStudio.configuration.layout`, then
+`RecordingStudio::DEFAULT_LAYOUT` (`"recording_studio/default_layout"`). A
+String names a layout. `false` renders with no layout. Do not set
+`layout "recording_studio/default_layout"` on the controllers. Each view
+sets `content_for :title` (and `:subtitle` when the page has one) and
+`flat_pack_page_nav`. The default layout draws the only `<h1>`. It also
+renders `flash[:notice]` and `flash[:alert]`. `:recording_studio_user_auth_body_start`
+renders at the start of the page body so a host can inject markup without
+copying a layout. Unused, the slot is empty.
 
 To render the same partial on every unsigned auth page (sign in, sign up, and the rest), set `config.auth_body_start_partial` (default `nil`):
 
@@ -86,7 +95,7 @@ To render the same partial on every unsigned auth page (sign in, sign up, and th
 config.auth_body_start_partial = "shared/views_tracking"
 ```
 
-A view that already filled the slot with `content_for` wins, and the configured partial is not rendered. Set it from a view the auth layout wraps only when that one page should differ:
+A view that already filled the slot with `content_for` wins, and the configured partial is not rendered. Set it from a view only when that one page should differ:
 
 ```erb
 <% content_for :recording_studio_user_auth_body_start do %>
@@ -94,7 +103,7 @@ A view that already filled the slot with `content_for` wins, and the configured 
 <% end %>
 ```
 
-The helper in that example is a host helper (for example from RecordingStudio_views). This gem does not depend on it. Do not prepend onto `AuthSiteLogoHelper` to fill this slot. The shared `_shell` partial is content only (`w-full max-w-sm`, centered title, optional subtitle, form), so it never nests a second viewport inside a padded host `main`. A host that needs its own auth chrome overrides `app/views/layouts/recording_studio_user/auth.html.erb` and owns the centering there — `_shell` will not add height. Password screens work with `otp_enabled` still `false`. OTP routes (`/users/sign_in/otp`, `/users/sign_up/otp`, verify/resend) are drawn only when OTP is on (`otp_enabled` plus `otp_registration_enabled` / `otp_login_enabled` for each side); when those flags are off the paths are absent, not error pages. Hosts override a view only when the product must differ; do not copy the gem templates into the app. Place the override under the host `app/views/` with the same path as the gem (for example `app/views/recording_studio_user/auth/registrations/new.html.erb`) — host views win over the gem, and the gem still wins over TnC and Devise. Create-password `extra_fields` calls `recording_studio_user_signup_terms_notice`. Hosts that also install `recording_studio_terms_and_conditions` and have live Terms pending get the continue-notice automatically — including when the current workspace has no live Terms, in which case the helper falls back to the first root that does. Users keeps its soft-detect `extra_fields` ahead of TnC's copy, then prefers the host `app/views` so a host override still wins. Without TnC the helper is a no-op. Addons may still override the partial.
+The helper in that example is a host helper (for example from RecordingStudio_views). This gem does not depend on it. Do not prepend onto `AuthSiteLogoHelper` to fill this slot. A host that needs different chrome sets `RecordingStudioUser.configuration.layout` or `RecordingStudio.configure { |c| c.layout = ... }`. Password screens work with `otp_enabled` still `false`. OTP routes (`/users/sign_in/otp`, `/users/sign_up/otp`, verify/resend) are drawn only when OTP is on (`otp_enabled` plus `otp_registration_enabled` / `otp_login_enabled` for each side); when those flags are off the paths are absent, not error pages. Hosts override a view only when the product must differ; do not copy the gem templates into the app. Place the override under the host `app/views/` with the same path as the gem (for example `app/views/recording_studio_user/auth/registrations/new.html.erb`) — host views win over the gem, and the gem still wins over TnC and Devise. Create-password `extra_fields` calls `recording_studio_user_signup_terms_notice`. Hosts that also install `recording_studio_terms_and_conditions` and have live Terms pending get the continue-notice automatically — including when the current workspace has no live Terms, in which case the helper falls back to the first root that does. Users keeps its soft-detect `extra_fields` ahead of TnC's copy, then prefers the host `app/views` so a host override still wins. Without TnC the helper is a no-op. Addons may still override the partial.
 
 Route configuration values for `mount_path`, `profile_route_path`, and `admin_route_path` must be available **before the host evaluates the engine mount and Rails draws routes**:
 
@@ -469,7 +478,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy mounts Users auth with `recording_studio_user_auth_for :users`. Login, sign up, password reset, and resend confirmation are gem screens — the gem auth layout centers the viewport (`min-h-dvh`) and the shared `_shell` sets the `max-w-sm` column with centered titles, no Card, no Remember me, no seed Badge. First screens are email only with **Continue with email**, then `continue_with_providers`. Password is the second screen when `primary_login_type` is `:email` (the default), with a **Forgot your password?** link into the reset flow. Login uses `login_title` (I18n default **Welcome back** in English). Dummy ships its own `config/locales/fr.yml` and can switch Users screens with `?locale=fr` or a saved profile locale. Sign-up confirmation appears only when `require_password_confirmation` is true. Dummy credentials (`test/dummy/config/credentials.yml.enc` and `test/dummy/config/credentials/*.yml.enc`) use the shared RecordingStudio_* development master key — set `RAILS_MASTER_KEY` or put that key in the gitignored dummy key files; keep the encrypted files and do not mint a per-repo key. Committed OmniAuth values are placeholders; put real Google (or other) secrets locally with `credentials:edit`. If the master key is missing, dummy still boots with those same placeholders so Devise OmniAuth callbacks load (Google in development, all five providers in test). Deep-link OTP lives on `/users/sign_in/otp` and `/users/sign_up/otp`. Signed-in pages use core `recording_studio/default_layout` through `recording_studio_layout`. Auth pages use the gem layout `recording_studio_user/auth` with `html data-theme="rounded"`; the dummy's padded `layouts/application` main is no longer in that stack. Dummy does not copy or override core's default layout. Core 6.1 puts `data-theme="rounded"` on `html`. Dummy's `recording_studio/_default_layout_head` repeats that attribute so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.341`.
+The dummy mounts Users auth with `recording_studio_user_auth_for :users`. Login, sign up, password reset, and resend confirmation are gem screens on core `recording_studio/default_layout` through `recording_studio_layout`, no Card, no Remember me, no seed Badge. First screens are email only with **Continue with email**, then `continue_with_providers`. Password is the second screen when `primary_login_type` is `:email` (the default), with a **Forgot your password?** link into the reset flow. Login uses `login_title` (I18n default **Welcome back** in English). Dummy ships its own `config/locales/fr.yml` and can switch Users screens with `?locale=fr` or a saved profile locale. Sign-up confirmation appears only when `require_password_confirmation` is true. Dummy credentials (`test/dummy/config/credentials.yml.enc` and `test/dummy/config/credentials/*.yml.enc`) use the shared RecordingStudio_* development master key — set `RAILS_MASTER_KEY` or put that key in the gitignored dummy key files; keep the encrypted files and do not mint a per-repo key. Committed OmniAuth values are placeholders; put real Google (or other) secrets locally with `credentials:edit`. If the master key is missing, dummy still boots with those same placeholders so Devise OmniAuth callbacks load (Google in development, all five providers in test). Deep-link OTP lives on `/users/sign_in/otp` and `/users/sign_up/otp`. Dummy does not copy or override core's default layout. Core 6.1 puts `data-theme="rounded"` on `html`. Dummy's `recording_studio/_default_layout_head` repeats that attribute so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.341`.
 
 Dummy also installs released `recording_studio_terms_and_conditions` `v0.14.2` (Publishable `v0.13.0`) as an end-to-end signup demo. That pin lives in `test/dummy/Gemfile` only. The Users gemspec and root Gemfile stay free of TnC. The path gem satisfies TnC’s `recording_studio_user >= 0.12.1` requirement. Dummy seeds one live Terms record under **My workspace**. Users then detects the installed gem and the live record, so create-password shows the continue-notice without a host `extra_fields` override. Dummy does not override the Accept screen. The same dummy Gemfile pins `recording_studio_root_switchable` `v0.11.3` for the top-nav switcher (switch rate limit via RecordingStudioCache; no host code change). Root and dummy pin Recording Studio core `v6.3.0` (English fallback for shipped `recording_studio.*` keys via `RecordingStudio.t`).
 

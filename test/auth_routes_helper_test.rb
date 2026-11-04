@@ -77,9 +77,9 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes base, "RecordingStudioUser.config.otp_enabled?"
   end
 
-  def test_auth_views_share_the_shell_partial
-    shell = File.read(
-      File.expand_path("../app/views/recording_studio_user/auth/_shell.html.erb", __dir__)
+  def test_auth_views_share_default_layout_chrome
+    chrome = File.read(
+      File.expand_path("../app/views/recording_studio_user/auth/_chrome.html.erb", __dir__)
     )
     %w[
       sessions/new
@@ -97,37 +97,46 @@ class AuthRoutesHelperTest < Minitest::Test
       source = File.read(
         File.expand_path("../app/views/recording_studio_user/auth/#{view}.html.erb", __dir__)
       )
-      assert_includes source, 'layout: "recording_studio_user/auth/shell"'
+      assert_includes source, 'render "recording_studio_user/auth/chrome"'
+      refute_includes source, "FlatPack::PageTitle::Component"
+      refute_includes source, "recording_studio_user/auth/shell"
     end
 
-    refute_includes shell, "min-h-dvh"
-    assert_includes shell, "w-full"
-    assert_includes shell, "max-w-sm"
-    assert_includes shell, "FlatPack::PageTitle::Component"
-  end
-
-  def test_auth_layout_owns_viewport_centering
-    layout = File.read(
+    assert_includes chrome, "content_for :title"
+    assert_includes chrome, "flat_pack_page_nav"
+    assert_includes chrome, "auth_site_logo"
+    refute_includes chrome, "min-h-dvh"
+    refute_includes chrome, "max-w-sm"
+    refute_includes chrome, "FlatPack::PageTitle::Component"
+    refute File.exist?(
       File.expand_path("../app/views/layouts/recording_studio_user/auth.html.erb", __dir__)
     )
+    refute File.exist?(
+      File.expand_path("../app/views/recording_studio_user/auth/_shell.html.erb", __dir__)
+    )
+  end
+
+  def test_auth_controllers_use_recording_studio_layout
     base = File.read(
       File.expand_path("../app/controllers/recording_studio_user/auth/base_controller.rb", __dir__)
     )
+    application = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/application_controller.rb", __dir__)
+    )
+    confirmations = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/auth/confirmations_controller.rb", __dir__)
+    )
+    passwords = File.read(
+      File.expand_path("../app/controllers/recording_studio_user/auth/passwords_controller.rb", __dir__)
+    )
 
-    assert_includes base, 'layout "recording_studio_user/auth"'
-    refute_includes base, 'layout "application"'
-    assert_includes layout, "min-h-dvh"
-    assert_includes layout, "items-center"
-    assert_equal 1, layout.scan("min-h-dvh").length
-    assert_includes layout, 'stylesheet_link_tag "flat_pack/application"'
-    assert_includes layout, "yield :recording_studio_user_auth_body_start"
-    assert_includes layout, "content_for?(:recording_studio_user_auth_body_start)"
-    assert_includes layout, "auth_body_start_partial"
-    body_open = layout.index("<body")
-    hook = layout.index("yield :recording_studio_user_auth_body_start")
-    main = layout.index("<main")
-    assert body_open && hook && main
-    assert_operator body_open, :<, hook
-    assert_operator hook, :<, main
+    assert_includes application, "recording_studio_layout { RecordingStudioUser.configuration.layout }"
+    refute_includes base, "layout "
+    refute_includes confirmations, 'layout "recording_studio_user/auth"'
+    refute_includes passwords, 'layout "recording_studio_user/auth"'
+    assert_includes confirmations, "include RecordingStudio::ControllerLayout"
+    assert_includes passwords, "include RecordingStudio::ControllerLayout"
+    assert_includes confirmations, "recording_studio_layout { RecordingStudioUser.configuration.layout }"
+    assert_includes passwords, "recording_studio_layout { RecordingStudioUser.configuration.layout }"
   end
 end

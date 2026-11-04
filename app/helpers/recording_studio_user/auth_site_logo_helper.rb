@@ -2,7 +2,7 @@
 
 module RecordingStudioUser
   # Optional Site Settings mark on auth screens. Hosts that load
-  # recording_studio_site_settings get the site logo above the title when a
+  # recording_studio_site_settings get the site logo on the page when a
   # site root can be resolved. Without that gem this helper is a no-op.
   module AuthSiteLogoHelper
     def auth_site_logo(size: :xl, variant: :square_med)

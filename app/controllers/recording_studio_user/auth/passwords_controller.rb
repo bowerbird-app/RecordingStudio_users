@@ -4,9 +4,10 @@ module RecordingStudioUser
   module Auth
     class PasswordsController < Devise::PasswordsController
       include Rails.application.routes.mounted_helpers
+      include RecordingStudio::ControllerLayout
       include RecordingStudioUser::AuthRoutesHelper
 
-      layout "recording_studio_user/auth"
+      recording_studio_layout { RecordingStudioUser.configuration.layout }
 
       def create
         user = resource_class.find_by(email: resource_params[:email].to_s.strip.downcase)

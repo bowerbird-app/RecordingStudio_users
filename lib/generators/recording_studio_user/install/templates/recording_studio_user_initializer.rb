@@ -6,11 +6,11 @@ RecordingStudioUser.configure do |config|
   config.mount_path = "/recording_studio_users"
   config.profile_route_path = "profile"
   config.admin_route_path = "admin"
-  # Layout for the engine's signed-in screens. Leave unset (nil) to use
-  # RecordingStudio.configuration.layout, then "recording_studio/default_layout".
-  # A String names a layout. false renders with no layout. A callable is
-  # invoked as call(controller:) and returns a String, nil, or false.
-  # Sign in and sign up keep the gem layout "recording_studio_user/auth".
+  # Layout for Users screens, including signed-out auth. Leave unset (nil) to
+  # use RecordingStudio.configuration.layout, then
+  # "recording_studio/default_layout". A String names a layout. false renders
+  # with no layout. A callable is invoked as call(controller:) and returns a
+  # String, nil, or false.
   # config.layout = "application"
   # :locale is allowlisted by default so a signed-in preferred language can
   # persist for Recording Studio Internationalization. Add more keys with |=
@@ -24,9 +24,9 @@ RecordingStudioUser.configure do |config|
   # :email → password, :otp → email code (requires otp_enabled and OTP flags).
   # config.primary_login_type = :email
   # Site mark on unsigned auth screens. :square (default) or :wide.
-  # Blank wide omits the mark. Do not copy _shell to switch shapes.
+  # Blank wide omits the mark.
   # config.auth_logo = :square
-  # Markup at the start of every unsigned auth <body>. Leave unset (default)
+  # Markup at the start of every unsigned auth page body. Leave unset (default)
   # when you do not need it. A view that already filled
   # content_for :recording_studio_user_auth_body_start wins, so the partial
   # is not rendered twice.
