@@ -32,16 +32,16 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "/sign_up/otp"
     refute_includes response.body, "fixed inset-0"
     source = File.read(AUTH_REGISTRATIONS_VIEW)
-    shell = File.read(
-      RecordingStudioUser::Engine.root.join("app/views/recording_studio_user/auth/_shell.html.erb")
+    chrome = File.read(
+      RecordingStudioUser::Engine.root.join("app/views/recording_studio_user/auth/_chrome.html.erb")
     )
     refute_includes source, "FlatPack::Card::Component"
     refute_includes source, "otp_registration_otp_path"
     assert_includes source, 'layout: "recording_studio_user/auth/shell"'
-    refute_includes shell, "min-h-dvh"
-    assert_includes shell, "max-w-sm"
-    assert_includes shell, "text-center"
-    assert_equal 1, response.body.scan("min-h-dvh").length
+    refute_includes source, "FlatPack::PageTitle::Component"
+    refute_includes chrome, "flat_pack_page_nav"
+    assert_select %(body[data-recording-studio-default-layout="true"])
+    assert_includes response.body, "min-h-dvh"
     assert_includes response.body, "max-w-sm"
     assert_includes response.body, "text-center"
     assert_includes response.body, "Already have one?"
@@ -129,8 +129,8 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name='user[email]']"
     assert_select "button[type='submit']", text: "Send code"
-    assert_equal 1, response.body.scan("min-h-dvh").length
-    assert_includes response.body, "max-w-sm"
+    assert_select %(body[data-recording-studio-default-layout="true"])
+    assert_includes response.body, "min-h-dvh"
     refute_includes response.body, "Continue with password"
   end
 

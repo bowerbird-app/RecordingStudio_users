@@ -1,5 +1,35 @@
 # Upgrading
 
+## Unreleased
+
+## 0.27.0
+
+Bump to `0.27.0`. No Users migration.
+
+Signed-out auth screens (sign in, sign up, password reset, resend
+confirmation, and OTP steps) use `recording_studio_layout` like the rest of
+Users. They no longer ship `layouts/recording_studio_user/auth`. The
+`_shell` partial is an in-page content wrapper on Default Layout: centered
+`max-w-sm` column, site logo above a centered heading, no Back/Close
+chevrons on those screens.
+
+Delete a host copy of `app/views/layouts/recording_studio_user/auth.html.erb`
+if you only kept it for centering. Do not copy `_shell` unless you are
+replacing the in-page wrapper. Set `RecordingStudioUser.configuration.layout`
+or `RecordingStudio.configure { |c| c.layout = ... }` when the host layout
+should differ from `RecordingStudio::DEFAULT_LAYOUT`. Confirmations and
+passwords inherit from Devise, so they call `recording_studio_layout` on
+those controllers. Do not add `layout "recording_studio/default_layout"`.
+
+`config.auth_body_start_partial` and `content_for :recording_studio_user_auth_body_start`
+still render, now at the start of the page body inside the default layout,
+not as the first child of `<body>`. Flash notice and alert come from the
+default layout. Auth views no longer paint those alerts themselves.
+
+Auth screens do not set `content_for :title`, so Default Layout does not
+draw a second heading above the logo. The visible heading is `PageTitle`
+`variant: :h2` in `_shell`. The document title is set from `:head`.
+
 ## 0.26.6
 
 Bump to `0.26.6`. No Users migration.
@@ -76,7 +106,7 @@ Edit Profile draws that component at `size: :"2xl"` and `shape: :circle`. The fo
 
 `RecordingStudioUser.configuration.layout` defaults to `nil`. `nil` uses `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. A String names a layout. `false` renders with no layout. A callable must be `call(controller:)` and return one of those values. Invalid values raise `ArgumentError` at assignment.
 
-Signed-in Users controllers call `recording_studio_layout`. Do not set `layout "recording_studio/default_layout"` on those controllers. Sign-in, sign-up, password reset, and confirmation stay on `layouts/recording_studio_user/auth`.
+Users controllers call `recording_studio_layout`. Do not set `layout "recording_studio/default_layout"` on those controllers. Signed-out auth screens use the same resolver. See **Unreleased**.
 
 On profile show, profile edit, the OTP code page, and sign-in methods:
 

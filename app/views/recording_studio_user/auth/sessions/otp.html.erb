@@ -1,7 +1,8 @@
-<%= render layout: "recording_studio_user/auth/shell", locals: {
-  title: t("recording_studio_user.sessions.email_sign_in_code"),
-  subtitle: t("recording_studio_user.sessions.email_sign_in_code_subtitle")
-} do %>
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: {
+             title: t("recording_studio_user.sessions.email_sign_in_code"),
+             subtitle: t("recording_studio_user.sessions.email_sign_in_code_subtitle")
+           } do %>
   <%= form_with scope: :user, url: otp_session_otp_path, method: :post do %>
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(

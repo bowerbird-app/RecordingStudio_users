@@ -118,15 +118,14 @@ class AuthLayoutBodyStartTest < ActionDispatch::IntegrationTest
     get new_user_session_path
 
     assert_response :success
-    body = Nokogiri::HTML(response.body).at("body")
-    assert_equal ["main"], body.element_children.map(&:name)
+    assert_select %(body[data-recording-studio-default-layout="true"])
     assert_select "#auth-body-start-hook", count: 0
     assert_select "#auth-body-start-partial", count: 0
     refute_includes response.body, "auth-body-start-hook"
     refute_includes response.body, "configured partial"
   end
 
-  test "auth body start hook renders inside body before main" do
+  test "auth body start hook renders in the default layout page body" do
     gem_view = RecordingStudioUser::Engine.root.join("app/views", HOOK_VIEW)
     destination = HOST_VIEWS.join(HOOK_VIEW)
     FileUtils.mkdir_p(destination.dirname)
@@ -141,12 +140,9 @@ class AuthLayoutBodyStartTest < ActionDispatch::IntegrationTest
     get new_user_session_path
 
     assert_response :success
-    body = Nokogiri::HTML(response.body).at("body")
-    children = body.element_children
-    assert_equal "auth-body-start-hook", children.first["id"]
-    assert_equal "sign-in tracking", children.first.text
-    assert_equal "main", children[1].name
-    assert_includes children[1].text, "Welcome back"
+    assert_select %(body[data-recording-studio-default-layout="true"])
+    assert_select "#auth-body-start-hook", text: "sign-in tracking", count: 1
+    assert_includes response.body, "Welcome back"
   ensure
     remove_host_override!(HOOK_VIEW)
   end
@@ -159,10 +155,7 @@ class AuthLayoutBodyStartTest < ActionDispatch::IntegrationTest
 
       assert_response :success, helper.to_s
       assert_select "#auth-body-start-partial", text: "configured partial", count: 1
-      body = Nokogiri::HTML(response.body).at("body")
-      children = body.element_children
-      assert_equal "auth-body-start-partial", children.first["id"]
-      assert_equal "main", children[1].name
+      assert_select %(body[data-recording-studio-default-layout="true"])
     end
   end
 

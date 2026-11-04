@@ -3,10 +3,6 @@
              title: t("recording_studio_user.auth.forgot_password"),
              subtitle: t("recording_studio_user.auth.forgot_password_subtitle")
            } do %>
-  <% if flash[:alert].present? %>
-    <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :danger) %>
-  <% end %>
-
   <% if resource.errors.any? %>
     <%= render FlatPack::Alert::Component.new(
       title: t("recording_studio_user.auth.could_not_send_link"),

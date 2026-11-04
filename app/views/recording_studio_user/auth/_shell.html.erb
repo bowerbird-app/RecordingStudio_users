@@ -1,18 +1,22 @@
-<% content_for :title, title %>
-<div class="w-full max-w-sm space-y-6">
-  <% if (site_logo = auth_site_logo) %>
-    <div class="flex justify-center">
-      <%= site_logo %>
-    </div>
-  <% end %>
+<%= render "recording_studio_user/auth/chrome",
+           title: title,
+           subtitle: local_assigns[:subtitle] %>
+<div class="flex min-h-dvh w-full items-center justify-center">
+  <div class="w-full max-w-sm space-y-6">
+    <% if (site_logo = auth_site_logo) %>
+      <div class="flex justify-center">
+        <%= site_logo %>
+      </div>
+    <% end %>
 
-  <div class="flex justify-center text-center">
-    <%= render FlatPack::PageTitle::Component.new(
-      title: title,
-      subtitle: local_assigns[:subtitle].presence,
-      variant: :h2,
-      class: "mb-0 pb-0 w-auto text-center"
-    ) %>
+    <div class="flex justify-center text-center">
+      <%= render FlatPack::PageTitle::Component.new(
+        title: title,
+        subtitle: local_assigns[:subtitle].presence,
+        variant: :h2,
+        class: "mb-0 pb-0 w-auto text-center"
+      ) %>
+    </div>
+    <%= yield %>
   </div>
-  <%= yield %>
 </div>

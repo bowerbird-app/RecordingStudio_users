@@ -1,0 +1,11 @@
+<%# Skip Default Layout TopNav. Hosts that honor skip_page_nav do the same.
+    Leave the Default Layout heading slot empty so the logo can sit above the in-page heading. %>
+<% content_for :skip_page_nav, "1" %>
+<% content_for :head do %>
+  <%= tag.title(title) %>
+<% end %>
+<% if content_for?(:recording_studio_user_auth_body_start) %>
+  <%= content_for(:recording_studio_user_auth_body_start) %>
+<% elsif RecordingStudioUser.config.auth_body_start_partial.present? %>
+  <%= render RecordingStudioUser.config.auth_body_start_partial %>
+<% end %>
