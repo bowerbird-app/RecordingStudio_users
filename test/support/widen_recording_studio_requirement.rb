@@ -7,7 +7,23 @@ module WidenRecordingStudioRequirement
   RECORDING_STUDIO = "6.1.0"
   ADMIN = "2.6.2"
   VIEW_COMPONENT = "4.19.0"
+  CACHE = "0.6.2"
+  SITE_SETTINGS = "0.5.2"
   SKIP = %w[recording_studio recording_studio_user].freeze
+  TARGET_VERSIONS = {
+    "recording_studio" => RECORDING_STUDIO,
+    "recording_studio_admin" => ADMIN,
+    "recording_studio_cache" => CACHE,
+    "recording_studio_site_settings" => SITE_SETTINGS,
+    "view_component" => VIEW_COMPONENT
+  }.freeze
+  REPLACED_REQUIREMENTS = {
+    "recording_studio" => [">= #{RECORDING_STUDIO}"],
+    "recording_studio_admin" => [">= 2.0"],
+    "recording_studio_cache" => [">= 0.5", "< 1"],
+    "recording_studio_site_settings" => [">= 0.2"],
+    "view_component" => [">= 4.14", "< 5"]
+  }.freeze
 
   module SpecificationPatch
     def add_dependency(name, *requirements)
@@ -18,26 +34,9 @@ module WidenRecordingStudioRequirement
 
     def patched_requirements(name, requirements)
       return requirements if SKIP.include?(self.name.to_s)
-      return requirements if requirements_allow?(requirements, target_version(name))
+      return requirements if requirements_allow?(requirements, TARGET_VERSIONS[name])
 
-      case name
-      when "recording_studio"
-        [">= #{RECORDING_STUDIO}"]
-      when "recording_studio_admin"
-        [">= 2.0"]
-      when "view_component"
-        [">= 4.14", "< 5"]
-      else
-        requirements
-      end
-    end
-
-    def target_version(name)
-      case name
-      when "recording_studio" then RECORDING_STUDIO
-      when "recording_studio_admin" then ADMIN
-      when "view_component" then VIEW_COMPONENT
-      end
+      REPLACED_REQUIREMENTS.fetch(name, requirements)
     end
 
     def requirements_allow?(requirements, version)

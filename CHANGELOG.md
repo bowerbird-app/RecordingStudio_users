@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.6] - 2026-11-04
+
+### Changed
+
+- Widen the public `recording_studio_cache` requirement from `~> 0.5` to
+  `>= 0.5, < 1` so Cache 0.6.x (core 6.1+) can resolve. Development pins
+  Recording Studio `v6.3.0`, FlatPack `v0.1.341`, Accessible `v0.24.0`,
+  Cache `v0.6.2`, Logs `v0.7.2`, and Metrics `v0.7.2`. Admin stays on
+  `v2.7.0`. Dummy matches those pins and refreshes long-tail tags that
+  still resolve: Notifications `v0.14.7`, Notifications Email `v0.5.1`,
+  Site Settings `v0.5.2`, Terms and Conditions `v0.14.2`, Publishable
+  `v0.13.0`, Root Switchable `v0.11.3`, API `v0.17.1`, Oauth `v0.21.0`,
+  MCP `v0.23.2`. API `v0.18.1` stays off because Oauth and MCP still cap
+  API below 0.18. Dummy copies the Notifications inbox and email
+  suppression migrations, and sets Root Switchable `layout` to a
+  `controller:` callable. Lockfiles bump rack to 3.2.8 and dummy
+  addressable to 2.9.2. Transitive lockfile bumps also include
+  view_component 4.22.0, nokogiri 1.19.7, loofah 2.25.3,
+  rails-html-sanitizer 1.7.2, and io-console 0.9.5.
+
+### Upgrade notes
+
+- Bump to `0.26.6`. No Users migration. Hosts may take Cache 0.6.x. Keep
+  Admin at `v2.7.0` unless you bump it separately. Dummy still widens
+  sibling gemspecs that cap Cache at `~> 0.5` or Site Settings at `~> 0.2`.
+
 ## [0.26.5] - 2026-10-29
 
 ### Changed
@@ -1215,7 +1241,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.5...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.6...HEAD
+[0.26.6]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.5...v0.26.6
 [0.26.5]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.4...v0.26.5
 [0.26.4]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.3...v0.26.4
 [0.26.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.2...v0.26.3
