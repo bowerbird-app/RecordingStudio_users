@@ -1,5 +1,22 @@
 # Upgrading
 
+## 0.26.6
+
+Bump to `0.26.6`. No Users migration.
+
+This is a public gemspec change. `recording_studio_cache` is now
+`>= 0.5, < 1`. Hosts can resolve Cache 0.6.x, which needs Recording
+Studio 6.1+. Development pins Recording Studio `v6.3.0`, FlatPack
+`v0.1.341`, Accessible `v0.24.0`, root Cache `v0.6.2`, Logs `v0.7.2`,
+Metrics `v0.7.2`. Admin stays `v2.7.0`. Dummy stays on Cache `v0.5.1`
+and Site Settings `v0.2.1`. Dummy also pins Notifications `v0.14.7`,
+Notifications Email `v0.5.1`, TnC `v0.14.2`, Publishable `v0.13.0`,
+Root Switchable `v0.11.3`, API `v0.17.1`, Oauth `v0.21.0`, MCP
+`v0.23.2`. API `v0.18.1` does not resolve with Oauth or MCP. Hosts that
+copy dummy Notifications schema need the inbox column and the email
+suppressions table. Root Switchable 0.11+ rejects `:application_layout`;
+dummy sets `layout` to `"recording_studio/default_layout"`.
+
 ## 0.26.5
 
 Bump to `0.26.5`. No Users migration.

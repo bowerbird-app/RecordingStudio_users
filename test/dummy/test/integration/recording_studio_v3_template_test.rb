@@ -5,7 +5,7 @@ require "test_helper"
 class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
   test "dummy app loads root switchable config and controller support" do
     assert_equal [ "roots" ], RecordingStudioRootSwitchable.configuration.scopes.keys
-    assert_equal :application_layout, RecordingStudioRootSwitchable.configuration.layout
+    assert_equal "recording_studio/default_layout", RecordingStudioRootSwitchable.configuration.layout
     assert_includes ApplicationController.ancestors, RecordingStudio::RootSwitchable::ControllerSupport
     refute_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
     assert_equal "recording_studio/default_layout", RecordingStudioUser.config.layout
