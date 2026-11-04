@@ -8,7 +8,7 @@ source "https://rubygems.org"
 gem "devise"
 gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.341"
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.0"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.1"
 gem "recording_studio_admin",
     github: "bowerbird-app/RecordingStudio_admin",
     tag: "v2.7.0"
@@ -20,7 +20,7 @@ gem "recording_studio_cache",
     tag: "v0.6.2"
 gem "recording_studio_logs",
     github: "bowerbird-app/RecordingStudio_logs",
-    tag: "v0.7.2",
+    tag: "v0.7.3",
     require: false
 gem "recording_studio_metrics",
     github: "bowerbird-app/RecordingStudio_metrics",
@@ -28,7 +28,7 @@ gem "recording_studio_metrics",
     require: false
 gem "recording_studio_trashable",
     github: "bowerbird-app/RecordingStudio_trashable",
-    tag: "v0.12.0",
+    tag: "v0.12.2",
     require: false
 gemspec
 

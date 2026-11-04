@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+## 0.27.1
+
+Bump to `0.27.1`. No Users migration.
+
+Password sign-in, password reset, and OTP login requests no longer reveal
+whether an address is unknown, has a password, or is OTP-only. Sign-in
+always uses `email_or_password_mismatch`. Reset always uses
+`devise.passwords.send_instructions` and does not email OTP-only or unknown
+addresses. Password sign-up with an existing email uses `signup_did_not_save`
+instead of `email_taken`. New password accounts still sign in immediately, so
+this is not a fully silent confirmable flow.
+
+OmniAuth sign-in now rotates the session before `sign_in`, matching password
+and OTP. Drop host overrides of `otp_account_password`, `otp_account_reset`,
+and `email_taken` if you copied them. This release does not add lockout or
+rate limiting for password sign-in.
+
+Development pins: Accessible `v0.24.1`, Logs `v0.7.3`, Trashable `v0.12.2`,
+dummy Root Switchable `v0.11.4`. Admin, dummy Cache, dummy API, and
+`view_component` stay put.
+
 ## 0.27.0
 
 Bump to `0.27.0`. No Users migration.

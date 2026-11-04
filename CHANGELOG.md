@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.1] - 2026-11-04
+
+### Fixed
+
+- Password sign-in uses one mismatch notice for an unknown email, a wrong
+  password, and an OTP-only account.
+- Password reset uses Devise's send-instructions notice for unknown and
+  OTP-only addresses, and does not email a reset to those addresses.
+- OmniAuth sign-in rotates the session before `sign_in`, matching password
+  and OTP.
+
+### Changed
+
+- Password sign-up with an existing email uses the generic
+  `signup_did_not_save` notice instead of confirming the address or that it
+  is OTP-only. New accounts still sign in immediately, so HTTP status can
+  still differ; a fully silent confirmable flow would be a larger redesign.
+- Dropped leftover `MIGRATION_NOTES.md` and `UPDATE_SUMMARY.md`. Dummy docs
+  Config copy now describes Default Layout plus `auth/_shell`, not a deleted
+  auth layout.
+- Development pins: Accessible `v0.24.1`, Logs `v0.7.3`, Trashable
+  `v0.12.2`, dummy Root Switchable `v0.11.4`. Recording Studio `v6.3.0`,
+  FlatPack `v0.1.341`, and Metrics `v0.7.2` were already current. Admin,
+  dummy Cache, dummy API, and `view_component` are unchanged.
+
+### Upgrade notes
+
+- Bump to `0.27.1`. No Users migration.
+- Hosts that overrode `otp_account_password`, `otp_account_reset`, or
+  `email_taken` can drop those keys. Password sign-in now always uses
+  `email_or_password_mismatch`. Password reset uses
+  `devise.passwords.send_instructions`. Password sign-up with an existing
+  email uses `signup_did_not_save`.
+- This release does not add lockout or rate limiting for password sign-in.
+
 ## [0.27.0] - 2026-11-04
 
 ### Fixed
@@ -1269,7 +1304,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.1...HEAD
+[0.27.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.0...v0.27.1
 [0.27.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.6...v0.27.0
 [0.26.6]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.5...v0.26.6
 [0.26.5]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.4...v0.26.5
