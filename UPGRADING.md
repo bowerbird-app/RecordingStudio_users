@@ -8,11 +8,14 @@ Bump to `0.27.0`. No Users migration.
 
 Signed-out auth screens (sign in, sign up, password reset, resend
 confirmation, and OTP steps) use `recording_studio_layout` like the rest of
-Users. They no longer ship `layouts/recording_studio_user/auth` or the
-`_shell` partial.
+Users. They no longer ship `layouts/recording_studio_user/auth`. The
+`_shell` partial is an in-page content wrapper on Default Layout: centered
+`max-w-sm` column, site logo above a centered heading, no Back/Close
+chevrons on those screens.
 
 Delete a host copy of `app/views/layouts/recording_studio_user/auth.html.erb`
-if you only kept it for centering. Set `RecordingStudioUser.configuration.layout`
+if you only kept it for centering. Do not copy `_shell` unless you are
+replacing the in-page wrapper. Set `RecordingStudioUser.configuration.layout`
 or `RecordingStudio.configure { |c| c.layout = ... }` when the host layout
 should differ from `RecordingStudio::DEFAULT_LAYOUT`. Confirmations and
 passwords inherit from Devise, so they call `recording_studio_layout` on
@@ -23,9 +26,9 @@ still render, now at the start of the page body inside the default layout,
 not as the first child of `<body>`. Flash notice and alert come from the
 default layout. Auth views no longer paint those alerts themselves.
 
-The default layout draws the page title as `<h1>`. Viewport centering and a
-narrow `max-w-sm` column are gone until FlatPack has a dedicated auth page
-shape.
+Auth screens do not set `content_for :title`, so Default Layout does not
+draw a second heading above the logo. The visible heading is `PageTitle`
+`variant: :h2` in `_shell`. The document title is set from `:head`.
 
 ## 0.26.6
 

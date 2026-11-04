@@ -16,12 +16,12 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "html[data-theme='rounded']"
     assert_select %(body[data-recording-studio-default-layout="true"])
-    assert_select "h1", text: "Forgot your password?"
+    assert_select "h2", text: "Forgot your password?"
     assert_select "input[type='email'][name='user[email]'][placeholder='you@company.com']"
     assert_select "label", text: "Email", count: 0
     assert_select "button[type='submit']", text: "Send reset link"
     assert_select "a[href='#{new_user_session_path}']", text: "Back to sign in"
-    refute_includes response.body, "min-h-dvh"
+    assert_includes response.body, "min-h-dvh"
     refute_includes File.read(PASSWORD_NEW_VIEW), "FlatPack::Card::Component"
   end
 
@@ -45,12 +45,12 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "html[data-theme='rounded']"
     assert_select %(body[data-recording-studio-default-layout="true"])
-    assert_select "h1", text: "Choose a new password"
+    assert_select "h2", text: "Choose a new password"
     assert_select "input[type='hidden'][name='user[reset_password_token]'][value='reset-token']"
     assert_select "input[type='password'][name='user[password]']"
     assert_select "input[type='password'][name='user[password_confirmation]']"
     assert_select "button[type='submit']", text: "Save password"
-    refute_includes response.body, "min-h-dvh"
+    assert_includes response.body, "min-h-dvh"
     refute_includes File.read(PASSWORD_EDIT_VIEW), "FlatPack::Card::Component"
   end
 
@@ -77,10 +77,10 @@ class PasswordResetPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "html[data-theme='rounded']"
     assert_select %(body[data-recording-studio-default-layout="true"])
-    assert_select "h1", text: "Resend confirmation"
+    assert_select "h2", text: "Resend confirmation"
     assert_select "input[type='email'][name='user[email]'][placeholder='you@company.com']"
     assert_select "button[type='submit']", text: "Resend confirmation"
-    refute_includes response.body, "min-h-dvh"
+    assert_includes response.body, "min-h-dvh"
   end
 
   private

@@ -77,9 +77,12 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes base, "RecordingStudioUser.config.otp_enabled?"
   end
 
-  def test_auth_views_share_default_layout_chrome
+  def test_auth_views_share_in_page_shell_on_default_layout
     chrome = File.read(
       File.expand_path("../app/views/recording_studio_user/auth/_chrome.html.erb", __dir__)
+    )
+    shell = File.read(
+      File.expand_path("../app/views/recording_studio_user/auth/_shell.html.erb", __dir__)
     )
     %w[
       sessions/new
@@ -97,22 +100,22 @@ class AuthRoutesHelperTest < Minitest::Test
       source = File.read(
         File.expand_path("../app/views/recording_studio_user/auth/#{view}.html.erb", __dir__)
       )
-      assert_includes source, 'render "recording_studio_user/auth/chrome"'
+      assert_includes source, 'layout: "recording_studio_user/auth/shell"'
       refute_includes source, "FlatPack::PageTitle::Component"
-      refute_includes source, "recording_studio_user/auth/shell"
+      refute_includes source, "flat_pack_page_nav"
     end
 
-    assert_includes chrome, "content_for :title, title, flush: true"
-    assert_includes chrome, "flat_pack_page_nav"
-    assert_includes chrome, "auth_site_logo"
-    refute_includes chrome, "min-h-dvh"
-    refute_includes chrome, "max-w-sm"
-    refute_includes chrome, "FlatPack::PageTitle::Component"
+    assert_includes chrome, "content_for :skip_page_nav"
+    assert_includes chrome, "tag.title"
+    refute_includes chrome, "content_for :title,"
+    refute_includes chrome, "flat_pack_page_nav"
+    assert_includes shell, 'render "recording_studio_user/auth/chrome"'
+    assert_includes shell, "auth_site_logo"
+    assert_includes shell, "min-h-dvh"
+    assert_includes shell, "max-w-sm"
+    assert_includes shell, "FlatPack::PageTitle::Component"
     refute File.exist?(
       File.expand_path("../app/views/layouts/recording_studio_user/auth.html.erb", __dir__)
-    )
-    refute File.exist?(
-      File.expand_path("../app/views/recording_studio_user/auth/_shell.html.erb", __dir__)
     )
   end
 

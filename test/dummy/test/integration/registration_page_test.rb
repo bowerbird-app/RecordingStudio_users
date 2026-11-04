@@ -37,13 +37,12 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     )
     refute_includes source, "FlatPack::Card::Component"
     refute_includes source, "otp_registration_otp_path"
-    assert_includes source, 'render "recording_studio_user/auth/chrome"'
+    assert_includes source, 'layout: "recording_studio_user/auth/shell"'
     refute_includes source, "FlatPack::PageTitle::Component"
-    refute_includes chrome, "min-h-dvh"
-    refute_includes chrome, "max-w-sm"
-    assert_includes chrome, "flat_pack_page_nav"
+    refute_includes chrome, "flat_pack_page_nav"
     assert_select %(body[data-recording-studio-default-layout="true"])
-    refute_includes response.body, "min-h-dvh"
+    assert_includes response.body, "min-h-dvh"
+    assert_includes response.body, "max-w-sm"
     assert_includes response.body, "text-center"
     assert_includes response.body, "Already have one?"
     assert_includes response.body, 'href="/users/sign_in"'
@@ -91,7 +90,7 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Continue with Google"
     password_source = File.read(AUTH_PASSWORD_VIEW)
     refute_includes password_source, "FlatPack::Card::Component"
-    assert_includes password_source, 'render "recording_studio_user/auth/chrome"'
+    assert_includes password_source, 'layout: "recording_studio_user/auth/shell"'
   ensure
     RecordingStudioUser.config.primary_login_type = original
   end
@@ -131,7 +130,7 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_select "input[name='user[email]']"
     assert_select "button[type='submit']", text: "Send code"
     assert_select %(body[data-recording-studio-default-layout="true"])
-    refute_includes response.body, "min-h-dvh"
+    assert_includes response.body, "min-h-dvh"
     refute_includes response.body, "Continue with password"
   end
 

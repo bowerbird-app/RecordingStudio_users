@@ -27,7 +27,11 @@ class AuthLayoutTest < ActionDispatch::IntegrationTest
       assert_response :success, helper.to_s
       assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
       assert_select "html[data-theme='rounded']"
-      refute_includes response.body, "min-h-dvh"
+      assert_includes response.body, "min-h-dvh"
+      assert_includes response.body, "max-w-sm"
+      assert_select "h1", count: 0
+      assert_select "h2", count: 1
+      assert_select "header", count: 0
     end
 
     controller = RecordingStudioUser::Auth::SessionsController.new

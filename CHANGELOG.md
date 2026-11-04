@@ -19,14 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `recording_studio_layout { RecordingStudioUser.configuration.layout }`.
   Confirmations and passwords include `RecordingStudio::ControllerLayout`
   because they inherit from Devise. The gem no longer ships
-  `layouts/recording_studio_user/auth` or `auth/_shell`.
+  `layouts/recording_studio_user/auth`. `auth/_shell` is an in-page content
+  wrapper (centered `max-w-sm` column, logo above the heading). First screens
+  skip Default Layout page nav.
 
 ### Upgrade notes
 
 - Bump to `0.27.0`. No Users migration.
 - Drop a host copy of `layouts/recording_studio_user/auth.html.erb` if you
-  only kept it for viewport centering. Override `config.layout` (Users or
-  core) when the host layout should differ. `auth_body_start_partial` now
+  only kept it for viewport centering. Keep or restore `auth/_shell` only as
+  page content, not as a layout. Override `config.layout` (Users or core)
+  when the host layout should differ. `auth_body_start_partial` now
   renders at the start of the page body, not before `<main>` on a custom
   `<body>`.
 

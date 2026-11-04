@@ -1,32 +1,31 @@
-<%= render "recording_studio_user/auth/chrome",
-           title: RecordingStudioUser.config.login_title,
-           close_href: main_app.root_path %>
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: { title: RecordingStudioUser.config.login_title } do %>
+  <%= form_with scope: :user, url: auth_sign_in_path, method: :post do %>
+    <div class="space-y-4">
+      <%= render FlatPack::EmailInput::Component.new(
+        name: "user[email]",
+        placeholder: t("recording_studio_user.auth.email_placeholder"),
+        required: true,
+        autocomplete: "email",
+        aria: { label: t("recording_studio_user.auth.email") }
+      ) %>
 
-<%= form_with scope: :user, url: auth_sign_in_path, method: :post do %>
-  <div class="space-y-4">
-    <%= render FlatPack::EmailInput::Component.new(
-      name: "user[email]",
-      placeholder: t("recording_studio_user.auth.email_placeholder"),
-      required: true,
-      autocomplete: "email",
-      aria: { label: t("recording_studio_user.auth.email") }
-    ) %>
-
-    <%= render FlatPack::Button::Component.new(
-      text: t("recording_studio_user.auth.continue_with_email"),
-      style: :primary,
-      size: :md,
-      type: "submit",
-      class: "w-full"
-    ) %>
-  </div>
-<% end %>
-
-<%= render FlatPack::Content::Component.new(class: "text-center") do %>
-  <%= t("recording_studio_user.auth.no_account") %>
-  <%= render FlatPack::Link::Component.new(href: auth_sign_up_path) do %>
-    <%= t("recording_studio_user.auth.sign_up") %>
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.auth.continue_with_email"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
+    </div>
   <% end %>
-<% end %>
 
-<%= render "recording_studio_user/omniauth/continue_with_providers" %>
+  <%= render FlatPack::Content::Component.new(class: "text-center") do %>
+    <%= t("recording_studio_user.auth.no_account") %>
+    <%= render FlatPack::Link::Component.new(href: auth_sign_up_path) do %>
+      <%= t("recording_studio_user.auth.sign_up") %>
+    <% end %>
+  <% end %>
+
+  <%= render "recording_studio_user/omniauth/continue_with_providers" %>
+<% end %>

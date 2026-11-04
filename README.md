@@ -83,11 +83,15 @@ the same resolver as signed-in Users screens. `nil` uses
 `RecordingStudio::DEFAULT_LAYOUT` (`"recording_studio/default_layout"`). A
 String names a layout. `false` renders with no layout. Do not set
 `layout "recording_studio/default_layout"` on the controllers. Each view
-sets `content_for :title` (and `:subtitle` when the page has one) and
-`flat_pack_page_nav`. The default layout draws the only `<h1>`. It also
-renders `flash[:notice]` and `flash[:alert]`. `:recording_studio_user_auth_body_start`
-renders at the start of the page body so a host can inject markup without
-copying a layout. Unused, the slot is empty.
+wraps the form in `auth/_shell` (in-page content, not a layout): a centered
+`max-w-sm` column with the site logo above a centered heading. Those screens
+do not call `flat_pack_page_nav` and set `content_for :skip_page_nav` so
+first screens have no Back/Close chevrons. They do not set
+`content_for :title`, so Default Layout does not draw a second heading.
+The default layout still renders `flash[:notice]` and `flash[:alert]`.
+`:recording_studio_user_auth_body_start` renders at the start of the page
+body so a host can inject markup without copying a layout. Unused, the slot
+is empty.
 
 To render the same partial on every unsigned auth page (sign in, sign up, and the rest), set `config.auth_body_start_partial` (default `nil`):
 

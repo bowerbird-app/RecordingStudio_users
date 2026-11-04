@@ -1,22 +1,11 @@
-<%# flush: true stores a plain SafeBuffer copy. append would escape first; Default
-    Layout strip then drops html_safe and PageTitle would escape again. %>
-<% content_for :title, title, flush: true %>
-<% content_for :subtitle, subtitle, flush: true if local_assigns[:subtitle].present? %>
-<%
-  nav = { round: true, style: :default }
-  if local_assigns[:back_href].present?
-    nav[:back_href] = back_href
-    nav[:back_tooltip] = local_assigns[:back_tooltip].presence || t("recording_studio_user.auth.back_to_sign_in")
-  end
-  if local_assigns[:close_href].present?
-    nav[:anchor_href] = close_href
-    nav[:anchor_tooltip] = local_assigns[:close_tooltip].presence || t("recording_studio_user.profile.close")
-  end
-%>
-<% flat_pack_page_nav(**nav) if nav[:back_href] || nav[:anchor_href] %>
+<%# Skip Default Layout TopNav. Hosts that honor skip_page_nav do the same.
+    Leave the Default Layout heading slot empty so the logo can sit above the in-page heading. %>
+<% content_for :skip_page_nav, "1" %>
+<% content_for :head do %>
+  <%= tag.title(title) %>
+<% end %>
 <% if content_for?(:recording_studio_user_auth_body_start) %>
   <%= content_for(:recording_studio_user_auth_body_start) %>
 <% elsif RecordingStudioUser.config.auth_body_start_partial.present? %>
   <%= render RecordingStudioUser.config.auth_body_start_partial %>
 <% end %>
-<%= auth_site_logo %>

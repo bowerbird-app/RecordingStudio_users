@@ -119,12 +119,12 @@ resend-confirmation screen shares the Users auth chrome.
 
 ## Recording Studio 6.1 layout
 
-`RecordingStudio::UsesDefaultLayout` is gone. `config.layout` on this gem is `nil` unless the host sets it. Signed-in and signed-out Users controllers call `recording_studio_layout { RecordingStudioUser.configuration.layout }`. Confirmations and passwords include `RecordingStudio::ControllerLayout` because they inherit from Devise.
+`RecordingStudio::UsesDefaultLayout` is gone. `config.layout` on this gem is `nil` unless the host sets it. Signed-in and signed-out Users controllers call `recording_studio_layout { RecordingStudioUser.configuration.layout }`. Confirmations and passwords include `RecordingStudio::ControllerLayout` because they inherit from Devise. Signed-out auth keeps `auth/_shell` as an in-page wrapper (logo above heading, no page nav). There is no `layouts/recording_studio_user/auth`.
 
 Page chrome on the rebuilt default template:
 
-- `content_for :title` is the document title and the only `<h1>`.
-- `flat_pack_page_nav` draws Back and Close.
+- `content_for :title` is the document title and the only `<h1>` on signed-in screens. Auth screens skip it so the logo can sit above the heading.
+- `flat_pack_page_nav` draws Back and Close on signed-in screens. Auth screens skip it.
 - `register_page_nav` draws right-hand actions.
 - `recording_studio_page_nav` and the old `:page_nav_back_*` / `:page_nav_anchor_*` slots are gone.
 

@@ -1,49 +1,49 @@
-<%= render "recording_studio_user/auth/chrome",
-           title: t("recording_studio_user.auth.choose_new_password"),
-           subtitle: t("recording_studio_user.auth.choose_new_password_subtitle"),
-           back_href: auth_sign_in_path,
-           close_href: main_app.root_path %>
-
-<% if resource.errors.any? %>
-  <%= render FlatPack::Alert::Component.new(
-    title: t("recording_studio_user.auth.password_did_not_save"),
-    description: resource.errors.full_messages.join(", "),
-    style: :danger
-  ) %>
-<% end %>
-
-<%= form_with scope: resource_name, url: auth_password_path, method: :put do %>
-  <div class="space-y-4">
-    <input type="hidden"
-           name="<%= resource_name %>[reset_password_token]"
-           value="<%= resource.reset_password_token %>"
-           autocomplete="off">
-
-    <%= render FlatPack::PasswordInput::Component.new(
-      name: "#{resource_name}[password]",
-      id: "#{resource_name}_password",
-      label: t("recording_studio_user.auth.new_password"),
-      required: true,
-      autocomplete: "new-password",
-      help_text: t("recording_studio_user.auth.password_minimum", count: Devise.password_length.min),
-      error: resource.errors[:password].first
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: {
+             title: t("recording_studio_user.auth.choose_new_password"),
+             subtitle: t("recording_studio_user.auth.choose_new_password_subtitle")
+           } do %>
+  <% if resource.errors.any? %>
+    <%= render FlatPack::Alert::Component.new(
+      title: t("recording_studio_user.auth.password_did_not_save"),
+      description: resource.errors.full_messages.join(", "),
+      style: :danger
     ) %>
+  <% end %>
 
-    <%= render FlatPack::PasswordInput::Component.new(
-      name: "#{resource_name}[password_confirmation]",
-      id: "#{resource_name}_password_confirmation",
-      label: t("recording_studio_user.auth.confirm_new_password"),
-      required: true,
-      autocomplete: "new-password",
-      error: resource.errors[:password_confirmation].first
-    ) %>
+  <%= form_with scope: resource_name, url: auth_password_path, method: :put do %>
+    <div class="space-y-4">
+      <input type="hidden"
+             name="<%= resource_name %>[reset_password_token]"
+             value="<%= resource.reset_password_token %>"
+             autocomplete="off">
 
-    <%= render FlatPack::Button::Component.new(
-      text: t("recording_studio_user.auth.save_password"),
-      style: :primary,
-      size: :md,
-      type: "submit",
-      class: "w-full"
-    ) %>
-  </div>
+      <%= render FlatPack::PasswordInput::Component.new(
+        name: "#{resource_name}[password]",
+        id: "#{resource_name}_password",
+        label: t("recording_studio_user.auth.new_password"),
+        required: true,
+        autocomplete: "new-password",
+        help_text: t("recording_studio_user.auth.password_minimum", count: Devise.password_length.min),
+        error: resource.errors[:password].first
+      ) %>
+
+      <%= render FlatPack::PasswordInput::Component.new(
+        name: "#{resource_name}[password_confirmation]",
+        id: "#{resource_name}_password_confirmation",
+        label: t("recording_studio_user.auth.confirm_new_password"),
+        required: true,
+        autocomplete: "new-password",
+        error: resource.errors[:password_confirmation].first
+      ) %>
+
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.auth.save_password"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
+    </div>
+  <% end %>
 <% end %>

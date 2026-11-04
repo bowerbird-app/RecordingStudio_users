@@ -1,33 +1,31 @@
-<%= render "recording_studio_user/auth/chrome",
-           title: t("recording_studio_user.sessions.enter_code"),
-           back_href: auth_sign_in_path,
-           close_href: main_app.root_path %>
-
-<%= form_with url: otp_session_verify_path, method: :post do %>
-  <div class="space-y-4">
-    <%= render FlatPack::TextInput::Component.new(
-      name: "code",
-      label: t("recording_studio_user.sessions.sign_in_code"),
-      required: true,
-      inputmode: "numeric",
-      autocomplete: "one-time-code",
-      maxlength: 6
-    ) %>
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: { title: t("recording_studio_user.sessions.enter_code") } do %>
+  <%= form_with url: otp_session_verify_path, method: :post do %>
+    <div class="space-y-4">
+      <%= render FlatPack::TextInput::Component.new(
+        name: "code",
+        label: t("recording_studio_user.sessions.sign_in_code"),
+        required: true,
+        inputmode: "numeric",
+        autocomplete: "one-time-code",
+        maxlength: 6
+      ) %>
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.auth.sign_in"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
+    </div>
+  <% end %>
+  <%= form_with url: otp_session_resend_path, method: :post do %>
     <%= render FlatPack::Button::Component.new(
-      text: t("recording_studio_user.auth.sign_in"),
-      style: :primary,
+      text: t("recording_studio_user.sessions.resend_code"),
+      style: :secondary,
       size: :md,
       type: "submit",
       class: "w-full"
     ) %>
-  </div>
-<% end %>
-<%= form_with url: otp_session_resend_path, method: :post do %>
-  <%= render FlatPack::Button::Component.new(
-    text: t("recording_studio_user.sessions.resend_code"),
-    style: :secondary,
-    size: :md,
-    type: "submit",
-    class: "w-full"
-  ) %>
+  <% end %>
 <% end %>
