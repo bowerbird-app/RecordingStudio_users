@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.27.0
+
+Bump to `0.27.0`. No Users migration.
+
 Signed-out auth screens (sign in, sign up, password reset, resend
 confirmation, and OTP steps) use `recording_studio_layout` like the rest of
 Users. They no longer ship `layouts/recording_studio_user/auth` or the

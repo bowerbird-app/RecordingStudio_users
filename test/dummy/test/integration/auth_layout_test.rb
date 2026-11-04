@@ -73,6 +73,26 @@ class AuthLayoutTest < ActionDispatch::IntegrationTest
     assert_select %(body[data-recording-studio-default-layout="true"]), count: 1
   end
 
+  test "auth subtitles with apostrophes are escaped once" do
+    {
+      new_user_password_path => "We'll send you a link to choose a new one.",
+      new_user_confirmation_path => "We'll send a fresh link to your inbox."
+    }.each do |path, expected|
+      get path
+
+      assert_response :success, path
+      refute_includes response.body, "&amp;#39;"
+      assert(
+        response.body.include?("We'll") || response.body.include?("We&#39;ll"),
+        "#{path} should include We'll once-escaped"
+      )
+      text = Nokogiri::HTML(response.body).text
+      assert_includes text, expected
+      assert_includes text, "We'll"
+      refute_includes text, "We&#39;ll"
+    end
+  end
+
   test "core default layout still paints a flash on a signed-out auth page" do
     post "#{new_user_session_path}/password", params: {
       user: { email: "member@admin.com", password: "not-the-password" }

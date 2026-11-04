@@ -102,7 +102,7 @@ class AuthRoutesHelperTest < Minitest::Test
       refute_includes source, "recording_studio_user/auth/shell"
     end
 
-    assert_includes chrome, "content_for :title"
+    assert_includes chrome, "content_for :title, title, flush: true"
     assert_includes chrome, "flat_pack_page_nav"
     assert_includes chrome, "auth_site_logo"
     refute_includes chrome, "min-h-dvh"

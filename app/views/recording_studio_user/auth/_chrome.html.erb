@@ -1,5 +1,7 @@
-<% content_for :title, title %>
-<% content_for :subtitle, subtitle if local_assigns[:subtitle].present? %>
+<%# flush: true stores a plain SafeBuffer copy. append would escape first; Default
+    Layout strip then drops html_safe and PageTitle would escape again. %>
+<% content_for :title, title, flush: true %>
+<% content_for :subtitle, subtitle, flush: true if local_assigns[:subtitle].present? %>
 <%
   nav = { round: true, style: :default }
   if local_assigns[:back_href].present?

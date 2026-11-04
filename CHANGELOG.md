@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-11-04
+
+### Fixed
+
+- Auth Default Layout titles and subtitles escape apostrophes once (`We'll`, not a visible `We&#39;ll`).
+
 ### Changed
 
 - Signed-out auth screens use core `recording_studio/default_layout` through
@@ -17,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrade notes
 
+- Bump to `0.27.0`. No Users migration.
 - Drop a host copy of `layouts/recording_studio_user/auth.html.erb` if you
   only kept it for viewport centering. Override `config.layout` (Users or
   core) when the host layout should differ. `auth_body_start_partial` now
@@ -1259,7 +1266,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.6...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.0...HEAD
+[0.27.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.6...v0.27.0
 [0.26.6]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.5...v0.26.6
 [0.26.5]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.4...v0.26.5
 [0.26.4]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.3...v0.26.4
