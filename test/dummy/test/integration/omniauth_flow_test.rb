@@ -54,6 +54,27 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
     RecordingStudioUser.config.primary_login_type = original
   end
 
+  test "omniauth sign-in rotates the session before sign_in" do
+    planted_email = "oauth-planted-#{SecureRandom.hex(4)}@example.com"
+    post new_user_session_path, params: { user: { email: planted_email } }
+
+    assert_equal planted_email, session[:auth_email]
+
+    mock_provider_auth!(
+      :google_oauth2,
+      uid: "rotate-#{SecureRandom.hex(4)}",
+      email: "oauth-rotate-#{SecureRandom.hex(4)}@example.com",
+      first_name: "Rotate",
+      last_name: "Session"
+    )
+    get user_google_oauth2_omniauth_callback_path
+
+    assert_nil session[:auth_email]
+    assert_redirected_to root_path
+    user = User.find_by!(email: OmniAuth.config.mock_auth[:google_oauth2].info.email)
+    assert_equal user.id, session["warden.user.user.key"]&.dig(0, 0)
+  end
+
   test "new Google account creates User Profile and Identity then signs in" do
     mock_provider_auth!(
       :google_oauth2,

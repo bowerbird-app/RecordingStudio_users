@@ -10,23 +10,17 @@ module RecordingStudioUser
       recording_studio_layout { RecordingStudioUser.configuration.layout }
 
       def create
-        user = resource_class.find_by(email: resource_params[:email].to_s.strip.downcase)
-        if user&.registered_with_otp?
-          flash[:notice] = I18n.t("recording_studio_user.auth.otp_account_reset")
-          redirect_to host_new_user_session_path and return
-        end
+        user = resource_class.find_for_database_authentication(email: resource_params[:email])
+        return super if user && !user.registered_with_otp?
 
-        super
+        set_flash_message! :notice, (Devise.paranoid ? :send_paranoid_instructions : :send_instructions)
+        redirect_to after_sending_reset_password_instructions_path_for(resource_name)
       end
 
       private
 
       def resource_class
         RecordingStudioUser.config.user_class
-      end
-
-      def host_new_user_session_path
-        main_app.new_user_session_path
       end
 
       def after_resetting_password_path_for(_resource)

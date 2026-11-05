@@ -24,10 +24,9 @@ module RecordingStudioUser
 
       def create_password
         user = resource_class.find_for_database_authentication(email: sign_in_params[:email])
-        return render_password_failure(I18n.t("recording_studio_user.auth.otp_account_password")) if
-          user&.registered_with_otp?
-        return render_password_failure(I18n.t("recording_studio_user.auth.email_or_password_mismatch")) unless
-          user&.valid_password?(sign_in_params[:password])
+        unless password_sign_in_allowed?(user)
+          return render_password_failure(I18n.t("recording_studio_user.auth.email_or_password_mismatch"))
+        end
 
         finish_sign_in!(user)
       end
@@ -104,6 +103,10 @@ module RecordingStudioUser
       # capability, not a restriction on how you sign in.
       def eligible_for_sign_in?(user)
         user&.confirmed? && user.active_for_authentication?
+      end
+
+      def password_sign_in_allowed?(user)
+        user && !user.registered_with_otp? && user.valid_password?(sign_in_params[:password])
       end
 
       def render_continue_failure(message)

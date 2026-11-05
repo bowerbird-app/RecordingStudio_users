@@ -3,6 +3,9 @@
 require_dependency RecordingStudioUser::Engine.root.join(
   "app/controllers/concerns/recording_studio_user/auth/pending_email.rb"
 ).to_s
+require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/session_rotation.rb"
+).to_s
 
 module RecordingStudioUser
   module Auth
@@ -10,6 +13,7 @@ module RecordingStudioUser
       include Devise::Controllers::Helpers
       include RecordingStudioUser::AuthRoutesHelper
       include RecordingStudioUser::Auth::PendingEmail
+      include RecordingStudioUser::Auth::SessionRotation
 
       # Users before TnC extra_fields; host before Users (see prefer_signup_view_paths!).
       before_action :prefer_host_then_users_signup_views
@@ -50,26 +54,6 @@ module RecordingStudioUser
                   RecordingStudioUser.config.otp_login_enabled?
 
         raise ActionController::RoutingError, "OTP login is not enabled"
-      end
-
-      def rotate_session!
-        reset_session
-      end
-
-      def sign_in_user!(user)
-        return_to = safe_return_location
-        rotate_session!
-        sign_in(:user, user)
-        session[:user_return_to] = return_to if return_to
-      end
-
-      def safe_return_location
-        location = stored_location_for(:user) || session[:user_return_to]
-        return unless location.is_a?(String)
-        return unless location.start_with?("/")
-        return if location.start_with?("//")
-
-        location
       end
 
       def after_sign_in_path_for(resource)
