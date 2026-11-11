@@ -3,6 +3,8 @@
 module RecordingStudioUser
   module Api
     module ProfileRevision
+      private
+
       def profile_revision(user, attributes)
         profile_attrs = attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
         extras = profile_attrs[:additional_profile_attributes]

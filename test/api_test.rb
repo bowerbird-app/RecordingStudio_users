@@ -38,18 +38,9 @@ class ApiTest < Minitest::Test
       access.singleton_class.prepend(ApiAccessOverride)
     end
     access.authorization_result = ->(_context, _role) { @authorize_admin_root }
-    @base_transaction = ActiveRecord::Base.singleton_class.instance_method(:transaction)
-    verbose = $VERBOSE
-    $VERBOSE = nil
-    ActiveRecord::Base.define_singleton_method(:transaction) { |*_args, **_kwargs, &block| block.call }
-    $VERBOSE = verbose
   end
 
   def teardown
-    verbose = $VERBOSE
-    $VERBOSE = nil
-    ActiveRecord::Base.define_singleton_method(:transaction, @base_transaction) if @base_transaction
-    $VERBOSE = verbose
     RecordingStudioUser::Api::Access.authorization_result = nil
     remove_test_recording_studio_api!
   end
@@ -363,11 +354,7 @@ class ApiTest < Minitest::Test
               flunk "create_user! must not run without a password"
             }) do
               events = registration_events do
-                payload = without_profile_lookup do
-                  RecordingStudioUser::Api::Create.call(
-                    FakeContext.new(actor: :staff, params: { email: "ada@example.com", first_name: "Ada" })
-                  )
-                end
+                payload = without_profile_lookup { create_via_api(email: "ada@example.com", first_name: "Ada") }
                 assert_equal "otp", payload.fetch(:registered_with)
               end
               assert_empty events
@@ -395,11 +382,7 @@ class ApiTest < Minitest::Test
             with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
               flunk "create_user! must not run without a password"
             }) do
-              payload = without_profile_lookup do
-                RecordingStudioUser::Api::Create.call(
-                  FakeContext.new(actor: :staff, params: { email: "ada@example.com" })
-                )
-              end
+              payload = without_profile_lookup { create_via_api(email: "ada@example.com") }
               assert_equal "otp", payload.fetch(:registered_with)
             end
           end
@@ -417,11 +400,7 @@ class ApiTest < Minitest::Test
           with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
             flunk "create_user! must not run without a password"
           }) do
-            error = assert_raises(RecordingStudioApi::InvalidActionInputError) do
-              RecordingStudioUser::Api::Create.call(
-                FakeContext.new(actor: :staff, params: { email: "ada@example.com" })
-              )
-            end
+            error = assert_raises(RecordingStudioApi::InvalidActionInputError) { create_via_api(email: "ada@example.com") }
             assert_equal "password is required", error.message
           end
         end
@@ -483,6 +462,21 @@ class ApiTest < Minitest::Test
     events
   ensure
     ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+  end
+
+  def create_via_api(**params)
+    with_transaction_passthrough do
+      RecordingStudioUser::Api::Create.call(FakeContext.new(actor: :staff, params: params))
+    end
+  end
+
+  def with_transaction_passthrough(&)
+    with_singleton_method(
+      ActiveRecord::Base.singleton_class,
+      :transaction,
+      proc { |*_args, **_kwargs, &inner| inner.call },
+      &
+    )
   end
 
   def with_otp_enabled(enabled)
