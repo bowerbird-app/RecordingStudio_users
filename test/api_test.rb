@@ -377,7 +377,7 @@ class ApiTest < Minitest::Test
     created = fake_created_user(registered_with: "otp")
     with_api_errors do
       with_otp_enabled(true) do
-        with_singleton_method(RecordingStudioUser.singleton_class, :create_unconfirmed_user!, proc { |email:|
+        with_singleton_method(RecordingStudioUser.singleton_class, :create_unconfirmed_user!, proc { |**|
           created
         }) do
           with_singleton_method(RecordingStudioUser.singleton_class, :record_profile!, proc { |*|
