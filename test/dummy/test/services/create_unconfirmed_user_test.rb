@@ -38,6 +38,20 @@ class CreateUnconfirmedUserTest < ActiveSupport::TestCase
     end
   end
 
+  test "create_unconfirmed_user returns the existing user after a unique violation inside an outer transaction" do
+    email = "outer-tx-#{SecureRandom.hex(4)}@example.com"
+    Thread.current[:skip_user_validation] = true
+    existing = RecordingStudioUser.create_unconfirmed_user!(email: email)
+
+    found = ActiveRecord::Base.transaction do
+      RecordingStudioUser.create_unconfirmed_user!(email: email.upcase)
+    end
+
+    assert_equal existing.id, found.id
+  ensure
+    Thread.current[:skip_user_validation] = nil
+  end
+
   test "concurrent create_unconfirmed_user returns one user" do
     email = "race-#{SecureRandom.hex(4)}@example.com"
     users = Queue.new

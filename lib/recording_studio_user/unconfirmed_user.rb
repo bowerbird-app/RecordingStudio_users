@@ -22,7 +22,7 @@ module RecordingStudioUser
     def save_unconfirmed_user!(email)
       user = RecordingStudioUser.config.user_class.new(email: email, registered_with: "otp")
       user.skip_confirmation_notification! if user.respond_to?(:skip_confirmation_notification!)
-      user.save!
+      RecordingStudioUser.config.user_class.transaction(requires_new: true) { user.save! }
       user
     end
 
