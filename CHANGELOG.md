@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.3] - 2026-11-11
+
+### Fixed
+
+- Operations `users` index registers `page` and `per_page` on its
+  `input_contract`, so API and MCP schemas expose the same offset paging
+  the handler already uses.
+
+### Upgrade notes
+
+- Bump to `0.27.3`. No Users migration.
+- List users MCP/OpenAPI now accept optional `page` and `per_page`. Extra
+  keys on that GET still return `422`.
+
 ## [0.27.2] - 2026-11-11
 
 ### Fixed
@@ -1320,7 +1334,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.3...HEAD
+[0.27.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.2...v0.27.3
 [0.27.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.1...v0.27.2
 [0.27.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.0...v0.27.1
 [0.27.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.6...v0.27.0

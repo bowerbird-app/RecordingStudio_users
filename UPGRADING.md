@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.27.3
+
+Bump to `0.27.3`. No Users migration.
+
+Operations list users (`GET` users) now declares `page` and `per_page` on
+the endpoint `input_contract`. MCP and OpenAPI show those optional integers.
+Paging behavior is unchanged (default 50, max 100). Extra keys return `422`.
+
 ## 0.27.2
 
 Bump to `0.27.2`. No Users migration.

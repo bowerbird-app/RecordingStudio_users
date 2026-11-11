@@ -63,6 +63,62 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     end
   end
 
+  test "users index tool schema exposes page and per_page and they page" do
+    3.times do |index|
+      RecordingStudioUser.create_user!(
+        email: "mcp-page-#{index}-#{SecureRandom.hex(4)}@example.com",
+        password: "Password123!",
+        first_name: "Page#{index}",
+        last_name: "User",
+        time_zone: "UTC"
+      )
+    end
+    surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
+    names = argument_names(surface, "users")
+    assert_includes names, "page"
+    assert_includes names, "per_page"
+    refute_includes names, "pagination_token"
+    refute_includes names, "limit"
+    assert_equal "integer", argument(surface, "users", :page).fetch(:type)
+    assert_equal "integer", argument(surface, "users", :per_page).fetch(:type)
+    schema = tool_schema(surface, "users")
+    assert_equal false, schema_additional_properties(schema)
+    refute_includes Array(schema[:required] || schema["required"]).map(&:to_s), "page"
+    refute_includes Array(schema[:required] || schema["required"]).map(&:to_s), "per_page"
+
+    first = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => 1, "per_page" => 2 },
+      access_grant: @viewer_grant
+    )
+    assert_equal false, first.fetch(:isError)
+    records = first.dig(:structuredContent, "records")
+    meta = first.dig(:structuredContent, "meta")
+    assert_equal 2, records.length
+    assert_equal 1, meta.fetch("page")
+    assert_equal 2, meta.fetch("per_page")
+    assert_equal User.count, meta.fetch("total_count")
+
+    second = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => 2, "per_page" => 2 },
+      access_grant: @viewer_grant
+    )
+    assert_equal false, second.fetch(:isError)
+    first_ids = records.map { |row| row.fetch("id") }
+    second_ids = second.dig(:structuredContent, "records").map { |row| row.fetch("id") }
+    assert_empty first_ids & second_ids
+
+    unknown = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => 1, "not_a_real_field" => "boom" },
+      access_grant: @viewer_grant
+    )
+    assert_equal true, unknown.fetch(:isError)
+    assert_match(/Invalid input for endpoint users/, unknown.dig(:content, 0, :text).to_s)
+    assert_contract_unknown_parameter(:users, { page: 1, not_a_real_field: "boom" }, "not_a_real_field")
+  end
+
   test "users_create and users_update tool schemas list writable fields" do
     surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
 
