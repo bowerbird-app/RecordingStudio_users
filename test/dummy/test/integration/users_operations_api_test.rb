@@ -123,7 +123,7 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test "operations editor creates an unconfirmed user when one-time codes are on" do
+  test "operations editor OTP create persists profile names" do
     email = "otp-create-#{SecureRandom.hex(4)}@example.com"
     assert_predicate RecordingStudioUser.config, :otp_enabled?
 
@@ -137,7 +137,57 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       payload = response.parsed_body
     end
     assert_equal email, payload.fetch("email")
+    assert_equal "Nico", payload.fetch("first_name")
+    assert_equal "New", payload.fetch("last_name")
+    assert_equal "en", payload.fetch("additional_profile_attributes").fetch("locale")
+    assert_nil payload.fetch("confirmed_at")
+    assert_equal "otp", payload.fetch("registered_with")
+    refute_secret_fields payload
+    assert_empty events
+
+    user = User.find(payload.fetch("id"))
+    profile = RecordingStudioUser.profile_for(user)
+    assert user.registered_with_otp?
+    assert_not user.confirmed?
+    assert_not user.password_set?
+    assert_equal "Nico", profile.first_name
+    assert_equal "New", profile.last_name
+    assert_equal "en", profile.additional_profile_attributes["locale"]
+    assert_empty RecordingStudioTermsAndConditions::Acceptance.where(
+      actor_type: user.class.name,
+      actor_id: user.id
+    )
+  end
+
+  test "operations editor OTP create with an invalid profile creates no user" do
+    email = "otp-create-invalid-#{SecureRandom.hex(4)}@example.com"
+    assert_predicate RecordingStudioUser.config, :otp_enabled?
+
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@editor_token),
+         params: { email: email, last_name: "New" },
+         as: :json
+
+    assert_response :unprocessable_entity
+    assert_nil User.find_by(email: email)
+  end
+
+  test "operations editor OTP create without names still works" do
+    email = "otp-create-nameless-#{SecureRandom.hex(4)}@example.com"
+    assert_predicate RecordingStudioUser.config, :otp_enabled?
+
+    payload = nil
+    events = registration_completed_events do
+      post "#{OPERATIONS_ROOT}/users",
+           headers: auth(@editor_token),
+           params: { email: email },
+           as: :json
+      assert_response :success
+      payload = response.parsed_body
+    end
+    assert_equal email, payload.fetch("email")
     assert_nil payload.fetch("first_name")
+    assert_nil payload.fetch("last_name")
     assert_nil payload.fetch("confirmed_at")
     assert_equal "otp", payload.fetch("registered_with")
     refute_secret_fields payload

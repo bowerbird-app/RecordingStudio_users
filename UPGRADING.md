@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.27.2
+
+Bump to `0.27.2`. No Users migration.
+
+Operations OTP create (`POST` users with no password) now applies
+profile fields with `record_profile!`. `create_unconfirmed_user!` is
+unchanged. Email-only OTP create still records no Profile.
+
 ## 0.27.1
 
 Bump to `0.27.1`. No Users migration.

@@ -3,6 +3,8 @@
 module RecordingStudioUser
   module Api
     class Create
+      include ProfileRevision
+
       def self.call(context)
         new(context).call
       end
@@ -41,7 +43,12 @@ module RecordingStudioUser
         password = attributes[:password].presence
         return password_user!(email, password, attributes) if password
 
-        unconfirmed_user!(email)
+        ActiveRecord::Base.transaction do
+          user = unconfirmed_user!(email)
+          assignment = profile_revision(user, attributes)
+          RecordingStudioUser.record_profile!(user, actor: Access.actor_for(context), **assignment) if assignment
+          user
+        end
       end
 
       def password_user!(email, password, attributes)

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.2] - 2026-11-11
+
+### Fixed
+
+- Operations `users_create` without a password (OTP path) now records
+  profile fields through `record_profile!`. `create_unconfirmed_user!`
+  still takes `email` only. Create without names still leaves no Profile.
+
+### Upgrade notes
+
+- Bump to `0.27.2`. No Users migration.
+- OTP admin create with `first_name` / `last_name` (and other profile
+  keys) now persists them. Email-only OTP create is unchanged.
+
 ## [0.27.1] - 2026-11-04
 
 ### Fixed
@@ -1306,7 +1320,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.2...HEAD
+[0.27.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.1...v0.27.2
 [0.27.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.0...v0.27.1
 [0.27.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.6...v0.27.0
 [0.26.6]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.26.5...v0.26.6

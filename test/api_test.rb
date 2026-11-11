@@ -339,29 +339,56 @@ class ApiTest < Minitest::Test
   def test_create_without_password_calls_create_unconfirmed_user_when_otp_is_on
     created = fake_created_user(registered_with: "otp")
     calls = []
+    profiles = []
     with_api_errors do
       with_otp_enabled(true) do
         with_singleton_method(RecordingStudioUser.singleton_class, :create_unconfirmed_user!, proc { |email:|
           calls << email
           created
         }) do
-          with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
-            flunk "create_user! must not run without a password"
+          with_singleton_method(RecordingStudioUser.singleton_class, :record_profile!, proc { |user, **kwargs|
+            profiles << [user, kwargs]
+            nil
           }) do
-            events = registration_events do
-              payload = without_profile_lookup do
-                RecordingStudioUser::Api::Create.call(
-                  FakeContext.new(actor: :staff, params: { email: "ada@example.com", first_name: "Ada" })
-                )
+            with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
+              flunk "create_user! must not run without a password"
+            }) do
+              events = registration_events do
+                payload = without_profile_lookup { create_via_api(email: "ada@example.com", first_name: "Ada") }
+                assert_equal "otp", payload.fetch(:registered_with)
               end
-              assert_equal "otp", payload.fetch(:registered_with)
+              assert_empty events
             end
-            assert_empty events
           end
         end
       end
     end
     assert_equal ["ada@example.com"], calls
+    assert_equal created, profiles.first[0]
+    assert_equal "Ada", profiles.first[1][:first_name]
+    assert_equal :staff, profiles.first[1][:actor]
+  end
+
+  def test_otp_create_without_names_skips_record_profile
+    created = fake_created_user(registered_with: "otp")
+    with_api_errors do
+      with_otp_enabled(true) do
+        with_singleton_method(RecordingStudioUser.singleton_class, :create_unconfirmed_user!, proc { |**|
+          created
+        }) do
+          with_singleton_method(RecordingStudioUser.singleton_class, :record_profile!, proc { |*|
+            flunk "record_profile! must not run when OTP create has no profile fields"
+          }) do
+            with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
+              flunk "create_user! must not run without a password"
+            }) do
+              payload = without_profile_lookup { create_via_api(email: "ada@example.com") }
+              assert_equal "otp", payload.fetch(:registered_with)
+            end
+          end
+        end
+      end
+    end
   end
 
   def test_create_without_password_requires_a_password_when_otp_is_off
@@ -373,11 +400,7 @@ class ApiTest < Minitest::Test
           with_singleton_method(RecordingStudioUser.singleton_class, :create_user!, proc { |**|
             flunk "create_user! must not run without a password"
           }) do
-            error = assert_raises(RecordingStudioApi::InvalidActionInputError) do
-              RecordingStudioUser::Api::Create.call(
-                FakeContext.new(actor: :staff, params: { email: "ada@example.com" })
-              )
-            end
+            error = assert_raises(RecordingStudioApi::InvalidActionInputError) { create_via_api(email: "ada@example.com") }
             assert_equal "password is required", error.message
           end
         end
@@ -393,7 +416,10 @@ class ApiTest < Minitest::Test
     refute_includes directory, "def create_user!(email:, password: nil"
     assert_includes create, "RecordingStudioUser.create_user!"
     assert_includes create, "RecordingStudioUser.create_unconfirmed_user!"
+    assert_includes create, "RecordingStudioUser.record_profile!"
     assert_includes create, "otp_enabled?"
+    assert_includes create, "def unconfirmed_user!(email)"
+    refute_includes create, "record_otp_create_profile!"
     refute_includes create, "create_passwordless_user!"
     refute_includes create, "RegistrationCompleted"
     refute_includes create, "skip_confirmation!"
@@ -436,6 +462,21 @@ class ApiTest < Minitest::Test
     events
   ensure
     ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+  end
+
+  def create_via_api(**params)
+    with_transaction_passthrough do
+      RecordingStudioUser::Api::Create.call(FakeContext.new(actor: :staff, params: params))
+    end
+  end
+
+  def with_transaction_passthrough(&)
+    with_singleton_method(
+      ActiveRecord::Base.singleton_class,
+      :transaction,
+      proc { |*_args, **_kwargs, &inner| inner.call },
+      &
+    )
   end
 
   def with_otp_enabled(enabled)

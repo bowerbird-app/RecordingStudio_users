@@ -89,13 +89,14 @@ module RecordingStudioUser
       end
 
       def create_password_description
-        "When present, create_user! runs. Omit it when one-time codes are on to create an unconfirmed user."
+        "When present, create_user! runs. Omit it when one-time codes are on " \
+          "to call create_unconfirmed_user! and record_profile! for any profile fields."
       end
 
       def profile_input_fields
         {
-          first_name: optional_string("Given name. Used on password create and on update."),
-          last_name: optional_string("Family name. Used on password create and on update."),
+          first_name: optional_string("Given name. Used on create and on update."),
+          last_name: optional_string("Family name. Used on create and on update."),
           time_zone: optional_string("Rails time zone name."),
           additional_profile_attributes: {
             type: :hash,

@@ -67,7 +67,8 @@ module RecordingStudioUser
       def create_description
         "Requires Accessible :edit on AdminRoot. Pass a password to call create_user! " \
           "(Devise user and People-root Profile). Omit the password when one-time codes are on " \
-          "to call create_unconfirmed_user!. Omit it when they are off and the response is 422."
+          "to call create_unconfirmed_user! and record_profile! for any profile fields. " \
+          "Omit it when they are off and the response is 422."
       end
 
       def show_description
