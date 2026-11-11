@@ -66,7 +66,7 @@ Mount prefix is the host’s API engine path. Dummy uses `/recording_studio_api`
 
 Send writable fields at the JSON root. Do not wrap them in `attributes`.
 
-`users` (index), `users_create`, and `users_update` pass `input_contract` on `RecordingStudioApi.register_endpoint`. Index declares `page` and `per_page` as optional integers (offset paging; default 50, max 100). OpenAPI and MCP 0.17 copy `input_contract` fields into the operation schema. `reject_unknown` is `true`, so extra keys return `422` with `Unknown parameters` naming the field. MCP tool schemas set `additionalProperties` to `false`. `email` is required on create. Update declares `id` (path) and `email` so `PATCH` can still return the explicit email error. Update does not declare `password`. Sending `email` on update returns `422`.
+`users` (index), `users_create`, and `users_update` pass `input_contract` on `RecordingStudioApi.register_endpoint`. Index declares `page` and `per_page` (offset paging; default 50, max 100). OpenAPI and MCP 0.17 copy `input_contract` fields into the operation schema. Index sets `reject_unknown` to `false`, so extra query keys are ignored and a non-integer `page` still falls back to page 1. `users_create` and `users_update` set `reject_unknown` to `true`, so extra keys return `422` with `Unknown parameters` naming the field. Those write tool schemas set `additionalProperties` to `false`. `email` is required on create. Update declares `id` (path) and `email` so `PATCH` can still return the explicit email error. Update does not declare `password`. Sending `email` on update returns `422`.
 
 ## Metric tools
 

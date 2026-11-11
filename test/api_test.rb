@@ -149,10 +149,10 @@ class ApiTest < Minitest::Test
     refute update_fields.fetch(:first_name)[:required]
 
     index = registration_named(api, :users).fetch(:input_contract)
-    assert_equal true, index.fetch(:reject_unknown)
+    assert_equal false, index.fetch(:reject_unknown)
     index_fields = index.fetch(:fields)
-    assert_equal :integer, index_fields.fetch(:page).fetch(:type)
-    assert_equal :integer, index_fields.fetch(:per_page).fetch(:type)
+    assert_equal :string, index_fields.fetch(:page).fetch(:type)
+    assert_equal :string, index_fields.fetch(:per_page).fetch(:type)
     refute index_fields.fetch(:page)[:required]
     refute index_fields.fetch(:per_page)[:required]
     refute index_fields.key?(:pagination_token)

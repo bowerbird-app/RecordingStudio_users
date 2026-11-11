@@ -13,13 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Operations `users` index registers `page` and `per_page` on its
   `input_contract`, so API and MCP schemas expose the same offset paging
-  the handler already uses.
+  the handler already uses. Extra query keys stay ignored.
 
 ### Upgrade notes
 
 - Bump to `0.27.3`. No Users migration.
 - List users MCP/OpenAPI now accept optional `page` and `per_page`. Extra
-  keys on that GET still return `422`.
+  query keys on that GET are ignored, as on `GET` without the contract.
 
 ## [0.27.2] - 2026-11-11
 

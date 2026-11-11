@@ -41,21 +41,6 @@ module RecordingStudioUser
         requested = DEFAULT_PER_PAGE if requested <= 0
         [requested, MAX_PER_PAGE].min
       end
-
-      def index_input_contract
-        { reject_unknown: true, fields: index_input_fields }
-      end
-
-      def index_input_fields
-        {
-          page: optional_integer("Offset page. Defaults to 1."),
-          per_page: optional_integer("Rows per page. Defaults to #{DEFAULT_PER_PAGE}, max #{MAX_PER_PAGE}.")
-        }
-      end
-
-      def optional_integer(description)
-        { type: :integer, required: false, description: description }
-      end
     end
   end
 end
