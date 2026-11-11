@@ -3,6 +3,8 @@
 module RecordingStudioUser
   module Api
     class Create
+      include ProfileRevision
+
       def self.call(context)
         new(context).call
       end
@@ -41,7 +43,12 @@ module RecordingStudioUser
         password = attributes[:password].presence
         return password_user!(email, password, attributes) if password
 
-        unconfirmed_user!(email, attributes)
+        ActiveRecord::Base.transaction do
+          user = unconfirmed_user!(email)
+          assignment = profile_revision(user, attributes)
+          RecordingStudioUser.record_profile!(user, actor: Access.actor_for(context), **assignment) if assignment
+          user
+        end
       end
 
       def password_user!(email, password, attributes)
@@ -54,25 +61,10 @@ module RecordingStudioUser
         )
       end
 
-      def unconfirmed_user!(email, attributes)
+      def unconfirmed_user!(email)
         Errors.invalid_input!("password is required") unless RecordingStudioUser.config.otp_enabled?
 
-        user = RecordingStudioUser.create_unconfirmed_user!(email: email)
-        record_otp_create_profile!(user, attributes)
-        user
-      end
-
-      def record_otp_create_profile!(user, attributes)
-        assignment = attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
-        extras = assignment[:additional_profile_attributes]
-        named = assignment.except(:additional_profile_attributes).compact_blank
-        return if named.blank? && extras.blank?
-
-        RecordingStudioUser.record_profile!(
-          user,
-          actor: Access.actor_for(context),
-          **named.merge(additional_profile_attributes: extras.presence)
-        )
+        RecordingStudioUser.create_unconfirmed_user!(email: email)
       end
     end
   end

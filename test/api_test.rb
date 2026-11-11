@@ -38,9 +38,18 @@ class ApiTest < Minitest::Test
       access.singleton_class.prepend(ApiAccessOverride)
     end
     access.authorization_result = ->(_context, _role) { @authorize_admin_root }
+    @base_transaction = ActiveRecord::Base.singleton_class.instance_method(:transaction)
+    verbose = $VERBOSE
+    $VERBOSE = nil
+    ActiveRecord::Base.define_singleton_method(:transaction) { |*_args, **_kwargs, &block| block.call }
+    $VERBOSE = verbose
   end
 
   def teardown
+    verbose = $VERBOSE
+    $VERBOSE = nil
+    ActiveRecord::Base.define_singleton_method(:transaction, @base_transaction) if @base_transaction
+    $VERBOSE = verbose
     RecordingStudioUser::Api::Access.authorization_result = nil
     remove_test_recording_studio_api!
   end
@@ -430,6 +439,8 @@ class ApiTest < Minitest::Test
     assert_includes create, "RecordingStudioUser.create_unconfirmed_user!"
     assert_includes create, "RecordingStudioUser.record_profile!"
     assert_includes create, "otp_enabled?"
+    assert_includes create, "def unconfirmed_user!(email)"
+    refute_includes create, "record_otp_create_profile!"
     refute_includes create, "create_passwordless_user!"
     refute_includes create, "RegistrationCompleted"
     refute_includes create, "skip_confirmation!"

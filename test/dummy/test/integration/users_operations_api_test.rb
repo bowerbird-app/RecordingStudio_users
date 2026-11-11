@@ -159,6 +159,19 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "operations editor OTP create with an invalid profile creates no user" do
+    email = "otp-create-invalid-#{SecureRandom.hex(4)}@example.com"
+    assert_predicate RecordingStudioUser.config, :otp_enabled?
+
+    post "#{OPERATIONS_ROOT}/users",
+         headers: auth(@editor_token),
+         params: { email: email, last_name: "New" },
+         as: :json
+
+    assert_response :unprocessable_entity
+    assert_nil User.find_by(email: email)
+  end
+
   test "operations editor OTP create without names still works" do
     email = "otp-create-nameless-#{SecureRandom.hex(4)}@example.com"
     assert_predicate RecordingStudioUser.config, :otp_enabled?

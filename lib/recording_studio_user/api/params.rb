@@ -89,7 +89,8 @@ module RecordingStudioUser
       end
 
       def create_password_description
-        "When present, create_user! runs. Omit it when one-time codes are on to create an unconfirmed user."
+        "When present, create_user! runs. Omit it when one-time codes are on " \
+          "to call create_unconfirmed_user! and record_profile! for any profile fields."
       end
 
       def profile_input_fields
