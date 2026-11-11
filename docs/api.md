@@ -84,7 +84,7 @@ Serialized keys: `id`, `email`, `first_name`, `last_name`, `time_zone`, `confirm
 
 Never returned: password digests, password params, reset/confirmation/unlock tokens, OTP secrets, or other credentials.
 
-Writable on create: `email` (required), `password`, `password_confirmation`, `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. Profile fields are applied only by `create_user!` (password present). `create_unconfirmed_user!` takes `email` only.
+Writable on create: `email` (required), `password`, `password_confirmation`, `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. Password create applies profile fields through `create_user!`. OTP create still calls `create_unconfirmed_user!(email:)` then `record_profile!` for any profile fields.
 
 Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra profile keys. `password` and `password_confirmation` are unknown fields and return `422`. Sending `email` returns `422` with `email cannot be changed through the operations users API`.
 
@@ -92,7 +92,7 @@ Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra pr
 
 With a password, `POST` calls `create_user!` unchanged. `registered_with` stays `password`, the People-root Profile is recorded, and the existing confirmation policy applies. Admin create does not emit `registration.completed`.
 
-Omit `password` (or send blank) while one-time codes are enabled (`RecordingStudioUser.config.otp_enabled?`). `POST` calls `create_unconfirmed_user!`. That method sets `registered_with` to `otp`, skips the confirmation email, and does not call `skip_confirmation!`. The account stays unconfirmed, no Profile is recorded, and Terms are not accepted. Profile fields on that request are ignored.
+Omit `password` (or send blank) while one-time codes are enabled (`RecordingStudioUser.config.otp_enabled?`). `POST` calls `create_unconfirmed_user!`. That method sets `registered_with` to `otp`, skips the confirmation email, and does not call `skip_confirmation!`. The account stays unconfirmed and Terms are not accepted. Profile fields on that request go through `record_profile!`. Omit them and no Profile is recorded.
 
 Omit `password` while one-time codes are off. `POST` returns `422` with `password is required` and creates no user.
 

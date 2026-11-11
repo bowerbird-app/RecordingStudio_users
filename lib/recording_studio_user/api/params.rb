@@ -94,8 +94,8 @@ module RecordingStudioUser
 
       def profile_input_fields
         {
-          first_name: optional_string("Given name. Used on password create and on update."),
-          last_name: optional_string("Family name. Used on password create and on update."),
+          first_name: optional_string("Given name. Used on create and on update."),
+          last_name: optional_string("Family name. Used on create and on update."),
           time_zone: optional_string("Rails time zone name."),
           additional_profile_attributes: {
             type: :hash,
