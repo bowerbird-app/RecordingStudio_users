@@ -82,6 +82,8 @@ fr:
       inline_hint: "Code envoyé à %{email}"
       enter_code: Entrez le code reçu par e-mail.
       signed_in: Vous êtes connecté.
+      agree_to_terms: J'accepte
+      agree_to_continue: Cochez la case pour accepter, puis continuez.
     sessions:
       enter_code: Entrez votre code
       sign_in_code: Code de connexion

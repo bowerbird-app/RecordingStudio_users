@@ -79,6 +79,8 @@ en:
       inline_hint: "Code sent to %{email}"
       enter_code: Enter the code from your email.
       signed_in: You're in.
+      agree_to_terms: I agree
+      agree_to_continue: Tick the box to agree, then continue.
     sessions:
       enter_code: Enter your code
       sign_in_code: Sign-in code

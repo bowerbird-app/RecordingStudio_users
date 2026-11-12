@@ -12,11 +12,14 @@ module RecordingStudioUser
       "#{local[0]}***@#{domain}"
     end
 
-    def initialize(masked_email:, alert: nil, notice: nil, signed_in_return_to: nil)
+    def initialize(masked_email:, alert: nil, notice: nil, signed_in_return_to: nil,
+                   csrf_param: nil, csrf_token: nil)
       @masked_email = masked_email
       @alert = alert
       @notice = notice
       @signed_in_return_to = signed_in_return_to
+      @csrf_param = csrf_param
+      @csrf_token = csrf_token
       super()
     end
 
@@ -31,6 +34,7 @@ module RecordingStudioUser
         notice: @notice,
         signed_in_return_to: @signed_in_return_to,
         hint: hint,
+        terms_notice: terms_notice,
         signed_in_script: signed_in? ? signed_in_script : nil
       }
     end
@@ -46,10 +50,30 @@ module RecordingStudioUser
       I18n.t("recording_studio_user.otp_challenge.enter_code")
     end
 
+    def terms_notice
+      return if signed_in?
+      return unless helpers.session[:otp_purpose].to_s == "registration"
+
+      helpers.recording_studio_user_signup_terms_notice
+    end
+
     def signed_in_script
-      destination = ERB::Util.json_escape(@signed_in_return_to.to_json)
-      %(document.dispatchEvent(new CustomEvent("recording_studio_user:signed_in", ) +
-        %({ bubbles: true, detail: { return_to: #{destination} } })))
+      detail = ERB::Util.json_escape(signed_in_detail.to_json)
+      "var detail = #{detail};" \
+        "var param = document.querySelector('meta[name=\"csrf-param\"]');" \
+        "var token = document.querySelector('meta[name=\"csrf-token\"]');" \
+        "if (param && detail.csrf_param) param.setAttribute('content', detail.csrf_param);" \
+        "if (token && detail.csrf_token) token.setAttribute('content', detail.csrf_token);" \
+        "document.dispatchEvent(new CustomEvent('recording_studio_user:signed_in', " \
+        "{ bubbles: true, detail: detail }));"
+    end
+
+    def signed_in_detail
+      {
+        "return_to" => @signed_in_return_to,
+        "csrf_param" => @csrf_param,
+        "csrf_token" => @csrf_token
+      }
     end
   end
 end

@@ -41,7 +41,8 @@ class UsersTncBoundaryTest < Minitest::Test
     assert_includes controller, "include SignupTermsAcceptance"
     assert_includes controller, "accept_pending_terms_on_signup!(resource)"
     assert_includes concern, "defined?(RecordingStudioTermsAndConditions::Gate)"
-    assert_includes concern, '"source" => "continue_notice"'
+    assert_includes concern, 'source: "continue_notice"'
+    assert_includes concern, '"source" => source'
   end
 
   def test_production_users_does_not_depend_on_tnc

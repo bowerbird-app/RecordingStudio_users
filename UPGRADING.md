@@ -1,5 +1,15 @@
 # Upgrading
 
+## 0.28.1
+
+Bump to `0.28.1`. No Users migration.
+
+Inline verify now returns a fresh CSRF token because sign-in rotates the session. Read `csrf_param` and `csrf_token` from the JSON body, or from `detail` on `recording_studio_user:signed_in`. The inline script updates `csrf-param` and `csrf-token` meta tags when they are already on the page. A foreign `Origin` is still 403. No CORS header is added.
+
+A new address in the inline box must tick `accept_terms=1` when Terms and Conditions has pending live terms for signup. The box shows the same terms links as the signup continue notice. Unticked, the account is not finished and nothing is accepted. A ticked box records source `checkbox`. An existing sign-in does not show the box. The full-page code step still shows the continue notice and records `continue_notice`.
+
+`return_to` keeps a query or fragment that contains `//`, `:`, or `@`, so a base64 token in the query is not dropped. The path is still checked for a scheme, a host, `//`, a backslash, `@`, whitespace, and control characters. The query and fragment still reject a backslash, control characters, whitespace, and unicode slashes. Prefer a url-safe token.
+
 ## 0.28.0
 
 Bump to `0.28.0`. No Users migration.

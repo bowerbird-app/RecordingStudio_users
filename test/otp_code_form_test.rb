@@ -23,6 +23,10 @@ class OtpCodeFormTest < Minitest::Test
     refute_includes source, "FlatPack::PageTitle::Component"
     assert_includes component, "FRAME_ID = \"recording_studio_user_otp_inline\""
     assert_includes component, "recording_studio_user:signed_in"
+    assert_includes component, "csrf_token"
+    assert_includes component, "csrf-token"
+    assert_includes component, "csrf-param"
+    assert_includes source, "accept_terms"
   end
 
   def test_inline_answers_stay_on_the_existing_actions

@@ -45,10 +45,19 @@ module RecordingStudioUser
       def render_inline_signed_in(result)
         destination = inline_destination!(result)
         return render_verify_failure(nil) if destination.blank?
-        return render json: { ok: true, return_to: destination } if json_inline?
+
+        pair = fresh_csrf_pair
+        return render json: { ok: true, return_to: destination }.merge(pair) if json_inline?
 
         request.format = :html
-        render inline_form(signed_in_return_to: destination), layout: false
+        render inline_form(signed_in_return_to: destination, **pair), layout: false
+      end
+
+      def fresh_csrf_pair
+        {
+          csrf_param: request_forgery_protection_token.to_s,
+          csrf_token: form_authenticity_token
+        }
       end
 
       def render_inline_resend(throttled)
@@ -71,19 +80,36 @@ module RecordingStudioUser
       end
 
       def inline_registration_destination!(result)
+        return if inline_signup_terms_unchecked?
+
         user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
-        accept_pending_terms_on_signup!(user)
+        accept_pending_terms_on_signup!(user, source: "checkbox")
         clear_pending_auth_email!
         sign_in_user!(user)
         after_sign_up_path_for(user)
       end
 
-      def inline_form(signed_in_return_to: nil)
+      def inline_signup_terms_unchecked?
+        inline_otp_request? && registration_challenge? && pending_signup_terms? && !terms_box_checked?
+      end
+
+      def terms_box_checked?
+        params[:accept_terms].to_s == "1"
+      end
+
+      def reject_unchecked_signup_terms!
+        flash.now[:alert] = I18n.t("recording_studio_user.otp_challenge.agree_to_continue")
+        render_inline_otp(status: :unprocessable_entity)
+      end
+
+      def inline_form(signed_in_return_to: nil, csrf_param: nil, csrf_token: nil)
         OtpCodeForm.new(
           masked_email: masked_auth_email.to_s,
           alert: flash.now[:alert],
           notice: flash.now[:notice],
-          signed_in_return_to: signed_in_return_to
+          signed_in_return_to: signed_in_return_to,
+          csrf_param: csrf_param,
+          csrf_token: csrf_token
         )
       end
 

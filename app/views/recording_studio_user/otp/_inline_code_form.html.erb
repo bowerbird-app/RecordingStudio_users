@@ -23,6 +23,15 @@
             autocomplete: "one-time-code",
             maxlength: 6
           ) %>
+          <% if terms_notice.present? %>
+            <%= render FlatPack::Checkbox::Component.new(
+              name: "accept_terms",
+              value: "1",
+              required: true,
+              label: t("recording_studio_user.otp_challenge.agree_to_terms")
+            ) %>
+            <%= terms_notice %>
+          <% end %>
           <%= render FlatPack::Button::Component.new(
             text: t("recording_studio_user.otp_challenge.continue"),
             style: :primary,

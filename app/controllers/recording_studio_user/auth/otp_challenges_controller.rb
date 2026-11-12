@@ -34,6 +34,8 @@ module RecordingStudioUser
       end
 
       def submit
+        return reject_unchecked_signup_terms! if inline_signup_terms_unchecked?
+
         result = verify_direct_otp
         return render_verify_failure(result) unless result.success?
         return render_inline_signed_in(result) if inline_otp_request?

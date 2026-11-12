@@ -77,15 +77,33 @@ module RecordingStudioUser
     def safe_path?(value)
       return false unless value.start_with?("/")
       return false if value.start_with?("//", "/\\")
-      return false if forbidden_character?(value)
+
+      path, rest = path_and_rest(value)
+      return false if forbidden_path_character?(path)
+      return false if rest && forbidden_rest_character?(rest)
 
       true
     end
 
-    def forbidden_character?(value)
+    def path_and_rest(value)
+      cut = value.index(/[?#]/)
+      return [value, nil] unless cut
+
+      [value[0, cut], value[(cut + 1)..]]
+    end
+
+    def forbidden_path_character?(value)
       value.match?(%r{//|\\|[[:cntrl:]]|[[:space:]]|@}) ||
         value.match?(/[a-zA-Z][a-zA-Z0-9+.-]*:/) ||
-        UNICODE_SEPARATORS.any? { |mark| value.include?(mark) }
+        unicode_separator?(value)
+    end
+
+    def forbidden_rest_character?(value)
+      value.match?(/\\|[[:cntrl:]]|[[:space:]]/) || unicode_separator?(value)
+    end
+
+    def unicode_separator?(value)
+      UNICODE_SEPARATORS.any? { |mark| value.include?(mark) }
     end
 
     def percent_decode(value)
