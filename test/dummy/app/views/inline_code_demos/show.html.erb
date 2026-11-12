@@ -15,6 +15,17 @@
   data: { modal_id: "inline-code-demo" }
 ) %>
 
+<%# The modal focuses its close control on open, which paints the focus ring. Move focus to the dialog so the close control stays the plain icon. %>
+<%= javascript_tag do %>
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-modal-id='inline-code-demo']")) return
+    window.setTimeout(() => {
+      const dialog = document.querySelector("#inline-code-demo [role='dialog']")
+      if (dialog) dialog.focus()
+    }, 150)
+  })
+<% end %>
+
 <%= render FlatPack::Modal::Component.new(
   id: "inline-code-demo",
   title: "Enter your code",

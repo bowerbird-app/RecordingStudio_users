@@ -16,6 +16,8 @@ class OtpCodeFormTest < Minitest::Test
     assert_includes source, "otp_direct_challenge_path"
     assert_includes source, "otp_direct_resend_path"
     assert_includes source, "use_different_email"
+    assert_includes source, "space-y-6"
+    assert_includes source, "space-y-4"
     refute_includes source, "auth/shell"
     refute_includes source, "auth_site_logo"
     refute_includes source, "FlatPack::PageTitle::Component"

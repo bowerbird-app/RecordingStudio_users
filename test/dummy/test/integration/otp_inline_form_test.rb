@@ -240,6 +240,8 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     assert_select "script[type=importmap]"
     assert_select "[data-modal-id=inline-code-demo]"
     assert_select "#inline-code-demo turbo-frame##{FRAME}" do
+      assert_select ".space-y-6"
+      assert_select "form .space-y-4"
       assert_select "input[name=code]"
       assert_select "input[type=password]", count: 0
     end
