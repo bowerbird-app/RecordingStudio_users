@@ -63,6 +63,92 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     end
   end
 
+  test "users index tool schema exposes page and per_page and they page" do
+    stamp = Time.utc(2026, 11, 11, 15, 0, 0)
+    3.times do |index|
+      RecordingStudioUser.create_user!(
+        email: "mcp-page-#{index}-#{SecureRandom.hex(4)}@example.com",
+        password: "Password123!",
+        first_name: "Page#{index}",
+        last_name: "User",
+        time_zone: "UTC"
+      ).update_columns(created_at: stamp + index.seconds, updated_at: stamp + index.seconds)
+    end
+    surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
+    names = argument_names(surface, "users")
+    assert_includes names, "page"
+    assert_includes names, "per_page"
+    refute_includes names, "pagination_token"
+    refute_includes names, "limit"
+    assert_equal "string", argument(surface, "users", :page).fetch(:type)
+    assert_equal "string", argument(surface, "users", :per_page).fetch(:type)
+    schema = tool_schema(surface, "users")
+    refute_equal false, schema_additional_properties(schema)
+    refute_includes Array(schema[:required] || schema["required"]).map(&:to_s), "page"
+    refute_includes Array(schema[:required] || schema["required"]).map(&:to_s), "per_page"
+
+    ordered_ids = User.order(created_at: :desc).pluck(:id).map(&:to_s)
+    first = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => 1, "per_page" => 2 },
+      access_grant: @viewer_grant
+    )
+    assert_equal false, first.fetch(:isError)
+    records = first.dig(:structuredContent, "records")
+    meta = first.dig(:structuredContent, "meta")
+    assert_equal 2, records.length
+    assert_equal 1, meta.fetch("page")
+    assert_equal 2, meta.fetch("per_page")
+    assert_equal User.count, meta.fetch("total_count")
+    first_ids = records.map { |row| row.fetch("id") }
+    assert_equal ordered_ids[0, 2], first_ids
+
+    second = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => 2, "per_page" => 2 },
+      access_grant: @viewer_grant
+    )
+    assert_equal false, second.fetch(:isError)
+    second_ids = second.dig(:structuredContent, "records").map { |row| row.fetch("id") }
+    assert_equal ordered_ids[2, 2], second_ids
+
+    clamped = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => 1, "per_page" => 500 },
+      access_grant: @viewer_grant
+    )
+    assert_equal false, clamped.fetch(:isError)
+    clamped_meta = clamped.dig(:structuredContent, "meta")
+    assert_equal 100, clamped_meta.fetch("per_page")
+    assert_equal [User.count, 100].min, clamped.dig(:structuredContent, "records").length
+  end
+
+  test "users index ignores unknown keys and non-integer page as GET does" do
+    unknown = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => 1, "not_a_real_field" => "boom" },
+      access_grant: @viewer_grant
+    )
+    assert_equal false, unknown.fetch(:isError)
+    unknown_meta = unknown.dig(:structuredContent, "meta")
+    assert_equal 1, unknown_meta.fetch("page")
+    endpoint = RecordingStudioApi.registered_endpoint(:users, api: :operations)
+    ignored = endpoint.input_contract.call(page: 1, not_a_real_field: "boom")
+    assert ignored.success?
+    assert_equal "boom", ignored.value[:not_a_real_field]
+
+    garbled = RecordingStudioMcp::Dispatcher.call(
+      tool_name: "users",
+      arguments: { "page" => "abc" },
+      access_grant: @viewer_grant
+    )
+    assert_equal false, garbled.fetch(:isError)
+    assert_equal 1, garbled.dig(:structuredContent, "meta").fetch("page")
+    coerced = endpoint.input_contract.call(page: "abc")
+    assert coerced.success?
+    assert_equal "abc", coerced.value[:page]
+  end
+
   test "users_create and users_update tool schemas list writable fields" do
     surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
 

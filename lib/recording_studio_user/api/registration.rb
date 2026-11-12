@@ -28,7 +28,8 @@ module RecordingStudioUser
 
       def register_index!
         register_users_endpoint!(USERS_INDEX_ENDPOINT, http_verb: :get, path: USERS_PATH, handler: Index,
-                                                       summary: "List users", description: index_description)
+                                                       summary: "List users", description: index_description,
+                                                       input_contract: Params.index_input_contract)
       end
 
       def register_create!

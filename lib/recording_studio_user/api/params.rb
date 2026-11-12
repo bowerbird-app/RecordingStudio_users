@@ -65,6 +65,17 @@ module RecordingStudioUser
         { reject_unknown: true, fields: create_input_fields }
       end
 
+      def index_input_contract
+        { reject_unknown: false, fields: index_input_fields }
+      end
+
+      def index_input_fields
+        {
+          page: optional_string("Offset page. Defaults to 1."),
+          per_page: optional_string("Rows per page. Defaults to #{Query::DEFAULT_PER_PAGE}, max #{Query::MAX_PER_PAGE}.")
+        }
+      end
+
       def update_input_contract
         { reject_unknown: true, fields: update_input_fields }
       end
