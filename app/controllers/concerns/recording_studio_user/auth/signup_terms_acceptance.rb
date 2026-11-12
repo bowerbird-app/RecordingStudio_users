@@ -9,7 +9,7 @@ module RecordingStudioUser
     module SignupTermsAcceptance
       private
 
-      def accept_pending_terms_on_signup!(actor)
+      def accept_pending_terms_on_signup!(actor, source: "continue_notice")
         return unless terms_acceptance_available?
         return if actor.blank?
 
@@ -17,9 +17,25 @@ module RecordingStudioUser
         return if root.blank?
 
         RecordingStudioTermsAndConditions.pending_published_list(actor, root).each do |terms|
-          RecordingStudioTermsAndConditions.accept!(actor, terms, { "source" => "continue_notice" })
+          RecordingStudioTermsAndConditions.accept!(actor, terms, { "source" => source })
         end
       rescue RecordingStudioTermsAndConditions::NotLive
+        nil
+      end
+
+      def pending_signup_terms?
+        return false unless terms_acceptance_available?
+
+        root = RecordingStudioTermsAndConditions::Gate.root_for_signup(self)
+        return false if root.blank?
+
+        RecordingStudioTermsAndConditions.pending_published_list(signup_terms_actor, root).any?
+      end
+
+      def signup_terms_actor
+        return current_user if respond_to?(:current_user, true) && current_user
+        return Current.actor if defined?(Current) && Current.respond_to?(:actor)
+
         nil
       end
 

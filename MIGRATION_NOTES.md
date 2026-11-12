@@ -127,7 +127,7 @@ recording_studio_user_sign_in_path(return_to: "/messages/42/join")
 RecordingStudioUser.auth_url_for(:sign_up, return_to: "/messages/42/join", popup: true)
 ```
 
-The path must start with one `/`. `//`, `/\`, a backslash, a scheme, a host, userinfo, control characters, whitespace, a single percent-decoding of those, and anything longer than 2048 characters are dropped. The person then lands on the default page.
+The path must start with one `/`. One percent-decoding applies, and anything longer than 2048 characters is dropped. On the path (before `?` or `#`), `//`, `/\`, a backslash, a scheme, a host, userinfo (`@`), control characters, whitespace, and unicode slashes are dropped. The query and fragment may include `//`, `:`, `@`, `+`, and `=`. They are still dropped for a backslash, control characters, whitespace, or a unicode slash. Prefer a url-safe token. The person lands on the default page when the value is dropped.
 
 Put a signed, purpose-scoped token in your return path. About 15 minutes is a good lifetime. On return, check authorization and finish with an idempotent POST. Users does not call back into the caller.
 
@@ -137,7 +137,7 @@ Put a signed, purpose-scoped token in your return path. About 15 minutes is a go
 
 `POST /users/otp/start` is for a caller that already collected an email. Send `email`, `return_to`, and optional `popup=1` in the body with the CSRF token. `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:, popup:)` does the same work from a host controller. The code page does not take the email in the URL. A new address creates an account only when OTP registration is on, and signup terms still apply. The response matches for a known address and an unknown one. The route is not drawn when OTP is off.
 
-The same three routes also answer a modal on this host. Render `RecordingStudioUser::OtpCodeForm` in your modal. POST with `Turbo-Frame: recording_studio_user_otp_inline` to swap that frame, or `Accept: application/json` for `{ "ok": true, "return_to": "..." }` after a valid code. A foreign `Origin` is forbidden. No CORS header is set. A POST with neither header still uses the full code page.
+The same three routes also answer a modal on this host. Render `RecordingStudioUser::OtpCodeForm` in your modal. POST with `Turbo-Frame: recording_studio_user_otp_inline` to swap that frame, or `Accept: application/json` for `{ "ok": true, "return_to": "...", "csrf_param": "authenticity_token", "csrf_token": "..." }` after a valid code. Sign-in rotates the session, so use that fresh token on the next POST. The frame script also writes it into the page's `csrf-param` and `csrf-token` meta tags when they exist. A new address with pending live terms must send `accept_terms=1`. The full-page code step still uses the continue notice. A foreign `Origin` is forbidden. No CORS header is set. A POST with neither header still uses the full code page.
 
 ## Recording Studio 6.1 layout
 

@@ -161,13 +161,15 @@ RecordingStudioUser.auth_url_for(:sign_in, return_to: "/messages/42/join")
 
 `return_to` is accepted on the email step, the password step, one-time code request, verify, and resend, sign-up, password reset, confirmation, and the OAuth start. OAuth keeps the path in the session. It is not added to the provider URL.
 
-The value has to be a relative path that starts with one `/`. These are dropped, and the person lands on the default page:
+The value has to be a relative path that starts with one `/`. One percent-decoding applies to the whole value, and anything longer than 2048 characters is dropped. The person then lands on the default page.
 
-- `//` and `/\`
-- a backslash, a scheme, a host, or userinfo
-- control characters or whitespace
-- those same forms after one percent-decoding
-- a value longer than 2048 characters
+The path, the part before `?` or `#`, is dropped when it contains any of these:
+
+- `//` or `/\`
+- a backslash, a scheme (`word:`), a host, or userinfo (`@`)
+- control characters, whitespace, or a unicode slash
+
+The query and the fragment may hold a token. `//`, `:`, `@`, `+`, and `=` stay. They are still dropped for a backslash, a control character, whitespace, or a unicode slash. Prefer a url-safe token (base64url) in that query. A standard base64 token is kept, and a url-safe one survives more proxies.
 
 A missing value uses the same fallback as a request that never passed `return_to`, `stored_location_for` or the host root.
 
@@ -212,17 +214,22 @@ An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_e
 
 ## A code box inside your own modal
 
-On this same host, render the box in a modal you already own. It does not bring the auth logo, heading, or page layout.
+On this same host, render the box in a modal you already own. It does not bring the auth logo or page layout. Leave the modal title blank so the close control sits alone. Pass `title:` when the heading should sit on its own line above the hint.
 
 ```erb
-<%= render RecordingStudioUser::OtpCodeForm.new(masked_email: masked_email) %>
+<%= render RecordingStudioUser::OtpCodeForm.new(
+  masked_email: masked_email,
+  title: t("recording_studio_user.sessions.enter_code")
+) %>
 ```
 
 `RecordingStudioUser::OtpCodeForm.mask(email)` returns the same short mask the code page uses. The markup also lives at `recording_studio_user/otp/inline_code_form` if you need the partial.
 
-The form posts to the same start, verify, and resend actions. Without JavaScript that is a normal POST and the browser follows the redirect. With Turbo, the form targets the frame `recording_studio_user_otp_inline`, so an error, a resend notice, or success replaces that frame and the modal stays put. Success also dispatches `recording_studio_user:signed_in` on `document`, with `detail.return_to` set to the safe path.
+The form posts to the same start, verify, and resend actions. Resend stays a POST, drawn as a text link beside the link back to sign-in. Without JavaScript that is a normal POST and the browser follows the redirect. With Turbo, the form targets the frame `recording_studio_user_otp_inline`, so an error, a resend notice, or success replaces that frame and the modal stays put. Success dispatches `recording_studio_user:signed_in` on `document`. `detail.return_to` is the safe path. `detail.csrf_param` and `detail.csrf_token` are the fresh token from the rotated session. The same script writes those values into `meta[name="csrf-param"]` and `meta[name="csrf-token"]` when the tags are already on the page. Use that token on the next POST.
 
-A caller that wants JSON sends `Accept: application/json` and the CSRF token. Start and resend return `{ "ok": true }` (or a 429). A valid code returns `{ "ok": true, "return_to": "/messages/42/join" }` and signs the person in, including the usual session rotation. The JSON body does not include the email address.
+A caller that wants JSON sends `Accept: application/json` and the CSRF token. Start and resend return `{ "ok": true }` (or a 429). A valid code returns `{ "ok": true, "return_to": "/messages/42/join", "csrf_param": "authenticity_token", "csrf_token": "..." }` and signs the person in, including the usual session rotation. Session rotation changes the CSRF token. The JSON body carries the new one and does not include the email address.
+
+When the challenge is a new address and Terms and Conditions has pending live terms for signup, the box shows a terms checkbox. The label is "I agree to Studio's Terms & Conditions", with that product's terms name and link. Send `accept_terms=1` with the code. A missing or unticked box does not finish the account, sign the person in, or record acceptance. A ticked box records acceptance with source `checkbox`. An existing person signing in does not see the box. The full-page code step still shows the continue notice and records `continue_notice`. Without Terms and Conditions, the checkbox is absent and nothing is accepted.
 
 A request with an `Origin` other than this host is rejected. Nothing on these actions adds CORS headers, and auth responses stay frame-denied. Login, registration, signup terms, rate limits, and the single registration event follow the same rules as the code page.
 

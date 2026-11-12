@@ -10,8 +10,12 @@ class SignupTermsAcceptanceTest < Minitest::Test
   class Controller
     include RecordingStudioUser::Auth::SignupTermsAcceptance
 
-    def accept(actor)
-      accept_pending_terms_on_signup!(actor)
+    def accept(actor, source: "continue_notice")
+      accept_pending_terms_on_signup!(actor, source: source)
+    end
+
+    def pending?
+      pending_signup_terms?
     end
   end
 
@@ -60,6 +64,42 @@ class SignupTermsAcceptanceTest < Minitest::Test
     stub_tnc(pending: [Object.new], raise_not_live: true)
 
     assert_nil Controller.new.accept(Object.new)
+  end
+
+  def test_checkbox_source_is_recorded_when_asked
+    terms = Object.new
+    stub_tnc(pending: [terms])
+    actor = Object.new
+
+    Controller.new.accept(actor, source: "checkbox")
+
+    assert_equal(
+      [[actor, terms, { "source" => "checkbox" }]],
+      RecordingStudioTermsAndConditions.accepted
+    )
+  end
+
+  def test_pending_signup_terms_are_a_noop_without_tnc
+    refute defined?(RecordingStudioTermsAndConditions)
+    refute Controller.new.pending?
+  end
+
+  def test_pending_signup_terms_follow_the_signup_gate
+    stub_tnc(pending: [Object.new])
+
+    assert Controller.new.pending?
+  end
+
+  def test_pending_signup_terms_are_false_without_a_root
+    stub_tnc(root: nil, pending: [Object.new])
+
+    refute Controller.new.pending?
+  end
+
+  def test_pending_signup_terms_are_false_when_nothing_is_pending
+    stub_tnc(pending: [])
+
+    refute Controller.new.pending?
   end
 
   private

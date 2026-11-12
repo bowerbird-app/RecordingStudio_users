@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.1] - 2026-11-12
+
+### Fixed
+
+- Inline one-time-code verify returns the fresh `csrf_param` and `csrf_token` after session rotation, in the JSON body and on `recording_studio_user:signed_in`. The inline script writes them to the page `csrf-param` and `csrf-token` meta tags when those tags exist. A foreign Origin is still 403, and no CORS header is added.
+- A new address in the inline code box must tick the terms checkbox when Terms and Conditions has pending live terms for signup. The box reuses the signup continue-notice links. Unticked or missing, verify does not finish the account, sign the person in, or record acceptance. A ticked box records acceptance with source `checkbox`. An existing person signing in does not see the box. The full-page code step still shows the continue notice and records `continue_notice`.
+- `return_to` keeps a query or fragment that contains `//`, `:`, or `@`, so a base64 token in the query is not dropped. The path is still checked for a scheme, a host, `//`, a backslash, `@`, whitespace, and control characters. The query and fragment still reject a backslash, control characters, whitespace, and unicode separators.
+
+### Upgrade notes
+
+- Bump to `0.28.1`. No Users migration.
+- After an inline verify, use `csrf_token` from the JSON or the event on the next POST. The script updates the meta tags when they are on the page.
+- Hosts that embed the inline box for a new address send `accept_terms=1` with the code when live terms are pending. The full-page code step is unchanged.
+- Prefer a url-safe token in `return_to`. Path rules are unchanged. Query tokens may include `//`, `:`, and `@`.
+- Pass `title:` to `OtpCodeForm` when the heading should sit in the box, and leave the modal title blank. Omit `title:` and the box stays without a heading. Resend still posts to the same action.
+
 ## [0.28.0] - 2026-11-12
 
 ### Added

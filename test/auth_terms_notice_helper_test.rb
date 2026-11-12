@@ -28,6 +28,20 @@ class AuthTermsNoticeHelperTest < Minitest::Test
   def test_notice_is_noop_without_tnc
     refute defined?(RecordingStudioTermsAndConditions)
     assert_nil View.new.recording_studio_user_signup_terms_notice
+    assert_nil View.new.recording_studio_user_inline_terms
+  end
+
+  def test_inline_terms_label_is_the_agree_sentence_with_the_document_link
+    pending = [Object.new]
+    stub_tnc(pending: pending, app_name: "Studio")
+    view = view_with_inline_terms
+
+    result = view.recording_studio_user_inline_terms
+
+    assert_includes result[:label], "I agree to Studio's"
+    assert_includes result[:label], "<button>Terms & Conditions</button>"
+    refute_includes result[:label], "By continuing"
+    assert_equal "MODAL", result[:modals]
   end
 
   def test_notice_is_noop_when_no_live_terms_are_pending
@@ -62,9 +76,26 @@ class AuthTermsNoticeHelperTest < Minitest::Test
     view
   end
 
-  def stub_tnc(pending:)
+  def view_with_inline_terms
+    view = view_with_tnc_helpers
+    view.define_singleton_method(:continue_notice_document_words) do |*_args, **_kwargs|
+      "<button>Terms & Conditions</button>".html_safe
+    end
+    view.define_singleton_method(:terms_document) { |_documents| :terms }
+    view.define_singleton_method(:privacy_document) { |_documents| nil }
+    view.define_singleton_method(:continue_notice_modal) { |*_args| "MODAL" }
+    view.define_singleton_method(:safe_join) { |parts| parts.compact.join.html_safe }
+    view.define_singleton_method(:t) { |key, **options| I18n.t(key, **options) }
+    view
+  end
+
+  def stub_tnc(pending:, app_name: nil)
     tnc = Module.new
     tnc.define_singleton_method(:pending_published_list) { |*_args, **_kwargs| pending }
+    if app_name
+      config = Struct.new(:app_name).new(app_name)
+      tnc.define_singleton_method(:configuration) { config }
+    end
     Object.const_set(:RecordingStudioTermsAndConditions, tnc)
   end
 

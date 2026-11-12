@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "cgi"
 require "test_helper"
 require "devise/test/integration_helpers"
 
@@ -73,7 +74,40 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "/after-inline-json", response.parsed_body["return_to"]
+    assert response.parsed_body["csrf_param"].present?
+    assert response.parsed_body["csrf_token"].present?
     refute response.redirect?
+  end
+
+  test "inline json verify rotates csrf so the returned token works and the old one fails" do
+    with_forgery_protection do
+      user = password_user("inline-csrf-rotate")
+      get inline_code_demo_path
+      param, old_token = csrf_pair
+
+      post recording_studio_user_otp_start_path,
+           params: { email: user.email, return_to: "/after-csrf", param => old_token },
+           headers: json_headers
+      assert_response :success
+
+      post recording_studio_user_otp_challenge_path,
+           params: { code: login_code(user), param => old_token },
+           headers: json_headers
+
+      assert_response :success
+      body = response.parsed_body
+      assert_equal param, body["csrf_param"]
+      new_token = body["csrf_token"]
+      assert new_token.present?
+
+      post recording_studio_user_otp_resend_path,
+           params: { param => old_token },
+           headers: json_headers
+      assert_response :unprocessable_entity
+
+      delete destroy_user_session_path, params: { param => new_token }
+      assert_response :redirect
+    end
   end
 
   test "a new address in a turbo frame creates one account and accepts terms" do
@@ -83,16 +117,54 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: email)
 
     post recording_studio_user_otp_challenge_path,
-         params: { code: registration_code(user) },
+         params: { code: registration_code(user), accept_terms: "1" },
          headers: frame_headers
 
     assert_response :success
     refute response.redirect?
     assert_includes response.body, "recording_studio_user:signed_in"
+    assert_includes response.body, "csrf_param"
+    assert_includes response.body, "csrf_token"
+    assert_includes response.body, 'meta[name="csrf-token"]'
     assert_includes response.body, "/after-inline-signup"
     assert user.reload.confirmed?
     assert_equal [ { user_id: user.id, method: :otp } ], @events
     assert RecordingStudioTermsAndConditions.accepted?(user, Dummy::SignupTerms.workspace)
+    receipt = RecordingStudioTermsAndConditions::Acceptance.order(:created_at).last
+    assert_equal({ "source" => "checkbox" }, receipt.provenance)
+  end
+
+  test "a missing terms checkbox does not finish a new account" do
+    refute_inline_registration_without_terms
+  end
+
+  test "an unticked terms checkbox does not finish a new account" do
+    refute_inline_registration_without_terms(accept_terms: "0")
+  end
+
+  test "a ticked terms checkbox finishes the account and the same code still works after a miss" do
+    ensure_live_terms!
+    email = "inline-tick-#{SecureRandom.hex(4)}@example.com"
+    start_code(email, "/after-inline-tick")
+    user = User.find_by!(email: email)
+    code = registration_code(user)
+
+    post recording_studio_user_otp_challenge_path,
+         params: { code: code },
+         headers: json_headers
+
+    assert_response :unprocessable_entity
+    refute user.reload.confirmed?
+
+    post recording_studio_user_otp_challenge_path,
+         params: { code: code, accept_terms: "1" },
+         headers: json_headers
+
+    assert_response :success
+    assert_equal true, response.parsed_body["ok"]
+    assert user.reload.confirmed?
+    receipt = RecordingStudioTermsAndConditions::Acceptance.order(:created_at).last
+    assert_equal({ "source" => "checkbox" }, receipt.provenance)
   end
 
   test "a turbo resend stays in the frame" do
@@ -239,16 +311,40 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=stylesheet][href*='flat_pack']"
     assert_select "script[type=importmap]"
     assert_select "[data-modal-id=inline-code-demo]"
+    assert_select "#inline-code-demo .flat-pack-modal__header", count: 0
+    assert_select "#inline-code-demo .flat-pack-modal__close"
+    assert_select "#inline-code-demo h2", text: "Enter your code"
     assert_select "#inline-code-demo turbo-frame##{FRAME}" do
       assert_select ".space-y-6"
       assert_select "form .space-y-4"
+      assert_select "form .space-y-6"
       assert_select "input[name=code]"
+      assert_select "input[name=accept_terms]", count: 0
       assert_select "input[type=password]", count: 0
+      assert_select "button.w-full", text: "Continue"
+      assert_select "form[action=?] button.flat-pack-link[type=submit]", recording_studio_user_otp_resend_path, text: "Resend code"
+      assert_select "a.flat-pack-link", text: "Use a different email"
+      assert_select "button.w-full", text: "Resend code", count: 0
     end
     assert_includes response.body, masked(user.email)
     refute_includes response.body, user.email
     refute_includes response.body, "min-h-dvh"
     refute_includes response.body, "Continue with Google"
+  end
+
+  test "a new address shows the terms checkbox in the demo modal" do
+    ensure_live_terms!
+    email = "inline-box-#{SecureRandom.hex(4)}@example.com"
+    start_code(email, "/after-inline-box")
+
+    get inline_code_demo_path
+
+    assert_response :success
+    assert_select "link[rel=stylesheet][href*='flat_pack']"
+    assert_select "#inline-code-demo input[type=checkbox][name=accept_terms]"
+    assert_select "#inline-code-demo label button[type=button][data-modal-id]", text: "Terms & Conditions"
+    assert_includes CGI.unescapeHTML(response.body), "I agree to Studio's"
+    refute_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
   end
 
   private
@@ -308,6 +404,39 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
 
     recording = record_terms(Dummy::SignupTerms.root_recording, title: "Signup Terms", body: "Be kind on the way in.")
     publish_terms!(recording, slug: "inline-terms-#{SecureRandom.hex(4)}")
+  end
+
+  def refute_inline_registration_without_terms(extra = {})
+    ensure_live_terms!
+    email = "inline-deny-#{SecureRandom.hex(4)}@example.com"
+    start_code(email, "/after-inline-deny")
+    user = User.find_by!(email: email)
+
+    assert_no_difference -> { RecordingStudioTermsAndConditions::Acceptance.count } do
+      post recording_studio_user_otp_challenge_path,
+           params: { code: registration_code(user) }.merge(extra),
+           headers: json_headers
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal false, response.parsed_body["ok"]
+    refute user.reload.confirmed?
+    get root_path
+    assert_redirected_to new_user_session_path
+  end
+
+  def csrf_pair
+    param = css_select('meta[name="csrf-param"]').first["content"]
+    token = css_select('meta[name="csrf-token"]').first["content"]
+    [param, token]
+  end
+
+  def with_forgery_protection
+    original = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+    yield
+  ensure
+    ActionController::Base.allow_forgery_protection = original
   end
 
   def without_forgery_token

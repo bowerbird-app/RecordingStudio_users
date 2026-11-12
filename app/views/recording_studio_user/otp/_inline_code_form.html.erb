@@ -1,3 +1,12 @@
+<div class="space-y-2">
+  <% if title.present? %>
+    <%= render FlatPack::Heading::Component.new(
+      text: title,
+      level: :h2,
+      size: :lg,
+      weight: :semibold
+    ) %>
+  <% end %>
 <%= turbo_frame_tag RecordingStudioUser::OtpCodeForm::FRAME_ID do %>
   <div class="space-y-6">
     <%= render FlatPack::Content::Component.new do %>
@@ -14,15 +23,28 @@
       <%= content_tag(:script, signed_in_script.html_safe) %>
     <% else %>
       <%= form_with url: otp_direct_challenge_path, method: :post, data: { turbo_frame: RecordingStudioUser::OtpCodeForm::FRAME_ID } do %>
-        <div class="space-y-4">
-          <%= render FlatPack::TextInput::Component.new(
-            name: "code",
-            label: t("recording_studio_user.sessions.sign_in_code"),
-            required: true,
-            inputmode: "numeric",
-            autocomplete: "one-time-code",
-            maxlength: 6
-          ) %>
+        <div class="space-y-6">
+          <div class="space-y-4">
+            <%= render FlatPack::TextInput::Component.new(
+              name: "code",
+              label: t("recording_studio_user.sessions.sign_in_code"),
+              required: true,
+              inputmode: "numeric",
+              autocomplete: "one-time-code",
+              maxlength: 6
+            ) %>
+            <% if inline_terms.present? %>
+              <div>
+                <%= render FlatPack::Checkbox::Component.new(
+                  name: "accept_terms",
+                  value: "1",
+                  required: true,
+                  label: inline_terms[:label]
+                ) %>
+                <%= inline_terms[:modals] %>
+              </div>
+            <% end %>
+          </div>
           <%= render FlatPack::Button::Component.new(
             text: t("recording_studio_user.otp_challenge.continue"),
             style: :primary,
@@ -33,24 +55,23 @@
         </div>
       <% end %>
 
-      <%= form_with url: otp_direct_resend_path, method: :post, data: { turbo_frame: RecordingStudioUser::OtpCodeForm::FRAME_ID } do %>
-        <%= render FlatPack::Button::Component.new(
-          text: t("recording_studio_user.sessions.resend_code"),
-          style: :secondary,
-          size: :md,
-          type: "submit",
-          class: "w-full"
-        ) %>
-      <% end %>
-
       <%= render FlatPack::Content::Component.new(class: "text-center") do %>
-        <%= render FlatPack::Link::Component.new(
-          href: recording_studio_user_sign_in_path(return_to: auth_carried_return_to, popup: auth_carried_popup?),
-          data: { turbo_frame: "_top" }
-        ) do %>
-          <%= t("recording_studio_user.otp_challenge.use_different_email") %>
-        <% end %>
+        <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <%= form_with url: otp_direct_resend_path, method: :post, class: "inline", data: { turbo_frame: RecordingStudioUser::OtpCodeForm::FRAME_ID } do %>
+            <%= button_tag type: "submit", class: "flat-pack-link cursor-pointer underline underline-offset-[0.15em] text-[var(--color-primary)]" do %>
+              <%= t("recording_studio_user.sessions.resend_code") %>
+            <% end %>
+          <% end %>
+          <span aria-hidden="true">·</span>
+          <%= render FlatPack::Link::Component.new(
+            href: recording_studio_user_sign_in_path(return_to: auth_carried_return_to, popup: auth_carried_popup?),
+            data: { turbo_frame: "_top" }
+          ) do %>
+            <%= t("recording_studio_user.otp_challenge.use_different_email") %>
+          <% end %>
+        </div>
       <% end %>
     <% end %>
   </div>
 <% end %>
+</div>

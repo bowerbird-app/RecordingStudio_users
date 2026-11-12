@@ -6,6 +6,9 @@ class ReturnToTest < Minitest::Test
   def test_accepts_a_relative_path
     assert_equal "/messages/42/join", accept("/messages/42/join")
     assert_equal "/messages/42/join?token=abc", accept("/messages/42/join?token=abc")
+    assert_equal "/a?t=ab//cd+ef==", accept("/a?t=ab//cd+ef==")
+    assert_equal "/a?x=foo:bar&e=a@b", accept("/a?x=foo:bar&e=a@b")
+    assert_equal "/a#ab//cd", accept("/a#ab//cd")
     assert_equal "/okay", accept("/%6Fkay")
     assert_equal "/#{'a' * 2047}", accept("/#{'a' * 2047}")
   end
@@ -29,7 +32,17 @@ class ReturnToTest < Minitest::Test
       "/user@evil.com",
       "/#{'a' * 2048}",
       "/%2f%2fevil.com",
-      "/foo\u2215bar"
+      "/foo\u2215bar",
+      "//evil",
+      "/\\evil",
+      "/a//b",
+      "/javascript:x",
+      "/%2F%2Fevil",
+      "/a?t=%0d%0a",
+      "/a?x=a b",
+      "/a?x=a\\b",
+      "/a?t=a\u2215b",
+      "/a#%0a"
     ].each do |raw|
       assert_nil accept(raw), "expected #{raw.inspect} to be dropped"
     end

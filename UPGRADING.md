@@ -1,5 +1,15 @@
 # Upgrading
 
+## 0.28.1
+
+Bump to `0.28.1`. No Users migration.
+
+Inline verify now returns a fresh CSRF token because sign-in rotates the session. Read `csrf_param` and `csrf_token` from the JSON body, or from `detail` on `recording_studio_user:signed_in`. The inline script updates `csrf-param` and `csrf-token` meta tags when they are already on the page. A foreign `Origin` is still 403. No CORS header is added.
+
+A new address in the inline box must tick `accept_terms=1` when Terms and Conditions has pending live terms for signup. The box shows the same terms links as the signup continue notice. Unticked, the account is not finished and nothing is accepted. A ticked box records source `checkbox`. An existing sign-in does not show the box. The full-page code step still shows the continue notice and records `continue_notice`.
+
+`return_to` keeps a query or fragment that contains `//`, `:`, or `@`, so a base64 token in the query is not dropped. The path is still checked for a scheme, a host, `//`, a backslash, `@`, whitespace, and control characters. The query and fragment still reject a backslash, control characters, whitespace, and unicode slashes. Prefer a url-safe token.
+
 ## 0.28.0
 
 Bump to `0.28.0`. No Users migration.
@@ -24,7 +34,7 @@ The post never uses `*`. A host that framed the sign-in page should open that wi
 
 A caller that already has an email can skip the email screen. POST `email`, `return_to`, and optional `popup=1` to `recording_studio_user_otp_start_path` (CSRF token required). A host controller can call `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:, popup:)` and then redirect to `recording_studio_user_otp_challenge_path`. The email is not accepted on GET. Login codes and new accounts still follow `otp_login_enabled?` and `otp_registration_enabled?`. Signup terms still apply to a new account. The page the person sees is the same when the address is new, known, or not allowed a code.
 
-A sibling gem on this same host can keep its own modal open. Render `RecordingStudioUser::OtpCodeForm.new(masked_email:)` inside that modal. The partial is `recording_studio_user/otp/inline_code_form`. It shows the masked address, the code field, Continue, Resend, and a link back to sign-in. No logo and no page layout.
+A sibling gem on this same host can keep its own modal open. Render `RecordingStudioUser::OtpCodeForm.new(masked_email:)` inside that modal. Pass `title:` to put a heading above the hint, and leave the modal title blank so the close control sits alone. The partial is `recording_studio_user/otp/inline_code_form`. It shows the masked address, the code field, Continue, and text links for resend and a different email. Resend is still a POST. No logo and no page layout.
 
 The same three POSTs answer in place when the request asks:
 
