@@ -1,0 +1,26 @@
+<%= render FlatPack::PageTitle::Component.new(
+  title: "A thread",
+  subtitle: "Someone left you a note.",
+  variant: :h1
+) %>
+
+<%= render FlatPack::Content::Component.new do %>
+  Confirm it's you to read it.
+<% end %>
+
+<%= render FlatPack::Button::Component.new(
+  text: "Enter code",
+  style: :primary,
+  type: "button",
+  data: { modal_id: "inline-code-demo" }
+) %>
+
+<%= render FlatPack::Modal::Component.new(
+  id: "inline-code-demo",
+  title: "Enter your code",
+  size: :sm
+) do |modal| %>
+  <% modal.body do %>
+    <%= render RecordingStudioUser::OtpCodeForm.new(masked_email: @masked_email) %>
+  <% end %>
+<% end %>

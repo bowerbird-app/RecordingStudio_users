@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   mount RecordingStudioNotifications::Engine, at: "/notifications"
 
   get "up" => "rails/health#show", as: :rails_health_check
+  get "inline-code", to: "inline_code_demos#show", as: :inline_code_demo
 
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if defined?(LetterOpenerWeb)
 

@@ -79,6 +79,9 @@ fr:
     otp_challenge:
       continue: Continuer
       use_different_email: Utiliser un autre e-mail
+      inline_hint: "Code envoyé à %{email}"
+      enter_code: Entrez le code reçu par e-mail.
+      signed_in: Vous êtes connecté.
     sessions:
       enter_code: Entrez votre code
       sign_in_code: Code de connexion

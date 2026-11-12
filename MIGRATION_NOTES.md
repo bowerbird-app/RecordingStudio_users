@@ -137,6 +137,8 @@ Put a signed, purpose-scoped token in your return path. About 15 minutes is a go
 
 `POST /users/otp/start` is for a caller that already collected an email. Send `email`, `return_to`, and optional `popup=1` in the body with the CSRF token. `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:, popup:)` does the same work from a host controller. The code page does not take the email in the URL. A new address creates an account only when OTP registration is on, and signup terms still apply. The response matches for a known address and an unknown one. The route is not drawn when OTP is off.
 
+The same three routes also answer a modal on this host. Render `RecordingStudioUser::OtpCodeForm` in your modal. POST with `Turbo-Frame: recording_studio_user_otp_inline` to swap that frame, or `Accept: application/json` for `{ "ok": true, "return_to": "..." }` after a valid code. A foreign `Origin` is forbidden. No CORS header is set. A POST with neither header still uses the full code page.
+
 ## Recording Studio 6.1 layout
 
 `RecordingStudio::UsesDefaultLayout` is gone. `config.layout` on this gem is `nil` unless the host sets it. Signed-in and signed-out Users controllers call `recording_studio_layout { RecordingStudioUser.configuration.layout }`. Confirmations and passwords include `RecordingStudio::ControllerLayout` because they inherit from Devise. Signed-out auth keeps `auth/_shell` as an in-page wrapper (logo above heading, no page nav). There is no `layouts/recording_studio_user/auth`.

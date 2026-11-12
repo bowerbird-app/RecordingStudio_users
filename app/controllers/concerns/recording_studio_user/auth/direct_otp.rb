@@ -82,19 +82,25 @@ module RecordingStudioUser
 
       def render_missing_email
         flash.now[:alert] = I18n.t("recording_studio_user.auth.enter_email")
-        render :show, status: :unprocessable_entity
+        render_otp_result(status: :unprocessable_entity)
       end
 
       def render_throttled
         @masked_email = masked_auth_email
         flash.now[:alert] = I18n.t("recording_studio_user.auth.give_it_a_minute")
-        render :show, status: :too_many_requests
+        render_otp_result(status: :too_many_requests)
       end
 
       def render_verify_failure(result)
         @masked_email = masked_auth_email
         flash.now[:alert] = verify_alert(result)
-        render :show, status: :unprocessable_entity
+        render_otp_result(status: :unprocessable_entity)
+      end
+
+      def render_otp_result(status:)
+        return render_inline_otp(status: status) if inline_otp_request?
+
+        render :show, status: status
       end
 
       def verify_alert(result)
@@ -104,10 +110,7 @@ module RecordingStudioUser
       end
 
       def masked_auth_email
-        local, domain = pending_auth_email.to_s.split("@", 2)
-        return if local.blank? || domain.blank?
-
-        "#{local[0]}***@#{domain}"
+        OtpCodeForm.mask(pending_auth_email)
       end
     end
   end

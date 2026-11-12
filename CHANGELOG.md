@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `popup=1` renders a same-origin page after sign-in. The page posts `{ type: "recording_studio_user:signed_in" }` to the opener, then closes. The target origin is this host, or an origin in `config.popup_opener_origins`. If there is no opener, the window goes to `return_to`.
 - Auth responses send `X-Frame-Options: DENY` and `Content-Security-Policy` `frame-ancestors 'none'`.
 - `POST recording_studio_user_otp_start_path` and `RecordingStudioUser.start_otp_challenge!` send a one-time code for an email the caller already collected. The code page has the code field, a masked address, resend, and a link back to sign-in. A new address creates an account only when OTP registration is on. Signup terms still apply. The notice is the same whether or not the address exists.
+- `render RecordingStudioUser::OtpCodeForm.new(masked_email:)` draws that same code box with no logo or page chrome, so a sibling gem can put it in its own modal. POST start, verify, and resend answer a Turbo frame or JSON when the request asks, and stay on the full page otherwise. A successful code signs the person in and returns the safe `return_to`, or dispatches `recording_studio_user:signed_in` for the caller to finish. These answers are same-origin only.
 
 ### Upgrade notes
 
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Put a signed, purpose-scoped token in your own return path. About 15 minutes is a good lifetime. On return, check that this person may do the action, then finish it with an idempotent POST. This gem does not call back into the caller.
 - Auth screens are not frameable. An embed opens sign-in in a window with `popup=1` and reloads when it receives the message.
 - To skip the email screen, POST `email` and `return_to` to `recording_studio_user_otp_start_path`, or call `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:)`. Do not send the email as a GET. OTP login, OTP registration, and signup terms stay on their existing flags.
+- To keep the person in your own modal, render `RecordingStudioUser::OtpCodeForm` inside it. Send `Turbo-Frame: recording_studio_user_otp_inline` or `Accept: application/json` on the same three POSTs. A foreign `Origin` is rejected. No CORS headers are added.
 
 ## [0.27.3] - 2026-11-11
 

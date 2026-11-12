@@ -210,6 +210,22 @@ The code page shows the code field, a masked address, resend, and a link back to
 
 An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_enabled?` are on. A new address creates an account only when `otp_enabled?` and `otp_registration_enabled?` are on, and signup terms still apply on that new account. Otherwise nothing is sent and no account is created. The redirect and the notice stay the same either way. Rate limits match the other code requests, per email and per IP. The route is absent when one-time codes are off.
 
+## A code box inside your own modal
+
+On this same host, render the box in a modal you already own. It does not bring the auth logo, heading, or page layout.
+
+```erb
+<%= render RecordingStudioUser::OtpCodeForm.new(masked_email: masked_email) %>
+```
+
+`RecordingStudioUser::OtpCodeForm.mask(email)` returns the same short mask the code page uses. The markup also lives at `recording_studio_user/otp/inline_code_form` if you need the partial.
+
+The form posts to the same start, verify, and resend actions. Without JavaScript that is a normal POST and the browser follows the redirect. With Turbo, the form targets the frame `recording_studio_user_otp_inline`, so an error, a resend notice, or success replaces that frame and the modal stays put. Success also dispatches `recording_studio_user:signed_in` on `document`, with `detail.return_to` set to the safe path.
+
+A caller that wants JSON sends `Accept: application/json` and the CSRF token. Start and resend return `{ "ok": true }` (or a 429). A valid code returns `{ "ok": true, "return_to": "/messages/42/join" }` and signs the person in, including the usual session rotation. The JSON body does not include the email address.
+
+A request with an `Origin` other than this host is rejected. Nothing on these actions adds CORS headers, and auth responses stay frame-denied. Login, registration, signup terms, rate limits, and the single registration event follow the same rules as the code page.
+
 ## Social sign-in
 
 The dummy app's Google client is **RecordingStudioUsers** in the [BowerBird Dev](https://console.cloud.google.com/auth/clients?project=key-buttress-507301-d2) GCP project ([client](https://console.cloud.google.com/auth/clients/332241240783-36h23frfv5ovlnqtkcc3cc1a96afqkji.apps.googleusercontent.com?project=key-buttress-507301-d2)). Redirect URI: `http://localhost:3000/users/auth/google_oauth2/callback`. See `test/dummy/README.md`.

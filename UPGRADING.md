@@ -24,6 +24,15 @@ The post never uses `*`. A host that framed the sign-in page should open that wi
 
 A caller that already has an email can skip the email screen. POST `email`, `return_to`, and optional `popup=1` to `recording_studio_user_otp_start_path` (CSRF token required). A host controller can call `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:, popup:)` and then redirect to `recording_studio_user_otp_challenge_path`. The email is not accepted on GET. Login codes and new accounts still follow `otp_login_enabled?` and `otp_registration_enabled?`. Signup terms still apply to a new account. The page the person sees is the same when the address is new, known, or not allowed a code.
 
+A sibling gem on this same host can keep its own modal open. Render `RecordingStudioUser::OtpCodeForm.new(masked_email:)` inside that modal. The partial is `recording_studio_user/otp/inline_code_form`. It shows the masked address, the code field, Continue, Resend, and a link back to sign-in. No logo and no page layout.
+
+The same three POSTs answer in place when the request asks:
+
+- `Turbo-Frame: recording_studio_user_otp_inline` returns that frame. Errors, the resend notice, and success swap inside it. Success dispatches `recording_studio_user:signed_in` on `document` with `{ return_to }`.
+- `Accept: application/json` returns `{ "ok": true }` from start and resend, and `{ "ok": true, "return_to": "/your/path" }` from a valid code. Failures use the same status codes as the full page.
+
+A normal form POST, with neither of those, still redirects to the code page and then to `return_to`. A request whose `Origin` is not this host gets 403. The answers do not send `Access-Control-Allow-Origin`. Auth responses stay frame-denied. Rate limits, the identical notice for a known or unknown address, and the one registration event are unchanged.
+
 ## 0.27.3
 
 Bump to `0.27.3`. No Users migration.
