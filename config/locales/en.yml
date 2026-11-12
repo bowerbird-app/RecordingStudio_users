@@ -79,7 +79,8 @@ en:
       inline_hint: "Code sent to %{email}"
       enter_code: Enter the code from your email.
       signed_in: You're in.
-      agree_to_terms: I agree
+      agree_to_terms_html: "I agree to %{app_name}'s %{documents}."
+      agree_to_terms_without_app_html: "I agree to the %{documents}."
       agree_to_continue: Tick the box to agree, then continue.
     sessions:
       enter_code: Enter your code

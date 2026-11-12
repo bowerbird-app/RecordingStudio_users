@@ -34,7 +34,7 @@ module RecordingStudioUser
         notice: @notice,
         signed_in_return_to: @signed_in_return_to,
         hint: hint,
-        terms_notice: terms_notice,
+        inline_terms: inline_terms,
         signed_in_script: signed_in? ? signed_in_script : nil
       }
     end
@@ -50,11 +50,11 @@ module RecordingStudioUser
       I18n.t("recording_studio_user.otp_challenge.enter_code")
     end
 
-    def terms_notice
+    def inline_terms
       return if signed_in?
       return unless helpers.session[:otp_purpose].to_s == "registration"
 
-      helpers.recording_studio_user_signup_terms_notice
+      helpers.recording_studio_user_inline_terms
     end
 
     def signed_in_script

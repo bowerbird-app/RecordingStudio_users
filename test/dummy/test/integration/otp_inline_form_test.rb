@@ -334,8 +334,9 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "link[rel=stylesheet][href*='flat_pack']"
     assert_select "#inline-code-demo input[type=checkbox][name=accept_terms]"
-    assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
-    assert_select "button[type=button][data-modal-id]", text: "Terms & Conditions"
+    assert_select "#inline-code-demo label button[type=button][data-modal-id]", text: "Terms & Conditions"
+    assert_includes CGI.unescapeHTML(response.body), "I agree to Studio's"
+    refute_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
   end
 
   private
