@@ -311,12 +311,20 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=stylesheet][href*='flat_pack']"
     assert_select "script[type=importmap]"
     assert_select "[data-modal-id=inline-code-demo]"
+    assert_select "#inline-code-demo .flat-pack-modal__header", count: 0
+    assert_select "#inline-code-demo .flat-pack-modal__close"
+    assert_select "#inline-code-demo h2", text: "Enter your code"
     assert_select "#inline-code-demo turbo-frame##{FRAME}" do
       assert_select ".space-y-6"
       assert_select "form .space-y-4"
+      assert_select "form .space-y-6"
       assert_select "input[name=code]"
       assert_select "input[name=accept_terms]", count: 0
       assert_select "input[type=password]", count: 0
+      assert_select "button.w-full", text: "Continue"
+      assert_select "form[action=?] button.flat-pack-link[type=submit]", recording_studio_user_otp_resend_path, text: "Resend code"
+      assert_select "a.flat-pack-link", text: "Use a different email"
+      assert_select "button.w-full", text: "Resend code", count: 0
     end
     assert_includes response.body, masked(user.email)
     refute_includes response.body, user.email

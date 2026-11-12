@@ -34,7 +34,7 @@ The post never uses `*`. A host that framed the sign-in page should open that wi
 
 A caller that already has an email can skip the email screen. POST `email`, `return_to`, and optional `popup=1` to `recording_studio_user_otp_start_path` (CSRF token required). A host controller can call `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:, popup:)` and then redirect to `recording_studio_user_otp_challenge_path`. The email is not accepted on GET. Login codes and new accounts still follow `otp_login_enabled?` and `otp_registration_enabled?`. Signup terms still apply to a new account. The page the person sees is the same when the address is new, known, or not allowed a code.
 
-A sibling gem on this same host can keep its own modal open. Render `RecordingStudioUser::OtpCodeForm.new(masked_email:)` inside that modal. The partial is `recording_studio_user/otp/inline_code_form`. It shows the masked address, the code field, Continue, Resend, and a link back to sign-in. No logo and no page layout.
+A sibling gem on this same host can keep its own modal open. Render `RecordingStudioUser::OtpCodeForm.new(masked_email:)` inside that modal. Pass `title:` to put a heading above the hint, and leave the modal title blank so the close control sits alone. The partial is `recording_studio_user/otp/inline_code_form`. It shows the masked address, the code field, Continue, and text links for resend and a different email. Resend is still a POST. No logo and no page layout.
 
 The same three POSTs answer in place when the request asks:
 

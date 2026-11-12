@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module RecordingStudioUser
-  # The code box a sibling gem drops into its own modal. No logo, title, or page shell.
+  # The code box a sibling gem drops into its own modal. No logo or page shell.
+  # Pass title: to put a heading above the hint, and leave the modal title blank
+  # so the close control sits alone.
   class OtpCodeForm < ViewComponent::Base
     FRAME_ID = "recording_studio_user_otp_inline"
 
@@ -13,13 +15,14 @@ module RecordingStudioUser
     end
 
     def initialize(masked_email:, alert: nil, notice: nil, signed_in_return_to: nil,
-                   csrf_param: nil, csrf_token: nil)
+                   csrf_param: nil, csrf_token: nil, title: nil)
       @masked_email = masked_email
       @alert = alert
       @notice = notice
       @signed_in_return_to = signed_in_return_to
       @csrf_param = csrf_param
       @csrf_token = csrf_token
+      @title = title
       super()
     end
 
@@ -34,6 +37,7 @@ module RecordingStudioUser
         notice: @notice,
         signed_in_return_to: @signed_in_return_to,
         hint: hint,
+        title: @title,
         inline_terms: inline_terms,
         signed_in_script: signed_in? ? signed_in_script : nil
       }

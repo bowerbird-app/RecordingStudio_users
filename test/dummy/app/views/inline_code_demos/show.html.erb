@@ -28,10 +28,12 @@
 
 <%= render FlatPack::Modal::Component.new(
   id: "inline-code-demo",
-  title: "Enter your code",
   size: :sm
 ) do |modal| %>
   <% modal.body do %>
-    <%= render RecordingStudioUser::OtpCodeForm.new(masked_email: @masked_email) %>
+    <%= render RecordingStudioUser::OtpCodeForm.new(
+      masked_email: @masked_email,
+      title: t("recording_studio_user.sessions.enter_code")
+    ) %>
   <% end %>
 <% end %>

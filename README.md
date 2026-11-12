@@ -214,15 +214,18 @@ An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_e
 
 ## A code box inside your own modal
 
-On this same host, render the box in a modal you already own. It does not bring the auth logo, heading, or page layout.
+On this same host, render the box in a modal you already own. It does not bring the auth logo or page layout. Leave the modal title blank so the close control sits alone. Pass `title:` when the heading should sit on its own line above the hint.
 
 ```erb
-<%= render RecordingStudioUser::OtpCodeForm.new(masked_email: masked_email) %>
+<%= render RecordingStudioUser::OtpCodeForm.new(
+  masked_email: masked_email,
+  title: t("recording_studio_user.sessions.enter_code")
+) %>
 ```
 
 `RecordingStudioUser::OtpCodeForm.mask(email)` returns the same short mask the code page uses. The markup also lives at `recording_studio_user/otp/inline_code_form` if you need the partial.
 
-The form posts to the same start, verify, and resend actions. Without JavaScript that is a normal POST and the browser follows the redirect. With Turbo, the form targets the frame `recording_studio_user_otp_inline`, so an error, a resend notice, or success replaces that frame and the modal stays put. Success dispatches `recording_studio_user:signed_in` on `document`. `detail.return_to` is the safe path. `detail.csrf_param` and `detail.csrf_token` are the fresh token from the rotated session. The same script writes those values into `meta[name="csrf-param"]` and `meta[name="csrf-token"]` when the tags are already on the page. Use that token on the next POST.
+The form posts to the same start, verify, and resend actions. Resend stays a POST, drawn as a text link beside the link back to sign-in. Without JavaScript that is a normal POST and the browser follows the redirect. With Turbo, the form targets the frame `recording_studio_user_otp_inline`, so an error, a resend notice, or success replaces that frame and the modal stays put. Success dispatches `recording_studio_user:signed_in` on `document`. `detail.return_to` is the safe path. `detail.csrf_param` and `detail.csrf_token` are the fresh token from the rotated session. The same script writes those values into `meta[name="csrf-param"]` and `meta[name="csrf-token"]` when the tags are already on the page. Use that token on the next POST.
 
 A caller that wants JSON sends `Accept: application/json` and the CSRF token. Start and resend return `{ "ok": true }` (or a 429). A valid code returns `{ "ok": true, "return_to": "/messages/42/join", "csrf_param": "authenticity_token", "csrf_token": "..." }` and signs the person in, including the usual session rotation. Session rotation changes the CSRF token. The JSON body carries the new one and does not include the email address.
 

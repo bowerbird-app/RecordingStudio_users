@@ -18,6 +18,9 @@ class OtpCodeFormTest < Minitest::Test
     assert_includes source, "use_different_email"
     assert_includes source, "space-y-6"
     assert_includes source, "space-y-4"
+    assert_includes source, "flat-pack-link"
+    assert_includes source, "FlatPack::Heading::Component"
+    refute_includes source, "style: :secondary"
     refute_includes source, "auth/shell"
     refute_includes source, "auth_site_logo"
     refute_includes source, "FlatPack::PageTitle::Component"
@@ -26,6 +29,7 @@ class OtpCodeFormTest < Minitest::Test
     assert_includes component, "csrf_token"
     assert_includes component, "csrf-token"
     assert_includes component, "csrf-param"
+    assert_includes component, "title: nil"
     assert_includes source, "accept_terms"
   end
 

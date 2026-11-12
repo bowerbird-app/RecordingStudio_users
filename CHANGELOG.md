@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - After an inline verify, use `csrf_token` from the JSON or the event on the next POST. The script updates the meta tags when they are on the page.
 - Hosts that embed the inline box for a new address send `accept_terms=1` with the code when live terms are pending. The full-page code step is unchanged.
 - Prefer a url-safe token in `return_to`. Path rules are unchanged. Query tokens may include `//`, `:`, and `@`.
+- Pass `title:` to `OtpCodeForm` when the heading should sit in the box, and leave the modal title blank. Omit `title:` and the box stays without a heading. Resend still posts to the same action.
 
 ## [0.28.0] - 2026-11-12
 
