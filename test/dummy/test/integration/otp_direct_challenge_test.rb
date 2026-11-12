@@ -73,6 +73,7 @@ class OtpDirectChallengeTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_code_page(email)
     assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+    assert_select "input[name=accept_terms]", count: 0
 
     user = User.find_by!(email: email)
     code = registration_code(user)
@@ -84,6 +85,8 @@ class OtpDirectChallengeTest < ActionDispatch::IntegrationTest
     assert user.reload.confirmed?
     assert_equal [ { user_id: user.id, method: :otp } ], @events
     assert RecordingStudioTermsAndConditions.accepted?(user, Dummy::SignupTerms.workspace)
+    receipt = RecordingStudioTermsAndConditions::Acceptance.order(:created_at).last
+    assert_equal({ "source" => "continue_notice" }, receipt.provenance)
   end
 
   test "popup completion follows a direct code" do
