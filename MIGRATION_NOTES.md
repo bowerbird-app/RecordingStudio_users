@@ -108,6 +108,9 @@ recording_studio_user_auth_for :users
 | `GET/POST /users/sign_in/otp` | Start login OTP (deep link) |
 | `GET/POST /users/sign_in/verify` | Enter login code |
 | `POST /users/sign_in/resend` | Resend login code |
+| `POST /users/otp/start` | Start a code for an email the caller already has (`recording_studio_user_otp_start`) |
+| `GET/POST /users/otp/challenge` | Code-only page / submit (`recording_studio_user_otp_challenge`) |
+| `POST /users/otp/resend` | Resend that code |
 | `GET/POST /users/password` | Request a password reset |
 | `GET /users/password/edit` | Choose a new password from the emailed reset link |
 | `PUT/PATCH /users/password` | Save the new password |
@@ -115,7 +118,26 @@ recording_studio_user_auth_for :users
 Hosts using Devise `:confirmable` should map confirmations as shown so the
 resend-confirmation screen shares the Users auth chrome.
 
+### Return path
+
+Pass `return_to` on the sign-in or sign-up URL when another gem needs the person back after auth. The same parameter is accepted on password, one-time code, password reset, confirmation, and the OAuth start. OAuth stores it in the session and does not put it on the provider URL.
+
+```ruby
+recording_studio_user_sign_in_path(return_to: "/messages/42/join")
+RecordingStudioUser.auth_url_for(:sign_up, return_to: "/messages/42/join", popup: true)
+```
+
+The path must start with one `/`. `//`, `/\`, a backslash, a scheme, a host, userinfo, control characters, whitespace, a single percent-decoding of those, and anything longer than 2048 characters are dropped. The person then lands on the default page.
+
+Put a signed, purpose-scoped token in your return path. About 15 minutes is a good lifetime. On return, check authorization and finish with an idempotent POST. Users does not call back into the caller.
+
+`popup=1` renders a completion page that posts `{ type: "recording_studio_user:signed_in" }` to the opener, then closes. Listen for that type, check `event.origin`, and reload. Set `config.popup_opener_origins` when the embed is on another origin. Auth screens send `X-Frame-Options: DENY` and `frame-ancestors 'none'`.
+
 `primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths are not drawn while `otp_enabled` (or the matching registration / login OTP flag) is false — set those flags in the initializer before routes draw.
+
+`POST /users/otp/start` is for a caller that already collected an email. Send `email`, `return_to`, and optional `popup=1` in the body with the CSRF token. `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:, popup:)` does the same work from a host controller. The code page does not take the email in the URL. A new address creates an account only when OTP registration is on, and signup terms still apply. The response matches for a known address and an unknown one. The route is not drawn when OTP is off.
+
+The same three routes also answer a modal on this host. Render `RecordingStudioUser::OtpCodeForm` in your modal. POST with `Turbo-Frame: recording_studio_user_otp_inline` to swap that frame, or `Accept: application/json` for `{ "ok": true, "return_to": "..." }` after a valid code. A foreign `Origin` is forbidden. No CORS header is set. A POST with neither header still uses the full code page.
 
 ## Recording Studio 6.1 layout
 

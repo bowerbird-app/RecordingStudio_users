@@ -33,6 +33,7 @@ module RecordingStudioUser
     config.after_initialize do
       require "omniauth/rails_csrf_protection"
       OmniAuth.config.request_validation_phase = OmniAuth::RailsCsrfProtection::TokenVerifier.new
+      RecordingStudioUser::Engine.remember_omniauth_return_to!
       RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
     end
 
@@ -82,5 +83,13 @@ module RecordingStudioUser
     def self.apply_profiled_user! = EngineBoot.apply_profiled_user!
     def self.apply_otp_setup!(user_class) = EngineBoot.apply_otp_setup!(user_class)
     def self.load_user_class = EngineBoot.load_user_class
+
+    def self.remember_omniauth_return_to!
+      previous = OmniAuth.config.before_request_phase
+      OmniAuth.config.before_request_phase = lambda do |env|
+        previous.call(env) if previous.respond_to?(:call)
+        RecordingStudioUser::ReturnTo.remember_rack(env)
+      end
+    end
   end
 end

@@ -27,6 +27,8 @@ fr:
           other: "%{count} erreurs ont empêché l'enregistrement de votre profil"
     auth:
       login_title: Heureux de vous revoir
+      signed_in_title: Vous voilà
+      signed_in_popup: Vous pouvez fermer cette fenêtre.
       sign_in: Connexion
       sign_up: Inscription
       log_in: Se connecter
@@ -74,6 +76,12 @@ fr:
         revoked: Ce code n'est plus valable.
         too_many_attempts: Trop d'essais. Demandez un nouveau code.
         session_mismatch: Recommencez avec un nouveau code.
+    otp_challenge:
+      continue: Continuer
+      use_different_email: Utiliser un autre e-mail
+      inline_hint: "Code envoyé à %{email}"
+      enter_code: Entrez le code reçu par e-mail.
+      signed_in: Vous êtes connecté.
     sessions:
       enter_code: Entrez votre code
       sign_in_code: Code de connexion

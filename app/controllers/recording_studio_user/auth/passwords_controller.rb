@@ -6,6 +6,7 @@ module RecordingStudioUser
       include Rails.application.routes.mounted_helpers
       include RecordingStudio::ControllerLayout
       include RecordingStudioUser::AuthRoutesHelper
+      include RecordingStudioUser::Auth::ReturnPath
 
       recording_studio_layout { RecordingStudioUser.configuration.layout }
 
@@ -17,14 +18,31 @@ module RecordingStudioUser
         redirect_to after_sending_reset_password_instructions_path_for(resource_name)
       end
 
+      def respond_with(*resources, **options)
+        location = options[:location]
+        if popup_password_reset?(location, resources.first)
+          render_auth_popup!(location)
+        else
+          super
+        end
+      end
+
       private
 
       def resource_class
         RecordingStudioUser.config.user_class
       end
 
-      def after_resetting_password_path_for(_resource)
-        main_app.root_path
+      def popup_password_reset?(location, resource)
+        location.present? &&
+          RecordingStudioUser::ReturnTo.popup?(session) &&
+          resource.respond_to?(:errors) &&
+          resource.errors.empty? &&
+          resource.respond_to?(:encrypted_password)
+      end
+
+      def after_resetting_password_path_for(resource)
+        stored_auth_return_path(resource)
       end
 
       def after_sending_reset_password_instructions_path_for(_resource_name)

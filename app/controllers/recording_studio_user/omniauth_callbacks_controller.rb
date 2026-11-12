@@ -7,7 +7,15 @@ require_dependency RecordingStudioUser::Engine.root.join(
 module RecordingStudioUser
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     include Rails.application.routes.mounted_helpers
+    include RecordingStudio::ControllerLayout
     include RecordingStudioUser::Auth::SessionRotation
+    include RecordingStudioUser::Auth::ReturnPath
+
+    recording_studio_layout { RecordingStudioUser.configuration.layout }
+
+    def after_sign_in_path_for(resource)
+      stored_auth_return_path(resource)
+    end
 
     # Devise routes each configured provider to a same-named action.
     Omniauth::PROVIDER_LABELS.each_key do |provider|
@@ -44,11 +52,7 @@ module RecordingStudioUser
     def sign_in_from_omniauth!(auth)
       user = Omniauth.find_or_create_user!(auth)
       sign_in_user!(user, event: :authentication)
-      redirect_to after_sign_in_path_for(user)
-    end
-
-    def after_sign_in_path_for(_resource)
-      main_app.root_path
+      complete_signed_in!(user, :after_sign_in_path_for)
     end
 
     def after_connect_path

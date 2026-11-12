@@ -31,6 +31,7 @@ module ActionDispatch
         scope module: "recording_studio_user/auth", path: mount_path do
           draw_recording_studio_user_registration_routes(singular)
           draw_recording_studio_user_session_routes(singular)
+          draw_recording_studio_user_otp_challenge_routes
         end
       end
 
@@ -60,6 +61,22 @@ module ActionDispatch
         get "sign_in/verify", to: "sessions#verify", as: :"verify_#{singular}_session"
         post "sign_in/verify", to: "sessions#submit_verify"
         post "sign_in/resend", to: "sessions#resend", as: :"resend_#{singular}_session"
+      end
+
+      def draw_recording_studio_user_otp_challenge_routes
+        return unless recording_studio_user_otp_direct_routes?
+
+        post "otp/start", to: "otp_challenges#create", as: :recording_studio_user_otp_start
+        get "otp/challenge", to: "otp_challenges#show", as: :recording_studio_user_otp_challenge
+        post "otp/challenge", to: "otp_challenges#submit"
+        post "otp/resend", to: "otp_challenges#resend", as: :recording_studio_user_otp_resend
+      end
+
+      def recording_studio_user_otp_direct_routes?
+        RecordingStudioUser.config.otp_enabled? && (
+          RecordingStudioUser.config.otp_login_enabled? ||
+          RecordingStudioUser.config.otp_registration_enabled?
+        )
       end
 
       def recording_studio_user_otp_registration_routes?

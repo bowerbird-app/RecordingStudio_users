@@ -70,6 +70,30 @@ module RecordingStudioUser
       auth_sign_up_path
     end
 
+    def recording_studio_user_sign_in_path(return_to: nil, popup: false)
+      RecordingStudioUser.auth_url_for(:sign_in, return_to: return_to, popup: popup)
+    end
+
+    def recording_studio_user_sign_up_path(return_to: nil, popup: false)
+      RecordingStudioUser.auth_url_for(:sign_up, return_to: return_to, popup: popup)
+    end
+
+    def otp_direct_challenge_path
+      host_or_engine(:recording_studio_user_otp_challenge_path, :otp_direct_challenge_path)
+    end
+
+    def otp_direct_resend_path
+      host_or_engine(:recording_studio_user_otp_resend_path, :otp_direct_resend_path)
+    end
+
+    def auth_carried_return_to
+      params[:return_to].presence || session[RecordingStudioUser::ReturnTo::SESSION_KEY]
+    end
+
+    def auth_carried_popup?
+      params[:popup].to_s == "1" || session[RecordingStudioUser::ReturnTo::POPUP_KEY] == true
+    end
+
     private
 
     def host_routes?(route_name)

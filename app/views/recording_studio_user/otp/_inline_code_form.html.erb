@@ -1,0 +1,56 @@
+<%= turbo_frame_tag RecordingStudioUser::OtpCodeForm::FRAME_ID do %>
+  <div class="space-y-6">
+    <%= render FlatPack::Content::Component.new do %>
+      <%= hint %>
+    <% end %>
+
+    <% if alert.present? %>
+      <%= render FlatPack::Alert::Component.new(description: alert, style: :danger) %>
+    <% elsif notice.present? %>
+      <%= render FlatPack::Alert::Component.new(description: notice, style: :success) %>
+    <% end %>
+
+    <% if signed_in_return_to.present? %>
+      <%= content_tag(:script, signed_in_script.html_safe) %>
+    <% else %>
+      <%= form_with url: otp_direct_challenge_path, method: :post, data: { turbo_frame: RecordingStudioUser::OtpCodeForm::FRAME_ID } do %>
+        <div class="space-y-4">
+          <%= render FlatPack::TextInput::Component.new(
+            name: "code",
+            label: t("recording_studio_user.sessions.sign_in_code"),
+            required: true,
+            inputmode: "numeric",
+            autocomplete: "one-time-code",
+            maxlength: 6
+          ) %>
+          <%= render FlatPack::Button::Component.new(
+            text: t("recording_studio_user.otp_challenge.continue"),
+            style: :primary,
+            size: :md,
+            type: "submit",
+            class: "w-full"
+          ) %>
+        </div>
+      <% end %>
+
+      <%= form_with url: otp_direct_resend_path, method: :post, data: { turbo_frame: RecordingStudioUser::OtpCodeForm::FRAME_ID } do %>
+        <%= render FlatPack::Button::Component.new(
+          text: t("recording_studio_user.sessions.resend_code"),
+          style: :secondary,
+          size: :md,
+          type: "submit",
+          class: "w-full"
+        ) %>
+      <% end %>
+
+      <%= render FlatPack::Content::Component.new(class: "text-center") do %>
+        <%= render FlatPack::Link::Component.new(
+          href: recording_studio_user_sign_in_path(return_to: auth_carried_return_to, popup: auth_carried_popup?),
+          data: { turbo_frame: "_top" }
+        ) do %>
+          <%= t("recording_studio_user.otp_challenge.use_different_email") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

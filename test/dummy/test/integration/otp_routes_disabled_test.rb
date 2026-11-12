@@ -18,6 +18,17 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     [:post, "/recording_studio_users/auth/sign_up/resend"]
   ].freeze
 
+  DIRECT_OTP_PATHS = [
+    [:post, "/users/otp/start"],
+    [:get, "/users/otp/challenge"],
+    [:post, "/users/otp/challenge"],
+    [:post, "/users/otp/resend"],
+    [:post, "/recording_studio_users/auth/otp/start"],
+    [:get, "/recording_studio_users/auth/otp/challenge"],
+    [:post, "/recording_studio_users/auth/otp/challenge"],
+    [:post, "/recording_studio_users/auth/otp/resend"]
+  ].freeze
+
   LOGIN_OTP_PATHS = [
     [:get, "/users/sign_in/otp"],
     [:post, "/users/sign_in/otp"],
@@ -51,8 +62,9 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     disable_otp!
     reload_auth_routes!
 
-    assert_otp_paths_missing(REGISTRATION_OTP_PATHS + LOGIN_OTP_PATHS)
+    assert_otp_paths_missing(REGISTRATION_OTP_PATHS + LOGIN_OTP_PATHS + DIRECT_OTP_PATHS)
     refute named_route?(:verify_user_registration_path)
+    refute named_route?(:recording_studio_user_otp_start_path)
     refute named_route?(:verify_user_session_path)
     refute named_route?(:resend_user_registration_path)
     refute named_route?(:resend_user_session_path)
@@ -71,7 +83,7 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     reload_auth_routes!
 
     assert_otp_paths_missing(REGISTRATION_OTP_PATHS)
-    assert_otp_paths_routed(LOGIN_OTP_PATHS)
+    assert_otp_paths_routed(LOGIN_OTP_PATHS + DIRECT_OTP_PATHS)
     refute named_route?(:verify_user_registration_path)
     assert named_route?(:verify_user_session_path)
   end
@@ -81,7 +93,7 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     reload_auth_routes!
 
     assert_otp_paths_missing(LOGIN_OTP_PATHS)
-    assert_otp_paths_routed(REGISTRATION_OTP_PATHS)
+    assert_otp_paths_routed(REGISTRATION_OTP_PATHS + DIRECT_OTP_PATHS)
     refute named_route?(:verify_user_session_path)
     assert named_route?(:verify_user_registration_path)
   end

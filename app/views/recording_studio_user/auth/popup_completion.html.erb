@@ -1,0 +1,35 @@
+<%= render layout: "recording_studio_user/auth/shell", locals: {
+  title: t("recording_studio_user.auth.signed_in_title"),
+  subtitle: t("recording_studio_user.auth.signed_in_popup")
+} do %>
+<% end %>
+<script>
+  (function () {
+    var allowed = <%= json_escape(@auth_popup_origins.to_json) %>;
+    var fallback = <%= json_escape(@auth_popup_destination.to_json) %>;
+    var openerWindow = window.opener;
+    if (!openerWindow) {
+      window.location.replace(fallback);
+      return;
+    }
+    var target = allowedOrigin(openerWindow, allowed);
+    if (target) openerWindow.postMessage({ type: "recording_studio_user:signed_in" }, target);
+    window.close();
+    window.setTimeout(function () { window.location.replace(fallback); }, 400);
+
+    function allowedOrigin(openerWindow, allowed) {
+      var origin = readableOrigin(openerWindow) || referrerOrigin();
+      if (!origin || allowed.indexOf(origin) === -1) return null;
+      return origin;
+    }
+
+    function readableOrigin(openerWindow) {
+      try { return openerWindow.location.origin; } catch (error) { return null; }
+    }
+
+    function referrerOrigin() {
+      if (!document.referrer) return null;
+      try { return new URL(document.referrer).origin; } catch (error) { return null; }
+    }
+  })();
+</script>

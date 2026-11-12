@@ -149,6 +149,83 @@ recording_studio_users.edit_profile_path
 recording_studio_users.admin_path
 ```
 
+## Bring someone back after sign-in
+
+A sibling gem can send a person through these screens and land them on a path in this host when sign-in finishes.
+
+```ruby
+recording_studio_user_sign_in_path(return_to: "/messages/42/join")
+recording_studio_user_sign_up_path(return_to: "/messages/42/join", popup: true)
+RecordingStudioUser.auth_url_for(:sign_in, return_to: "/messages/42/join")
+```
+
+`return_to` is accepted on the email step, the password step, one-time code request, verify, and resend, sign-up, password reset, confirmation, and the OAuth start. OAuth keeps the path in the session. It is not added to the provider URL.
+
+The value has to be a relative path that starts with one `/`. These are dropped, and the person lands on the default page:
+
+- `//` and `/\`
+- a backslash, a scheme, a host, or userinfo
+- control characters or whitespace
+- those same forms after one percent-decoding
+- a value longer than 2048 characters
+
+A missing value uses the same fallback as a request that never passed `return_to`, `stored_location_for` or the host root.
+
+Put a signed, purpose-scoped token in your own return path. About 15 minutes is a good lifetime. When the person comes back, check that they may do the action, then finish it with an idempotent POST. Do not finish the action on GET. This gem does not call back into the sibling.
+
+`popup=1` is for an embed that opened sign-in in a new window. Auth responses stay out of frames with `X-Frame-Options: DENY` and `frame-ancestors 'none'`. After a successful sign-in the window posts `{ type: "recording_studio_user:signed_in" }` to the opener, then closes. The target origin is this host, plus any origin listed in `config.popup_opener_origins`. The post never uses `*`. If there is no opener, the window goes to `return_to`.
+
+```javascript
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (!event.data || event.data.type !== "recording_studio_user:signed_in") return;
+  window.location.reload();
+});
+```
+
+An embed on another origin adds that origin to `config.popup_opener_origins` and checks `event.origin` against the same list. OTP, account creation, signup terms, confirmations, and rate limits stay on their host flags. `return_to` does not turn them on.
+
+## Send a code when you already have the email
+
+A contact form or another gem can skip the email screen. POST the address. Do not put it in a URL or a GET.
+
+```ruby
+# A host controller that already collected the address
+result = RecordingStudioUser.start_otp_challenge!(
+  request: request,
+  email: email,
+  return_to: "/messages/42/join",
+  popup: params[:popup]
+)
+if result.throttled?
+  redirect_to recording_studio_user_otp_challenge_path, alert: t("recording_studio_user.auth.give_it_a_minute")
+else
+  redirect_to recording_studio_user_otp_challenge_path
+end
+```
+
+Or POST `email`, `return_to`, and optional `popup=1` to `recording_studio_user_otp_start_path` with the Rails CSRF token. That action stores the pending email and the safe return path the same way the normal flow does, asks for a code with `request_otp!`, and redirects to the code page.
+
+The code page shows the code field, a masked address, resend, and a link back to the normal sign-in screen (still carrying `return_to`). No password, social buttons, or sign-up form. A valid code goes to `return_to`, or to the popup completion page when `popup=1`.
+
+An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_enabled?` are on. A new address creates an account only when `otp_enabled?` and `otp_registration_enabled?` are on, and signup terms still apply on that new account. Otherwise nothing is sent and no account is created. The redirect and the notice stay the same either way. Rate limits match the other code requests, per email and per IP. The route is absent when one-time codes are off.
+
+## A code box inside your own modal
+
+On this same host, render the box in a modal you already own. It does not bring the auth logo, heading, or page layout.
+
+```erb
+<%= render RecordingStudioUser::OtpCodeForm.new(masked_email: masked_email) %>
+```
+
+`RecordingStudioUser::OtpCodeForm.mask(email)` returns the same short mask the code page uses. The markup also lives at `recording_studio_user/otp/inline_code_form` if you need the partial.
+
+The form posts to the same start, verify, and resend actions. Without JavaScript that is a normal POST and the browser follows the redirect. With Turbo, the form targets the frame `recording_studio_user_otp_inline`, so an error, a resend notice, or success replaces that frame and the modal stays put. Success also dispatches `recording_studio_user:signed_in` on `document`, with `detail.return_to` set to the safe path.
+
+A caller that wants JSON sends `Accept: application/json` and the CSRF token. Start and resend return `{ "ok": true }` (or a 429). A valid code returns `{ "ok": true, "return_to": "/messages/42/join" }` and signs the person in, including the usual session rotation. The JSON body does not include the email address.
+
+A request with an `Origin` other than this host is rejected. Nothing on these actions adds CORS headers, and auth responses stay frame-denied. Login, registration, signup terms, rate limits, and the single registration event follow the same rules as the code page.
+
 ## Social sign-in
 
 The dummy app's Google client is **RecordingStudioUsers** in the [BowerBird Dev](https://console.cloud.google.com/auth/clients?project=key-buttress-507301-d2) GCP project ([client](https://console.cloud.google.com/auth/clients/332241240783-36h23frfv5ovlnqtkcc3cc1a96afqkji.apps.googleusercontent.com?project=key-buttress-507301-d2)). Redirect URI: `http://localhost:3000/users/auth/google_oauth2/callback`. See `test/dummy/README.md`.

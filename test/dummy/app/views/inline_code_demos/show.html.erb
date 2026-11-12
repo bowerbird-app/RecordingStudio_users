@@ -1,0 +1,37 @@
+<%= render FlatPack::PageTitle::Component.new(
+  title: "A thread",
+  subtitle: "Someone left you a note.",
+  variant: :h1
+) %>
+
+<%= render FlatPack::Content::Component.new do %>
+  Confirm it's you to read it.
+<% end %>
+
+<%= render FlatPack::Button::Component.new(
+  text: "Enter code",
+  style: :primary,
+  type: "button",
+  data: { modal_id: "inline-code-demo" }
+) %>
+
+<%# The modal focuses its close control on open, which paints the focus ring. Move focus to the dialog so the close control stays the plain icon. %>
+<%= javascript_tag do %>
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-modal-id='inline-code-demo']")) return
+    window.setTimeout(() => {
+      const dialog = document.querySelector("#inline-code-demo [role='dialog']")
+      if (dialog) dialog.focus()
+    }, 150)
+  })
+<% end %>
+
+<%= render FlatPack::Modal::Component.new(
+  id: "inline-code-demo",
+  title: "Enter your code",
+  size: :sm
+) do |modal| %>
+  <% modal.body do %>
+    <%= render RecordingStudioUser::OtpCodeForm.new(masked_email: @masked_email) %>
+  <% end %>
+<% end %>
