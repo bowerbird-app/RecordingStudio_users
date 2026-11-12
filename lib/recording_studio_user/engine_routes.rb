@@ -34,6 +34,7 @@ module RecordingStudioUser
         draw_registration_auth(mapper)
         draw_session_auth(mapper)
         draw_password_auth(mapper)
+        draw_direct_otp(mapper)
       end
     end
 
@@ -71,6 +72,22 @@ module RecordingStudioUser
       mapper.get "sign_in/verify", to: "sessions#verify", as: :sign_in_verify
       mapper.post "sign_in/verify", to: "sessions#submit_verify"
       mapper.post "sign_in/resend", to: "sessions#resend", as: :sign_in_resend
+    end
+
+    def draw_direct_otp(mapper)
+      return unless direct_otp_routes?
+
+      mapper.post "otp/start", to: "otp_challenges#create", as: :otp_direct_start
+      mapper.get "otp/challenge", to: "otp_challenges#show", as: :otp_direct_challenge
+      mapper.post "otp/challenge", to: "otp_challenges#submit"
+      mapper.post "otp/resend", to: "otp_challenges#resend", as: :otp_direct_resend
+    end
+
+    def direct_otp_routes?
+      RecordingStudioUser.config.otp_enabled? && (
+        RecordingStudioUser.config.otp_login_enabled? ||
+        RecordingStudioUser.config.otp_registration_enabled?
+      )
     end
 
     def draw_password_auth(mapper)

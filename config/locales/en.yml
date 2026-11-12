@@ -73,6 +73,9 @@ en:
         revoked: That code is no longer valid.
         too_many_attempts: Too many tries. Request a new code.
         session_mismatch: Start over with a new code.
+    otp_challenge:
+      continue: Continue
+      use_different_email: Use a different email
     sessions:
       enter_code: Enter your code
       sign_in_code: Sign-in code

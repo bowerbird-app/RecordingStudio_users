@@ -22,6 +22,7 @@ require "recording_studio_user/otp_delivery_payload"
 require "recording_studio_user/services/otp_rate_limiter"
 require "recording_studio_user/services/issue_otp"
 require "recording_studio_user/services/request_otp"
+require "recording_studio_user/services/start_otp_challenge"
 require "recording_studio_user/services/verify_otp"
 require "recording_studio_user/services/complete_registration"
 require "recording_studio_user/services/complete_email_proof"
@@ -102,6 +103,8 @@ module RecordingStudioUser
     def request_otp!(email:, purpose:, request:, session:)
       Services::RequestOtp.call(email: email, purpose: purpose, request: request, session: session)
     end
+
+    def start_otp_challenge!(...) = Services::StartOtpChallenge.call(...)
 
     def verify_otp!(...)
       Services::VerifyOtp.call(...)

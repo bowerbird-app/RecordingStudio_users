@@ -22,6 +22,8 @@ config.popup_opener_origins = ["https://embed.example"]
 
 The post never uses `*`. A host that framed the sign-in page should open that window instead.
 
+A caller that already has an email can skip the email screen. POST `email`, `return_to`, and optional `popup=1` to `recording_studio_user_otp_start_path` (CSRF token required). A host controller can call `RecordingStudioUser.start_otp_challenge!(request:, email:, return_to:, popup:)` and then redirect to `recording_studio_user_otp_challenge_path`. The email is not accepted on GET. Login codes and new accounts still follow `otp_login_enabled?` and `otp_registration_enabled?`. Signup terms still apply to a new account. The page the person sees is the same when the address is new, known, or not allowed a code.
+
 ## 0.27.3
 
 Bump to `0.27.3`. No Users migration.

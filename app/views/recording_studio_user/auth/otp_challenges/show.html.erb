@@ -1,0 +1,45 @@
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: {
+             title: t("recording_studio_user.sessions.enter_code"),
+             subtitle: @masked_email
+           } do %>
+  <%= form_with url: otp_direct_challenge_path, method: :post do %>
+    <div class="space-y-4">
+      <%= render FlatPack::TextInput::Component.new(
+        name: "code",
+        label: t("recording_studio_user.sessions.sign_in_code"),
+        required: true,
+        inputmode: "numeric",
+        autocomplete: "one-time-code",
+        maxlength: 6
+      ) %>
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.otp_challenge.continue"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
+    </div>
+  <% end %>
+
+  <%= form_with url: otp_direct_resend_path, method: :post do %>
+    <%= render FlatPack::Button::Component.new(
+      text: t("recording_studio_user.sessions.resend_code"),
+      style: :secondary,
+      size: :md,
+      type: "submit",
+      class: "w-full"
+    ) %>
+  <% end %>
+
+  <%= render partial: "recording_studio_user/auth/registrations/extra_fields" %>
+
+  <%= render FlatPack::Content::Component.new(class: "text-center") do %>
+    <%= render FlatPack::Link::Component.new(
+      href: recording_studio_user_sign_in_path(return_to: auth_carried_return_to, popup: auth_carried_popup?)
+    ) do %>
+      <%= t("recording_studio_user.otp_challenge.use_different_email") %>
+    <% end %>
+  <% end %>
+<% end %>

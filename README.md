@@ -185,6 +185,31 @@ window.addEventListener("message", (event) => {
 
 An embed on another origin adds that origin to `config.popup_opener_origins` and checks `event.origin` against the same list. OTP, account creation, signup terms, confirmations, and rate limits stay on their host flags. `return_to` does not turn them on.
 
+## Send a code when you already have the email
+
+A contact form or another gem can skip the email screen. POST the address. Do not put it in a URL or a GET.
+
+```ruby
+# A host controller that already collected the address
+result = RecordingStudioUser.start_otp_challenge!(
+  request: request,
+  email: email,
+  return_to: "/messages/42/join",
+  popup: params[:popup]
+)
+if result.throttled?
+  redirect_to recording_studio_user_otp_challenge_path, alert: t("recording_studio_user.auth.give_it_a_minute")
+else
+  redirect_to recording_studio_user_otp_challenge_path
+end
+```
+
+Or POST `email`, `return_to`, and optional `popup=1` to `recording_studio_user_otp_start_path` with the Rails CSRF token. That action stores the pending email and the safe return path the same way the normal flow does, asks for a code with `request_otp!`, and redirects to the code page.
+
+The code page shows the code field, a masked address, resend, and a link back to the normal sign-in screen (still carrying `return_to`). No password, social buttons, or sign-up form. A valid code goes to `return_to`, or to the popup completion page when `popup=1`.
+
+An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_enabled?` are on. A new address creates an account only when `otp_enabled?` and `otp_registration_enabled?` are on, and signup terms still apply on that new account. Otherwise nothing is sent and no account is created. The redirect and the notice stay the same either way. Rate limits match the other code requests, per email and per IP. The route is absent when one-time codes are off.
+
 ## Social sign-in
 
 The dummy app's Google client is **RecordingStudioUsers** in the [BowerBird Dev](https://console.cloud.google.com/auth/clients?project=key-buttress-507301-d2) GCP project ([client](https://console.cloud.google.com/auth/clients/332241240783-36h23frfv5ovlnqtkcc3cc1a96afqkji.apps.googleusercontent.com?project=key-buttress-507301-d2)). Redirect URI: `http://localhost:3000/users/auth/google_oauth2/callback`. See `test/dummy/README.md`.
