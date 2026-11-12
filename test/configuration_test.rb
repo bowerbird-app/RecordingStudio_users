@@ -28,6 +28,7 @@ class ConfigurationTest < Minitest::Test
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?
     assert_empty @configuration.after_registration_hooks
+    assert_empty @configuration.popup_opener_origins
   end
 
   def test_after_registration_accepts_callable_and_string_and_allows_multiple
@@ -228,6 +229,15 @@ class ConfigurationTest < Minitest::Test
     assert_raises(ArgumentError) { @configuration.layout = 1 }
     assert_raises(ArgumentError) { @configuration.layout = "  " }
     assert_raises(ArgumentError) { @configuration.layout = ->(controller) { controller && "application" } }
+  end
+
+  def test_popup_opener_origins_are_http_origins_or_left_unchanged
+    @configuration.popup_opener_origins = ["https://embed.example", "http://localhost:3000"]
+
+    assert_equal ["https://embed.example", "http://localhost:3000"], @configuration.popup_opener_origins
+    assert_raises(ArgumentError) { @configuration.popup_opener_origins = ["*"] }
+    assert_raises(ArgumentError) { @configuration.popup_opener_origins = ["https://evil.com/phish"] }
+    assert_equal ["https://embed.example", "http://localhost:3000"], @configuration.popup_opener_origins
   end
 
   def test_mounted_admin_path_uses_configured_paths

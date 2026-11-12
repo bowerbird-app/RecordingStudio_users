@@ -1,6 +1,26 @@
 # Upgrading
 
-## Unreleased
+## 0.28.0
+
+Bump to `0.28.0`. No Users migration.
+
+`return_to` is an optional relative path on the auth screens. Invalid values are ignored, and the person lands on the same default page as before. OTP, account creation, signup terms, confirmations, and rate limits stay behind the host flags.
+
+```ruby
+recording_studio_user_sign_in_path(return_to: "/messages/42/join")
+recording_studio_user_sign_up_path(return_to: "/messages/42/join", popup: true)
+RecordingStudioUser.auth_url_for(:sign_in, return_to: "/messages/42/join")
+```
+
+Put a signed, purpose-scoped token in that path. About 15 minutes is a good lifetime. When the person comes back, check authorization again and finish the action with an idempotent POST. Do not finish it on GET. Users does not add a callback into the caller.
+
+`popup=1` is for a new window. Auth responses send `X-Frame-Options: DENY` and `frame-ancestors 'none'`. After sign-in the window posts `{ type: "recording_studio_user:signed_in" }` to the opener origin, then closes. The origin is this host unless you add others:
+
+```ruby
+config.popup_opener_origins = ["https://embed.example"]
+```
+
+The post never uses `*`. A host that framed the sign-in page should open that window instead.
 
 ## 0.27.3
 

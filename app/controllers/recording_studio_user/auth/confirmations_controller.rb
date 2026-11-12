@@ -6,6 +6,7 @@ module RecordingStudioUser
       include Rails.application.routes.mounted_helpers
       include RecordingStudio::ControllerLayout
       include RecordingStudioUser::AuthRoutesHelper
+      include RecordingStudioUser::Auth::ReturnPath
 
       recording_studio_layout { RecordingStudioUser.configuration.layout }
     end

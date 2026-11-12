@@ -14,13 +14,17 @@ module RecordingStudioUser
       RecordingStudioUser.config.omniauth_providers.key?(provider.to_sym)
     end
 
-    def recording_studio_user_omniauth_authorize_path(provider)
+    def recording_studio_user_omniauth_authorize_path(provider, return_to: nil, popup: false)
       return unless recording_studio_user_provider_configured?(provider)
 
       helper_name = "user_#{provider}_omniauth_authorize_path"
       return unless main_app.respond_to?(helper_name)
 
-      main_app.public_send(helper_name)
+      RecordingStudioUser::ReturnTo.with_query(
+        main_app.public_send(helper_name),
+        return_to: return_to,
+        popup: popup
+      )
     end
 
     def recording_studio_user_provider_connected?(user, provider)

@@ -22,7 +22,9 @@
 
   <%= render FlatPack::Content::Component.new(class: "text-center") do %>
     <%= t("recording_studio_user.auth.no_account") %>
-    <%= render FlatPack::Link::Component.new(href: auth_sign_up_path) do %>
+    <%= render FlatPack::Link::Component.new(
+      href: recording_studio_user_sign_up_path(return_to: auth_carried_return_to, popup: auth_carried_popup?)
+    ) do %>
       <%= t("recording_studio_user.auth.sign_up") %>
     <% end %>
   <% end %>

@@ -149,6 +149,42 @@ recording_studio_users.edit_profile_path
 recording_studio_users.admin_path
 ```
 
+## Bring someone back after sign-in
+
+A sibling gem can send a person through these screens and land them on a path in this host when sign-in finishes.
+
+```ruby
+recording_studio_user_sign_in_path(return_to: "/messages/42/join")
+recording_studio_user_sign_up_path(return_to: "/messages/42/join", popup: true)
+RecordingStudioUser.auth_url_for(:sign_in, return_to: "/messages/42/join")
+```
+
+`return_to` is accepted on the email step, the password step, one-time code request, verify, and resend, sign-up, password reset, confirmation, and the OAuth start. OAuth keeps the path in the session. It is not added to the provider URL.
+
+The value has to be a relative path that starts with one `/`. These are dropped, and the person lands on the default page:
+
+- `//` and `/\`
+- a backslash, a scheme, a host, or userinfo
+- control characters or whitespace
+- those same forms after one percent-decoding
+- a value longer than 2048 characters
+
+A missing value uses the same fallback as a request that never passed `return_to`, `stored_location_for` or the host root.
+
+Put a signed, purpose-scoped token in your own return path. About 15 minutes is a good lifetime. When the person comes back, check that they may do the action, then finish it with an idempotent POST. Do not finish the action on GET. This gem does not call back into the sibling.
+
+`popup=1` is for an embed that opened sign-in in a new window. Auth responses stay out of frames with `X-Frame-Options: DENY` and `frame-ancestors 'none'`. After a successful sign-in the window posts `{ type: "recording_studio_user:signed_in" }` to the opener, then closes. The target origin is this host, plus any origin listed in `config.popup_opener_origins`. The post never uses `*`. If there is no opener, the window goes to `return_to`.
+
+```javascript
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (!event.data || event.data.type !== "recording_studio_user:signed_in") return;
+  window.location.reload();
+});
+```
+
+An embed on another origin adds that origin to `config.popup_opener_origins` and checks `event.origin` against the same list. OTP, account creation, signup terms, confirmations, and rate limits stay on their host flags. `return_to` does not turn them on.
+
 ## Social sign-in
 
 The dummy app's Google client is **RecordingStudioUsers** in the [BowerBird Dev](https://console.cloud.google.com/auth/clients?project=key-buttress-507301-d2) GCP project ([client](https://console.cloud.google.com/auth/clients/332241240783-36h23frfv5ovlnqtkcc3cc1a96afqkji.apps.googleusercontent.com?project=key-buttress-507301-d2)). Redirect URI: `http://localhost:3000/users/auth/google_oauth2/callback`. See `test/dummy/README.md`.

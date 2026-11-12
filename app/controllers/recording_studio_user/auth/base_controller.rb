@@ -6,6 +6,9 @@ require_dependency RecordingStudioUser::Engine.root.join(
 require_dependency RecordingStudioUser::Engine.root.join(
   "app/controllers/concerns/recording_studio_user/auth/session_rotation.rb"
 ).to_s
+require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/return_path.rb"
+).to_s
 
 module RecordingStudioUser
   module Auth
@@ -14,6 +17,7 @@ module RecordingStudioUser
       include RecordingStudioUser::AuthRoutesHelper
       include RecordingStudioUser::Auth::PendingEmail
       include RecordingStudioUser::Auth::SessionRotation
+      include RecordingStudioUser::Auth::ReturnPath
 
       # Users before TnC extra_fields; host before Users (see prefer_signup_view_paths!).
       before_action :prefer_host_then_users_signup_views
@@ -57,11 +61,11 @@ module RecordingStudioUser
       end
 
       def after_sign_in_path_for(resource)
-        stored_location_for(resource) || main_app.root_path
+        stored_auth_return_path(resource)
       end
 
       def after_sign_up_path_for(resource)
-        stored_location_for(resource) || main_app.root_path
+        stored_auth_return_path(resource)
       end
 
       def generic_login_notice

@@ -2,6 +2,7 @@
 
 require "recording_studio_user/version"
 require "recording_studio_user/route_path"
+require "recording_studio_user/return_to"
 require "recording_studio_user/configuration"
 require "recording_studio_user/rails/routes"
 require "recording_studio_user/engine_boot"
@@ -134,6 +135,8 @@ module RecordingStudioUser
     def complete_email_proof!(...)
       Services::CompleteEmailProof.call(...)
     end
+
+    def auth_url_for(...) = ReturnTo.auth_path(...)
 
     private
 

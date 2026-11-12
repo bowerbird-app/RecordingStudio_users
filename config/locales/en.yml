@@ -24,6 +24,8 @@ en:
           other: "%{count} errors prevented your profile from being saved"
     auth:
       login_title: Welcome back
+      signed_in_title: You're in
+      signed_in_popup: You can close this window.
       sign_in: Sign in
       sign_up: Sign up
       log_in: Log in

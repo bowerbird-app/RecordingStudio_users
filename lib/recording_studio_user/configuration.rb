@@ -13,6 +13,7 @@ module RecordingStudioUser
     AUTHENTICATION_METHODS = %i[password otp].freeze
     PRIMARY_LOGIN_TYPES = %i[email otp].freeze
     AUTH_LOGO_TYPES = %i[square wide].freeze
+    POPUP_ORIGIN = %r{\Ahttps?://[a-zA-Z0-9.-]+(?::\d+)?\z}
 
     # otp_login_enabled has its own writer because it must stay compatible with
     # the registration methods.
@@ -49,7 +50,8 @@ module RecordingStudioUser
       :layout,
       *(DEFAULTS.keys - %i[user_class_name layout]),
       :after_registration_hooks,
-      :auth_body_start_partial
+      :auth_body_start_partial,
+      :popup_opener_origins
     )
 
     BOOLEAN_SETTINGS.each do |setting|
@@ -90,6 +92,7 @@ module RecordingStudioUser
       @omniauth_providers = {}
       @auth_site_root_resolver = nil
       @after_registration_hooks = []
+      @popup_opener_origins = []
     end
 
     # Register a host callback that runs after a successful sign-up (password,
@@ -186,6 +189,13 @@ module RecordingStudioUser
 
     def auth_body_start_partial=(value)
       @auth_body_start_partial = value&.to_s&.strip.presence
+    end
+
+    def popup_opener_origins=(value)
+      origins = normalized_popup_origins(value)
+      raise ArgumentError, "popup opener origin must be an http(s) origin" unless popup_origins_valid?(origins)
+
+      @popup_opener_origins = origins
     end
 
     def omniauth_create_account=(value)
@@ -313,6 +323,14 @@ module RecordingStudioUser
       return if value.positive?
 
       raise ArgumentError, "#{name} must be positive"
+    end
+
+    def normalized_popup_origins(value)
+      Array(value).map { |origin| origin.to_s.strip }.reject(&:empty?).uniq
+    end
+
+    def popup_origins_valid?(origins)
+      origins.all? { |origin| origin.match?(POPUP_ORIGIN) }
     end
   end
 end

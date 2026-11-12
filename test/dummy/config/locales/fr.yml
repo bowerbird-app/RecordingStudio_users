@@ -27,6 +27,8 @@ fr:
           other: "%{count} erreurs ont empêché l'enregistrement de votre profil"
     auth:
       login_title: Heureux de vous revoir
+      signed_in_title: Vous voilà
+      signed_in_popup: Vous pouvez fermer cette fenêtre.
       sign_in: Connexion
       sign_up: Inscription
       log_in: Se connecter

@@ -25,7 +25,9 @@
 
   <%= render FlatPack::Content::Component.new(class: "text-center") do %>
     <%= t("recording_studio_user.auth.already_have_one") %>
-    <%= render FlatPack::Link::Component.new(href: auth_sign_in_path) do %>
+    <%= render FlatPack::Link::Component.new(
+      href: recording_studio_user_sign_in_path(return_to: auth_carried_return_to, popup: auth_carried_popup?)
+    ) do %>
       <%= t("recording_studio_user.auth.log_in") %>
     <% end %>
   <% end %>

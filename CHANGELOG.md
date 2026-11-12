@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-11-12
+
+### Added
+
+- Sign-in, sign-up, one-time code, password reset, confirmation, and OAuth accept `return_to`. A safe relative path is kept with Devise `store_location_for(:user, ...)` so `after_sign_in_path_for` and `after_sign_up_path_for` send the person there.
+- `RecordingStudioUser.auth_url_for`, `recording_studio_user_sign_in_path`, and `recording_studio_user_sign_up_path` build those entry URLs.
+- `popup=1` renders a same-origin page after sign-in. The page posts `{ type: "recording_studio_user:signed_in" }` to the opener, then closes. The target origin is this host, or an origin in `config.popup_opener_origins`. If there is no opener, the window goes to `return_to`.
+- Auth responses send `X-Frame-Options: DENY` and `Content-Security-Policy` `frame-ancestors 'none'`.
+
+### Upgrade notes
+
+- Bump to `0.28.0`. No Users migration. A request without `return_to` still lands on the previous default page.
+- Put a signed, purpose-scoped token in your own return path. About 15 minutes is a good lifetime. On return, check that this person may do the action, then finish it with an idempotent POST. This gem does not call back into the caller.
+- Auth screens are not frameable. An embed opens sign-in in a window with `popup=1` and reloads when it receives the message.
+
 ## [0.27.3] - 2026-11-11
 
 ### Fixed
@@ -1334,7 +1349,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.0...HEAD
+[0.28.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.3...v0.28.0
 [0.27.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.2...v0.27.3
 [0.27.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.1...v0.27.2
 [0.27.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.0...v0.27.1

@@ -115,6 +115,21 @@ recording_studio_user_auth_for :users
 Hosts using Devise `:confirmable` should map confirmations as shown so the
 resend-confirmation screen shares the Users auth chrome.
 
+### Return path
+
+Pass `return_to` on the sign-in or sign-up URL when another gem needs the person back after auth. The same parameter is accepted on password, one-time code, password reset, confirmation, and the OAuth start. OAuth stores it in the session and does not put it on the provider URL.
+
+```ruby
+recording_studio_user_sign_in_path(return_to: "/messages/42/join")
+RecordingStudioUser.auth_url_for(:sign_up, return_to: "/messages/42/join", popup: true)
+```
+
+The path must start with one `/`. `//`, `/\`, a backslash, a scheme, a host, userinfo, control characters, whitespace, a single percent-decoding of those, and anything longer than 2048 characters are dropped. The person then lands on the default page.
+
+Put a signed, purpose-scoped token in your return path. About 15 minutes is a good lifetime. On return, check authorization and finish with an idempotent POST. Users does not call back into the caller.
+
+`popup=1` renders a completion page that posts `{ type: "recording_studio_user:signed_in" }` to the opener, then closes. Listen for that type, check `event.origin`, and reload. Set `config.popup_opener_origins` when the embed is on another origin. Auth screens send `X-Frame-Options: DENY` and `frame-ancestors 'none'`.
+
 `primary_login_type` defaults to `:email` (password on the second screen). Set `:otp` only when OTP is fully enabled. Password screens work with OTP off. Direct OTP paths are not drawn while `otp_enabled` (or the matching registration / login OTP flag) is false — set those flags in the initializer before routes draw.
 
 ## Recording Studio 6.1 layout
