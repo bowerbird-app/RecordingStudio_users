@@ -27,7 +27,7 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "otp_login_enabled?"
     assert_includes source, "devise/sessions#destroy"
     assert_includes source, "recording_studio_user/auth/passwords"
-    assert_includes source, '"edit_#{singular}_password"'
+    assert_includes source, "\"edit_\#{singular}_password\""
     assert_includes source, "\#{passwords}#update"
   end
 

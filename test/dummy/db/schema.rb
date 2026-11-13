@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_180004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -215,6 +215,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_090000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "api_key", default: "public", null: false
+    t.datetime "arrived_at", default: -> { "clock_timestamp()" }
+    t.integer "latency_bucket_ms"
     t.index ["api_client_id", "occurred_at"], name: "index_rs_api_request_logs_on_client_and_time"
     t.index ["api_credential_id", "occurred_at"], name: "index_rs_api_request_logs_on_credential_and_time"
     t.index ["api_key", "occurred_at"], name: "index_rs_api_request_logs_on_api_and_time"
@@ -397,9 +399,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_090000) do
     t.uuid "root_recording_id"
     t.datetime "trashed_at"
     t.datetime "updated_at", null: false
+    t.datetime "purge_at"
     t.index ["parent_recording_id"], name: "idx_rs_attachable_parent_active", where: "(((recordable_type)::text = 'RecordingStudioAttachable::Attachment'::text) AND (trashed_at IS NULL))"
     t.index ["parent_recording_id"], name: "index_recording_studio_recordings_on_parent_recording_id"
     t.index ["parent_recording_id"], name: "index_rs_publishable_child_per_parent", unique: true, where: "(((recordable_type)::text = 'RecordingStudioPublishable::Publishable'::text) AND (trashed_at IS NULL))"
+    t.index ["purge_at"], name: "idx_rs_recordings_due_purge_at", where: "(trashed_at IS NOT NULL)"
     t.index ["recordable_type", "recordable_id", "parent_recording_id", "trashed_at"], name: "index_recording_studio_recordings_on_recordable_parent_trashed"
     t.index ["recordable_type", "recordable_id"], name: "index_recording_studio_recordings_on_recordable"
     t.index ["recordable_type", "recordable_id"], name: "index_rs_unique_root_recording_per_recordable", unique: true, where: "(parent_recording_id IS NULL)"
@@ -448,11 +452,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_090000) do
     t.index ["terms_recording_id"], name: "index_rstac_acceptances_on_terms_recording_id"
   end
 
+  create_table "recording_studio_terms_and_conditions_clauses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "body", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+  end
+
+  create_table "recording_studio_terms_and_conditions_sections", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "heading", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+  end
+
   create_table "recording_studio_terms_and_conditions_terms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.text "body", null: false
     t.datetime "created_at", null: false
     t.string "kind", default: "terms_and_condition", null: false
     t.string "title", null: false
+    t.jsonb "release_manifest"
   end
 
   create_table "recording_studio_user_identities", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

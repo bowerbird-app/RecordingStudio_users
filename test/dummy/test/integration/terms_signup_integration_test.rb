@@ -65,7 +65,9 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     assert_equal "User", receipt.actor_type
   end
 
-  test "create-password still shows the notice when the current workspace has no live Terms" do
+  test "create-password stays on the current workspace when nobody can view another live Terms root" do
+    # Terms 0.18 falls back only through Accessible :view roots. A signed-out
+    # signup has no actor, so an empty current workspace stays empty.
     empty = Workspace.create!(name: "No terms #{SecureRandom.hex(4)}")
     email = "signup-fallback-#{SecureRandom.hex(4)}@example.com"
 
@@ -74,8 +76,8 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
       follow_redirect!
 
       assert_response :success
-      assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
-      assert_select "button[type=submit]", text: "Sign up"
+      assert_select "input#user_password[type=password]"
+      refute_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
     end
   end
 

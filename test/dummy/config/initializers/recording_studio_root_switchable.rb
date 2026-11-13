@@ -23,18 +23,34 @@ RecordingStudioRootSwitchable.configure do |config|
   config.scope :roots do |scope|
     scope.label = "My workspace"
     scope.description = "Roots the signed-in user is allowed to use."
+    # Signed-in actors only see roots they can :view. A signed-out request still
+    # lands on the signup workspace so the continue notice can resolve live Terms.
     scope.available_roots = lambda do |actor:, **|
       (Workspace.order(:name).to_a + AdminRoot.order(:name).to_a).filter_map do |recordable|
         recording = RecordingStudio.root_recording_for(recordable)
+        next if recording.blank?
+        next recording if actor.blank? && signup_workspace?(recordable)
+
         recording if RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
       end
     end
-    scope.access_check = ->(actor:, **_) { actor.present? }
+    scope.access_check = lambda do |actor:, recording: nil, **|
+      if actor.blank?
+        signup_workspace?(recording&.recordable)
+      else
+        recording.present? &&
+          RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
+      end
+    end
 
     scope.default_root = lambda do |roots:, **|
-      roots.first
+      roots.find { |root| signup_workspace?(root.recordable) } || roots.first
     end
   end
+end
+
+def signup_workspace?(recordable)
+  recordable.try(:name) == Dummy::SignupTerms::WORKSPACE_NAME
 end
 
 def internal_route?(path)

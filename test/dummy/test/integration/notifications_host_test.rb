@@ -52,7 +52,7 @@ class NotificationsHostTest < ActionDispatch::IntegrationTest
     get "/notifications/push/devices"
 
     assert_response :success
-    assert_includes response.body, "Push Notifications"
+    assert_includes response.body, "Connected devices"
     assert_includes response.body, "Firebase is not configured yet"
   end
 
