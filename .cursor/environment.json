@@ -6,7 +6,7 @@
     {
       "name": "rails-server",
       "command": "cd test/dummy && bin/rails server -b 0.0.0.0 -p 3000",
-      "description": "Users dummy app (sign in at /users/sign_in with admin@admin.com / Password)."
+      "description": "Users dummy app (sign in at /users/sign_in with admin@admin.com / Password123!)."
     },
     {
       "name": "tailwind-watch",

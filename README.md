@@ -424,6 +424,8 @@ Hosts that still assign `config.additional_profile_attributes = []` hide Languag
 
 `require_password_confirmation` defaults to `false`. Host Devise sign-up should hide the confirmation field and skip the param when this is `false` (the default). Set it to `true` to show confirmation. The included `ProfiledUser` concern copies `password` into `password_confirmation` so Devise Validatable does not fail when confirmation is off.
 
+`minimum_password_length` defaults to 12. `ProfiledUser` rejects a shorter password itself, so a host `Devise.password_length` of `6..128` does not let a shorter password through. Set the host Devise minimum to the same number so the two messages agree. Sign-up and reset show this gem minimum. The dummy app sets Devise `password_length` to `12..128`.
+
 `login_title` defaults to the I18n string `recording_studio_user.auth.login_title` (`Welcome back` in English). Blank values fall back to that translation. Hosts that add another language translate that key. Set `config.login_title` only when the host wants a fixed heading that does not switch language.
 
 ## Translations
@@ -520,7 +522,9 @@ The host needs a case-insensitive unique index on `users.email` (a unique index 
 - **Password accounts** can sign in with their password *or* request an email code. Having a password is a capability, not a restriction.
 - **OTP accounts** have no usable password, so they sign in with email codes only.
 
-Password sign-in shows the same mismatch notice for an unknown email, a wrong password, and an OTP-only account. Timing still differs: bcrypt runs only for existing password accounts. Password reset shows the same Devise send-instructions notice for those same cases (or the paranoid notice when `Devise.paranoid` is true) and does not email a reset to OTP-only or unknown addresses. Sign-up still returns an error for an existing email. Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing.
+Password sign-in shows the same mismatch notice for an unknown email, a wrong password, an OTP-only account, and a request over the limit. Timing still differs: bcrypt runs only for existing password accounts, and a blocked request does not check the password. Password reset shows the same Devise send-instructions notice for a known address, an unknown address, an OTP-only account, and a request over the limit. `Devise.paranoid` does not change that notice, and the response never says the address was not found. Reset does not email OTP-only or unknown addresses, and it does not send another email once the limit is spent. Sign-up still returns an error for an existing email. Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing.
+
+Sign-in allows 5 requests per email and 10 per IP every 3 minutes (`password_sign_in_email_limit`, `password_sign_in_ip_limit`, `password_sign_in_period`). Reset allows 3 per email and 10 per IP every 15 minutes (`password_reset_email_limit`, `password_reset_ip_limit`, `password_reset_period`). The email key is the same HMAC of the normalized address that one-time codes use. Both keys are read before either is counted, so a block on one does not spend the other. The counters are `RecordingStudioCache::RateLimiter` on `Rails.cache`. Use Redis or Memcached. A memory store or a null store cannot share the counts across processes, and the app logs a warning at boot when the cache is one of those. This is not Devise lockable.
 
 Login notifications link to a protected code page under the Users mount. The
 page decrypts the code only while its challenge is active and only for the
@@ -574,8 +578,8 @@ Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable
 
 | Email | Password |
 | --- | --- |
-| `admin@admin.com` | `Password` |
-| `member@admin.com` | `Password` |
+| `admin@admin.com` | `Password123!` |
+| `member@admin.com` | `Password123!` |
 | `otp@admin.com` | none — signs in with an email code |
 
 Seeded users get Profile snapshots under the shared People root, with Accessible `:admin` on each Profile recording. Avery Admin also gets a real image on that Profile recording. Dummy mounts notifications at `/notifications` (inbox and settings), email as a delivery channel, and push at `/notifications/push`. The dummy Gemfile pins released `recording_studio_notifications` `v0.14.7` and `recording_studio_notifications_email` `v0.5.1` (github tags). Push stays path-vendored at `vendor/recording_studio_notifications_push` (0.2.0; no matching GitHub tag). Dummy pins `recording_studio_api` `v0.17.1`, Metrics `v0.7.2`, and Trashable `v0.12.2` (`require: false` for the last two). Dummy also pins `recording_studio_mcp` `v0.23.2` and `recording_studio_oauth` `v0.21.0`. Site settings is tag `v0.2.1`. Dummy Cache stays `v0.5.1`. API `v0.18.1` is not pinned because Oauth and MCP still require API `< 0.18`. The Users gemspec does not depend on MCP or Oauth. Workspace remains the host-owned bucket.

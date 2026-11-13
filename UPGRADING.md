@@ -1,5 +1,25 @@
 # Upgrading
 
+## 0.29.0
+
+Bump to `0.29.0`. No Users migration.
+
+Password sign-in and password reset are limited on `Rails.cache` with `RecordingStudioCache::RateLimiter`. Sign-in allows 5 per email and 10 per IP in 3 minutes. Reset allows 3 per email and 10 per IP in 15 minutes. The email key is the HMAC of the normalized address. A block on one key does not count the other. Use Redis or Memcached. A memory store or a null store logs a warning at boot and cannot enforce the limits across processes.
+
+A sign-in over the limit shows `email_or_password_mismatch`. A reset over the limit shows the same send-instructions notice as a normal reset and does not send another email. That notice is the same for a known address, an unknown address, and an OTP-only account. `Devise.paranoid` does not change it.
+
+`minimum_password_length` defaults to 12. `ProfiledUser` enforces it even when the host Devise range starts lower. Set the host Devise minimum to the same number. The dummy app uses `12..128`. Dummy seed accounts use `Password123!`.
+
+```ruby
+config.password_sign_in_email_limit = 5
+config.password_sign_in_ip_limit = 10
+config.password_sign_in_period = 3.minutes
+config.password_reset_email_limit = 3
+config.password_reset_ip_limit = 10
+config.password_reset_period = 15.minutes
+config.minimum_password_length = 12
+```
+
 ## 0.28.1
 
 Bump to `0.28.1`. No Users migration.

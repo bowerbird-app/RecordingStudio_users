@@ -61,7 +61,7 @@ New templates:
 
 The host users table needs a case-insensitive unique index on `email`. A unique index on `LOWER(email)` is the usual shape. `create_unconfirmed_user!` rescues a unique violation and returns the row that won.
 
-OTP rate limits read and increment `Rails.cache`. Use a shared, atomic store (Redis or Memcached). A memory store or a null store cannot enforce the limits across processes, and the app warns at boot when one-time codes are on and the cache is one of those.
+OTP rate limits, password sign-in, and password reset read and increment `Rails.cache` through `RecordingStudioCache::RateLimiter`. Use a shared, atomic store (Redis or Memcached). A memory store or a null store cannot enforce the limits across processes. The app warns at boot when one-time codes are on and the cache is one of those, and it warns on every boot for the password limits.
 
 5. **`allow_blank_profile_surname_and_time_zone`** — lets Profile `last_name` and `time_zone` be null so a one-word name can be stored without inventing a surname or time zone.
 

@@ -7,15 +7,18 @@ module RecordingStudioUser
       include RecordingStudio::ControllerLayout
       include RecordingStudioUser::AuthRoutesHelper
       include RecordingStudioUser::Auth::ReturnPath
+      include RecordingStudioUser::Auth::PasswordRateLimit
 
       recording_studio_layout { RecordingStudioUser.configuration.layout }
 
       def create
-        user = resource_class.find_for_database_authentication(email: resource_params[:email])
-        return super if user && !user.registered_with_otp?
+        email = resource_params[:email]
+        if password_attempt_allowed?(:reset, email)
+          user = resource_class.find_for_database_authentication(email: email)
+          user.send_reset_password_instructions if user && !user.registered_with_otp?
+        end
 
-        set_flash_message! :notice, (Devise.paranoid ? :send_paranoid_instructions : :send_instructions)
-        redirect_to after_sending_reset_password_instructions_path_for(resource_name)
+        neutral_reset_response
       end
 
       def respond_with(*resources, **options)
@@ -31,6 +34,14 @@ module RecordingStudioUser
 
       def resource_class
         RecordingStudioUser.config.user_class
+      end
+
+      # Same notice for a known address, an unknown address, an OTP-only
+      # account, and a request that is over the limit. Devise.paranoid does
+      # not change it, and the response never says the address was not found.
+      def neutral_reset_response
+        set_flash_message! :notice, :send_instructions
+        redirect_to after_sending_reset_password_instructions_path_for(resource_name)
       end
 
       def popup_password_reset?(location, resource)

@@ -29,6 +29,13 @@ class ConfigurationTest < Minitest::Test
     refute_predicate @configuration, :omniauth_configured?
     assert_empty @configuration.after_registration_hooks
     assert_empty @configuration.popup_opener_origins
+    assert_equal 5, @configuration.password_sign_in_email_limit
+    assert_equal 10, @configuration.password_sign_in_ip_limit
+    assert_equal 3.minutes, @configuration.password_sign_in_period
+    assert_equal 3, @configuration.password_reset_email_limit
+    assert_equal 10, @configuration.password_reset_ip_limit
+    assert_equal 15.minutes, @configuration.password_reset_period
+    assert_equal 12, @configuration.minimum_password_length
   end
 
   def test_after_registration_accepts_callable_and_string_and_allows_multiple
@@ -47,6 +54,20 @@ class ConfigurationTest < Minitest::Test
     assert_raises(ArgumentError) { @configuration.after_registration(nil) }
     assert_raises(ArgumentError) { @configuration.after_registration(42) }
     assert_empty @configuration.after_registration_hooks
+  end
+
+  def test_password_limits_and_minimum_length_must_be_positive
+    @configuration.password_sign_in_email_limit = "8"
+    @configuration.minimum_password_length = 16
+    @configuration.password_sign_in_period = 2.minutes
+
+    assert_equal 8, @configuration.password_sign_in_email_limit
+    assert_equal 16, @configuration.minimum_password_length
+    assert_equal 2.minutes, @configuration.password_sign_in_period
+    assert_raises(ArgumentError) { @configuration.password_reset_ip_limit = 0 }
+    assert_equal 10, @configuration.password_reset_ip_limit
+    assert_raises(ArgumentError) { @configuration.minimum_password_length = -1 }
+    assert_equal 16, @configuration.minimum_password_length
   end
 
   def test_require_password_confirmation_casts_like_other_flags

@@ -17,6 +17,18 @@ RecordingStudioUser.configure do |config|
   # so you do not drop locale:
   # config.additional_profile_attributes |= [:nickname]
   config.require_password_confirmation = false
+  # Password sign-in allows 5 per email and 10 per IP in 3 minutes.
+  # Password reset allows 3 per email and 10 per IP in 15 minutes.
+  # The email key is an HMAC of the normalized address. Passwords must be at
+  # least minimum_password_length characters (default 12). The user model
+  # enforces that. It does not read Devise.password_length.
+  # config.password_sign_in_email_limit = 5
+  # config.password_sign_in_ip_limit = 10
+  # config.password_sign_in_period = 3.minutes
+  # config.password_reset_email_limit = 3
+  # config.password_reset_ip_limit = 10
+  # config.password_reset_period = 15.minutes
+  # config.minimum_password_length = 12
   # Sign-in page heading. Leave unset to follow I18n (en: "Welcome back").
   # Hosts add other languages by translating recording_studio_user.* keys.
   # config.login_title = "Welcome back"
