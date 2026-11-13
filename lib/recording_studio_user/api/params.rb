@@ -118,8 +118,8 @@ module RecordingStudioUser
       end
 
       def extra_profile_input_fields
-        RecordingStudioUser.config.additional_profile_attributes.each_with_object({}) do |key, fields|
-          fields[key.to_sym] = { type: :string, required: false }
+        RecordingStudioUser.config.additional_profile_attributes.to_h do |key|
+          [key.to_sym, { type: :string, required: false }]
         end
       end
 

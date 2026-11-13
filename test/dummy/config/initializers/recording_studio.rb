@@ -28,6 +28,8 @@ RecordingStudio.configure do |config|
     "RecordingStudioAttachable::Attachment",
     "RecordingStudioSiteSettings::SiteSetting",
     "RecordingStudioTermsAndConditions::Terms",
+    "RecordingStudioTermsAndConditions::Section",
+    "RecordingStudioTermsAndConditions::Clause",
     "RecordingStudioPublishable::Publishable"
   ]
   config.recordable_types += [
@@ -43,6 +45,11 @@ RecordingStudio.configure do |config|
 
   # Actor resolver for events when no actor is explicitly supplied
   config.actor = -> { Current.actor }
+
+  # Recording Studio 6.5+ refuses record!, revise, and log_event! unless an
+  # authorizer is configured. The dummy host keeps the previous open writes
+  # so seeds and integration tests can record without a grant on every row.
+  config.allow_unauthorized_writes = true
 
   # Emit ActiveSupport::Notifications events
   config.event_notifications_enabled = true
