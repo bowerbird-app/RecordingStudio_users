@@ -75,7 +75,7 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
     assert_empty ActionMailer::Base.deliveries
   end
 
-  test "password reset uses the paranoid notice for every email when Devise.paranoid is on" do
+  test "password reset keeps the send-instructions notice when Devise.paranoid is on" do
     original_paranoid = Devise.paranoid
     Devise.paranoid = true
 
@@ -91,7 +91,7 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
     confirm_otp_user!(otp_email)
     sign_out :user
     unknown = "enum-paranoid-unknown-#{SecureRandom.hex(4)}@example.com"
-    notice = I18n.t("devise.passwords.send_paranoid_instructions")
+    notice = I18n.t("devise.passwords.send_instructions")
 
     [unknown, password_email, otp_email].each do |email|
       ActionMailer::Base.deliveries.clear
@@ -99,6 +99,7 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
 
       assert_redirected_to new_user_session_path, email
       assert_equal notice, flash[:notice], email
+      refute_match(/not found/i, flash[:notice].to_s)
     end
   ensure
     Devise.paranoid = original_paranoid

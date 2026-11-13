@@ -18,7 +18,15 @@ module RecordingStudioUser
     # otp_login_enabled has its own writer because it must stay compatible with
     # the registration methods.
     BOOLEAN_SETTINGS = %i[require_password_confirmation otp_enabled otp_registration_enabled].freeze
-    DURATION_SETTINGS = %i[otp_expires_in otp_resend_cooldown unconfirmed_user_retention].freeze
+    DURATION_SETTINGS = %i[
+      otp_expires_in otp_resend_cooldown unconfirmed_user_retention
+      password_sign_in_period password_reset_period
+    ].freeze
+    POSITIVE_INTEGER_SETTINGS = %i[
+      password_sign_in_email_limit password_sign_in_ip_limit
+      password_reset_email_limit password_reset_ip_limit
+      minimum_password_length
+    ].freeze
     CHANNEL_SETTINGS = %i[otp_registration_channels otp_login_channels].freeze
 
     DEFAULTS = {
@@ -42,7 +50,14 @@ module RecordingStudioUser
       otp_registration_channels: %i[email],
       otp_login_channels: %i[email push],
       unconfirmed_user_retention: 7.days,
-      omniauth_create_account: true
+      omniauth_create_account: true,
+      password_sign_in_email_limit: 5,
+      password_sign_in_ip_limit: 10,
+      password_sign_in_period: 3.minutes,
+      password_reset_email_limit: 3,
+      password_reset_ip_limit: 10,
+      password_reset_period: 15.minutes,
+      minimum_password_length: 12
     }.freeze
 
     attr_accessor :user_class_name, :auth_site_root_resolver
@@ -72,6 +87,14 @@ module RecordingStudioUser
         duration = value.to_i.seconds
         validate_positive!(setting, duration)
         instance_variable_set("@#{setting}", duration)
+      end
+    end
+
+    POSITIVE_INTEGER_SETTINGS.each do |setting|
+      define_method("#{setting}=") do |value|
+        number = value.to_i
+        validate_positive!(setting, number)
+        instance_variable_set("@#{setting}", number)
       end
     end
 

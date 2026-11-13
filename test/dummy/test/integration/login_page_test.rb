@@ -65,7 +65,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
 
     admin_user = User.find_or_initialize_by(email: "admin@admin.com")
     if admin_user.new_record?
-      admin_user.password = admin_user.password_confirmation = "Password"
+      admin_user.password = admin_user.password_confirmation = "Password123!"
       admin_user.save!
     end
     admin_root = AdminRoot.find_or_create_by!(name: "Admin")
@@ -255,7 +255,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
   def prepare_admin_site_root(name: "Admin")
     admin_user = User.find_or_initialize_by(email: "admin@admin.com")
     if admin_user.new_record?
-      admin_user.password = admin_user.password_confirmation = "Password"
+      admin_user.password = admin_user.password_confirmation = "Password123!"
       admin_user.save!
     end
     admin_root = AdminRoot.find_or_create_by!(name: name)

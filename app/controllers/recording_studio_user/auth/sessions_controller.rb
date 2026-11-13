@@ -3,6 +3,8 @@
 module RecordingStudioUser
   module Auth
     class SessionsController < BaseController
+      include PasswordRateLimit
+
       before_action :require_otp_login_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
       def new; end
@@ -23,8 +25,9 @@ module RecordingStudioUser
       end
 
       def create_password
-        user = resource_class.find_for_database_authentication(email: sign_in_params[:email])
-        unless password_sign_in_allowed?(user)
+        email = sign_in_params[:email]
+        user = resource_class.find_for_database_authentication(email: email)
+        unless password_attempt_allowed?(:sign_in, email) && password_sign_in_allowed?(user)
           return render_password_failure(I18n.t("recording_studio_user.auth.email_or_password_mismatch"))
         end
 

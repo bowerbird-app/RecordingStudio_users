@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-11-13
+
+### Added
+
+- Password sign-in allows 5 requests per email and 10 per IP in 3 minutes. Password reset allows 3 per email and 10 per IP in 15 minutes. Both use `RecordingStudioCache::RateLimiter` on `Rails.cache`. The email key is the same HMAC of the normalized address as one-time codes. Each key is checked before any key is counted. Configure `password_sign_in_email_limit`, `password_sign_in_ip_limit`, `password_sign_in_period`, `password_reset_email_limit`, `password_reset_ip_limit`, and `password_reset_period`.
+- `minimum_password_length` defaults to 12. `ProfiledUser` enforces it. The check does not read `Devise.password_length`.
+
+### Changed
+
+- A password sign-in over the limit shows `email_or_password_mismatch`, the same notice as an unknown email, a wrong password, or an OTP-only account.
+- Password reset always shows Devise's send-instructions notice, for a known address, an unknown address, an OTP-only account, and a request over the limit. `Devise.paranoid` does not change it. The response does not say the address was not found. A request over the limit does not send another email.
+- The dummy app sets Devise `password_length` to `12..128`. Seeded accounts use `Password123!`.
+
+### Upgrade notes
+
+- Bump to `0.29.0`. No Users migration.
+- Point `Rails.cache` at Redis or Memcached. A memory store or a null store logs a warning at boot and cannot enforce these limits across processes.
+- Passwords shorter than 12 characters no longer save. Set `config.minimum_password_length` to change that. Set the host Devise minimum to the same number.
+- Password reset no longer switches to the paranoid notice when `Devise.paranoid` is true.
+
 ## [0.28.1] - 2026-11-12
 
 ### Fixed
@@ -1369,7 +1389,9 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.29.0...HEAD
+[0.29.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.1...v0.29.0
+[0.28.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.0...v0.28.1
 [0.28.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.3...v0.28.0
 [0.27.3]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.2...v0.27.3
 [0.27.2]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.1...v0.27.2

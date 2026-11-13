@@ -8,6 +8,7 @@ module RecordingStudioUser
 
     included do
       before_validation :fill_password_confirmation_when_optional
+      validate :password_meets_configured_minimum
       validates :registered_with, inclusion: { in: REGISTERED_WITH_VALUES }, if: :registered_with_column?
       after_create :confirm_password_account, if: :registered_with_password?
 
@@ -64,6 +65,17 @@ module RecordingStudioUser
 
     def registered_with_column?
       self.class.column_names.include?("registered_with")
+    end
+
+    def password_meets_configured_minimum
+      return unless respond_to?(:password)
+      return if password.blank?
+
+      minimum = RecordingStudioUser.config.minimum_password_length
+      return if password.length >= minimum
+
+      errors.delete(:password, :too_short)
+      errors.add(:password, :too_short, count: minimum)
     end
 
     def fill_password_confirmation_when_optional
