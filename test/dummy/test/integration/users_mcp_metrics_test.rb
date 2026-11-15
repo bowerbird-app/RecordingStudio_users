@@ -17,8 +17,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
       time_zone: "UTC"
     )
     Current.actor = @staff
-    @admin_root = RecordingStudio.root_recording_for(AdminRoot.find_or_create_by!(name: "Admin"))
-    @other_admin = RecordingStudio.root_recording_for(AdminRoot.find_or_create_by!(name: "Other admin"))
+    @admin_root = RecordingStudio.create_root_recording!(AdminRoot.find_or_create_by!(name: "Admin"))
+    @other_admin = RecordingStudio.create_root_recording!(AdminRoot.find_or_create_by!(name: "Other admin"))
     grant!(@admin_root, @staff, :admin)
     grant!(@other_admin, @staff, :admin)
     Dummy::SignupTerms.ensure_live!(actor: @staff)

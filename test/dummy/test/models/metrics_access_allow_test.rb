@@ -9,7 +9,7 @@ class MetricsAccessAllowTest < ActiveSupport::TestCase
     owner = create_staff_user("metrics-owner-#{SecureRandom.hex(4)}@example.com")
     staff = create_staff_user("metrics-staff-#{SecureRandom.hex(4)}@example.com")
     admin_root = AdminRoot.find_or_create_by!(name: "Admin")
-    recording = RecordingStudio.root_recording_for(admin_root)
+    recording = RecordingStudio.create_root_recording!(admin_root)
     bootstrap_owner_access!(owner, recording)
     grant = RecordingStudioAccessible.grant_access(
       recording: recording,

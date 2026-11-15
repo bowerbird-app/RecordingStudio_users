@@ -1,5 +1,15 @@
 # Upgrading
 
+## 0.30.0
+
+Bump to `0.30.0`. No Users migration.
+
+This release requires Recording Studio `>= 7.0`, `< 8.0`. `root_recording_for` only finds a root and returns nil when there is none. Create one with `RecordingStudio.create_root_recording!`.
+
+`RecordingStudioUser.people_root` still returns the shared People root. It finds that root, and creates it when the find returns nil. A unique-index race returns the root that won. Pass `actor:` when the caller has an actor and `Current.actor` is empty.
+
+Users metrics and the operations users API call `RecordingStudioAccessible.admin?`. Set `RecordingStudioAccessible.configuration.admin_root_resolver` to the kept admin root. This gem no longer reads `RecordingStudioAdmin.configuration.site_admin_recording_resolver`. Requires Accessible `>= 0.43.1`, `< 1` and Admin `>= 2.16.0`, `< 3`.
+
 ## 0.29.0
 
 Bump to `0.29.0`. No Users migration.

@@ -16,8 +16,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     )
     Current.actor = @staff
     @workspace = Workspace.find_or_create_by!(name: "My workspace")
-    @root = RecordingStudio.root_recording_for(@workspace)
-    @admin_root = RecordingStudio.root_recording_for(AdminRoot.find_or_create_by!(name: "Admin"))
+    @root = RecordingStudio.create_root_recording!(@workspace)
+    @admin_root = RecordingStudio.create_root_recording!(AdminRoot.find_or_create_by!(name: "Admin"))
     grant!(@admin_root, @staff, :admin)
     bootstrap_owner_access!(@staff, @root) unless RecordingStudioAccessible.authorized?(
       actor: @staff, recording: @root, role: :view

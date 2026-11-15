@@ -5,20 +5,10 @@ module RecordingStudioUser
     module Access
       module_function
 
-      ResolverContext = Struct.new(:controller)
-
       def admin_root_recording
-        return unless defined?(RecordingStudioAdmin)
+        return unless defined?(RecordingStudioAccessible)
 
-        config = RecordingStudioAdmin.configuration
-        resolver = config.site_admin_recording_resolver || config.access_recording_resolver
-        return unless resolver
-
-        begin
-          resolver.call(ResolverContext.new(nil))
-        rescue StandardError
-          nil
-        end
+        RecordingStudioAccessible.admin_root
       end
 
       def actor_for(context)
@@ -52,15 +42,9 @@ module RecordingStudioUser
 
       def authorized_on_admin_root?(context, role)
         actor = actor_for(context)
-        recording = admin_root_recording
-        return false if actor.blank? || recording.blank?
-        return false unless defined?(RecordingStudioAccessible)
+        return false if actor.blank? || !defined?(RecordingStudioAccessible)
 
-        RecordingStudioAccessible.authorized?(
-          actor: actor,
-          recording: recording,
-          role: role
-        )
+        RecordingStudioAccessible.admin?(actor: actor, role: role)
       end
     end
   end

@@ -98,7 +98,7 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
       password: "Password123!",
       password_confirmation: "Password123!"
     )
-    workspace_root = RecordingStudio.root_recording_for(Workspace.create!(name: "Not People #{SecureRandom.hex(4)}"))
+    workspace_root = RecordingStudio.create_root_recording!(Workspace.create!(name: "Not People #{SecureRandom.hex(4)}"))
 
     error = assert_raises(RecordingStudio::InvalidParent) do
       workspace_root.record(RecordingStudioUser::Profile) do |profile|

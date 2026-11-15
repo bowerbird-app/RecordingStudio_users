@@ -14,17 +14,18 @@ module Dummy
       Workspace.find_or_create_by!(name: WORKSPACE_NAME)
     end
 
-    def root_recording
-      RecordingStudio.root_recording_for(workspace)
+    def root_recording(actor: nil)
+      RecordingStudio.create_root_recording!(workspace, actor: actor)
     end
 
     def ensure_live!(actor:)
       title = RecordingStudioTermsAndConditions::SampleTerms::TITLE
       body = RecordingStudioTermsAndConditions::SampleTerms::BODY
-      recording = existing_terms_recording
+      root = root_recording(actor: actor)
+      recording = existing_terms_recording(root)
 
       if recording.blank?
-        recording = root_recording.record(
+        recording = root.record(
           RecordingStudioTermsAndConditions::Terms,
           actor: actor
         ) do |terms|
@@ -55,12 +56,10 @@ module Dummy
       RecordingStudioTermsAndConditions.accept!(actor, terms, SEED_PROVENANCE)
     end
 
-    def existing_terms_recording
-      RecordingStudio::Recording.where(
-        RecordingStudio::Recording.recording_studio_trashable_kept_sql
-      ).find_by(
+    def existing_terms_recording(root = root_recording)
+      RecordingStudio::Recording.kept.find_by(
         recordable_type: RecordingStudioTermsAndConditions::Terms.name,
-        root_recording: root_recording
+        root_recording: root
       )
     end
 

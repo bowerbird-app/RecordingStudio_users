@@ -69,7 +69,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
       admin_user.save!
     end
     admin_root = AdminRoot.find_or_create_by!(name: "Admin")
-    admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+    admin_root_recording = RecordingStudio.create_root_recording!(admin_root)
     bootstrap_owner_access!(admin_user, admin_root_recording)
 
     square = Rails.root.join("db/seeds/square-logo.png")
@@ -259,7 +259,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
       admin_user.save!
     end
     admin_root = AdminRoot.find_or_create_by!(name: name)
-    admin_root_recording = RecordingStudio.root_recording_for(admin_root)
+    admin_root_recording = RecordingStudio.create_root_recording!(admin_root)
     bootstrap_owner_access!(admin_user, admin_root_recording)
     [admin_root_recording, admin_user]
   end

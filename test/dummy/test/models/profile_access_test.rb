@@ -226,8 +226,8 @@ class ProfileAccessTest < ActiveSupport::TestCase
     directory = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/directory.rb"))
     access = File.read(RecordingStudioUser::Engine.root.join("lib/recording_studio_user/profile_access.rb"))
 
-    assert_includes directory, "people_root.record(Profile"
-    assert_includes directory, "people_root.revise(recording"
+    assert_includes directory, "people_root(actor: actor).record(Profile"
+    assert_includes directory, "people_root(actor: actor).revise(recording"
     assert_includes directory, "RecordingStudioAccessible.bootstrap_owner_access!"
     assert_includes access, "RecordingStudioAccessible.grant_access"
     refute_includes access, "RecordingStudio::Access.create"
