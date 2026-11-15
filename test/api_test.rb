@@ -195,7 +195,7 @@ class ApiTest < Minitest::Test
 
     assert_includes access, "authorized_on_admin_root?(context, :edit)"
     assert_includes access, "authorized_on_admin_root?(context, :view)"
-    assert_includes access, "RecordingStudioAccessible.authorized?"
+    assert_includes access, "RecordingStudioAccessible.admin?"
     refute_includes access, "class_eval"
     refute_includes access, ".prepend"
   end
