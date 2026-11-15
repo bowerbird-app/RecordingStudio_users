@@ -64,10 +64,17 @@ module SignupTermsTestHelper
   end
 
   def publish_terms!(recording, slug:, status: "published")
-    # Terms 0.18 drafts other live documents of the same kind after publish
+    # Terms 0.19 drafts other live documents of the same kind after publish
     # and that write needs Current.actor.
     previous_actor = Current.actor
     Current.actor ||= User.find_by(email: "admin@admin.com") || User.order(:created_at).first
+    if Current.actor.blank?
+      Current.actor = User.create!(
+        email: "terms-publisher@example.com",
+        password: "Password123!",
+        password_confirmation: "Password123!"
+      )
+    end
     RecordingStudioPublishable::Services::Publishables::Update.call(
       parent_recording: recording,
       attributes: { slug: slug, status: status }

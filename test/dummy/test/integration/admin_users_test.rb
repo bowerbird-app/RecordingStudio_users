@@ -9,7 +9,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   setup do
     @admin = create_user("admin-users-#{SecureRandom.hex(4)}@example.com")
     @admin_root = AdminRoot.find_or_create_by!(name: "Admin")
-    @admin_recording = RecordingStudio.root_recording_for(@admin_root)
+    @admin_recording = RecordingStudio.create_root_recording!(@admin_root)
   end
 
   test "registers the reusable users section and its metric" do

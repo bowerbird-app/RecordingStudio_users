@@ -8,7 +8,7 @@ class UsersMetricsTest < ActiveSupport::TestCase
   setup do
     @actor = create_user("metrics-actor-#{SecureRandom.hex(4)}@example.com")
     @admin_root = AdminRoot.find_or_create_by!(name: "Admin")
-    @admin_recording = RecordingStudio.root_recording_for(@admin_root)
+    @admin_recording = RecordingStudio.create_root_recording!(@admin_root)
     RecordingStudioMetrics.registry.reset!
     RecordingStudioUser::Metrics.register!
   end

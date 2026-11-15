@@ -15,8 +15,9 @@ module RecordingStudioUser
       People.first || People.create!
     end
 
-    def people_root
-      RecordingStudio.root_recording_for(people_recordable)
+    def people_root(actor: nil)
+      recordable = people_recordable
+      RecordingStudio.root_recording_for(recordable) || create_people_root!(recordable, actor)
     end
 
     def profile_for(user)
@@ -90,11 +91,18 @@ module RecordingStudioUser
     def write_profile_recording(user, actor, assignment)
       recording = profile_recording_for(user)
       if recording
-        people_root.revise(recording, actor: actor, &assignment)
+        people_root(actor: actor).revise(recording, actor: actor, &assignment)
       else
-        people_root.record(Profile, actor: actor, &assignment)
+        people_root(actor: actor).record(Profile, actor: actor, &assignment)
       end
     end
+
+    def create_people_root!(recordable, actor)
+      RecordingStudio.create_root_recording!(recordable, actor: actor)
+    rescue ActiveRecord::RecordNotUnique
+      RecordingStudio.root_recording_for(recordable) || raise
+    end
+    private_class_method :create_people_root!
 
     def bootstrap_profile_owner!(user, recording)
       result = RecordingStudioAccessible.bootstrap_owner_access!(

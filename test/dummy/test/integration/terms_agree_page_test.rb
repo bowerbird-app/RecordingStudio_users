@@ -14,7 +14,7 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
       password_confirmation: "Password123!"
     )
     @workspace = Workspace.create!(name: "Agree #{SecureRandom.hex(4)}")
-    @root = RecordingStudio.root_recording_for(@workspace)
+    @root = RecordingStudio.create_root_recording!(@workspace)
     bootstrap_owner_access!(@user, @root)
     @recording = record_terms(@root, title: "Studio Terms", body: "Be kind. Don't be a jerk.")
     publish_terms!(@recording, slug: "studio-terms-#{SecureRandom.hex(4)}")

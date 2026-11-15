@@ -6,7 +6,7 @@ require "test_helper"
 class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
   setup do
     @workspace = Workspace.find_or_create_by!(name: Dummy::SignupTerms::WORKSPACE_NAME)
-    @root = RecordingStudio.root_recording_for(@workspace)
+    @root = RecordingStudio.create_root_recording!(@workspace)
     ensure_live_terms!
   end
 

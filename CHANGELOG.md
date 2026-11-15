@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-11-15
+
+### Changed
+
+- Require Recording Studio `>= 7.0`, `< 8.0`, Accessible `>= 0.43.1`, `< 1`, and Admin `>= 2.16.0`, `< 3`.
+- `people_root` looks up the shared People root with `root_recording_for` and, when that returns nil, creates it with `create_root_recording!`. A concurrent insert that loses the unique index reads the root that won.
+- Users metrics and the operations users API authorize with `RecordingStudioAccessible.admin?` on the root from `admin_root_resolver`. Admin `site_admin_recording_resolver` is not read.
+- Development pins move to Recording Studio `v7.0.0`, Accessible `v0.43.1`, Admin `v2.16.0`, Trashable `v0.16.1`, and API `v0.23.4`. The dummy app also pins notifications email `v0.5.3`, notifications push `v0.8.4`, Terms and Conditions `v0.19.1`, Publishable `v0.18.0`, Root Switchable `v0.15.1`, OAuth `v0.21.9`, and MCP `v0.33.3`. API `0.23.4` filters kept recordings with `Recording.kept`. The dummy app copies the core events `root_recording_id` migration, drops `index_rs_publishable_child_per_parent`, and adds the core single-child index for Publishable.
+
+### Upgrade notes
+
+- Bump to `0.30.0`. No Users migration.
+- Install Recording Studio 7, Accessible `0.43.1` or newer, and Admin `2.16.0` or newer. `root_recording_for` no longer creates a root. Host code that created a root by looking it up now calls `RecordingStudio.create_root_recording!`.
+- `RecordingStudioUser.people_root` still returns the People root, creating it on first use. Pass `actor:` when the caller has one and `Current.actor` is empty. A second call returns the same root.
+- Set `RecordingStudioAccessible.configuration.admin_root_resolver` to the kept admin root. Users metrics and the operations users API use that root. `RecordingStudioAdmin.configuration.site_admin_recording_resolver` is gone.
+
 ## [0.29.0] - 2026-11-13
 
 ### Added
@@ -1389,7 +1405,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.29.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.30.0...HEAD
+[0.30.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.1...v0.29.0
 [0.28.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.0...v0.28.1
 [0.28.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.27.3...v0.28.0
