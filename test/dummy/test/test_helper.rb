@@ -69,11 +69,14 @@ module SignupTermsTestHelper
     previous_actor = Current.actor
     Current.actor ||= User.find_by(email: "admin@admin.com") || User.order(:created_at).first
     if Current.actor.blank?
-      Current.actor = User.create!(
+      publisher = User.new(
         email: "terms-publisher@example.com",
         password: "Password123!",
         password_confirmation: "Password123!"
       )
+      publisher.skip_confirmation!
+      publisher.save!
+      Current.actor = publisher
     end
     RecordingStudioPublishable::Services::Publishables::Update.call(
       parent_recording: recording,

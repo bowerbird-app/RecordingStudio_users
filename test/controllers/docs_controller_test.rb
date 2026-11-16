@@ -16,6 +16,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     @user = User.find_or_create_by!(email: "docs-test@example.com") do |user|
       user.password = TEST_PASSWORD
       user.password_confirmation = TEST_PASSWORD
+      user.skip_confirmation!
     end
 
     sign_in @user

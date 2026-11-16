@@ -123,7 +123,8 @@ class RequestOtpTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Case",
       last_name: "Study",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
   end
 

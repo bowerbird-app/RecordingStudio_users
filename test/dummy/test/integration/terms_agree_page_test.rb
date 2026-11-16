@@ -8,11 +8,13 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
-    @user = User.create!(
+    @user = User.new(
       email: "agree-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       password_confirmation: "Password123!"
     )
+    @user.skip_confirmation!
+    @user.save!
     @workspace = Workspace.create!(name: "Agree #{SecureRandom.hex(4)}")
     @root = RecordingStudio.create_root_recording!(@workspace)
     bootstrap_owner_access!(@user, @root)

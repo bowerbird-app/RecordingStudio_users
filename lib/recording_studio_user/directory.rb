@@ -34,12 +34,12 @@ module RecordingStudioUser
       )
     end
 
-    def create_user!(email:, password:, password_confirmation: nil, actor: nil, **attributes)
+    def create_user!(email:, password:, password_confirmation: nil, actor: nil, confirm: false, **attributes)
       profile_attrs = attributes.extract!(*PROFILE_ATTRIBUTE_KEYS)
       confirmation = password_confirmation.presence || password
       user = nil
       ActiveRecord::Base.transaction do
-        user = create_devise_user!(email, password, confirmation, attributes)
+        user = create_devise_user!(email, password, confirmation, attributes, confirm: confirm)
         record_profile!(user, actor: actor, **profile_attrs)
       end
       user
@@ -62,14 +62,14 @@ module RecordingStudioUser
       ProfileAttributes.filter(value)
     end
 
-    def create_devise_user!(email, password, password_confirmation, attributes)
+    def create_devise_user!(email, password, password_confirmation, attributes, confirm:)
       user = RecordingStudioUser.config.user_class.new(
         email: email,
         password: password,
         password_confirmation: password_confirmation,
         **devise_user_attributes(attributes)
       )
-      skip_confirmation_for_password_account(user)
+      apply_confirmation!(user, confirm)
       user.save!
       user
     end
@@ -81,11 +81,12 @@ module RecordingStudioUser
       attrs.merge(registered_with: "password")
     end
 
-    def skip_confirmation_for_password_account(user)
-      return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
-      return unless user.respond_to?(:skip_confirmation!)
-
-      user.skip_confirmation!
+    def apply_confirmation!(user, confirm)
+      if confirm && user.respond_to?(:skip_confirmation!)
+        user.skip_confirmation!
+      elsif user.respond_to?(:skip_confirmation_notification!)
+        user.skip_confirmation_notification!
+      end
     end
 
     def write_profile_recording(user, actor, assignment)

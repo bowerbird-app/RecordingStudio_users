@@ -125,7 +125,7 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     assert_equal "Madonna", RecordingStudioUser.display_name_for(user)
   end
 
-  test "complete_email_proof confirms an unconfirmed password user without changing the password" do
+  test "complete_email_proof clears a password set before confirmation" do
     user = User.create!(
       email: unique_email("password"),
       password: "Password123!",
@@ -151,11 +151,54 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     user.reload
     assert user.confirmed?
     assert_equal "password", user.registered_with
-    assert user.valid_password?("Password123!")
+    refute user.valid_password?("Password123!")
+    assert_equal "", user.encrypted_password
+    assert_nil user.remember_created_at
     profile = RecordingStudioUser.profile_for(user)
     assert_equal "Casey", profile.first_name
     assert_equal "Patron", profile.last_name
     assert_equal "Eastern Time (US & Canada)", profile.time_zone
+  end
+
+  test "complete_email_proof keeps the password from the same signup session" do
+    user = User.create!(
+      email: unique_email("same-session"),
+      password: "Password123!",
+      password_confirmation: "Password123!",
+      registered_with: "password"
+    )
+    user.update_column(:confirmed_at, nil)
+    user.update_column(:remember_created_at, Time.current)
+    result = verify_registration!(user)
+    session = { RecordingStudioUser::PasswordConfirmation::SESSION_KEY => user.id }
+
+    RecordingStudioUser::PasswordConfirmation.bind(session) do
+      RecordingStudioUser.complete_email_proof!(
+        user: result.user,
+        challenge_id: result.challenge.id
+      )
+    end
+
+    user.reload
+    assert user.confirmed?
+    assert user.valid_password?("Password123!")
+    assert user.remember_created_at.present?
+    assert_nil session[RecordingStudioUser::PasswordConfirmation::SESSION_KEY]
+  end
+
+  test "a password set after confirmation stays when the account is confirmed again" do
+    user = User.create!(
+      email: unique_email("later-password"),
+      password: "Password123!",
+      password_confirmation: "Password123!",
+      registered_with: "password",
+      confirmed_at: Time.current
+    )
+    user.update!(password: "LaterPassword1!", password_confirmation: "LaterPassword1!")
+
+    user.confirm
+
+    assert user.reload.valid_password?("LaterPassword1!")
   end
 
   test "complete_email_proof leaves a confirmed login account profile alone" do

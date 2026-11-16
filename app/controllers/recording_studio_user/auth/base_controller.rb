@@ -18,6 +18,7 @@ module RecordingStudioUser
       include RecordingStudioUser::Auth::PendingEmail
       include RecordingStudioUser::Auth::SessionRotation
       include RecordingStudioUser::Auth::ReturnPath
+      include RecordingStudioUser::PasswordConfirmation::BindsSession
 
       # Users before TnC extra_fields; host before Users (see prefer_signup_view_paths!).
       before_action :prefer_host_then_users_signup_views
@@ -90,6 +91,20 @@ module RecordingStudioUser
         elsif session[:otp_challenge_id]
           RecordingStudioUser::OtpChallenge.find_by(id: session[:otp_challenge_id])&.user
         end
+      end
+
+      def confirm_password_signup!(user)
+        result = RecordingStudioUser::Services::ConfirmPasswordSignup.call(user: user, session: session)
+        confirmed = result.value.fetch(:user)
+        unless result.value.fetch(:already_confirmed)
+          RegistrationCompleted.emit!(user_id: confirmed.id, method: :password)
+        end
+        confirmed
+      end
+
+      def finish_password_confirmation!(user, sign_up: false)
+        confirmed = confirm_password_signup!(user)
+        sign_up ? finish_sign_up!(confirmed) : finish_sign_in!(confirmed)
       end
     end
   end

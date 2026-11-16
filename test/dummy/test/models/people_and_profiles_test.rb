@@ -67,7 +67,8 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Original",
       last_name: "Name",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     original = RecordingStudioUser.profile_for(user)
     original_id = original.id
@@ -114,7 +115,7 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
 
   test "create_user! still requires a password" do
     error = assert_raises(ArgumentError) do
-      RecordingStudioUser.create_user!(email: "needs-password-#{SecureRandom.hex(4)}@example.com")
+      RecordingStudioUser.create_user!(email: "needs-password-#{SecureRandom.hex(4)}@example.com", confirm: true)
     end
 
     assert_match(/password/, error.message)
@@ -126,7 +127,8 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Signed",
       last_name: "Up",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     profile = RecordingStudioUser.profile_for(user)
@@ -151,7 +153,8 @@ class PeopleAndProfilesTest < ActiveSupport::TestCase
       first_name: "Locale",
       last_name: "Saver",
       time_zone: "UTC",
-      additional_profile_attributes: { "locale" => "ja" }
+      additional_profile_attributes: { "locale" => "ja" },
+      confirm: true
     )
 
     profile = RecordingStudioUser.profile_for(user)

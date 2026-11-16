@@ -30,6 +30,10 @@ module RecordingStudioUser
       RecordingStudioUser::Omniauth.register_providers!
     end
 
+    config.to_prepare do
+      RecordingStudioUser::OtpDeliveryDeferral.install!
+    end
+
     config.after_initialize do
       require "omniauth/rails_csrf_protection"
       OmniAuth.config.request_validation_phase = OmniAuth::RailsCsrfProtection::TokenVerifier.new

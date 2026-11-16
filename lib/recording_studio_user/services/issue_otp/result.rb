@@ -64,10 +64,10 @@ module RecordingStudioUser
       end
 
       def default_channels
-        if @purpose == "registration"
-          RecordingStudioUser.config.otp_registration_channels
-        else
+        if @purpose == "login"
           RecordingStudioUser.config.otp_login_channels
+        else
+          RecordingStudioUser.config.otp_registration_channels
         end
       end
     end

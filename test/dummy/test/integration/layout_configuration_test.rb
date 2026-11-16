@@ -12,7 +12,8 @@ class LayoutConfigurationTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Layout",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(@user)
     sign_in @user

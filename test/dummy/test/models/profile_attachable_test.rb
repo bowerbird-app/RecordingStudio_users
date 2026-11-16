@@ -29,7 +29,8 @@ class ProfileAttachableTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Photo",
       last_name: "Owner",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     profile_recording = RecordingStudioUser.profile_recording_for(user)
 
@@ -49,7 +50,8 @@ class ProfileAttachableTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Swap",
       last_name: "Owner",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     first = attach_profile_photo!(user)
 
@@ -75,7 +77,8 @@ class ProfileAttachableTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Signed",
       last_name: "Owner",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     recording = RecordingStudioUser.profile_recording_for(user)
     first = issued_profile_blob!(recording, user, filename: "first.png")
@@ -116,14 +119,16 @@ class ProfileAttachableTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Owner",
       last_name: "Photo",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     stranger = RecordingStudioUser.create_user!(
       email: "stranger-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Other",
       last_name: "Person",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     attach_profile_photo!(owner)
 

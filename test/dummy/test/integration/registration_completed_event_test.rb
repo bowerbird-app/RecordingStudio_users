@@ -42,6 +42,12 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
     }
 
     user = User.find_by!(email: email)
+    assert_empty @events
+    refute user.confirmed?
+
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+
     assert_equal [ { user_id: user.id, method: :password, user_found: true } ], @events
   end
 
@@ -62,7 +68,8 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Log",
       last_name: "In",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     @events.clear
@@ -98,7 +105,8 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Existing",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     @events.clear
     mock_provider_auth!(
@@ -124,7 +132,8 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Return",
       last_name: "Visit",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     uid = "oauth-return-#{SecureRandom.hex(4)}"
     user.identities.create!(provider: "google_oauth2", uid: uid, email: email)
@@ -163,7 +172,8 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "After",
       last_name: "Commit",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     @events.clear
     found_inside = nil

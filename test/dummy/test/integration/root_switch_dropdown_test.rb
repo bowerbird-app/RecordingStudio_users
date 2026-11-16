@@ -61,6 +61,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     user = User.find_or_create_by!(email: "root-switch-page-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
+      record.skip_confirmation!
     end
 
     sign_in user
@@ -80,6 +81,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     user = User.find_or_create_by!(email: "root-switch-redirect-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
+      record.skip_confirmation!
     end
 
     sign_in user
@@ -106,6 +108,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     user = User.find_or_create_by!(email: "root-switch-fallback-test@example.com") do |record|
       record.password = "Password123!"
       record.password_confirmation = "Password123!"
+      record.skip_confirmation!
     end
 
     sign_in user

@@ -41,9 +41,16 @@ module RecordingStudioUser
     def draw_registration_auth(mapper)
       mapper.get "sign_up", to: "registrations#new", as: :sign_up
       mapper.post "sign_up", to: "registrations#continue"
+      draw_password_registration(mapper)
+      draw_registration_otp(mapper)
+      draw_signup_code(mapper)
+    end
+
+    def draw_password_registration(mapper)
+      return unless RecordingStudioUser.config.password_registration_allowed?
+
       mapper.get "sign_up/password", to: "registrations#password", as: :sign_up_password
       mapper.post "sign_up/password", to: "registrations#create_password"
-      draw_registration_otp(mapper)
     end
 
     def draw_registration_otp(mapper)
@@ -51,9 +58,19 @@ module RecordingStudioUser
 
       mapper.get "sign_up/otp", to: "registrations#otp", as: :sign_up_otp
       mapper.post "sign_up/otp", to: "registrations#create_otp"
+    end
+
+    def draw_signup_code(mapper)
+      return unless signup_code_routes?
+
       mapper.get "sign_up/verify", to: "registrations#verify", as: :sign_up_verify
       mapper.post "sign_up/verify", to: "registrations#submit_verify"
       mapper.post "sign_up/resend", to: "registrations#resend", as: :sign_up_resend
+    end
+
+    def signup_code_routes?
+      RecordingStudioUser.config.password_registration_allowed? ||
+        (RecordingStudioUser.config.otp_enabled? && RecordingStudioUser.config.otp_registration_enabled?)
     end
 
     def draw_session_auth(mapper)
@@ -61,7 +78,14 @@ module RecordingStudioUser
       mapper.post "sign_in", to: "sessions#continue"
       mapper.get "sign_in/password", to: "sessions#password", as: :sign_in_password
       mapper.post "sign_in/password", to: "sessions#create_password"
+      draw_sign_in_code(mapper)
       draw_session_otp(mapper)
+    end
+
+    def draw_sign_in_code(mapper)
+      return unless RecordingStudioUser.config.sign_in_code_allowed?
+
+      mapper.post "sign_in/password/code", to: "sessions#send_code", as: :sign_in_password_code
     end
 
     def draw_session_otp(mapper)

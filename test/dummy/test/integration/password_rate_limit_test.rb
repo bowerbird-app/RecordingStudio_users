@@ -158,7 +158,8 @@ class PasswordRateLimitTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Rate",
       last_name: "Limit",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     sign_out :user

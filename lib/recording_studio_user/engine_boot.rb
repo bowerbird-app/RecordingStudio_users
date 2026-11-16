@@ -37,16 +37,28 @@ module RecordingStudioUser
       user_class = load_user_class
       user_class.include RecordingStudioUser::ProfiledUser unless user_class < RecordingStudioUser::ProfiledUser
       RecordingStudioUser::Omniauth.ensure_omniauthable!(user_class)
+      apply_devise_confirmable!(user_class)
       apply_otp_setup!(user_class)
     rescue ArgumentError
       # Host user class may not be loadable during early boot in some hosts.
     end
 
+    def apply_devise_confirmable!(user_class)
+      user_class.devise :confirmable unless user_class.devise_modules.include?(:confirmable)
+      return if user_class.ancestors.include?(PasswordConfirmation::Confirms)
+
+      user_class.prepend PasswordConfirmation::Confirms
+    end
+
     def apply_otp_setup!(user_class)
+      apply_confirmation_code_setup! if OtpSetup.codes_required?
       return unless RecordingStudioUser.config.otp_enabled?
 
+      apply_devise_confirmable!(user_class)
+    end
+
+    def apply_confirmation_code_setup!
       OtpSetup.ensure_notifications!
-      user_class.devise :confirmable unless user_class.devise_modules.include?(:confirmable)
       OtpNotifications.register!
       OtpSetup.validate_schema_when_ready!
     end

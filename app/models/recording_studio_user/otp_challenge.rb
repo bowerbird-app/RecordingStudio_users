@@ -4,7 +4,7 @@ module RecordingStudioUser
   class OtpChallenge < ApplicationRecord
     self.table_name = "recording_studio_user_otp_challenges"
 
-    PURPOSES = %w[registration login].freeze
+    PURPOSES = %w[registration login confirmation].freeze
 
     belongs_to :user, class_name: RecordingStudioUser.config.user_class_name
 
@@ -22,6 +22,10 @@ module RecordingStudioUser
 
     def login?
       purpose == "login"
+    end
+
+    def confirmation?
+      purpose == "confirmation"
     end
 
     def active?

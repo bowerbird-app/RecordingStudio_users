@@ -109,7 +109,7 @@ module RecordingStudioUser
         ActiveRecord::Base.transaction do
           user = Directory.create_user!(
             email: email, password: password, password_confirmation: password,
-            first_name: first_name, last_name: last_name, time_zone: "UTC"
+            first_name: first_name, last_name: last_name, time_zone: "UTC", confirm: true
           )
           create_identity!(user, auth)
           clear_oauth_password!(user).tap { RegistrationCompleted.emit!(user_id: user.id, method: :oauth) }

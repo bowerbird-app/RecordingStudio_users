@@ -112,6 +112,10 @@ class AuthReturnToTest < ActionDispatch::IntegrationTest
       user: { email: email, password: "Password123!", password_confirmation: "Password123!" }
     }
 
+    assert_redirected_to verify_user_registration_path
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+
     assert_redirected_to "/after-signup"
   end
 
@@ -228,7 +232,8 @@ class AuthReturnToTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Return",
       last_name: "Path",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     user

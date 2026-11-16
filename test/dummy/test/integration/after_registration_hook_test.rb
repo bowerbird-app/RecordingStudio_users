@@ -37,6 +37,11 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
     }
 
     user = User.find_by!(email: email)
+    assert_empty @calls
+
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+
     assert_equal [{ user_id: user.id, email: email, method: :password }], @calls
   end
 
@@ -80,7 +85,8 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Log",
       last_name: "In",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     @calls.clear
@@ -98,7 +104,8 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Existing",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     @calls.clear
     mock_provider_auth!(
@@ -124,7 +131,8 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Return",
       last_name: "Visit",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     uid = "after-reg-return-#{SecureRandom.hex(4)}"
     user.identities.create!(provider: "google_oauth2", uid: uid, email: email)
@@ -156,13 +164,17 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
 
     email = "after-reg-error-#{SecureRandom.hex(4)}@example.com"
 
+    post user_registration_path, params: {
+      user: { email: email, password: "Password123!", password_confirmation: "Password123!" }
+    }
+    assert User.exists?(email: email)
+
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
     assert_error_reported(StandardError) do
-      post user_registration_path, params: {
-        user: { email: email, password: "Password123!", password_confirmation: "Password123!" }
-      }
+      post verify_user_registration_path, params: { code: code }
     end
 
-    assert User.exists?(email: email)
+    assert User.find_by!(email: email).confirmed?
   end
 
   private

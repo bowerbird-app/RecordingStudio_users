@@ -18,7 +18,8 @@ class UsersHostLocaleOverrideTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Host",
       last_name: "Override",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(@user)
   end

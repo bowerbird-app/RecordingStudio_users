@@ -43,7 +43,6 @@ module RecordingStudioUser
       otp_login_enabled: true,
       otp_registration_enabled: true,
       registration_authentication_methods: %i[password otp],
-      password_registration_confirmation: :existing_policy,
       otp_expires_in: 10.minutes,
       otp_max_attempts: 5,
       otp_resend_cooldown: 60.seconds,
@@ -202,8 +201,19 @@ module RecordingStudioUser
       raise
     end
 
-    def password_registration_confirmation=(value)
-      @password_registration_confirmation = value.to_sym
+    def password_registration_confirmation=(_value)
+      raise ArgumentError,
+            "password_registration_confirmation has been removed. " \
+            "Password signups confirm with an email code. Delete this setting."
+    end
+
+    def password_registration_allowed?
+      !primary_login_type_otp? && registration_authentication_methods.include?(:password)
+    end
+
+    def sign_in_code_allowed?
+      password_registration_allowed? ||
+        (otp_enabled? && (otp_login_enabled? || otp_registration_enabled?))
     end
 
     def login_title=(value)

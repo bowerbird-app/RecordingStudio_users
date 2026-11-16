@@ -261,6 +261,40 @@ class ConfigurationTest < Minitest::Test
     assert_equal ["https://embed.example", "http://localhost:3000"], @configuration.popup_opener_origins
   end
 
+  def test_password_registration_confirmation_setting_raises
+    error = assert_raises(ArgumentError) do
+      @configuration.password_registration_confirmation = :existing_policy
+    end
+
+    assert_match(/has been removed/, error.message)
+    assert_raises(ArgumentError) { @configuration.password_registration_confirmation = :required }
+  end
+
+  def test_password_registration_follows_primary_login_and_methods
+    assert_predicate @configuration, :password_registration_allowed?
+
+    @configuration.otp_enabled = true
+    @configuration.otp_login_enabled = true
+    @configuration.otp_registration_enabled = true
+    @configuration.primary_login_type = :otp
+    refute_predicate @configuration, :password_registration_allowed?
+
+    @configuration.primary_login_type = :email
+    @configuration.registration_authentication_methods = %i[otp]
+    refute_predicate @configuration, :password_registration_allowed?
+
+    @configuration.registration_authentication_methods = %i[password]
+    assert_predicate @configuration, :password_registration_allowed?
+  end
+
+  def test_public_user_creation_does_not_confirm_unless_asked
+    source = File.read(File.expand_path("../lib/recording_studio_user/directory.rb", __dir__))
+
+    assert_includes source, "confirm: false"
+    refute_includes source, "existing_policy"
+    refute_includes source, "skip_confirmation_for_password_account"
+  end
+
   def test_mounted_admin_path_uses_configured_paths
     original_config = RecordingStudioUser.config
     RecordingStudioUser.instance_variable_set(:@config, @configuration)

@@ -26,7 +26,13 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: email)
     assert user.registered_with_password?
     assert RecordingStudioUser.profile_for(user)
+    refute user.confirmed?
+    assert_redirected_to verify_user_registration_path
+
+    confirm_password_signup_code!
     assert_redirected_to root_path
+    assert user.reload.confirmed?
+    assert user.valid_password?("Password123!")
 
     sign_out_user!
     post user_session_path, params: { user: { email: email, password: "Password123!" } }
@@ -94,7 +100,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Pass",
       last_name: "Word",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     post "#{new_user_session_path}/otp", params: { user: { email: password_email } }
@@ -123,7 +130,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Cross",
       last_name: "Method",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     assert_no_difference -> { RecordingStudioUser::OtpChallenge.count } do
@@ -218,7 +226,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Pass",
       last_name: "Word",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
 
@@ -243,7 +252,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Both",
       last_name: "Ways",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
 
@@ -266,7 +276,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Notice",
       last_name: "Code",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     sign_in user
@@ -301,7 +312,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Code",
       last_name: "Expiry",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     sign_in user
@@ -324,14 +336,16 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Code",
       last_name: "Owner",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     viewer = RecordingStudioUser.create_user!(
       email: "code-viewer-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Code",
       last_name: "Viewer",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(owner)
     accept_pending_live_terms!(viewer)
@@ -345,7 +359,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, code
   end
 
-  test "unconfirmed password account is not sent a login code" do
+  test "unconfirmed password account gets a confirmation code instead of a login code" do
     email = "unconfirmed-password-#{SecureRandom.hex(4)}@example.com"
     user = User.create!(
       email: email,
@@ -355,11 +369,14 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     )
     user.update_column(:confirmed_at, nil)
 
-    assert_no_difference -> { RecordingStudioUser::OtpChallenge.count } do
-      post "#{new_user_session_path}/otp", params: { user: { email: email } }
+    assert_difference -> { RecordingStudioUser::OtpChallenge.where(purpose: "confirmation").count }, +1 do
+      assert_no_difference -> { RecordingStudioUser::OtpChallenge.where(purpose: "login").count } do
+        post "#{new_user_session_path}/otp", params: { user: { email: email } }
+      end
     end
 
     assert_redirected_to verify_user_session_path
+    assert_equal "confirmation", session[:otp_purpose]
   end
 
   test "confirmed OTP user can sign in with a login code" do
@@ -668,10 +685,10 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     post "#{new_user_registration_path}/otp", params: { user: { email: "x@example.com" } }
     assert_response :not_found
     get "/users/sign_up/verify"
-    assert_response :not_found
+    assert_response :success
     post "/users/sign_up/resend"
-    assert_response :not_found
-    refute Rails.application.routes.url_helpers.respond_to?(:verify_user_registration_path)
+    assert_redirected_to verify_user_registration_path
+    assert Rails.application.routes.url_helpers.respond_to?(:verify_user_registration_path)
   ensure
     RecordingStudioUser.config.otp_registration_enabled = original
     RecordingStudioUser.config.primary_login_type = original_primary
@@ -712,14 +729,16 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Pass",
       last_name: "Word",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     disabled = RecordingStudioUser.create_user!(
       email: "kind-disabled-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Off",
       last_name: "Line",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     with_disabled_email(disabled.email) do
       registration = [ unknown, existing.email, password.email, disabled.email ].map do |email|
@@ -813,6 +832,11 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     sign_out :user
   rescue StandardError
     nil
+  end
+
+  def confirm_password_signup_code!
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
   end
 
   def start_otp_registration!(email)

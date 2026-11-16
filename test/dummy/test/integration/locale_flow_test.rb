@@ -12,7 +12,8 @@ class LocaleFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Locale",
       last_name: "Flow",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
   end
 

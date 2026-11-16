@@ -15,7 +15,7 @@ module RecordingStudioUser
 
       raise(
         ArgumentError,
-        "OTP is enabled but required schema is missing: #{missing.join(', ')}. " \
+        "Email codes need schema that is missing: #{missing.join(', ')}. " \
         "Run `rails generate recording_studio_user:migrations` and migrate."
       )
     end
@@ -34,12 +34,21 @@ module RecordingStudioUser
       return if defined?(RecordingStudioNotifications)
 
       raise ArgumentError,
-            "OTP is enabled but recording_studio_notifications is not installed. " \
-            "Add the gem and run its install generator."
+            "Email codes need recording_studio_notifications. Add the gem and run its install generator."
+    end
+
+    def ensure_confirmation_codes!
+      ensure_notifications!
+      validate_schema!
+    end
+
+    def codes_required?
+      config = RecordingStudioUser.config
+      config.otp_enabled? || config.password_registration_allowed?
     end
 
     def validate_schema_when_ready!
-      return unless RecordingStudioUser.config.otp_enabled?
+      return unless codes_required?
 
       connection = ActiveRecord::Base.connection
       return unless connection.data_source_exists?(OTP_CHALLENGES_TABLE)
