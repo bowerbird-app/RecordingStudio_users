@@ -235,17 +235,13 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
 
   test "password sign-in code uses the signup code screen when login codes are off" do
     email = unique_email("signup-screen")
-    User.create!(
+    user = User.create!(
       email: email,
       password: PASSWORD,
       password_confirmation: PASSWORD,
       registered_with: "password"
     )
-    @config.registration_authentication_methods = [:password]
-    @config.otp_login_enabled = false
-    @config.otp_registration_enabled = false
-    @config.otp_enabled = false
-    Rails.application.reload_routes!
+    disable_login_codes!
 
     post user_session_path, params: { user: { email: email, password: PASSWORD } }
     assert_response :unprocessable_entity
@@ -253,6 +249,58 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
 
     post user_session_code_path, params: { user: { email: email } }
     assert_redirected_to verify_user_registration_path
+    challenge = RecordingStudioUser::OtpChallenge.where(user: user).order(:created_at).last
+    assert challenge.confirmation?
+
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+    assert_redirected_to root_path
+    assert user.reload.confirmed?
+  end
+
+  test "confirmed and unknown addresses get the same notice when login codes are off" do
+    confirmed = RecordingStudioUser.create_user!(
+      email: unique_email("confirmed-code"),
+      password: PASSWORD,
+      password_confirmation: PASSWORD,
+      first_name: "Confirmed",
+      last_name: "Code",
+      time_zone: "UTC",
+      confirm: true
+    )
+    unknown = unique_email("unknown-code")
+    disable_login_codes!
+    notice = I18n.t("recording_studio_user.auth.eligible_code_sent")
+
+    assert_no_difference -> { RecordingStudioUser::OtpChallenge.where(user: confirmed).count } do
+      post user_session_code_path, params: { user: { email: confirmed.email } }
+    end
+    assert_redirected_to verify_user_registration_path
+    assert_equal notice, flash[:notice]
+    assert_nil session[:otp_purpose]
+
+    post user_session_code_path, params: { user: { email: unknown } }
+    assert_redirected_to verify_user_registration_path
+    assert_equal notice, flash[:notice]
+    assert_nil User.find_by(email: unknown)
+    assert_nil session[:otp_purpose]
+  end
+
+  test "confirmation email is sent after the code row is persisted" do
+    email = unique_email("after-commit")
+    baseline = ActiveRecord::Base.connection.open_transactions
+    calls = []
+    watch_code_delivery(calls)
+
+    post user_registration_path, params: signup_params(email)
+
+    delivered = calls.last
+    assert delivered
+    assert_equal baseline, delivered.fetch(:depth)
+    assert delivered.fetch(:persisted)
+    assert RecordingStudioUser::OtpChallenge.exists?(delivered.fetch(:challenge_id))
+    assert_equal 1, ActionMailer::Base.deliveries.size
+    assert User.find_by!(email: email)
   end
 
   test "staff create confirms and a public create does not" do
@@ -306,6 +354,29 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
 
   def signup_params(email)
     { user: { email: email, password: PASSWORD, password_confirmation: PASSWORD } }
+  end
+
+  def disable_login_codes!
+    @config.registration_authentication_methods = [:password]
+    @config.otp_login_enabled = false
+    @config.otp_registration_enabled = false
+    @config.otp_enabled = false
+    Rails.application.reload_routes!
+  end
+
+  def watch_code_delivery(calls)
+    job = RecordingStudioNotifications::DeliveryJob
+    job.singleton_class.prepend(Module.new do
+      define_method(:perform_now) do |*arguments, **keyword_arguments|
+        challenge = RecordingStudioUser::OtpChallenge.order(:created_at).last
+        calls << {
+          depth: ActiveRecord::Base.connection.open_transactions,
+          challenge_id: challenge&.id,
+          persisted: challenge.present? && challenge.persisted?
+        }
+        super(*arguments, **keyword_arguments)
+      end
+    end)
   end
 
   def with_singleton_method(singleton, name)
