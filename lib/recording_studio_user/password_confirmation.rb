@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 module RecordingStudioUser
-  # A password saved before the inbox is proved belongs to that unproven signup.
-  # It stays only when the session that set it is the session that proves the inbox.
   module PasswordConfirmation
     SESSION_KEY = :password_signup_user_id
     THREAD_KEY = :recording_studio_user_password_confirmation_session
 
     module Confirms
       def confirm(...)
-        PasswordConfirmation.prepare!(self)
+        PasswordConfirmation.clear_password_unless_same_signup!(self)
         super
       end
     end
@@ -51,7 +49,7 @@ module RecordingStudioUser
         Thread.current[THREAD_KEY] = previous
       end
 
-      def prepare!(user)
+      def clear_password_unless_same_signup!(user)
         return if user.blank? || confirmed?(user)
         return unless password_digest?(user)
         return if same_signup?(user)

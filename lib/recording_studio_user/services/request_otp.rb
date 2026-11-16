@@ -104,16 +104,16 @@ module RecordingStudioUser
         end
       end
 
-      # Confirmed accounts that cannot authenticate, and locked accounts, are
-      # skipped. An unconfirmed OTP account fails active_for_authentication?
-      # only because it is not confirmed yet; that address can still get a
-      # registration code.
       def disabled?(user)
         return false unless user.respond_to?(:active_for_authentication?)
         return true if user.respond_to?(:access_locked?) && user.access_locked?
-        return false if registration_pending?(user) || PasswordConfirmation.pending?(user)
+        return false if waiting_for_email_code?(user)
 
         !user.active_for_authentication?
+      end
+
+      def waiting_for_email_code?(user)
+        registration_pending?(user) || PasswordConfirmation.pending?(user)
       end
 
       def registration_pending?(user)
