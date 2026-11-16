@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-11-16
+
+### Changed
+
+- Require `recording_studio_api` `>= 1.1`, `< 2.0` and Recording Studio `>= 7.1`, `< 8.0`.
+- Attachable is `>= 0.31.0`, `< 1`. That is the first release whose API constraint accepts 1.1.
+- `users_show` and `users_update` pass `scope_id: false`. Those ids are user rows on the admin-only operations API, not recordings in a root. Show still calls `Access.authorize_view!`. Update still calls `Access.authorize_edit!`.
+- Signup acceptance calls `pending_published_list(actor)` with no workspace root. Terms and Conditions 0.21 keeps those documents on the shared library. The dummy app registers `RecordingStudioTermsAndConditions::Library` and copies its libraries migration.
+- Development and dummy Gemfiles pin the newest tags that resolve with API 1.1: Recording Studio `v7.3.0`, API `v1.1.0`, Accessible `v0.45.0`, Admin `v2.17.0`, Attachable `v0.31.0`, Cache `v0.7.0`, Icons `v0.4.0`, Logs `v0.8.0`, Metrics `v0.9.0`, Moveable `v5.0.0`, Trashable `v0.17.0`, and FlatPack `v0.1.377`. The dummy app also pins notifications `v0.19.1`, notifications email `v0.5.4`, notifications push `v0.9.1`, site settings `v0.6.0`, Terms and Conditions `v0.21.0`, Publishable `v1.1.0`, Root Switchable `v0.16.0`, OAuth `v0.24.0`, and MCP `v0.34.1`.
+
+### Upgrade notes
+
+- Bump to `0.32.0`. No Users migration.
+- Install Recording Studio `7.1` or newer (below 8) and Recording Studio API `1.1` or newer (below 2).
+- Moveable `v6.0.0` does not resolve: API 1.1 requires Moveable `>= 5.0`, `< 6.0`. Pin `v5.0.0`.
+- Trashable `v1.0.0` does not resolve: Accessible, Admin, and OAuth cap Trashable below 1.0. Pin `v0.17.0`.
+
 ## [0.31.0] - 2026-11-16
 
 ### Changed

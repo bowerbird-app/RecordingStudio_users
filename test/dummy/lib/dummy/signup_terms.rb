@@ -21,7 +21,7 @@ module Dummy
     def ensure_live!(actor:)
       title = RecordingStudioTermsAndConditions::SampleTerms::TITLE
       body = RecordingStudioTermsAndConditions::SampleTerms::BODY
-      root = root_recording(actor: actor)
+      root = RecordingStudioTermsAndConditions.library_root(actor: actor)
       recording = existing_terms_recording(root)
 
       if recording.blank?
@@ -50,7 +50,7 @@ module Dummy
     end
 
     def accept_seeded!(actor)
-      terms = RecordingStudioTermsAndConditions.current_published_for(workspace)
+      terms = RecordingStudioTermsAndConditions.current_published_for
       return if actor.blank? || terms.blank?
 
       RecordingStudioTermsAndConditions.accept!(actor, terms, SEED_PROVENANCE)

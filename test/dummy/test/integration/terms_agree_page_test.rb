@@ -18,7 +18,8 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     @workspace = Workspace.create!(name: "Agree #{SecureRandom.hex(4)}")
     @root = RecordingStudio.create_root_recording!(@workspace)
     bootstrap_owner_access!(@user, @root)
-    @recording = record_terms(@root, title: "Studio Terms", body: "Be kind. Don't be a jerk.")
+    @library = RecordingStudioTermsAndConditions.library_root(actor: @user)
+    @recording = record_terms(@library, title: "Studio Terms", body: "Be kind. Don't be a jerk.")
     publish_terms!(@recording, slug: "studio-terms-#{SecureRandom.hex(4)}")
     sign_in @user
     switch_to(@workspace)
@@ -48,7 +49,7 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
 
   test "re-gate Accept keeps continue notice and Continue without Terms updated" do
     RecordingStudioTermsAndConditions.accept!(@user, @recording, { "source" => "continue_notice" })
-    revised = @root.revise(@recording) do |terms|
+    revised = @library.revise(@recording) do |terms|
       terms.body = "Be kinder than last time."
     end
     publish_terms!(revised, slug: "studio-terms-#{SecureRandom.hex(4)}")
@@ -56,7 +57,7 @@ class TermsAgreePageTest < ActionDispatch::IntegrationTest
     get recording_studio_terms_and_conditions.acceptance_path
 
     assert_response :success
-    assert RecordingStudioTermsAndConditions.reaccepting?(@user, @workspace)
+    assert RecordingStudioTermsAndConditions.reaccepting?(@user)
     refute_includes response.body, "Terms updated"
     refute_includes response.body, "Agree again"
     refute_includes CGI.unescapeHTML(response.body), "We've updated our Terms and Conditions"

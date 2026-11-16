@@ -50,10 +50,11 @@ class ApiTest < Minitest::Test
     assert_nil RecordingStudioUser::Api.register!
   end
 
-  def test_gemspec_omits_recording_studio_api_dependency
+  def test_gemspec_requires_recording_studio_api_1
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
 
-    refute_includes gemspec, 'spec.add_dependency "recording_studio_api"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_api", ">= 1.1", "< 2.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.1", "< 8.0"'
   end
 
   def test_engine_registers_api_when_present
@@ -70,6 +71,8 @@ class ApiTest < Minitest::Test
     assert_includes registration, "handler: Update"
     assert_includes registration, "input_contract:"
     assert_includes registration, "api: USERS_API"
+    assert_includes registration, "scope_id: false"
+    assert_includes registration, "not recordings in a root"
     refute_includes registration, "UserCount"
     refute_includes registration, "OPERATIONS_API"
     refute_includes registration, "api: :public"
@@ -107,10 +110,15 @@ class ApiTest < Minitest::Test
     show = registration_named(api, :users_show)
     assert_equal :get, show.fetch(:http_verb)
     assert_equal "users/:id", show.fetch(:path)
+    assert_equal false, show.fetch(:scope_id)
 
     update = registration_named(api, :users_update)
     assert_equal :patch, update.fetch(:http_verb)
     assert_equal "users/:id", update.fetch(:path)
+    assert_equal false, update.fetch(:scope_id)
+
+    refute index.key?(:scope_id)
+    refute create.key?(:scope_id)
   end
 
   def test_create_and_update_register_input_contracts_for_writable_fields

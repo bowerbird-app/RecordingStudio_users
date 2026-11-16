@@ -56,6 +56,21 @@ module AccessGrantTestHelper
 end
 
 module SignupTermsTestHelper
+  def terms_library_root
+    actor = Current.actor if defined?(Current) && Current.actor.present?
+    actor ||= User.find_by(email: "admin@admin.com") || User.order(:created_at).first
+    if actor.blank?
+      actor = User.new(
+        email: "terms-library@example.com",
+        password: "Password123!",
+        password_confirmation: "Password123!"
+      )
+      actor.skip_confirmation!
+      actor.save!
+    end
+    RecordingStudioTermsAndConditions.library_root(actor: actor)
+  end
+
   def record_terms(root_recording, title:, body:)
     root_recording.record(RecordingStudioTermsAndConditions::Terms) do |terms|
       terms.title = title
@@ -86,25 +101,28 @@ module SignupTermsTestHelper
     Current.actor = previous_actor
   end
 
-  # Terms 0.7.7+ gates against the first root with live Terms when the current
-  # workspace has none. Dummy seeds leave live Terms under My workspace, so
-  # integration users that are not exercising Accept need a receipt first.
+  # Terms 0.21 gates on the shared library. Dummy seeds leave those Terms live,
+  # so integration users that are not exercising Accept need a receipt first.
   def accept_pending_live_terms!(user)
-    root = RecordingStudioTermsAndConditions::Gate.first_root_with_live_terms
-    return if user.blank? || root.blank?
+    return if user.blank?
 
-    RecordingStudioTermsAndConditions.pending_published_list(user, root).each do |terms|
+    RecordingStudioTermsAndConditions.pending_published_list(user).each do |terms|
       RecordingStudioTermsAndConditions.accept!(user, terms, { "source" => "continue_notice" })
     end
   end
 
   def without_live_terms_fallback
-    gate = RecordingStudioTermsAndConditions::Gate
-    original = gate.method(:first_root_with_live_terms)
-    gate.define_singleton_method(:first_root_with_live_terms) { nil }
+    mod = RecordingStudioTermsAndConditions.singleton_class
+    mod.class_eval do
+      alias_method :pending_published_list_with_live_terms, :pending_published_list
+      define_method(:pending_published_list) { |*_args, **_kwargs| [] }
+    end
     yield
   ensure
-    gate.define_singleton_method(:first_root_with_live_terms, original)
+    mod.class_eval do
+      alias_method :pending_published_list, :pending_published_list_with_live_terms
+      remove_method :pending_published_list_with_live_terms
+    end
   end
 end
 

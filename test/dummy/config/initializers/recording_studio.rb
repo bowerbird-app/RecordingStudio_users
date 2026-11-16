@@ -27,6 +27,7 @@ RecordingStudio.configure do |config|
     "RecordingStudioUser::Profile",
     "RecordingStudioAttachable::Attachment",
     "RecordingStudioSiteSettings::SiteSetting",
+    "RecordingStudioTermsAndConditions::Library",
     "RecordingStudioTermsAndConditions::Terms",
     "RecordingStudioTermsAndConditions::Section",
     "RecordingStudioTermsAndConditions::Clause",

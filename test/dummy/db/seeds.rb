@@ -209,4 +209,4 @@ puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
 puts "Seeded: shared People root with Profile snapshots for seeded users"
 puts "Seeded: Avery Admin profile photo on their Profile recording"
 puts "Seeded: Site settings name and logos on Admin root" if defined?(RecordingStudioSiteSettings)
-puts "Seeded: live Terms under '#{workspace.name}' with receipts for named seed accounts"
+puts "Seeded: live Terms on the shared library with receipts for named seed accounts"

@@ -33,7 +33,7 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller='flat-pack--modal']", minimum: 1
     assert_includes response.body, "page-title"
     assert_includes response.body, "fp-content"
-    live = RecordingStudioTermsAndConditions.current_published_for(@workspace)
+    live = RecordingStudioTermsAndConditions.current_published_for
     assert_includes response.body, live.title
     assert_includes CGI.unescapeHTML(response.body), live.body.to_s
 
@@ -58,27 +58,23 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
     end
 
     user = User.find_by!(email: email)
-    assert RecordingStudioTermsAndConditions.accepted?(user, @workspace)
+    assert RecordingStudioTermsAndConditions.accepted?(user)
     receipt = RecordingStudioTermsAndConditions::Acceptance.order(:created_at).last
     assert_equal({ "source" => "continue_notice" }, receipt.provenance)
     assert_equal user.id, receipt.actor_id
     assert_equal "User", receipt.actor_type
   end
 
-  test "create-password stays on the current workspace when nobody can view another live Terms root" do
-    # Terms 0.18 falls back only through Accessible :view roots. A signed-out
-    # signup has no actor, so an empty current workspace stays empty.
-    empty = Workspace.create!(name: "No terms #{SecureRandom.hex(4)}")
-    email = "signup-fallback-#{SecureRandom.hex(4)}@example.com"
+  test "create-password shows library terms when the current workspace has none" do
+    Workspace.create!(name: "No terms #{SecureRandom.hex(4)}")
+    email = "signup-library-#{SecureRandom.hex(4)}@example.com"
 
-    with_current_root(empty) do
-      post new_user_registration_path, params: { user: { email: email } }
-      follow_redirect!
+    post new_user_registration_path, params: { user: { email: email } }
+    follow_redirect!
 
-      assert_response :success
-      assert_select "input#user_password[type=password]"
-      refute_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
-    end
+    assert_response :success
+    assert_select "input#user_password[type=password]"
+    assert_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
   end
 
   test "create-password stays blank when no live Terms are pending" do
@@ -97,25 +93,11 @@ class TermsSignupIntegrationTest < ActionDispatch::IntegrationTest
   private
 
   def ensure_live_terms!
-    return if RecordingStudioTermsAndConditions.current_published_for(@workspace)
+    return if RecordingStudioTermsAndConditions.current_published_for
 
-    recording = record_terms(@root, title: "Signup Terms", body: "Be kind on the way in.")
+    library = terms_library_root
+    recording = record_terms(library, title: "Signup Terms", body: "Be kind on the way in.")
     publish_terms!(recording, slug: "signup-terms-#{SecureRandom.hex(4)}")
-  end
-
-  def with_current_root(root)
-    gate = RecordingStudioTermsAndConditions::Gate
-    singleton = gate.singleton_class
-    singleton.class_eval do
-      alias_method :root_for_without_empty, :root_for
-      define_method(:root_for) { |*_args, **_kwargs| root }
-    end
-    yield
-  ensure
-    singleton.class_eval do
-      alias_method :root_for, :root_for_without_empty
-      remove_method :root_for_without_empty
-    end
   end
 
   def empty_pending_published_list

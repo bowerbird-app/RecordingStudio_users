@@ -40,16 +40,25 @@ module RecordingStudioUser
 
       def register_show!
         register_users_endpoint!(USERS_SHOW_ENDPOINT, http_verb: :get, path: USER_PATH, handler: Show,
-                                                      summary: "Show a user", description: show_description)
+                                                      summary: "Show a user", description: show_description,
+                                                      scope_id: false)
       end
 
       def register_update!
-        register_users_endpoint!(USERS_UPDATE_ENDPOINT, http_verb: :patch, path: USER_PATH, handler: Update,
-                                                        summary: "Update a user", description: update_description,
-                                                        input_contract: Params.update_input_contract)
+        register_users_endpoint!(
+          USERS_UPDATE_ENDPOINT,
+          http_verb: :patch,
+          path: USER_PATH,
+          handler: Update,
+          summary: "Update a user",
+          description: update_description,
+          input_contract: Params.update_input_contract,
+          scope_id: false
+        )
       end
 
-      def register_users_endpoint!(name, http_verb:, path:, handler:, summary:, description:, input_contract: nil)
+      def register_users_endpoint!(name, http_verb:, path:, handler:, summary:, description:, input_contract: nil,
+                                   scope_id: nil)
         return unless RecordingStudioApi.respond_to?(:register_endpoint)
         return if already_registered?(name)
 
@@ -58,6 +67,8 @@ module RecordingStudioUser
           openapi: { tags: ["Users"], summary: summary, description: description },
           input_contract: input_contract
         }
+        # These ids are user rows on the admin-only operations API, not recordings in a root.
+        options[:scope_id] = scope_id unless scope_id.nil?
         RecordingStudioApi.register_endpoint(name, **options)
       end
 

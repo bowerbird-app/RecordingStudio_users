@@ -82,6 +82,42 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_includes [401, 403], response.status, response.body
   end
 
+  test "operations client without admin root is refused on show and update" do
+    outsider = RecordingStudioUser.create_user!(
+      email: "outsider-#{SecureRandom.hex(4)}@example.com",
+      password: "Password123!",
+      first_name: "Out",
+      last_name: "Sider",
+      time_zone: "UTC",
+      confirm: true
+    )
+    other_root = RecordingStudio.create_root_recording!(
+      AdminRoot.create!(name: "Other admin #{SecureRandom.hex(4)}")
+    )
+    # Operations clients are provisioned on an AdminRoot. This client's grant
+    # is on the studio admin root, not the root the resolver returns.
+    token = provision_token(
+      access_point: @admin_root,
+      actor: @staff,
+      role: :view,
+      name: "Users operations non-admin #{SecureRandom.hex(4)}",
+      api: :operations
+    )
+    resolver = RecordingStudioAccessible.configuration.admin_root_resolver
+    RecordingStudioAccessible.configuration.admin_root_resolver = ->(**) { other_root }
+
+    get "#{OPERATIONS_ROOT}/users/#{outsider.id}", headers: auth(token), as: :json
+    assert_response :forbidden
+
+    patch "#{OPERATIONS_ROOT}/users/#{outsider.id}",
+          headers: auth(token),
+          params: { first_name: "Hijack" },
+          as: :json
+    assert_response :forbidden
+  ensure
+    RecordingStudioAccessible.configuration.admin_root_resolver = resolver if resolver
+  end
+
   test "operations viewer can list and show but cannot write" do
     listed = RecordingStudioUser.create_user!(
       email: "listed-#{SecureRandom.hex(4)}@example.com",
@@ -387,6 +423,13 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     assert_equal RecordingStudioUser::Api::Update, patch_match.endpoint.handler
     assert_equal RecordingStudioUser::Api::Index, get_match.endpoint.handler
     assert_equal :get, path_only.endpoint.http_verb
+
+    show_match = registry.match(path: "users/example-id", http_verb: :get)
+    assert_equal RecordingStudioUser::Api::Show, show_match.endpoint.handler
+    refute show_match.endpoint.scopes_recording?
+    refute patch_match.endpoint.scopes_recording?
+    refute get_match.endpoint.scopes_recording?
+    refute post_match.endpoint.scopes_recording?
   end
 
   test "metrics_for User is empty and the users list stays custom" do

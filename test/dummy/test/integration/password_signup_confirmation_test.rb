@@ -100,6 +100,7 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
     post user_session_code_path, params: { user: { email: email } }
     assert_redirected_to verify_user_session_path
     code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    accept_pending_live_terms!(user)
     post verify_user_session_path, params: { code: code }
 
     assert_redirected_to root_path
@@ -253,6 +254,7 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
     assert challenge.confirmation?
 
     code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    accept_pending_live_terms!(user)
     post verify_user_registration_path, params: { code: code }
     assert_redirected_to root_path
     assert user.reload.confirmed?
