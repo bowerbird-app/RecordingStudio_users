@@ -14,7 +14,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Mcp",
       last_name: "Staff",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     Current.actor = @staff
     @admin_root = RecordingStudio.create_root_recording!(AdminRoot.find_or_create_by!(name: "Admin"))
@@ -71,7 +72,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
         password: "Password123!",
         first_name: "Page#{index}",
         last_name: "User",
-        time_zone: "UTC"
+        time_zone: "UTC",
+        confirm: true
       ).update_columns(created_at: stamp + index.seconds, updated_at: stamp + index.seconds)
     end
     surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
@@ -244,7 +246,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Counted",
       last_name: "Person",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     hidden = RecordingStudioMcp::ToolSurface.for(access_grant: @denied_grant)
     refute_includes hidden.tool_names, "users-total"

@@ -211,6 +211,11 @@ module RecordingStudioUser
       !primary_login_type_otp? && registration_authentication_methods.include?(:password)
     end
 
+    def sign_in_code_allowed?
+      password_registration_allowed? ||
+        (otp_enabled? && (otp_login_enabled? || otp_registration_enabled?))
+    end
+
     def login_title=(value)
       @login_title = value.to_s.strip.presence
     end

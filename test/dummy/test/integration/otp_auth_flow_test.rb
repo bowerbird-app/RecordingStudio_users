@@ -100,7 +100,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Pass",
       last_name: "Word",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     post "#{new_user_session_path}/otp", params: { user: { email: password_email } }
@@ -129,7 +130,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Cross",
       last_name: "Method",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     assert_no_difference -> { RecordingStudioUser::OtpChallenge.count } do
@@ -224,7 +226,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Pass",
       last_name: "Word",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
 
@@ -249,7 +252,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Both",
       last_name: "Ways",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
 
@@ -272,7 +276,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Notice",
       last_name: "Code",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     sign_in user
@@ -307,7 +312,8 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Code",
       last_name: "Expiry",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     sign_in user
@@ -330,14 +336,16 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Code",
       last_name: "Owner",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     viewer = RecordingStudioUser.create_user!(
       email: "code-viewer-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Code",
       last_name: "Viewer",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(owner)
     accept_pending_live_terms!(viewer)
@@ -721,14 +729,16 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Pass",
       last_name: "Word",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     disabled = RecordingStudioUser.create_user!(
       email: "kind-disabled-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Off",
       last_name: "Line",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     with_disabled_email(disabled.email) do
       registration = [ unknown, existing.email, password.email, disabled.email ].map do |email|

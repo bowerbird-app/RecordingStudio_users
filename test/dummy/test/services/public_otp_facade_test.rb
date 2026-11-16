@@ -183,6 +183,7 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     assert user.confirmed?
     assert user.valid_password?("Password123!")
     assert user.remember_created_at.present?
+    assert_nil session[RecordingStudioUser::PasswordConfirmation::SESSION_KEY]
   end
 
   test "a password set after confirmation stays when the account is confirmed again" do

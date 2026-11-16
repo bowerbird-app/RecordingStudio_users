@@ -107,7 +107,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Returning",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     uid = "returning-#{SecureRandom.hex(4)}"
     user.identities.create!(provider: "google_oauth2", uid: uid, email: user.email)
@@ -132,7 +133,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Existing",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     mock_provider_auth!(
       :microsoft_graph,
@@ -192,7 +194,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Ig",
       last_name: "Connect",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     sign_in user
     mock_provider_auth!(
@@ -218,7 +221,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Connect",
       last_name: "Me",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     sign_in user
     mock_provider_auth!(
@@ -281,7 +285,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Known",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     mock_provider_auth!(
       :google_oauth2,
@@ -304,7 +309,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Existing",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     mock_provider_auth!(
       :google_oauth2,
@@ -329,7 +335,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Unconfirmed",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     original_confirmed = User.instance_method(:confirmed?) if User.method_defined?(:confirmed?)
     User.define_method(:confirmed?) { false }
@@ -359,7 +366,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Owner",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     owner.identities.create!(provider: "google_oauth2", uid: "shared-uid", email: owner.email)
 
@@ -368,7 +376,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Other",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     sign_in other
     mock_provider_auth!(:google_oauth2, uid: "shared-uid", email: "ignored@example.com")
@@ -386,7 +395,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "One",
       last_name: "Provider",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     user.identities.create!(
       provider: "google_oauth2",
@@ -413,7 +423,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Ui",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     sign_in user
 
@@ -477,7 +488,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Csrf",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     user.identities.create!(
       provider: "google_oauth2",
@@ -504,7 +516,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Methods",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     sign_in user
 
@@ -524,7 +537,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Connected",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     user.identities.create!(
       provider: "google_oauth2",
@@ -551,7 +565,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Dropped",
       last_name: "Provider",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     user.identities.create!(provider: "google_oauth2", uid: "g-#{SecureRandom.hex(4)}", email: user.email)
     user.identities.create!(provider: "apple", uid: "a-#{SecureRandom.hex(4)}", email: user.email)
@@ -580,7 +595,8 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Prune",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     keep = user.identities.create!(provider: "google_oauth2", uid: "keep-#{SecureRandom.hex(4)}")
     drop = user.identities.create!(provider: "apple", uid: "drop-#{SecureRandom.hex(4)}")

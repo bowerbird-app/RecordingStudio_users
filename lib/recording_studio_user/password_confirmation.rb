@@ -51,8 +51,10 @@ module RecordingStudioUser
 
       def clear_password_unless_same_signup!(user)
         return if user.blank? || confirmed?(user)
-        return unless password_digest?(user)
-        return if same_signup?(user)
+
+        keep = same_signup?(user)
+        forget_signup!(user)
+        return if keep || !password_digest?(user)
 
         clear_password!(user)
       end
@@ -70,6 +72,14 @@ module RecordingStudioUser
         return false if session.blank?
 
         session[SESSION_KEY].to_s == user.id.to_s
+      end
+
+      def forget_signup!(user)
+        session = Thread.current[THREAD_KEY]
+        return if session.blank?
+        return unless session[SESSION_KEY].to_s == user.id.to_s
+
+        session.delete(SESSION_KEY)
       end
 
       def clear_password!(user)

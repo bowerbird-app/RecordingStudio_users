@@ -15,7 +15,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Profile",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(@user)
   end
@@ -32,7 +33,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Other",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     sign_in @user

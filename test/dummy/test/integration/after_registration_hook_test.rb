@@ -85,7 +85,8 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Log",
       last_name: "In",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     @calls.clear
@@ -103,7 +104,8 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Existing",
       last_name: "User",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     @calls.clear
     mock_provider_auth!(
@@ -129,7 +131,8 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Return",
       last_name: "Visit",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     uid = "after-reg-return-#{SecureRandom.hex(4)}"
     user.identities.create!(provider: "google_oauth2", uid: uid, email: email)

@@ -12,7 +12,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Api",
       last_name: "Staff",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     Current.actor = @staff
     @workspace = Workspace.find_or_create_by!(name: "My workspace")
@@ -87,7 +88,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Listed",
       last_name: "Person",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     get "#{OPERATIONS_ROOT}/users",
@@ -342,7 +344,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
         password: "Password123!",
         first_name: "Page#{index}",
         last_name: "User",
-        time_zone: "UTC"
+        time_zone: "UTC",
+        confirm: true
       ).update_columns(created_at: stamp + index.seconds, updated_at: stamp + index.seconds)
     end
     total = User.count
@@ -392,7 +395,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Shape",
       last_name: "Check",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     assert_empty RecordingStudioApi.metrics_for("User", api: :operations)
@@ -419,7 +423,8 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Keep",
       last_name: "Me",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     delete "#{OPERATIONS_ROOT}/users/#{user.id}", headers: auth(@editor_token), as: :json

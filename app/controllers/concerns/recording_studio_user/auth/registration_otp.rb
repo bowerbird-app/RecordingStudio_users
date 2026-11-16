@@ -70,11 +70,21 @@ module RecordingStudioUser
         start_otp_registration!(email)
       end
 
-      def start_password_confirmation!
-        provision_password_account!
-        RecordingStudioUser::PasswordConfirmation.mark!(session, resource)
-        result = request_confirmation_code!(resource.email)
-        redirect_to otp_registration_verify_path, **confirmation_code_flash(result)
+      def persist_password_signup?
+        RecordingStudioUser::OtpSetup.ensure_confirmation_codes!
+        saved = save_password_account!
+        RecordingStudioUser::PasswordConfirmation.mark!(session, resource) if saved
+        saved
+      end
+
+      def save_password_account!
+        ActiveRecord::Base.transaction do
+          return false unless resource.save
+
+          provision_password_account!
+          @confirmation_code = request_confirmation_code!(resource.email)
+          true
+        end
       end
 
       def verify_signup_code

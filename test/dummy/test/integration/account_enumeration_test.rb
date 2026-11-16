@@ -16,7 +16,8 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Enum",
       last_name: "Password",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     otp_email = "enum-otp-#{SecureRandom.hex(4)}@example.com"
     confirm_otp_user!(otp_email)
@@ -45,7 +46,8 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Enum",
       last_name: "Reset",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     otp_email = "enum-reset-otp-#{SecureRandom.hex(4)}@example.com"
     confirm_otp_user!(otp_email)
@@ -85,7 +87,8 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Enum",
       last_name: "Paranoid",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     otp_email = "enum-paranoid-otp-#{SecureRandom.hex(4)}@example.com"
     confirm_otp_user!(otp_email)
@@ -112,7 +115,8 @@ class AccountEnumerationTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Enum",
       last_name: "Signup",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     generic = I18n.t("recording_studio_user.auth.signup_did_not_save")
 

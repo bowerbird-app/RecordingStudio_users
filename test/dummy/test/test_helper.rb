@@ -5,20 +5,6 @@ ENV["RECORDING_STUDIO_MCP_POSTGRES_BUS"] = "0"
 
 require_relative "../config/environment"
 require "rails/test_help"
-
-unless RecordingStudioUser::Directory.respond_to?(:create_user_without_test_default!)
-  module RecordingStudioUser
-    module Directory
-      class << self
-        alias_method :create_user_without_test_default!, :create_user!
-
-        def create_user!(confirm: nil, **kwargs)
-          create_user_without_test_default!(confirm: confirm.nil? ? true : confirm, **kwargs)
-        end
-      end
-    end
-  end
-end
 require_relative "support/profile_image_test_helper"
 require_relative "support/push_test_helper"
 

@@ -36,7 +36,8 @@ class UserProfileContractTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Ada",
       last_name: "Lovelace",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
 
     assert_equal "Ada Lovelace", user.display_name

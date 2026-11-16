@@ -51,10 +51,14 @@ module RecordingStudioUser
     end
 
     def apply_otp_setup!(user_class)
+      apply_confirmation_code_setup! if OtpSetup.codes_required?
       return unless RecordingStudioUser.config.otp_enabled?
 
-      OtpSetup.ensure_notifications!
       apply_devise_confirmable!(user_class)
+    end
+
+    def apply_confirmation_code_setup!
+      OtpSetup.ensure_notifications!
       OtpNotifications.register!
       OtpSetup.validate_schema_when_ready!
     end

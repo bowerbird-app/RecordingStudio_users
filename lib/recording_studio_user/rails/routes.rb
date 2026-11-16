@@ -86,6 +86,8 @@ module ActionDispatch
       def draw_recording_studio_user_password_session_routes(singular)
         get "sign_in/password", to: "sessions#password"
         post "sign_in/password", to: "sessions#create_password", as: :"#{singular}_session"
+        return unless RecordingStudioUser.config.sign_in_code_allowed?
+
         post "sign_in/password/code", to: "sessions#send_code", as: :"#{singular}_session_code"
       end
 

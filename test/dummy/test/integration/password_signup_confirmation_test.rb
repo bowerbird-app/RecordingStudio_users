@@ -22,7 +22,11 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
   end
 
   teardown do
-    @originals.each { |setting, value| @config.public_send("#{setting}=", value) }
+    @config.otp_enabled = @originals.fetch(:otp_enabled)
+    @config.otp_login_enabled = @originals.fetch(:otp_login_enabled)
+    @config.otp_registration_enabled = @originals.fetch(:otp_registration_enabled)
+    @config.registration_authentication_methods = @originals.fetch(:registration_authentication_methods)
+    @config.primary_login_type = @originals.fetch(:primary_login_type)
     Rails.application.reload_routes!
   end
 
@@ -36,9 +40,11 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
     refute user.confirmed?
     assert user.valid_password?(PASSWORD)
     assert_nil session["warden.user.user.key"]
+    assert_equal user.id, session[RecordingStudioUser::PasswordConfirmation::SESSION_KEY]
 
     submit_signup_code!
     assert_redirected_to root_path
+    assert_nil session[RecordingStudioUser::PasswordConfirmation::SESSION_KEY]
     assert user.reload.confirmed?
     assert user.valid_password?(PASSWORD)
 
@@ -111,7 +117,8 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
       password_confirmation: PASSWORD,
       first_name: "Kept",
       last_name: "Password",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     user.update!(password: "LaterPassword1!", password_confirmation: "LaterPassword1!")
 
@@ -154,8 +161,102 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
     assert_nil User.find_by(email: email)
   end
 
+  test "password signup confirms by code when one-time sign-in is off" do
+    email = unique_email("otp-off")
+    @config.registration_authentication_methods = [:password]
+    @config.otp_login_enabled = false
+    @config.otp_registration_enabled = false
+    @config.otp_enabled = false
+    Rails.application.reload_routes!
+    RecordingStudioUser::OtpNotifications.instance_variable_set(:@registered, false)
+    RecordingStudioUser::EngineBoot.apply_otp_setup!(User)
+
+    assert RecordingStudioUser::OtpNotifications.instance_variable_get(:@registered)
+    assert Rails.application.routes.url_helpers.respond_to?(:user_session_code_path)
+
+    post user_registration_path, params: signup_params(email)
+    user = User.find_by!(email: email)
+
+    assert_redirected_to verify_user_registration_path
+    refute user.confirmed?
+
+    submit_signup_code!
+    assert_redirected_to root_path
+    assert user.reload.confirmed?
+    assert user.valid_password?(PASSWORD)
+    assert session["warden.user.user.key"].present?
+  ensure
+    RecordingStudioUser::OtpNotifications.instance_variable_set(:@registered, false)
+    RecordingStudioUser::OtpNotifications.register!
+  end
+
+  test "a failed confirmation code send leaves no account" do
+    email = unique_email("orphan")
+
+    assert_no_difference -> { User.count } do
+      with_singleton_method(RecordingStudioUser::OtpSetup.singleton_class, :validate_schema!) do
+        post user_registration_path, params: signup_params(email)
+      rescue ArgumentError
+        nil
+      end
+    end
+    assert_nil User.find_by(email: email)
+
+    assert_no_difference -> { User.count } do
+      with_singleton_method(RecordingStudioUser.singleton_class, :request_otp!) do
+        post user_registration_path, params: signup_params(email)
+      rescue ArgumentError
+        nil
+      end
+    end
+    assert_nil User.find_by(email: email)
+  end
+
+  test "password sign-in code is absent when no code screen is routed" do
+    email = unique_email("no-screen")
+    @config.registration_authentication_methods = []
+    @config.otp_login_enabled = false
+    @config.otp_registration_enabled = false
+    @config.otp_enabled = false
+    Rails.application.reload_routes!
+
+    refute Rails.application.routes.url_helpers.respond_to?(:user_session_code_path)
+    refute RecordingStudioUser::Engine.routes.url_helpers.respond_to?(:sign_in_password_code_path)
+
+    post user_session_path, params: { user: { email: email, password: PASSWORD } }
+    assert_response :unprocessable_entity
+    assert_select "button", text: I18n.t("recording_studio_user.sessions.email_sign_in_code"), count: 0
+
+    post "/users/sign_in/password/code", params: { user: { email: email } }
+    assert_response :not_found
+    post "/recording_studio_users/auth/sign_in/password/code", params: { user: { email: email } }
+    assert_response :not_found
+  end
+
+  test "password sign-in code uses the signup code screen when login codes are off" do
+    email = unique_email("signup-screen")
+    User.create!(
+      email: email,
+      password: PASSWORD,
+      password_confirmation: PASSWORD,
+      registered_with: "password"
+    )
+    @config.registration_authentication_methods = [:password]
+    @config.otp_login_enabled = false
+    @config.otp_registration_enabled = false
+    @config.otp_enabled = false
+    Rails.application.reload_routes!
+
+    post user_session_path, params: { user: { email: email, password: PASSWORD } }
+    assert_response :unprocessable_entity
+    assert_select "button", text: I18n.t("recording_studio_user.sessions.email_sign_in_code")
+
+    post user_session_code_path, params: { user: { email: email } }
+    assert_redirected_to verify_user_registration_path
+  end
+
   test "staff create confirms and a public create does not" do
-    staff = RecordingStudioUser::Directory.create_user_without_test_default!(
+    staff = RecordingStudioUser::Directory.create_user!(
       email: unique_email("staff"),
       password: PASSWORD,
       password_confirmation: PASSWORD,
@@ -164,13 +265,14 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
       time_zone: "UTC",
       confirm: true
     )
-    public_user = RecordingStudioUser::Directory.create_user_without_test_default!(
+    public_user = RecordingStudioUser::Directory.create_user!(
       email: unique_email("public"),
       password: PASSWORD,
       password_confirmation: PASSWORD,
       first_name: "Public",
       last_name: "Signup",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: false
     )
 
     assert staff.confirmed?
@@ -204,6 +306,14 @@ class PasswordSignupConfirmationTest < ActionDispatch::IntegrationTest
 
   def signup_params(email)
     { user: { email: email, password: PASSWORD, password_confirmation: PASSWORD } }
+  end
+
+  def with_singleton_method(singleton, name)
+    original = singleton.instance_method(name)
+    singleton.define_method(name) { |*, **| raise ArgumentError, "code send failed" }
+    yield
+  ensure
+    singleton.define_method(name, original)
   end
 
   def submit_signup_code!

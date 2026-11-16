@@ -252,7 +252,8 @@ class OtpDirectChallengeTest < ActionDispatch::IntegrationTest
       password: "Password123!",
       first_name: "Direct",
       last_name: "Code",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     accept_pending_live_terms!(user)
     user

@@ -18,7 +18,8 @@ class ProfileAccessTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Granted",
       last_name: "Owner",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     recording = RecordingStudioUser.profile_recording_for(user)
 
@@ -72,7 +73,8 @@ class ProfileAccessTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "No",
       last_name: "People",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     people_root = RecordingStudioUser.people_root
     result = RecordingStudioAccessible.bootstrap_owner_access!(recording: people_root, actor: user)
@@ -112,14 +114,16 @@ class ProfileAccessTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Owner",
       last_name: "Person",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     extra = RecordingStudioUser.create_user!(
       email: "extra-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Extra",
       last_name: "Person",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     recording = RecordingStudioUser.profile_recording_for(owner)
 
@@ -140,7 +144,8 @@ class ProfileAccessTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Later",
       last_name: "Member",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     RecordingStudioUser::ProfileAccess.grant_membership!(
       recording: recording,
@@ -159,14 +164,16 @@ class ProfileAccessTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Raise",
       last_name: "Owner",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     extra = RecordingStudioUser.create_user!(
       email: "unauth-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "No",
       last_name: "Manager",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     recording = RecordingStudioUser.profile_recording_for(owner)
 
@@ -189,7 +196,8 @@ class ProfileAccessTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Blank",
       last_name: "Check",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     recording = RecordingStudioUser.profile_recording_for(user)
 
@@ -206,14 +214,16 @@ class ProfileAccessTest < ActiveSupport::TestCase
       password: "Password123!",
       first_name: "Owner",
       last_name: "Person",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     stranger = RecordingStudioUser.create_user!(
       email: "stranger-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       first_name: "Other",
       last_name: "Person",
-      time_zone: "UTC"
+      time_zone: "UTC",
+      confirm: true
     )
     recording = RecordingStudioUser.profile_recording_for(owner)
 

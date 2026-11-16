@@ -39,9 +39,9 @@ module RecordingStudioUser
       def create_password
         build_password_resource(sign_up_params)
         return render_password_taken if existing_account?(submitted_email)
-        return render :password, status: :unprocessable_entity unless resource.save
+        return render :password, status: :unprocessable_entity unless persist_password_signup?
 
-        start_password_confirmation!
+        redirect_to otp_registration_verify_path, **confirmation_code_flash(@confirmation_code)
       end
 
       def otp; end
