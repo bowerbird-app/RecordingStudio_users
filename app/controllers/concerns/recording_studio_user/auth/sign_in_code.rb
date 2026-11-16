@@ -17,19 +17,42 @@ module RecordingStudioUser
       end
 
       def request_sign_in_code!(email)
+        purpose = sign_in_code_purpose(email)
+        return suppressed_sign_in_code if purpose.blank?
+
         RecordingStudioUser.request_otp!(
-          email: email,
-          purpose: sign_in_code_purpose(email),
-          request: request,
-          session: session
+          email: email, purpose: purpose, request: request, session: session
         )
+      end
+
+      def suppressed_sign_in_code
+        clear_otp_challenge_session!
+        RecordingStudioUser::Services::IssueOtp::Result.suppressed
       end
 
       def sign_in_code_purpose(email)
         user = resource_class.find_for_database_authentication(email: email.to_s.strip.downcase)
         return :confirmation if RecordingStudioUser::PasswordConfirmation.pending?(user)
+        return :registration if unconfirmed_otp_registration?(user)
+        return :login if RecordingStudioUser.config.otp_enabled? && RecordingStudioUser.config.otp_login_enabled?
 
-        :login
+        nil
+      end
+
+      def unconfirmed_otp_registration?(user)
+        user.present? &&
+          user.respond_to?(:registered_with_otp?) && user.registered_with_otp? &&
+          !user.confirmed? &&
+          RecordingStudioUser.config.otp_enabled? &&
+          RecordingStudioUser.config.otp_registration_enabled?
+      end
+
+      def clear_otp_challenge_session!
+        return unless session
+
+        session.delete(:otp_challenge_id)
+        session.delete(:otp_purpose)
+        session.delete(:otp_user_id)
       end
 
       def sign_in_code_path

@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require_dependency RecordingStudioUser::Engine.root.join(
+  "app/controllers/concerns/recording_studio_user/auth/password_signup_save.rb"
+).to_s
+require_dependency RecordingStudioUser::Engine.root.join(
   "app/controllers/concerns/recording_studio_user/auth/registration_otp.rb"
 ).to_s
 require_dependency RecordingStudioUser::Engine.root.join(
@@ -11,6 +14,7 @@ module RecordingStudioUser
   module Auth
     class RegistrationsController < BaseController
       include RegistrationOtp
+      include PasswordSignupSave
       include SignupTermsAcceptance
 
       before_action :require_password_registration!, only: %i[password create_password]

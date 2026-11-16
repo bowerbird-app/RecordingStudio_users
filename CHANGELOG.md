@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Directory.create_user!` takes `confirm:` and defaults to `false`. Staff create and connected-account create pass `confirm: true`.
 - Password sign-up routes are drawn only when password registration is allowed. That is off when `primary_login_type` is `:otp`, and when `registration_authentication_methods` does not include `:password`.
 - Password sign-up sets up email-code notifications and checks the code tables even when `otp_enabled` is false. A failed code send does not keep the account.
-- The password sign-in code action is drawn only when a code screen is routed.
+- The password sign-in code action is drawn only when a code screen is routed. When login codes are off, that action emails a confirmation code only for an account that still needs one. A confirmed account and an unknown address get the same notice and no login code.
+- The confirmation-code email is queued after the signup transaction commits. A failure while saving the account still rolls the account back.
 
 ### Upgrade notes
 
@@ -25,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Delete `config.password_registration_confirmation`. Password sign-up always confirms with an email code.
 - Install the existing one-time-code tables if this host has not. Run `rails generate recording_studio_user:migrations` and migrate. Password sign-up sends the code through those tables and `recording_studio_notifications`, including when `otp_enabled` is false. A failed send rolls the new account back.
 - Accounts that are already confirmed keep their passwords.
-- An unconfirmed account can no longer sign in with a password. The password screen can email a code.
+- An unconfirmed account can no longer sign in with a password. The password screen can email a confirmation code. When login codes are off, a confirmed account does not receive a login code from that button.
 - A password saved before the inbox is proved stays only when the same browser that saved it enters the code. Any other confirmation clears that password and remembered sign-ins. A password set after a real confirmation stays.
 - `RecordingStudioUser.create_user!` and `Directory.create_user!` no longer confirm. Pass `confirm: true` when staff or a connected account should confirm without a code.
 - Hosts with `primary_login_type` `:otp`, or without `:password` in `registration_authentication_methods`, no longer have password sign-up routes.
