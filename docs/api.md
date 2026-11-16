@@ -2,7 +2,7 @@
 
 How a host, person, or AI agent manages **users** over **Recording Studio API**. This surface is authenticated and **admin-only**.
 
-Users are Devise actors, not tree recordables. The gem registers named endpoints with `RecordingStudioApi.register_endpoint` on the host’s `:operations` API. It does **not** gemspec-depend on `recording_studio_api`. If that constant is missing, Users boots with no JSON user routes.
+Users are Devise actors, not tree recordables. The gem registers named endpoints with `RecordingStudioApi.register_endpoint` on the host’s `:operations` API. The gemspec depends on `recording_studio_api` `>= 1.1`, `< 2.0`. If that constant is missing, Users boots with no JSON user routes.
 
 Users does not pass `User` to `RecordingStudioApi.register_recordable_type_api`. On API 0.11 that call claims the `users` path, so the custom operations endpoints stop running, and the metric executor counts recordings of type `User`. This gem does not create those recordings. `metrics_for("User", api: :operations)` stays empty. The operations users routes stay the custom endpoints.
 
@@ -13,7 +13,7 @@ Do not register these routes on the public API (`/recording_studio_api/api/v1`).
 ## Install (host)
 
 ```ruby
-gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v0.11.0"
+gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v1.1.0"
 ```
 
 Name the Admin API `:operations` (`default_access :read_only`). Users registers collection and member endpoints on that API and passes each `operations:` registration only through `api: :operations`. Hosts that already define `config.api :operations` (for example featured_in) do not add a second named-API block in this gem.

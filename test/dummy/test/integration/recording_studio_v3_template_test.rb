@@ -14,7 +14,8 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
 
   test "dummy app validates v3 recordable declarations" do
     assert RecordingStudio.validate_recordable_declarations!
-    assert_equal %w[AdminRoot RecordingStudioUser::People Workspace], RecordingStudio.root_recordable_types.sort
+    assert_equal %w[AdminRoot RecordingStudioTermsAndConditions::Library RecordingStudioUser::People Workspace],
+                 RecordingStudio.root_recordable_types.sort
     assert_equal [ "Workspace", "Folder" ], RecordingStudio.allowed_parent_types_for("Page")
   end
 
@@ -78,11 +79,11 @@ class RecordingStudioV3TemplateTest < ActiveSupport::TestCase
       end
     end
     assert_equal 200, User.where("email LIKE 'dummy_user_%@example.com'").count
-    live = RecordingStudioTermsAndConditions.current_published_for(workspace)
+    live = RecordingStudioTermsAndConditions.current_published_for
     assert live.present?
     assert_equal RecordingStudioTermsAndConditions::SampleTerms::TITLE, live.title
     admin = User.find_by!(email: "admin@admin.com")
-    assert RecordingStudioTermsAndConditions.accepted?(admin, workspace)
+    assert RecordingStudioTermsAndConditions.accepted?(admin)
     receipt = RecordingStudioTermsAndConditions::Acceptance.find_by!(actor: admin, terms_id: live.id)
     assert_equal({ "source" => "seed" }, receipt.provenance)
     assert_nil Current.actor

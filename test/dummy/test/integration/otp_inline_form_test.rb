@@ -129,7 +129,7 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "/after-inline-signup"
     assert user.reload.confirmed?
     assert_equal [ { user_id: user.id, method: :otp } ], @events
-    assert RecordingStudioTermsAndConditions.accepted?(user, Dummy::SignupTerms.workspace)
+    assert RecordingStudioTermsAndConditions.accepted?(user)
     receipt = RecordingStudioTermsAndConditions::Acceptance.order(:created_at).last
     assert_equal({ "source" => "checkbox" }, receipt.provenance)
   end
@@ -400,10 +400,10 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
   end
 
   def ensure_live_terms!
-    workspace = Dummy::SignupTerms.workspace
-    return if RecordingStudioTermsAndConditions.current_published_for(workspace)
+    return if RecordingStudioTermsAndConditions.current_published_for
 
-    recording = record_terms(Dummy::SignupTerms.root_recording, title: "Signup Terms", body: "Be kind on the way in.")
+    library = terms_library_root
+    recording = record_terms(library, title: "Signup Terms", body: "Be kind on the way in.")
     publish_terms!(recording, slug: "inline-terms-#{SecureRandom.hex(4)}")
   end
 

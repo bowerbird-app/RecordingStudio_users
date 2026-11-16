@@ -4,8 +4,8 @@ module RecordingStudioUser
   # Soft Terms notice on create-password. Hosts that load
   # recording_studio_terms_and_conditions get the continue-notice when live
   # Terms are still pending. Without that gem this helper is a no-op.
-  # TnC 0.6.3+ Gate.root_for_signup already falls back when the current
-  # workspace has no live Terms.
+  # Terms 0.21 keeps those documents on the shared library and ignores the
+  # signup root this helper still passes through.
   module AuthTermsNoticeHelper
     def recording_studio_user_signup_terms_notice
       return unless terms_notice_available?

@@ -39,12 +39,17 @@ class SignupTermsAcceptanceTest < Minitest::Test
     assert_empty RecordingStudioTermsAndConditions.accepted
   end
 
-  def test_acceptance_is_noop_without_a_signup_root
-    stub_tnc(root: nil)
+  def test_accepts_pending_terms_without_a_workspace_root
     terms = Object.new
+    stub_tnc(root: nil, pending: [terms])
+    actor = Object.new
 
-    assert_nil Controller.new.accept(Object.new)
-    refute_includes RecordingStudioTermsAndConditions.accepted, terms
+    Controller.new.accept(actor)
+
+    assert_equal(
+      [[actor, terms, { "source" => "continue_notice" }]],
+      RecordingStudioTermsAndConditions.accepted
+    )
   end
 
   def test_accepts_pending_live_terms_with_continue_notice_provenance
@@ -90,10 +95,10 @@ class SignupTermsAcceptanceTest < Minitest::Test
     assert Controller.new.pending?
   end
 
-  def test_pending_signup_terms_are_false_without_a_root
+  def test_pending_signup_terms_do_not_require_a_workspace_root
     stub_tnc(root: nil, pending: [Object.new])
 
-    refute Controller.new.pending?
+    assert Controller.new.pending?
   end
 
   def test_pending_signup_terms_are_false_when_nothing_is_pending

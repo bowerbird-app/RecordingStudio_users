@@ -20,13 +20,10 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     end
 
     sign_in @user
-    # Dummy seeds (from earlier suite steps) leave live Terms; TnC 0.7.7+ gates
-    # signed-in visits against the first root that has them.
-    root = RecordingStudioTermsAndConditions::Gate.first_root_with_live_terms
-    if root
-      RecordingStudioTermsAndConditions.pending_published_list(@user, root).each do |terms|
-        RecordingStudioTermsAndConditions.accept!(@user, terms, { "source" => "continue_notice" })
-      end
+    # Dummy seeds leave live Terms on the shared library. Accept them so the
+    # gate does not redirect a signed-in docs visit.
+    RecordingStudioTermsAndConditions.pending_published_list(@user).each do |terms|
+      RecordingStudioTermsAndConditions.accept!(@user, terms, { "source" => "continue_notice" })
     end
   end
 

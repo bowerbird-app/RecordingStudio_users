@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.31.0", RecordingStudioUser::VERSION
+    assert_equal "0.32.0", RecordingStudioUser::VERSION
     assert_kind_of Class, RecordingStudioUser::Engine
     RecordingStudioUser::Engine.load_view_helpers!
     assert defined?(RecordingStudioUser::OmniauthHelper)
@@ -149,21 +149,21 @@ class RecordingStudioUserTest < Minitest::Test
 
       assert attachable, "expected an attachable GitHub pin"
       assert_includes attachable, 'github: "bowerbird-app/RecordingStudio_attachable"'
-      assert_includes attachable, 'tag: "v0.23.0"'
+      assert_includes attachable, 'tag: "v0.31.0"'
       refute_includes attachable, 'tag: "v0.15.0"'
       refute_includes attachable, 'tag: "v0.13.0"'
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.23.0"
-      assert_includes lock, "82edaff1cf6a8ec1a401ece52995af5ae64f6193"
-      assert_includes lock, "recording_studio_attachable (0.23.0)"
+      assert_includes lock, "tag: v0.31.0"
+      assert_includes lock, "81146507c87401b9d64d6515e3b36de94ad81b60"
+      assert_includes lock, "recording_studio_attachable (0.31.0)"
       refute_includes lock, "recording_studio_attachable (0.15.0)"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
-    assert_includes gemspec, '"recording_studio_attachable", "~> 0.7"'
+    assert_includes gemspec, '"recording_studio_attachable", ">= 0.31.0", "< 1"'
   end
 
   def test_gemfiles_pin_cache_for_suite_and_dummy
@@ -174,17 +174,17 @@ class RecordingStudioUserTest < Minitest::Test
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache"'
-    assert_includes gemfile, 'tag: "v0.6.3"'
+    assert_includes gemfile, 'tag: "v0.7.0"'
     assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio_cache"'
-    assert_includes dummy_gemfile, 'tag: "v0.6.3"'
+    assert_includes dummy_gemfile, 'tag: "v0.7.0"'
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_cache.git"
-    assert_includes lock, "tag: v0.6.3"
-    assert_includes lock, "0d8676b02a351f91e3522024bb0dd75e2a153bde"
-    assert_includes lock, "recording_studio_cache (0.6.3)"
+    assert_includes lock, "tag: v0.7.0"
+    assert_includes lock, "c5700000632d2554370f179da39a678082b9c3de"
+    assert_includes lock, "recording_studio_cache (0.7.0)"
     assert_includes dummy_lock, "remote: https://github.com/bowerbird-app/RecordingStudio_cache.git"
-    assert_includes dummy_lock, "tag: v0.6.3"
-    assert_includes dummy_lock, "0d8676b02a351f91e3522024bb0dd75e2a153bde"
-    assert_includes dummy_lock, "recording_studio_cache (0.6.3)"
+    assert_includes dummy_lock, "tag: v0.7.0"
+    assert_includes dummy_lock, "c5700000632d2554370f179da39a678082b9c3de"
+    assert_includes dummy_lock, "recording_studio_cache (0.7.0)"
     assert_includes gemspec, '"recording_studio_cache", ">= 0.5", "< 1"'
   end
 
@@ -205,27 +205,27 @@ class RecordingStudioUserTest < Minitest::Test
       contents = File.read(gemfile)
 
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_accessible"'
-      assert_includes contents, 'tag: "v0.43.1"'
+      assert_includes contents, 'tag: "v0.45.0"'
       refute_includes contents, 'RecordingStudio_accessible", tag: "v0.18.0"'
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_trashable"'
-      assert_includes contents, 'tag: "v0.16.1"'
+      assert_includes contents, 'tag: "v0.17.0"'
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_metrics"'
-      assert_includes contents, 'tag: "v0.8.0"'
+      assert_includes contents, 'tag: "v0.9.0"'
       assert_includes contents, "require: false"
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v0.43.1"
-      assert_includes lock, "5dcb0c4050c1fb100433db0eda8685d435d065e6"
-      assert_includes lock, "recording_studio_accessible (0.43.1)"
+      assert_includes lock, "tag: v0.45.0"
+      assert_includes lock, "b1d59d8f4b7319e0307723c26051b6742f64994a"
+      assert_includes lock, "recording_studio_accessible (0.45.0)"
       refute_includes lock, "recording_studio_accessible (0.18.0)"
-      assert_includes lock, "tag: v0.16.1"
-      assert_includes lock, "e48cf881faa894c81281b47a41f1a06468115c92"
-      assert_includes lock, "recording_studio_trashable (0.16.1)"
-      assert_includes lock, "tag: v0.8.0"
-      assert_includes lock, "4521e585007f19c8c2fb10e513988fd5546c6230"
-      assert_includes lock, "recording_studio_metrics (0.8.0)"
+      assert_includes lock, "tag: v0.17.0"
+      assert_includes lock, "f286625ad346d5ec03ba7916f9b6f23137a0f43d"
+      assert_includes lock, "recording_studio_trashable (0.17.0)"
+      assert_includes lock, "tag: v0.9.0"
+      assert_includes lock, "765e395019b1814e88b4d9bb2f492dfcb38c67ec"
+      assert_includes lock, "recording_studio_metrics (0.9.0)"
     end
 
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
@@ -241,31 +241,31 @@ class RecordingStudioUserTest < Minitest::Test
     dummy_lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
     gemspec = File.read(File.expand_path("../recording_studio_user.gemspec", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
     refute_includes gemfile, 'RecordingStudio", tag: "v4.7.0"'
-    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
+    assert_includes dummy_gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
     refute_includes dummy_gemfile, 'RecordingStudio", tag: "v4.7.0"'
-    assert_includes lock, "tag: v7.0.0"
-    assert_includes lock, "9516fe1562b7934b3c92a5272d9c509f60ae0bb9"
-    assert_includes lock, "recording_studio (7.0.0)"
+    assert_includes lock, "tag: v7.3.0"
+    assert_includes lock, "a49ee77dd81979f1395117e81e5934f0a1f02efa"
+    assert_includes lock, "recording_studio (7.3.0)"
     refute_includes lock, "recording_studio (4.7.0)"
     assert_includes lock, "view_component (4.24.0)"
-    assert_includes dummy_lock, "tag: v7.0.0"
-    assert_includes dummy_lock, "9516fe1562b7934b3c92a5272d9c509f60ae0bb9"
-    assert_includes dummy_lock, "recording_studio (7.0.0)"
+    assert_includes dummy_lock, "tag: v7.3.0"
+    assert_includes dummy_lock, "a49ee77dd81979f1395117e81e5934f0a1f02efa"
+    assert_includes dummy_lock, "recording_studio (7.3.0)"
     refute_includes dummy_lock, "recording_studio (4.7.0)"
     assert_includes dummy_lock, "view_component (4.24.0)"
-    assert_includes gemspec, '"recording_studio", ">= 7.0", "< 8.0"'
+    assert_includes gemspec, '"recording_studio", ">= 7.1", "< 8.0"'
   end
 
   def test_dummy_gemfile_pins_root_switchable_v0114_tag
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.15.1"'
-    assert_includes lock, "tag: v0.15.1"
-    assert_includes lock, "3bfcf54324483e9e7e7ebfb816a8aae91d3a15b3"
-    assert_includes lock, "recording_studio_root_switchable (0.15.1)"
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.16.0"'
+    assert_includes lock, "tag: v0.16.0"
+    assert_includes lock, "f3b77df92fe78573cb756d829bcd6d9f1e5d508d"
+    assert_includes lock, "recording_studio_root_switchable (0.16.0)"
   end
 
   def test_gemfiles_pin_admin_v270_and_flatpack_01341
@@ -273,28 +273,28 @@ class RecordingStudioUserTest < Minitest::Test
       contents = File.read(gemfile)
 
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_admin"'
-      assert_includes contents, 'tag: "v2.16.0"'
+      assert_includes contents, 'tag: "v2.17.0"'
       refute_includes contents, 'tag: "v2.3.0"'
       assert_includes contents, 'github: "bowerbird-app/RecordingStudio_logs"'
-      assert_includes contents, 'tag: "v0.7.4"'
+      assert_includes contents, 'tag: "v0.8.0"'
       assert_includes contents, 'github: "bowerbird-app/flatpack"'
-      assert_includes contents, 'tag: "v0.1.356"'
+      assert_includes contents, 'tag: "v0.1.377"'
       refute_includes contents, "d005941bf5a09a51582d5b7418fe5486738474eb"
       refute_includes contents, "d1206e7c515bff9c25c01a2f5c6399d208ba667e"
     end
 
     [File.expand_path("../Gemfile.lock", __dir__), File.expand_path("dummy/Gemfile.lock", __dir__)].each do |lockfile|
       lock = File.read(lockfile)
-      assert_includes lock, "tag: v2.16.0"
-      assert_includes lock, "ca6175248d18ff1855e4ad4e2ce51c26691c49bf"
-      assert_includes lock, "recording_studio_admin (2.16.0)"
+      assert_includes lock, "tag: v2.17.0"
+      assert_includes lock, "02fabaeb387f704e506d574596e2167edaa72888"
+      assert_includes lock, "recording_studio_admin (2.17.0)"
       refute_includes lock, "recording_studio_admin (2.3.0)"
-      assert_includes lock, "tag: v0.7.4"
-      assert_includes lock, "47d70f2c1d72cdc9bbb9ce7f63d98835347ce449"
-      assert_includes lock, "recording_studio_logs (0.7.4)"
-      assert_includes lock, "tag: v0.1.356"
-      assert_includes lock, "flat_pack (0.1.356)"
-      assert_includes lock, "7f669689ce8aa080bb5de8b0f14ed01b395d6054"
+      assert_includes lock, "tag: v0.8.0"
+      assert_includes lock, "6dc75b4290f655564f20f96a295b7c1d0c9851dc"
+      assert_includes lock, "recording_studio_logs (0.8.0)"
+      assert_includes lock, "tag: v0.1.377"
+      assert_includes lock, "flat_pack (0.1.377)"
+      assert_includes lock, "1e7d5be3f206d4e044791271b4da432b2bbef842"
       refute_includes lock, "d005941bf5a09a51582d5b7418fe5486738474eb"
       refute_includes lock, "d1206e7c515bff9c25c01a2f5c6399d208ba667e"
     end
@@ -309,12 +309,12 @@ class RecordingStudioUserTest < Minitest::Test
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_notifications"'
-    assert_includes gemfile, 'tag: "v0.15.0"'
+    assert_includes gemfile, 'tag: "v0.19.1"'
     refute_includes gemfile, 'path: "../../vendor/recording_studio_notifications"'
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_notifications.git"
-    assert_includes lock, "tag: v0.15.0"
-    assert_includes lock, "ece0dea87640f2d2fb74a49ac0edc91e6875d73f"
-    assert_includes lock, "recording_studio_notifications (0.15.0)"
+    assert_includes lock, "tag: v0.19.1"
+    assert_includes lock, "7c7bb579535c56daf46e9208a0a1c7ddeab2bb01"
+    assert_includes lock, "recording_studio_notifications (0.19.1)"
   end
 
   def test_ci_uses_recording_studio_user_test_database
@@ -330,12 +330,12 @@ class RecordingStudioUserTest < Minitest::Test
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_notifications_email"'
-    assert_includes gemfile, 'tag: "v0.5.3"'
+    assert_includes gemfile, 'tag: "v0.5.4"'
     refute_includes gemfile, 'path: "../../vendor/recording_studio_notifications_email"'
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_notifications_email.git"
-    assert_includes lock, "tag: v0.5.3"
-    assert_includes lock, "0d1bbc89eb0859c4ce39f4dec9b5ba0fd9cc6f4c"
-    assert_includes lock, "recording_studio_notifications_email (0.5.3)"
+    assert_includes lock, "tag: v0.5.4"
+    assert_includes lock, "fe855a541eb4b18bce0170ef0964993a859c122e"
+    assert_includes lock, "recording_studio_notifications_email (0.5.4)"
     refute_includes lock, "remote: ../../vendor/recording_studio_notifications_email"
   end
 
@@ -343,12 +343,12 @@ class RecordingStudioUserTest < Minitest::Test
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v0.23.4"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v1.1.0"'
     refute_includes gemfile, 'RecordingStudio_api", tag: "v0.11.0"'
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_api.git"
-    assert_includes lock, "tag: v0.23.4"
-    assert_includes lock, "67c27ffb760a1bfe883155a03318a7f180d7d4a8"
-    assert_includes lock, "recording_studio_api (0.23.4)"
+    assert_includes lock, "tag: v1.1.0"
+    assert_includes lock, "ee8b9e8eb60cfb6cbcafb566d29a7a5f5fad17ac"
+    assert_includes lock, "recording_studio_api (1.1.0)"
     refute_includes lock, "recording_studio_api (0.11.0)"
   end
 
@@ -357,24 +357,24 @@ class RecordingStudioUserTest < Minitest::Test
     lock = File.read(File.expand_path("dummy/Gemfile.lock", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_mcp"'
-    assert_includes gemfile, 'tag: "v0.33.3"'
+    assert_includes gemfile, 'tag: "v0.34.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_Oauth"'
-    assert_includes gemfile, 'tag: "v0.21.9"'
+    assert_includes gemfile, 'tag: "v0.24.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_site_settings"'
-    assert_includes gemfile, 'tag: "v0.5.6"'
+    assert_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'path: "../../vendor/recording_studio_site_settings"'
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_mcp.git"
-    assert_includes lock, "tag: v0.33.3"
-    assert_includes lock, "e140b6d65e90992263fd1c2429508af971493cde"
-    assert_includes lock, "recording_studio_mcp (0.33.3)"
+    assert_includes lock, "tag: v0.34.1"
+    assert_includes lock, "c4af73d58f775ba4b141818e35c94220db08bf8f"
+    assert_includes lock, "recording_studio_mcp (0.34.1)"
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_Oauth.git"
-    assert_includes lock, "tag: v0.21.9"
-    assert_includes lock, "7fb1d24d85be7c67d6fda6bfaedf0e3400f45602"
-    assert_includes lock, "recording_studio_oauth (0.21.9)"
+    assert_includes lock, "tag: v0.24.0"
+    assert_includes lock, "246a0b760674a4e1142e5af37de52ba89bab541c"
+    assert_includes lock, "recording_studio_oauth (0.24.0)"
     assert_includes lock, "remote: https://github.com/bowerbird-app/RecordingStudio_site_settings.git"
-    assert_includes lock, "tag: v0.5.6"
-    assert_includes lock, "606256e9af04bc0941b441daa99e06eb687a9ec9"
-    assert_includes lock, "recording_studio_site_settings (0.5.6)"
+    assert_includes lock, "tag: v0.6.0"
+    assert_includes lock, "e967d9d73208638ad9369e830d925fc5fc8d1d1b"
+    assert_includes lock, "recording_studio_site_settings (0.6.0)"
     refute_includes lock, "remote: ../../vendor/recording_studio_site_settings"
   end
 
