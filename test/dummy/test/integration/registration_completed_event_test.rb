@@ -42,6 +42,12 @@ class RegistrationCompletedEventTest < ActionDispatch::IntegrationTest
     }
 
     user = User.find_by!(email: email)
+    assert_empty @events
+    refute user.confirmed?
+
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+
     assert_equal [ { user_id: user.id, method: :password, user_found: true } ], @events
   end
 

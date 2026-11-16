@@ -90,7 +90,7 @@ Writable on update: `first_name`, `last_name`, `time_zone`, allowlisted extra pr
 
 ## Create
 
-With a password, `POST` calls `create_user!` unchanged. `registered_with` stays `password`, the People-root Profile is recorded, and the existing confirmation policy applies. Admin create does not emit `registration.completed`.
+With a password, `POST` calls `create_user!(confirm: true)`. A staff editor created the account, so it is confirmed without an email code. `registered_with` stays `password` and the People-root Profile is recorded. Admin create does not emit `registration.completed`. Public password sign-up is a different path. It leaves the account unconfirmed until the person enters an email code.
 
 Omit `password` (or send blank) while one-time codes are enabled (`RecordingStudioUser.config.otp_enabled?`). `POST` calls `create_unconfirmed_user!`. That method sets `registered_with` to `otp`, skips the confirmation email, and does not call `skip_confirmation!`. The account stays unconfirmed and Terms are not accepted. Profile fields on that request go through `record_profile!`. Omit them and no Profile is recorded.
 

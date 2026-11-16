@@ -24,6 +24,8 @@ module RecordingStudioUser
       def finish_direct_otp!(result)
         if registration_challenge?
           finish_registration!(result)
+        elsif confirmation_challenge?
+          finish_password_confirmation!(result.user)
         elsif eligible_for_direct_sign_in?(result.user)
           finish_sign_in!(result.user)
         else
@@ -39,6 +41,10 @@ module RecordingStudioUser
 
       def registration_challenge?
         session[:otp_purpose].to_s == "registration"
+      end
+
+      def confirmation_challenge?
+        session[:otp_purpose].to_s == "confirmation"
       end
 
       def eligible_for_direct_sign_in?(user)
@@ -58,6 +64,8 @@ module RecordingStudioUser
 
         if purpose == "registration"
           user.registered_with_otp? && !user.confirmed?
+        elsif purpose == "confirmation"
+          RecordingStudioUser::PasswordConfirmation.pending?(user)
         else
           purpose == "login" && eligible_for_direct_sign_in?(user)
         end

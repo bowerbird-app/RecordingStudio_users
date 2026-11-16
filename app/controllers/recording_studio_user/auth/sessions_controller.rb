@@ -4,6 +4,7 @@ module RecordingStudioUser
   module Auth
     class SessionsController < BaseController
       include PasswordRateLimit
+      include SignInCode
 
       before_action :require_otp_login_enabled!, only: %i[otp create_otp verify submit_verify resend]
 
@@ -37,8 +38,17 @@ module RecordingStudioUser
       def otp; end
 
       def create_otp
-        request_login_otp!(submitted_email)
+        request_sign_in_code!(submitted_email)
         redirect_to otp_session_verify_path, notice: generic_login_notice
+      end
+
+      def send_code
+        email = submitted_email.presence || pending_auth_email
+        return render_continue_failure(I18n.t("recording_studio_user.auth.enter_email")) if email.blank?
+
+        store_pending_auth_email!(email)
+        result = request_sign_in_code!(email)
+        redirect_to sign_in_code_path, **sign_in_code_flash(result)
       end
 
       def verify
@@ -46,8 +56,9 @@ module RecordingStudioUser
       end
 
       def submit_verify
-        result = verify_login_otp
+        result = verify_session_code
         return render_verify_failure(result) unless result.success?
+        return finish_password_confirmation!(result.user) if result.challenge.confirmation?
         return render_verify_failure(nil) unless eligible_for_sign_in?(result.user)
 
         finish_sign_in!(result.user)
@@ -55,7 +66,9 @@ module RecordingStudioUser
 
       def resend
         user = user_for_otp_resend
-        if eligible_for_sign_in?(user)
+        if confirmation_resend?(user)
+          RecordingStudioUser.resend_otp!(user: user, purpose: :confirmation, request: request, session: session)
+        elsif eligible_for_sign_in?(user)
           RecordingStudioUser.resend_otp!(user: user, purpose: :login, request: request, session: session)
         end
         redirect_to otp_session_verify_path, notice: generic_login_notice
@@ -68,17 +81,8 @@ module RecordingStudioUser
           RecordingStudioUser.config.primary_login_type_otp?
 
         require_otp_login_enabled!
-        request_login_otp!(email)
+        request_sign_in_code!(email)
         redirect_to otp_session_verify_path, notice: generic_login_notice
-      end
-
-      def verify_login_otp
-        RecordingStudioUser.verify_otp!(
-          challenge_id: session[:otp_challenge_id],
-          code: params[:code],
-          purpose: "login",
-          session: session
-        )
       end
 
       def sign_in_params
@@ -93,23 +97,12 @@ module RecordingStudioUser
         { scope: :user, recall: "#{controller_path}#password" }
       end
 
-      def request_login_otp!(email)
-        RecordingStudioUser.request_otp!(
-          email: email,
-          purpose: :login,
-          request: request,
-          session: session
-        )
-      end
-
-      # Password accounts can request a login code too. Having a password is a
-      # capability, not a restriction on how you sign in.
       def eligible_for_sign_in?(user)
         user&.confirmed? && user.active_for_authentication?
       end
 
       def password_sign_in_allowed?(user)
-        user && !user.registered_with_otp? && user.valid_password?(sign_in_params[:password])
+        user&.confirmed? && !user.registered_with_otp? && user.valid_password?(sign_in_params[:password])
       end
 
       def render_continue_failure(message)

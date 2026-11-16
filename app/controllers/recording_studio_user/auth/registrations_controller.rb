@@ -13,7 +13,9 @@ module RecordingStudioUser
       include RegistrationOtp
       include SignupTermsAcceptance
 
-      before_action :require_otp_registration_enabled!, only: %i[otp create_otp verify submit_verify resend]
+      before_action :require_password_registration!, only: %i[password create_password]
+      before_action :require_otp_registration_enabled!, only: %i[otp create_otp]
+      before_action :require_signup_code_screen!, only: %i[verify submit_verify resend]
 
       def new
         @resource = resource_class.new
@@ -39,8 +41,7 @@ module RecordingStudioUser
         return render_password_taken if existing_account?(submitted_email)
         return render :password, status: :unprocessable_entity unless resource.save
 
-        provision_password_account!
-        finish_sign_up!(resource)
+        start_password_confirmation!
       end
 
       def otp; end
@@ -54,11 +55,15 @@ module RecordingStudioUser
       end
 
       def submit_verify
-        result = verify_registration_otp
+        result = verify_signup_code
         return render_verify_failure(result) unless result.success?
 
-        user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
-        finish_sign_up!(user)
+        if result.challenge.confirmation?
+          finish_password_confirmation!(result.user, sign_up: true)
+        else
+          user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
+          finish_sign_up!(user)
+        end
       end
 
       def resend
@@ -75,26 +80,10 @@ module RecordingStudioUser
 
       attr_reader :resource
 
-      def continue_with_primary_registration!(email)
-        return redirect_to otp_registration_password_path unless
-          RecordingStudioUser.config.primary_login_type_otp?
-
-        require_otp_registration_enabled!
-        start_otp_registration!(email)
-      end
-
-      def verify_registration_otp
-        RecordingStudioUser.verify_otp!(
-          challenge_id: session[:otp_challenge_id],
-          code: params[:code],
-          purpose: "registration",
-          session: session
-        )
-      end
-
       def build_password_resource(attrs = {})
         @resource = resource_class.new(attrs)
         @resource.registered_with = "password" if @resource.respond_to?(:registered_with=)
+        @resource.skip_confirmation_notification! if @resource.respond_to?(:skip_confirmation_notification!)
       end
 
       def sign_up_params
@@ -121,17 +110,8 @@ module RecordingStudioUser
       end
 
       def provision_password_account!
-        confirm_password_account!
         RecordingStudioUser.record_profile!(resource, actor: resource, **Profile.default_attributes_for(resource))
         accept_pending_terms_on_signup!(resource)
-        RegistrationCompleted.emit!(user_id: resource.id, method: :password)
-      end
-
-      def confirm_password_account!
-        return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
-        return unless resource.registered_with_password? && resource.confirmed_at.nil?
-
-        resource.update_column(:confirmed_at, Time.current)
       end
 
       def render_verify_failure(result)

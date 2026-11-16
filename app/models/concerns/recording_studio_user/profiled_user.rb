@@ -10,7 +10,6 @@ module RecordingStudioUser
       before_validation :fill_password_confirmation_when_optional
       validate :password_meets_configured_minimum
       validates :registered_with, inclusion: { in: REGISTERED_WITH_VALUES }, if: :registered_with_column?
-      after_create :confirm_password_account, if: :registered_with_password?
 
       has_many :identities,
                class_name: "RecordingStudioUser::Identity",
@@ -84,15 +83,6 @@ module RecordingStudioUser
       return if password.blank?
 
       self.password_confirmation = password
-    end
-
-    def confirm_password_account
-      return unless RecordingStudioUser.config.password_registration_confirmation == :existing_policy
-      return unless registered_with_password?
-      return unless self.class.column_names.include?("confirmed_at")
-      return if confirmed_at.present?
-
-      update_column(:confirmed_at, Time.current)
     end
   end
 end

@@ -24,7 +24,10 @@ end
 
 seed_user = lambda do |email:, first_name:, last_name:, time_zone:, created_at: nil|
   user = User.find_or_initialize_by(email: email)
-  user.password = user.password_confirmation = "Password123!" if user.new_record?
+  if user.new_record?
+    user.password = user.password_confirmation = "Password123!"
+    user.skip_confirmation! if user.respond_to?(:skip_confirmation!)
+  end
   if created_at && user.new_record?
     user.created_at = created_at
     user.updated_at = created_at

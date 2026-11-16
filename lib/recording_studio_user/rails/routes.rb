@@ -38,22 +38,42 @@ module ActionDispatch
       def draw_recording_studio_user_registration_routes(singular)
         get "sign_up", to: "registrations#new", as: :"new_#{singular}_registration"
         post "sign_up", to: "registrations#continue"
+        draw_recording_studio_user_password_registration_routes(singular)
+        draw_recording_studio_user_registration_otp_routes(singular)
+        draw_recording_studio_user_signup_code_routes(singular)
+      end
+
+      def draw_recording_studio_user_password_registration_routes(singular)
+        return unless RecordingStudioUser.config.password_registration_allowed?
+
         get "sign_up/password", to: "registrations#password"
         post "sign_up/password", to: "registrations#create_password", as: :"#{singular}_registration"
+      end
+
+      def draw_recording_studio_user_registration_otp_routes(_singular)
         return unless recording_studio_user_otp_registration_routes?
 
         get "sign_up/otp", to: "registrations#otp"
         post "sign_up/otp", to: "registrations#create_otp"
+      end
+
+      def draw_recording_studio_user_signup_code_routes(singular)
+        return unless recording_studio_user_signup_code_routes?
+
         get "sign_up/verify", to: "registrations#verify", as: :"verify_#{singular}_registration"
         post "sign_up/verify", to: "registrations#submit_verify"
         post "sign_up/resend", to: "registrations#resend", as: :"resend_#{singular}_registration"
       end
 
+      def recording_studio_user_signup_code_routes?
+        RecordingStudioUser.config.password_registration_allowed? ||
+          recording_studio_user_otp_registration_routes?
+      end
+
       def draw_recording_studio_user_session_routes(singular)
         get "sign_in", to: "sessions#new", as: :"new_#{singular}_session"
         post "sign_in", to: "sessions#continue"
-        get "sign_in/password", to: "sessions#password"
-        post "sign_in/password", to: "sessions#create_password", as: :"#{singular}_session"
+        draw_recording_studio_user_password_session_routes(singular)
         return unless recording_studio_user_otp_login_routes?
 
         get "sign_in/otp", to: "sessions#otp"
@@ -61,6 +81,12 @@ module ActionDispatch
         get "sign_in/verify", to: "sessions#verify", as: :"verify_#{singular}_session"
         post "sign_in/verify", to: "sessions#submit_verify"
         post "sign_in/resend", to: "sessions#resend", as: :"resend_#{singular}_session"
+      end
+
+      def draw_recording_studio_user_password_session_routes(singular)
+        get "sign_in/password", to: "sessions#password"
+        post "sign_in/password", to: "sessions#create_password", as: :"#{singular}_session"
+        post "sign_in/password/code", to: "sessions#send_code", as: :"#{singular}_session_code"
       end
 
       def draw_recording_studio_user_otp_challenge_routes

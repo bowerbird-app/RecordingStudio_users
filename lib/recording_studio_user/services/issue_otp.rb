@@ -5,10 +5,15 @@ require_relative "issue_otp/result"
 module RecordingStudioUser
   module Services
     class IssueOtp
-      NOTIFICATION_TYPES = { "registration" => :registration_otp, "login" => :login_otp }.freeze
+      NOTIFICATION_TYPES = {
+        "registration" => :registration_otp,
+        "login" => :login_otp,
+        "confirmation" => :registration_otp
+      }.freeze
       TITLE_KEYS = {
         "registration" => "recording_studio_user.otp.verify_your_email",
-        "login" => "recording_studio_user.otp.your_sign_in_code"
+        "login" => "recording_studio_user.otp.your_sign_in_code",
+        "confirmation" => "recording_studio_user.otp.verify_your_email"
       }.freeze
 
       def self.call(...)
@@ -46,6 +51,7 @@ module RecordingStudioUser
 
       def user_can_receive_code?
         return false if @user.blank?
+        return PasswordConfirmation.pending?(@user) if @purpose == "confirmation"
         return !@user.confirmed? if @purpose == "registration"
 
         @user.confirmed? && @user.active_for_authentication?

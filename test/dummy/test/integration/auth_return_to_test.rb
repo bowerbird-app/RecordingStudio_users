@@ -112,6 +112,10 @@ class AuthReturnToTest < ActionDispatch::IntegrationTest
       user: { email: email, password: "Password123!", password_confirmation: "Password123!" }
     }
 
+    assert_redirected_to verify_user_registration_path
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+
     assert_redirected_to "/after-signup"
   end
 

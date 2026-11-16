@@ -8,11 +8,14 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
   REGISTRATION_OTP_PATHS = [
     [:get, "/users/sign_up/otp"],
     [:post, "/users/sign_up/otp"],
+    [:get, "/recording_studio_users/auth/sign_up/otp"],
+    [:post, "/recording_studio_users/auth/sign_up/otp"]
+  ].freeze
+
+  SIGNUP_CODE_PATHS = [
     [:get, "/users/sign_up/verify"],
     [:post, "/users/sign_up/verify"],
     [:post, "/users/sign_up/resend"],
-    [:get, "/recording_studio_users/auth/sign_up/otp"],
-    [:post, "/recording_studio_users/auth/sign_up/otp"],
     [:get, "/recording_studio_users/auth/sign_up/verify"],
     [:post, "/recording_studio_users/auth/sign_up/verify"],
     [:post, "/recording_studio_users/auth/sign_up/resend"]
@@ -63,10 +66,11 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     reload_auth_routes!
 
     assert_otp_paths_missing(REGISTRATION_OTP_PATHS + LOGIN_OTP_PATHS + DIRECT_OTP_PATHS)
-    refute named_route?(:verify_user_registration_path)
+    assert_otp_paths_routed(SIGNUP_CODE_PATHS)
+    assert named_route?(:verify_user_registration_path)
     refute named_route?(:recording_studio_user_otp_start_path)
     refute named_route?(:verify_user_session_path)
-    refute named_route?(:resend_user_registration_path)
+    assert named_route?(:resend_user_registration_path)
     refute named_route?(:resend_user_session_path)
     refute engine_named_route?(:sign_up_otp_path)
     refute engine_named_route?(:sign_in_otp_path)
@@ -83,8 +87,8 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     reload_auth_routes!
 
     assert_otp_paths_missing(REGISTRATION_OTP_PATHS)
-    assert_otp_paths_routed(LOGIN_OTP_PATHS + DIRECT_OTP_PATHS)
-    refute named_route?(:verify_user_registration_path)
+    assert_otp_paths_routed(SIGNUP_CODE_PATHS + LOGIN_OTP_PATHS + DIRECT_OTP_PATHS)
+    assert named_route?(:verify_user_registration_path)
     assert named_route?(:verify_user_session_path)
   end
 
@@ -93,7 +97,7 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     reload_auth_routes!
 
     assert_otp_paths_missing(LOGIN_OTP_PATHS)
-    assert_otp_paths_routed(REGISTRATION_OTP_PATHS + DIRECT_OTP_PATHS)
+    assert_otp_paths_routed(REGISTRATION_OTP_PATHS + SIGNUP_CODE_PATHS + DIRECT_OTP_PATHS)
     refute named_route?(:verify_user_session_path)
     assert named_route?(:verify_user_registration_path)
   end

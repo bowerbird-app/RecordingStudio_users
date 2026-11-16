@@ -136,6 +136,12 @@ end
 - `:email` (default) — next screen is password
 - `:otp` — issues a code and opens the verify screen (requires `otp_enabled`, `otp_login_enabled`, `otp_registration_enabled`, and `:otp` in `registration_authentication_methods`)
 
+Password sign-up always asks for an email code before the account is confirmed. The old `password_registration_confirmation` setting is gone, and assigning it raises. The password from that sign-up stays only for the browser that set it, and only when that same browser enters the code. Any other confirmation clears the password and any remembered sign-in. A password set after the account is confirmed stays. An unconfirmed account cannot sign in with a password. The password sign-in screen can email a code instead.
+
+Password sign-up routes are not drawn when `primary_login_type` is `:otp`, or when `registration_authentication_methods` does not include `:password`. Password sign-in stays for accounts that already have a password.
+
+`Directory.create_user!` leaves the account unconfirmed unless the caller passes `confirm: true`. Staff create and connected-account create pass `confirm: true`. Public sign-up does not use that flag.
+
 `auth_logo` nominates the Site Settings mark on those unsigned screens:
 
 - `:square` (default) — app icon as a Flatpack Avatar

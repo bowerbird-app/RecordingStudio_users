@@ -72,11 +72,19 @@ module RecordingStudioUser
 
       def inline_destination!(result)
         return inline_registration_destination!(result) if registration_challenge?
+        return inline_confirmation_destination!(result) if confirmation_challenge?
         return unless eligible_for_direct_sign_in?(result.user)
 
         clear_pending_auth_email!
         sign_in_user!(result.user)
         after_sign_in_path_for(result.user)
+      end
+
+      def inline_confirmation_destination!(result)
+        user = confirm_password_signup!(result.user)
+        clear_pending_auth_email!
+        sign_in_user!(user)
+        after_sign_in_path_for(user)
       end
 
       def inline_registration_destination!(result)

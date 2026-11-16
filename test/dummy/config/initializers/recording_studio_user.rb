@@ -52,7 +52,6 @@ RecordingStudioUser.configure do |config|
   config.otp_registration_enabled = true
   config.registration_authentication_methods = %i[password otp]
   # config.primary_login_type = :otp # default :email — password on screen 2
-  config.password_registration_confirmation = :existing_policy
   # OmniAuth. Hosts leave this empty: Continue-with buttons appear only for
   # providers whose secrets are present in Rails credentials (`omniauth:`).
   # Dummy prefers decrypted credentials, then falls back to placeholders so

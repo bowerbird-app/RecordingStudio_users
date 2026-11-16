@@ -38,6 +38,10 @@ module RecordingStudioUser
       host_or_engine(:user_session_path, :sign_in_password_path)
     end
 
+    def password_session_code_path
+      host_or_engine(:user_session_code_path, :sign_in_password_code_path)
+    end
+
     def password_registration_path
       host_or_engine(:user_registration_path, :sign_up_password_path)
     end

@@ -68,7 +68,9 @@ module RecordingStudioUser
       end
 
       def purpose_for_existing(user)
-        if registration_pending?(user)
+        if PasswordConfirmation.pending?(user)
+          :confirmation
+        elsif registration_pending?(user)
           registration_purpose
         elsif RecordingStudioUser.config.otp_login_enabled?
           :login

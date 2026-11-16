@@ -57,6 +57,7 @@ module RecordingStudioUser
           password: password,
           password_confirmation: attributes[:password_confirmation].presence,
           actor: Access.actor_for(context),
+          confirm: true,
           **attributes.slice(*Directory::PROFILE_ATTRIBUTE_KEYS)
         )
       end

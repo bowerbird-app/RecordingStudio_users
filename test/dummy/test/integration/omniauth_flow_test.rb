@@ -432,11 +432,13 @@ class OmniauthFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "Sign-in methods and identity removal require Accessible edit access" do
-    locked_out = User.create!(
+    locked_out = User.new(
       email: "oauth-locked-#{SecureRandom.hex(4)}@example.com",
       password: "Password123!",
       password_confirmation: "Password123!"
     )
+    locked_out.skip_confirmation!
+    locked_out.save!
     RecordingStudioUser.people_root.record(RecordingStudioUser::Profile) do |profile|
       profile.user_id = locked_out.id
       profile.first_name = "OAuth"

@@ -7,6 +7,7 @@ module RecordingStudioUser
       include RecordingStudio::ControllerLayout
       include RecordingStudioUser::AuthRoutesHelper
       include RecordingStudioUser::Auth::ReturnPath
+      include RecordingStudioUser::PasswordConfirmation::BindsSession
 
       recording_studio_layout { RecordingStudioUser.configuration.layout }
     end

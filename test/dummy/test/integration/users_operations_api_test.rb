@@ -242,6 +242,7 @@ class UsersOperationsApiTest < ActionDispatch::IntegrationTest
     user_id = created.fetch("id")
     user = User.find(user_id)
     assert_equal "password", user.registered_with
+    assert user.confirmed?
     assert user.password_set?
     assert RecordingStudioUser.profile_for(user).present?
     assert_empty events

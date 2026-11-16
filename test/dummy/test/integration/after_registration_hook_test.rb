@@ -37,6 +37,11 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
     }
 
     user = User.find_by!(email: email)
+    assert_empty @calls
+
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
+
     assert_equal [{ user_id: user.id, email: email, method: :password }], @calls
   end
 
@@ -156,13 +161,17 @@ class AfterRegistrationHookTest < ActionDispatch::IntegrationTest
 
     email = "after-reg-error-#{SecureRandom.hex(4)}@example.com"
 
+    post user_registration_path, params: {
+      user: { email: email, password: "Password123!", password_confirmation: "Password123!" }
+    }
+    assert User.exists?(email: email)
+
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
     assert_error_reported(StandardError) do
-      post user_registration_path, params: {
-        user: { email: email, password: "Password123!", password_confirmation: "Password123!" }
-      }
+      post verify_user_registration_path, params: { code: code }
     end
 
-    assert User.exists?(email: email)
+    assert User.find_by!(email: email).confirmed?
   end
 
   private

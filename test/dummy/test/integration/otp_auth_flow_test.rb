@@ -26,7 +26,13 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: email)
     assert user.registered_with_password?
     assert RecordingStudioUser.profile_for(user)
+    refute user.confirmed?
+    assert_redirected_to verify_user_registration_path
+
+    confirm_password_signup_code!
     assert_redirected_to root_path
+    assert user.reload.confirmed?
+    assert user.valid_password?("Password123!")
 
     sign_out_user!
     post user_session_path, params: { user: { email: email, password: "Password123!" } }
@@ -345,7 +351,7 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, code
   end
 
-  test "unconfirmed password account is not sent a login code" do
+  test "unconfirmed password account gets a confirmation code instead of a login code" do
     email = "unconfirmed-password-#{SecureRandom.hex(4)}@example.com"
     user = User.create!(
       email: email,
@@ -355,11 +361,14 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     )
     user.update_column(:confirmed_at, nil)
 
-    assert_no_difference -> { RecordingStudioUser::OtpChallenge.count } do
-      post "#{new_user_session_path}/otp", params: { user: { email: email } }
+    assert_difference -> { RecordingStudioUser::OtpChallenge.where(purpose: "confirmation").count }, +1 do
+      assert_no_difference -> { RecordingStudioUser::OtpChallenge.where(purpose: "login").count } do
+        post "#{new_user_session_path}/otp", params: { user: { email: email } }
+      end
     end
 
     assert_redirected_to verify_user_session_path
+    assert_equal "confirmation", session[:otp_purpose]
   end
 
   test "confirmed OTP user can sign in with a login code" do
@@ -668,10 +677,10 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     post "#{new_user_registration_path}/otp", params: { user: { email: "x@example.com" } }
     assert_response :not_found
     get "/users/sign_up/verify"
-    assert_response :not_found
+    assert_response :success
     post "/users/sign_up/resend"
-    assert_response :not_found
-    refute Rails.application.routes.url_helpers.respond_to?(:verify_user_registration_path)
+    assert_redirected_to verify_user_registration_path
+    assert Rails.application.routes.url_helpers.respond_to?(:verify_user_registration_path)
   ensure
     RecordingStudioUser.config.otp_registration_enabled = original
     RecordingStudioUser.config.primary_login_type = original_primary
@@ -813,6 +822,11 @@ class OtpAuthFlowTest < ActionDispatch::IntegrationTest
     sign_out :user
   rescue StandardError
     nil
+  end
+
+  def confirm_password_signup_code!
+    code = RecordingStudioUser.otp_message(session[:otp_challenge_id]).fetch(:body)[/\d{6}/]
+    post verify_user_registration_path, params: { code: code }
   end
 
   def start_otp_registration!(email)

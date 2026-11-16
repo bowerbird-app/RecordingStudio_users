@@ -341,6 +341,7 @@ class ApiTest < Minitest::Test
     assert_equal "secret", calls.first[:password]
     assert_nil calls.first[:password_confirmation]
     assert_equal :staff, calls.first[:actor]
+    assert_equal true, calls.first[:confirm]
     assert_equal "Ada", calls.first[:first_name]
   end
 

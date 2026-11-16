@@ -97,10 +97,10 @@ module RecordingStudioUser
       def issuable?(user)
         return false if user.blank? || disabled?(user)
 
-        if @purpose == "registration"
-          registration_pending?(user)
-        else
-          user.confirmed? && user.active_for_authentication?
+        case @purpose
+        when "registration" then registration_pending?(user)
+        when "confirmation" then PasswordConfirmation.pending?(user)
+        else user.confirmed? && user.active_for_authentication?
         end
       end
 
@@ -111,7 +111,7 @@ module RecordingStudioUser
       def disabled?(user)
         return false unless user.respond_to?(:active_for_authentication?)
         return true if user.respond_to?(:access_locked?) && user.access_locked?
-        return false if registration_pending?(user)
+        return false if registration_pending?(user) || PasswordConfirmation.pending?(user)
 
         !user.active_for_authentication?
       end

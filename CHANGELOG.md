@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-11-16
+
+### Changed
+
+- Password sign-up does not confirm the account or sign the person in. It emails a one-time code and opens the existing code screen. The code confirms the account and signs them in.
+- Password sign-in refuses an unconfirmed account. That screen can email a code instead.
+- `password_registration_confirmation` is removed. Assigning it raises `ArgumentError`.
+- `Directory.create_user!` takes `confirm:` and defaults to `false`. Staff create and connected-account create pass `confirm: true`.
+- Password sign-up routes are drawn only when password registration is allowed. That is off when `primary_login_type` is `:otp`, and when `registration_authentication_methods` does not include `:password`.
+
+### Upgrade notes
+
+- Bump to `0.31.0`. No new migration.
+- Delete `config.password_registration_confirmation`. Password sign-up always confirms with an email code.
+- Install the existing one-time-code tables if this host has not. Run `rails generate recording_studio_user:migrations` and migrate. Password sign-up sends the code through those tables.
+- Accounts that are already confirmed keep their passwords.
+- An unconfirmed account can no longer sign in with a password. The password screen can email a code.
+- A password saved before the inbox is proved stays only when the same browser that saved it enters the code. Any other confirmation clears that password and remembered sign-ins. A password set after a real confirmation stays.
+- `RecordingStudioUser.create_user!` and `Directory.create_user!` no longer confirm. Pass `confirm: true` when staff or a connected account should confirm without a code.
+- Hosts with `primary_login_type` `:otp`, or without `:password` in `registration_authentication_methods`, no longer have password sign-up routes.
+
 ## [0.30.0] - 2026-11-15
 
 ### Changed
