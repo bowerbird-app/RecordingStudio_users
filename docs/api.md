@@ -13,7 +13,7 @@ Do not register these routes on the public API (`/recording_studio_api/api/v1`).
 ## Install (host)
 
 ```ruby
-gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v1.1.0"
+gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v1.2.1"
 ```
 
 Name the Admin API `:operations` (`default_access :read_only`). Users registers collection and member endpoints on that API and passes each `operations:` registration only through `api: :operations`. Hosts that already define `config.api :operations` (for example featured_in) do not add a second named-API block in this gem.
