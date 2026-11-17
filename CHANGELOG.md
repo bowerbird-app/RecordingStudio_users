@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `users_update` passes `required_role: :edit`. Recording Studio API 1.6 raises at boot for a non-GET endpoint with `scope_id: false` that omits `required_role`. Update still calls `Access.authorize_edit!`. `users_show` stays GET with `scope_id: false` and does not pass `required_role`.
+- `users_update` passes `required_role: :edit`. Recording Studio API 1.8.0 raises at boot for a non-GET endpoint with `scope_id: false` that omits `required_role`. Update still calls `Access.authorize_edit!`. `users_show` stays GET with `scope_id: false` and does not pass `required_role`.
 
 ### Upgrade notes
 
