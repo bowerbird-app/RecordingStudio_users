@@ -200,6 +200,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
       limiter.allow_requests!(scope: :issue, keys: [ email_key, ip, session_id ])
     end
 
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:account:#{email_key}")
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{session_id}")
     assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{ip}")
@@ -213,40 +214,83 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
 
     limiter.allow_requests!(scope: :issue, keys: [ email_key, ip, session_id ])
 
-    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:account:#{email_key}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
     assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{ip}")
     assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{session_id}")
   end
 
-  test "warns when OTP is on and the cache is a memory or null store" do
+  test "send and resend share the account email bucket and keep ip scopes apart" do
+    limiter = RecordingStudioUser::Services::OtpRateLimiter
+    email_key = limiter.email_key("shared@example.com")
+    ip = "203.0.113.40"
+
+    limiter.allow_request!(scope: :issue, key: email_key)
+    assert_raises(RecordingStudioUser::RateLimited) do
+      limiter.allow_request!(scope: :resend, key: email_key)
+    end
+    assert Rails.cache.read("recording_studio_user:otp:rl:account:#{email_key}").to_i.positive?
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:#{email_key}")
+
+    limiter.allow_request!(scope: :issue, key: ip)
+    assert_nothing_raised { limiter.allow_request!(scope: :resend, key: ip) }
+  end
+
+  test "warns outside production and raises in production for a memory or null store" do
     previous_logger = Rails.logger
     io = StringIO.new
     Rails.logger = Logger.new(io)
 
     Rails.cache = ActiveSupport::Cache::MemoryStore.new
-    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
     assert_match(/shared, atomic cache store/, io.string)
     assert_match(/MemoryStore/, io.string)
 
     io.truncate(0)
     io.rewind
     Rails.cache = ActiveSupport::Cache::NullStore.new
-    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
     assert_match(/NullStore/, io.string)
 
     io.truncate(0)
     io.rewind
     Rails.cache = quiet_cache_store
-    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
     assert_empty io.string
 
     RecordingStudioUser.config.otp_enabled = false
     Rails.cache = ActiveSupport::Cache::MemoryStore.new
-    RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+    RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
     assert_empty io.string
+
+    RecordingStudioUser.config.otp_enabled = true
+    with_production_env do
+      error = assert_raises(RuntimeError) do
+        RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
+      end
+      assert_match(/MemoryStore/, error.message)
+
+      Rails.cache = ActiveSupport::Cache::NullStore.new
+      assert_raises(RuntimeError) do
+        RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
+      end
+
+      RecordingStudioUser.config.otp_enabled = false
+      assert_nothing_raised { RecordingStudioUser::Services::OtpRateLimiter.require_shared_store! }
+    end
   ensure
     RecordingStudioUser.config.otp_enabled = true
     Rails.logger = previous_logger
+  end
+
+  def with_production_env
+    singleton = class << Rails; self; end
+    original = Rails.method(:env)
+    singleton.define_method(:env) { ActiveSupport::StringInquirer.new("production") }
+    yield
+  ensure
+    singleton.define_method(:env) { original.call }
   end
 
   def quiet_cache_store

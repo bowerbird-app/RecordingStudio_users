@@ -468,7 +468,7 @@ bin/rails generate recording_studio_user:migrations
 bin/rails db:migrate
 ```
 
-Mount the auth screens with `recording_studio_user_auth_for :users` (see Auth screens above). Password sign-up and sign-in keep working with OTP off. The migrations generator backfills `registered_with` (and renames `authentication_method` when that column is still present), adds Devise confirmable columns with `confirmed_at` for existing users, creates the OTP challenges table, and adds the open-challenge unique index. Route mapping lives in Auth screens above.
+Mount the auth screens with `recording_studio_user_auth_for :users` (see Auth screens above). Password sign-up and sign-in keep working with OTP off. The migrations generator backfills `registered_with` (and renames `authentication_method` when that column is still present), adds Devise confirmable columns with `confirmed_at` for existing users, creates the OTP challenges table, adds the open-challenge unique index, and creates the password-failure and sign-in-lock tables. Route mapping lives in Auth screens above.
 
 Hosts that prove an email address from another gem call these methods. They never load `OtpChallenge` or the rate limiter.
 
@@ -513,13 +513,15 @@ RecordingStudioUser.resend_otp!(
 )
 ```
 
-`resend_otp!` uses the same email digest as `request_otp!` and returns the same result object. Check `result.throttled?` when a code request is too soon.
+`resend_otp!` uses the same email digest as `request_otp!` and returns the same result object. Check `result.throttled?` when a code request is too soon. Send and resend share that email bucket (one code per minute per address). IP and session buckets stay on their own scope. Resend's IP and session keys still use `otp_resend_cooldown`.
 
-The email rate-limit bucket is an HMAC-SHA256 of the normalized address. The HMAC key is derived from `secret_key_base`, so the cache does not store the address. Email, IP, and session are all read before any of them is consumed: a block on one key does not spend the others. Those counters need a shared, atomic cache store (Redis or Memcached) because every app process has to see the same numbers. When one-time codes are on and `Rails.cache` is a memory store or a null store, the app logs a warning at boot.
+The email rate-limit bucket is an HMAC-SHA256 of the normalized address. The HMAC key is derived from `secret_key_base`, so the cache does not store the address. Email, IP, and session are all read before any of them is consumed: a block on one key does not spend the others. Those counters need a shared, atomic cache store (Redis or Memcached) because every app process has to see the same numbers. When one-time codes are on and `Rails.cache` is a memory store or a null store, boot raises in production and logs a warning in development and test.
+
+Wrong codes are counted per account across registration, login, and confirmation challenges created in `otp_lockout_window` (default 1 hour) and after the latest consumed challenge. `otp_lockout_max_failures` defaults to 10. At that point the account's codes pause for `otp_lockout_duration` (default 1 hour). A correct code during the pause gets the same response as a wrong code. Requesting or resending a code during the pause returns the usual "code sent" response and does not issue or deliver one. A successful verify clears the count. One email is sent when a pause starts. Password sign-in is not paused by a code lock.
 
 The host needs a case-insensitive unique index on `users.email` (a unique index on `LOWER(email)` is the usual shape). `create_unconfirmed_user!` rescues `ActiveRecord::RecordNotUnique` and returns the row that won the race. Open challenges — not consumed and not revoked — have a partial unique index on `recording_studio_user_otp_challenges` `(user_id, purpose)`.
 
-`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. Issue and resend cooldowns use `RecordingStudioCache::RateLimiter` on `Rails.cache` (`otp_resend_cooldown` for resend, one minute otherwise).
+`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. The shared email bucket is one minute. Resend's IP and session keys use `otp_resend_cooldown`.
 
 `complete_registration!` is the Users sign-up path. It still requires an OTP account and still fills a default surname and UTC.
 
@@ -531,6 +533,8 @@ The host needs a case-insensitive unique index on `users.email` (a unique index 
 Password sign-in shows the same mismatch notice for an unknown email, a wrong password, an OTP-only account, and a request over the limit. Timing still differs: bcrypt runs only for existing password accounts, and a blocked request does not check the password. Password reset shows the same Devise send-instructions notice for a known address, an unknown address, an OTP-only account, and a request over the limit. `Devise.paranoid` does not change that notice, and the response never says the address was not found. Reset does not email OTP-only or unknown addresses, and it does not send another email once the limit is spent. Sign-up still returns an error for an existing email. Login codes go to any confirmed, active account. Requesting one for an unknown, unconfirmed, or inactive email renders the same verify page and sends nothing.
 
 Sign-in allows 5 requests per email and 10 per IP every 3 minutes (`password_sign_in_email_limit`, `password_sign_in_ip_limit`, `password_sign_in_period`). Reset allows 3 per email and 10 per IP every 15 minutes (`password_reset_email_limit`, `password_reset_ip_limit`, `password_reset_period`). The email key is the same HMAC of the normalized address that one-time codes use. Both keys are read before either is counted, so a block on one does not spend the other. The counters are `RecordingStudioCache::RateLimiter` on `Rails.cache`. Use Redis or Memcached. A memory store or a null store cannot share the counts across processes, and the app logs a warning at boot when the cache is one of those. This is not Devise lockable.
+
+Wrong passwords on an account are also stored in `recording_studio_user_password_failures`. `password_lockout_max_failures` defaults to 10 inside `password_lockout_window` (default 1 hour). The account's password sign-in then pauses for `password_lockout_duration` (default 1 hour). A correct password during the pause gets the same mismatch notice as a wrong password. A successful password sign-in clears the count. One email is sent when a pause starts. A code lock does not pause password sign-in. Run `rails generate recording_studio_user:migrations` for the password-failure and sign-in-lock tables.
 
 Login notifications link to a protected code page under the Users mount. The
 page decrypts the code only while its challenge is active and only for the

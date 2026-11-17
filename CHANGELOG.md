@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Development and dummy Gemfiles pin the newest tags that resolve: Recording Studio `v7.3.0`, API `v1.2.1`, Accessible `v0.45.1`, Admin `v2.18.0`, Attachable `v0.31.0`, Cache `v0.7.0`, Icons `v0.4.0`, Logs `v0.8.0`, Metrics `v0.9.0`, Moveable `v6.0.0`, Trashable `v1.0.1`, and FlatPack `v0.1.377`. The dummy app also pins notifications `v0.19.1`, notifications email `v0.5.4`, notifications push `v0.10.0`, site settings `v0.6.0`, Terms and Conditions `v0.22.0`, Publishable `v1.1.0`, Root Switchable `v0.16.0`, OAuth `v0.25.0`, and MCP `v0.35.0`.
 
+## [0.34.0] - 2026-11-17
+
+### Added
+
+- Code sign-in pauses per account after `otp_lockout_max_failures` wrong codes (default 10) across registration, login, and confirmation challenges created inside `otp_lockout_window` (default 1 hour) and after the latest consumed challenge. The pause lasts `otp_lockout_duration` (default 1 hour). A correct code during the pause gets the same response as a wrong code. Requesting or resending a code returns the usual sent notice and does not issue or deliver one. A successful verify clears the count. One email is sent when a pause starts.
+- Password sign-in pauses per account after `password_lockout_max_failures` wrong passwords (default 10) inside `password_lockout_window` (default 1 hour), for `password_lockout_duration` (default 1 hour). Failures are rows in `recording_studio_user_password_failures`. A correct password during the pause gets the same mismatch notice as a wrong password. A successful password sign-in clears the count. One email is sent when a pause starts. This does not enable Devise lockable. A code pause does not block password sign-in, and a password pause does not block codes.
+
+### Changed
+
+- Send and resend share one per-account email rate-limit bucket (one code per minute). IP and session keys keep their own scope. Resend's IP and session keys still use `otp_resend_cooldown`.
+- When one-time codes are on and `Rails.cache` is a memory store or a null store, boot raises in production. Development and test still log a warning.
+
+### Upgrade notes
+
+- Bump to `0.34.0`.
+- Run `rails generate recording_studio_user:migrations` and migrate. That copies `create_recording_studio_user_sign_in_lockouts`.
+- Point `Rails.cache` at Redis or Memcached before production boot when one-time codes are on. A memory store or a null store raises.
+
 ## [0.33.0] - 2026-11-17
 
 ### Changed

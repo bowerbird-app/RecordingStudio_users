@@ -38,7 +38,7 @@ module RecordingStudioUser
       require "omniauth/rails_csrf_protection"
       OmniAuth.config.request_validation_phase = OmniAuth::RailsCsrfProtection::TokenVerifier.new
       RecordingStudioUser::Engine.remember_omniauth_return_to!
-      RecordingStudioUser::Services::OtpRateLimiter.warn_unless_shared_store!
+      RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
       RecordingStudioUser::Services::AuthRateLimiter.warn_unless_shared_store!
     end
 

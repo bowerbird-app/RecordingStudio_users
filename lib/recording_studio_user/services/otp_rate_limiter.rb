@@ -14,9 +14,14 @@ module RecordingStudioUser
     # {allow_requests!} reads every key first. A block on one key raises
     # {RateLimited} and does not consume the others. The increment itself has
     # to be atomic, and the counters have to be shared by every app process.
-    # Use Redis or Memcached. A memory store or a null store cannot do that;
-    # {warn_unless_shared_store!} logs a warning at boot when one-time codes
-    # are on and +Rails.cache+ is one of those stores.
+    # Use Redis or Memcached. A memory store or a null store cannot do that.
+    # {require_shared_store!} raises at boot in production when one-time codes
+    # are on and +Rails.cache+ is one of those stores, and logs a warning in
+    # development and test.
+    #
+    # Send and resend share one account bucket. An email key from {email_key}
+    # is stored under +:account+ for every scope, with a one-minute cooldown.
+    # IP and session keys keep the scope they were called with.
     #
     # Storage uses an +otp:rl+ key segment so legacy boolean +true+ values under
     # +recording_studio_user:otp:#{scope}:#{key}+ are never incremented (that
@@ -31,6 +36,8 @@ module RecordingStudioUser
     class OtpRateLimiter
       STORAGE_KEY_PREFIX = "recording_studio_user:otp:rl"
       EMAIL_RATE_LIMIT_SALT = "recording studio otp rate limit email"
+      # Shared by send and resend so a reissue cannot double the per-account rate.
+      ACCOUNT_SCOPE = :account
       # Main had no limit config; presence of the cooldown key was the one-shot limit.
       LIMIT = 1
 
@@ -48,20 +55,21 @@ module RecordingStudioUser
       def self.allow_requests!(scope:, keys:)
         list = Array(keys).compact_blank.uniq
         return if list.empty?
-        raise RateLimited, scope if list.any? { |key| blocked?(scope, key) }
+        raise RateLimited, scope if list.any? { |key| blocked?(bucket_scope(scope, key), key) }
 
         list.each { |key| allow_request!(scope: scope, key: key) }
       end
 
       def self.allow_request!(scope:, key:)
-        period = cooldown_for(scope)
+        bucket = bucket_scope(scope, key)
+        period = cooldown_for(bucket)
         # Shared RateLimiter disables when limit <= 0 and coerces String periods
         # via to_i. Main had no limit and passed cooldown straight to expires_in:.
-        return apply_expires_in_cooldown!(scope, key, period) unless shared_period?(period)
+        return apply_expires_in_cooldown!(bucket, key, period) unless shared_period?(period)
 
         # Boolean left by a prior 0/nil/odd cooldown must RateLimited, not increment.
-        raise RateLimited, scope if boolean_cooldown_hit?(scope, key)
-        raise RateLimited, scope if rate_limiter_for(scope, key, period).throttle.blocked?
+        raise RateLimited, scope if boolean_cooldown_hit?(bucket, key)
+        raise RateLimited, scope if rate_limiter_for(bucket, key, period).throttle.blocked?
       end
 
       def self.cooldown_for(scope)
@@ -72,6 +80,17 @@ module RecordingStudioUser
           1.minute
         end
       end
+
+      # Email digests share one bucket. Anything else keeps the caller's scope.
+      def self.bucket_scope(scope, key)
+        account_key?(key) ? ACCOUNT_SCOPE : scope
+      end
+      private_class_method :bucket_scope
+
+      def self.account_key?(key)
+        key.to_s.match?(/\A[0-9a-f]{64}\z/)
+      end
+      private_class_method :account_key?
 
       # Positive Numeric (including ActiveSupport::Duration) only — same values
       # main could pass to expires_in: without error and with a lasting TTL.
@@ -132,15 +151,16 @@ module RecordingStudioUser
       end
       private_class_method :email_rate_limit_key
 
-      def self.warn_unless_shared_store!
+      def self.require_shared_store!
         return unless RecordingStudioUser.config.otp_enabled?
         return unless unshared_cache_store?
 
-        Rails.logger.warn(
-          "RecordingStudioUser one-time codes need a shared, atomic cache store " \
-          "(Redis or Memcached). #{Rails.cache.class.name} cannot enforce OTP rate " \
-          "limits across processes."
-        )
+        message = "RecordingStudioUser one-time codes need a shared, atomic cache store " \
+                  "(Redis or Memcached). #{Rails.cache.class.name} cannot enforce OTP rate " \
+                  "limits across processes."
+        raise message if Rails.env.production?
+
+        Rails.logger.warn(message)
       end
 
       def self.unshared_cache_store?

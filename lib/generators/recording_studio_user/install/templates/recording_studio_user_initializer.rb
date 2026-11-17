@@ -85,6 +85,16 @@ RecordingStudioUser.configure do |config|
   # and installed recording_studio_notifications. Set primary_login_type = :otp
   # only when OTP login and registration are on.
   config.otp_enabled = false
+  # Account lockout. Failures in the window pause that sign-in method for the
+  # duration. A correct code or password during the pause looks like a normal
+  # miss. Code and password pauses are separate. One email is sent when a
+  # pause starts.
+  # config.otp_lockout_max_failures = 10
+  # config.otp_lockout_window = 1.hour
+  # config.otp_lockout_duration = 1.hour
+  # config.password_lockout_max_failures = 10
+  # config.password_lockout_window = 1.hour
+  # config.password_lockout_duration = 1.hour
   # Optional host callbacks after successful sign-up (password, OAuth new-user,
   # or OTP). Callable or class-name string responding to .call(user:, method:).
   # Multiple registrations are allowed. Errors are logged and reported; sign-up

@@ -32,6 +32,7 @@ module RecordingStudioUser
           return render_password_failure(I18n.t("recording_studio_user.auth.email_or_password_mismatch"))
         end
 
+        Services::AccountLockout.reset_password!(user)
         finish_sign_in!(user)
       end
 
@@ -102,7 +103,12 @@ module RecordingStudioUser
       end
 
       def password_sign_in_allowed?(user)
-        user&.confirmed? && !user.registered_with_otp? && user.valid_password?(sign_in_params[:password])
+        return false unless user&.confirmed? && !user.registered_with_otp?
+
+        password_ok = user.valid_password?(sign_in_params[:password])
+        locked = Services::AccountLockout.locked?(user, :password)
+        Services::AccountLockout.record_password_failure!(user) if locked || !password_ok
+        password_ok && !locked
       end
 
       def render_continue_failure(message)

@@ -132,6 +132,24 @@ class MigrationsGeneratorTest < Minitest::Test
     assert_includes template, "consumed_at IS NULL AND revoked_at IS NULL"
   end
 
+  def test_sign_in_lockout_migration_template
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/" \
+        "create_recording_studio_user_sign_in_lockouts.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "create_table :recording_studio_user_password_failures"
+    assert_includes template, "create_table :recording_studio_user_sign_in_locks"
+    assert_includes template, "t.string :kind, null: false"
+    assert_includes template, "t.datetime :locked_at, null: false"
+    assert_includes template, "t.datetime :notified_at"
+    assert_includes template, "index_rs_user_password_failures_on_user_and_created_at"
+    assert_includes template, "index_rs_user_sign_in_locks_on_user_kind_locked_at"
+  end
+
   def test_blank_profile_surname_and_time_zone_migration_template
     template = File.read(
       File.expand_path(
