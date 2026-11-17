@@ -73,6 +73,11 @@ fr:
         password:
           title: Connexion par mot de passe en pause
           body: Trop de tentatives de mot de passe. La connexion par mot de passe de ce compte est en pause pendant un moment. Vous pourrez réessayer plus tard.
+      sign_in_link:
+        title: Connexion
+        body: "Utilisez ce lien pour vous connecter. Il fonctionne une fois et expire dans %{minutes} minutes. %{url}"
+        stored_body: "Un lien de connexion à usage unique a été envoyé. Il expire dans %{minutes} minutes."
+        invalid: Ce lien de connexion n'a pas fonctionné. Demandez un nouveau code.
       signup_did_not_save: "Cette inscription n'a pas été enregistrée"
       password_did_not_save: "Ce mot de passe n'a pas été enregistré"
       could_not_send_link: "Nous n'avons pas pu envoyer ce lien"
@@ -120,6 +125,7 @@ fr:
       registration_label: Code d'inscription
       login_label: Code de connexion
       sign_in_lockout_label: Pause de connexion
+      sign_in_link_label: Lien de connexion
     omniauth:
       or: Ou
       continue_with: Continuer avec %{provider}
