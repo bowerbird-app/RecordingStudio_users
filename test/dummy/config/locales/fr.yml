@@ -66,6 +66,13 @@ fr:
       fresh_code: Nouveau code en route.
       wait_for_code: Patientez un peu avant de demander un autre code.
       give_it_a_minute: Attendez une minute, puis réessayez.
+      lockout:
+        otp:
+          title: Codes de connexion en pause
+          body: Trop de codes ont été essayés. Les codes par e-mail de ce compte sont en pause pendant un moment. Vous pourrez réessayer plus tard.
+        password:
+          title: Connexion par mot de passe en pause
+          body: Trop de tentatives de mot de passe. La connexion par mot de passe de ce compte est en pause pendant un moment. Vous pourrez réessayer plus tard.
       signup_did_not_save: "Cette inscription n'a pas été enregistrée"
       password_did_not_save: "Ce mot de passe n'a pas été enregistré"
       could_not_send_link: "Nous n'avons pas pu envoyer ce lien"
@@ -112,6 +119,7 @@ fr:
       login_body: "%{code} est votre code de connexion. Il expire dans %{minutes} minutes."
       registration_label: Code d'inscription
       login_label: Code de connexion
+      sign_in_lockout_label: Pause de connexion
     omniauth:
       or: Ou
       continue_with: Continuer avec %{provider}

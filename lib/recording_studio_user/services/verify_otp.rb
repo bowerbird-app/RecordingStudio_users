@@ -23,7 +23,8 @@ module RecordingStudioUser
       def call
         return failure(:session_mismatch) unless session_challenge_matches?
 
-        result = consume_challenge
+        result, lock = OtpChallenge.transaction { consume_challenge }
+        AccountLockout.deliver!(lock)
         instrument!(:verified, result.challenge) if result.success?
         result
       rescue ActiveRecord::RecordNotFound
@@ -33,22 +34,30 @@ module RecordingStudioUser
       private
 
       def consume_challenge
-        OtpChallenge.transaction do
-          challenge = OtpChallenge.lock.find_by(id: @challenge_id)
-          return failure(:not_found) unless challenge
+        challenge = OtpChallenge.lock.find_by(id: @challenge_id)
+        return [failure(:not_found), nil] unless challenge
 
-          rejection = rejection_reason(challenge)
-          return failure(rejection, challenge: challenge) if rejection
-          return record_failed_attempt(challenge) unless challenge.verify_code!(@code)
+        rejection = rejection_reason(challenge)
+        return [failure(rejection, challenge: challenge), nil] if rejection
+        return record_failed_attempt(challenge) unless accept_code?(challenge)
 
-          challenge.consume!
-          Result.new(success: true, reason: :verified, challenge: challenge, user: challenge.user)
-        end
+        challenge.consume!
+        [Result.new(success: true, reason: :verified, challenge: challenge, user: challenge.user), nil]
+      end
+
+      # A locked account takes the same path as a wrong code, including a
+      # correct code. The compare still runs so the two cases take the same work.
+      def accept_code?(challenge)
+        code_ok = challenge.verify_code!(@code)
+        return false if AccountLockout.locked?(challenge.user, :otp)
+
+        code_ok
       end
 
       def record_failed_attempt(challenge)
         challenge.increment_attempts!
-        failure(:invalid_code, challenge: challenge)
+        lock = AccountLockout.record_otp_failure!(challenge.user)
+        [failure(:invalid_code, challenge: challenge), lock]
       end
 
       def rejection_reason(challenge)

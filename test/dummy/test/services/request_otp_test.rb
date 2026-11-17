@@ -37,6 +37,7 @@ class RequestOtpTest < ActiveSupport::TestCase
       assert result.throttled?
     end
 
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:account:#{digest}")
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{digest}")
     assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{ip}")
   end
@@ -92,19 +93,22 @@ class RequestOtpTest < ActiveSupport::TestCase
     )
 
     assert result.issued?
-    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{digest}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:account:#{digest}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{digest}")
   end
 
-  test "resend uses the email digest" do
+  test "resend shares the account email bucket with send" do
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("resend"))
     request_otp(user.email, :registration)
-
-    resent = RecordingStudioUser.resend_otp!(user: user, purpose: :registration, request: nil, session: nil)
     digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(user.email)
 
-    assert resent.issued?
-    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:resend:#{digest}")
+    resent = RecordingStudioUser.resend_otp!(user: user, purpose: :registration, request: nil, session: nil)
+
+    assert resent.throttled?
+    assert Rails.cache.read("recording_studio_user:otp:rl:account:#{digest}").present?
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:#{digest}")
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:#{user.email}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{digest}")
   end
 
   private

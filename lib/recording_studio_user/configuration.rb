@@ -20,9 +20,12 @@ module RecordingStudioUser
     BOOLEAN_SETTINGS = %i[require_password_confirmation otp_enabled otp_registration_enabled].freeze
     DURATION_SETTINGS = %i[
       otp_expires_in otp_resend_cooldown unconfirmed_user_retention
+      otp_lockout_window otp_lockout_duration
       password_sign_in_period password_reset_period
+      password_lockout_window password_lockout_duration
     ].freeze
     POSITIVE_INTEGER_SETTINGS = %i[
+      otp_lockout_max_failures password_lockout_max_failures
       password_sign_in_email_limit password_sign_in_ip_limit
       password_reset_email_limit password_reset_ip_limit
       minimum_password_length
@@ -45,11 +48,17 @@ module RecordingStudioUser
       registration_authentication_methods: %i[password otp],
       otp_expires_in: 10.minutes,
       otp_max_attempts: 5,
+      otp_lockout_max_failures: 10,
+      otp_lockout_window: 1.hour,
+      otp_lockout_duration: 1.hour,
       otp_resend_cooldown: 60.seconds,
       otp_registration_channels: %i[email],
       otp_login_channels: %i[email push],
       unconfirmed_user_retention: 7.days,
       omniauth_create_account: true,
+      password_lockout_max_failures: 10,
+      password_lockout_window: 1.hour,
+      password_lockout_duration: 1.hour,
       password_sign_in_email_limit: 5,
       password_sign_in_ip_limit: 10,
       password_sign_in_period: 3.minutes,

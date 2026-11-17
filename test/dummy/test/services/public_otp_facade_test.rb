@@ -69,6 +69,7 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("resend"))
     session = {}
     first = request_registration!(user, session: session)
+    travel 61.seconds
 
     resent = RecordingStudioUser.resend_otp!(user: user, purpose: :registration, session: session)
 
@@ -79,7 +80,8 @@ class PublicOtpFacadeTest < ActiveSupport::TestCase
     assert_nil RecordingStudioUser.otp_proof(first.challenge_id)
 
     digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(user.email)
-    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:resend:#{digest}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:account:#{digest}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:#{digest}")
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:#{user.email}")
 
     again = RecordingStudioUser.resend_otp!(user: user, purpose: :registration, session: session)

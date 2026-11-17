@@ -66,6 +66,13 @@ en:
       signup_did_not_save: That sign up did not save
       password_did_not_save: "That password didn't save"
       could_not_send_link: "We couldn't send that link"
+      lockout:
+        otp:
+          title: Sign-in codes paused
+          body: Too many codes were tried. Email codes for this account are paused for a while. You can try again later.
+        password:
+          title: Password sign-in paused
+          body: Too many password attempts. Password sign-in for this account is paused for a while. You can try again later.
       verify:
         invalid_code: That code did not work. Try again.
         expired: That code expired. Request a new one.
@@ -109,6 +116,7 @@ en:
       login_body: "%{code} is your sign-in code. It expires in %{minutes} minutes."
       registration_label: Registration code
       login_label: Login code
+      sign_in_lockout_label: Sign-in lockout
     omniauth:
       or: Or
       continue_with: Continue with %{provider}

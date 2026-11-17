@@ -20,6 +20,11 @@ module RecordingStudioUser
         label_key: "recording_studio_user.otp.login_label",
         default_channels: %i[email push],
         available_channels: %i[email push]
+      },
+      sign_in_lockout: {
+        label_key: "recording_studio_user.otp.sign_in_lockout_label",
+        default_channels: %i[email],
+        available_channels: %i[email]
       }
     }.freeze
 
@@ -31,7 +36,7 @@ module RecordingStudioUser
 
       TYPE_KEYS.each do |key, options|
         register_type!(key, **options)
-        register_resolver!(key)
+        register_resolver!(key) unless key == :sign_in_lockout
       end
 
       @registered = true

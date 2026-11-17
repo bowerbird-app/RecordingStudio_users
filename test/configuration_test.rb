@@ -29,6 +29,12 @@ class ConfigurationTest < Minitest::Test
     refute_predicate @configuration, :omniauth_configured?
     assert_empty @configuration.after_registration_hooks
     assert_empty @configuration.popup_opener_origins
+    assert_equal 10, @configuration.otp_lockout_max_failures
+    assert_equal 1.hour, @configuration.otp_lockout_window
+    assert_equal 1.hour, @configuration.otp_lockout_duration
+    assert_equal 10, @configuration.password_lockout_max_failures
+    assert_equal 1.hour, @configuration.password_lockout_window
+    assert_equal 1.hour, @configuration.password_lockout_duration
     assert_equal 5, @configuration.password_sign_in_email_limit
     assert_equal 10, @configuration.password_sign_in_ip_limit
     assert_equal 3.minutes, @configuration.password_sign_in_period
@@ -138,6 +144,9 @@ class ConfigurationTest < Minitest::Test
     assert_equal %i[password otp], @configuration.registration_authentication_methods
     assert_equal 10.minutes, @configuration.otp_expires_in
     assert_equal 5, @configuration.otp_max_attempts
+    assert_equal 10, @configuration.otp_lockout_max_failures
+    assert_equal 1.hour, @configuration.otp_lockout_window
+    assert_equal 1.hour, @configuration.otp_lockout_duration
     assert_equal 60.seconds, @configuration.otp_resend_cooldown
     assert_equal %i[email], @configuration.otp_registration_channels
     assert_equal %i[email push], @configuration.otp_login_channels
@@ -225,6 +234,12 @@ class ConfigurationTest < Minitest::Test
   def test_non_positive_otp_settings_raise
     assert_raises(ArgumentError) { @configuration.otp_expires_in = 0 }
     assert_raises(ArgumentError) { @configuration.otp_max_attempts = 0 }
+    assert_raises(ArgumentError) { @configuration.otp_lockout_max_failures = 0 }
+    assert_raises(ArgumentError) { @configuration.otp_lockout_window = 0 }
+    assert_raises(ArgumentError) { @configuration.otp_lockout_duration = 0 }
+    assert_raises(ArgumentError) { @configuration.password_lockout_max_failures = 0 }
+    assert_raises(ArgumentError) { @configuration.password_lockout_window = 0 }
+    assert_raises(ArgumentError) { @configuration.password_lockout_duration = 0 }
     assert_raises(ArgumentError) { @configuration.otp_resend_cooldown = 0 }
     assert_raises(ArgumentError) { @configuration.unconfirmed_user_retention = 0 }
   end

@@ -39,6 +39,7 @@ module RecordingStudioUser
         raise ArgumentError, "unknown purpose" unless OtpChallenge::PURPOSES.include?(@purpose)
         return Result.suppressed unless user_can_receive_code?
         return Result.throttled unless reserve_rate_limit!
+        return Result.suppressed if AccountLockout.locked?(@user, :otp)
 
         challenge = issue_challenge!
         store_session!(challenge)
