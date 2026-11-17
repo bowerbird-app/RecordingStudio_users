@@ -53,12 +53,12 @@ module RecordingStudioUser
           summary: "Update a user",
           description: update_description,
           input_contract: Params.update_input_contract,
-          scope_id: false
+          scope_id: false, required_role: :edit
         )
       end
 
       def register_users_endpoint!(name, http_verb:, path:, handler:, summary:, description:, input_contract: nil,
-                                   scope_id: nil)
+                                   scope_id: nil, required_role: nil)
         return unless RecordingStudioApi.respond_to?(:register_endpoint)
         return if already_registered?(name)
 
@@ -69,6 +69,7 @@ module RecordingStudioUser
         }
         # These ids are user rows on the admin-only operations API, not recordings in a root.
         options[:scope_id] = scope_id unless scope_id.nil?
+        options[:required_role] = required_role unless required_role.nil?
         RecordingStudioApi.register_endpoint(name, **options)
       end
 
