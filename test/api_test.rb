@@ -116,9 +116,13 @@ class ApiTest < Minitest::Test
     assert_equal :patch, update.fetch(:http_verb)
     assert_equal "users/:id", update.fetch(:path)
     assert_equal false, update.fetch(:scope_id)
+    assert_equal :edit, update.fetch(:required_role)
 
     refute index.key?(:scope_id)
     refute create.key?(:scope_id)
+    refute index.key?(:required_role)
+    refute create.key?(:required_role)
+    refute show.key?(:required_role)
   end
 
   def test_create_and_update_register_input_contracts_for_writable_fields
