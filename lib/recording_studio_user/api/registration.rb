@@ -53,8 +53,7 @@ module RecordingStudioUser
           summary: "Update a user",
           description: update_description,
           input_contract: Params.update_input_contract,
-          scope_id: false,
-          required_role: :edit
+          scope_id: false, required_role: :edit
         )
       end
 
