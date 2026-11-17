@@ -38,11 +38,13 @@ class OtpRoutesDisabledTest < ActionDispatch::IntegrationTest
     [:get, "/users/sign_in/verify"],
     [:post, "/users/sign_in/verify"],
     [:post, "/users/sign_in/resend"],
+    [:get, "/users/sign_in/link"],
     [:get, "/recording_studio_users/auth/sign_in/otp"],
     [:post, "/recording_studio_users/auth/sign_in/otp"],
     [:get, "/recording_studio_users/auth/sign_in/verify"],
     [:post, "/recording_studio_users/auth/sign_in/verify"],
-    [:post, "/recording_studio_users/auth/sign_in/resend"]
+    [:post, "/recording_studio_users/auth/sign_in/resend"],
+    [:get, "/recording_studio_users/auth/sign_in/link"]
   ].freeze
 
   setup do

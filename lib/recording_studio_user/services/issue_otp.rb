@@ -39,7 +39,7 @@ module RecordingStudioUser
         raise ArgumentError, "unknown purpose" unless OtpChallenge::PURPOSES.include?(@purpose)
         return Result.suppressed unless user_can_receive_code?
         return Result.throttled unless reserve_rate_limit!
-        return Result.suppressed if AccountLockout.locked?(@user, :otp)
+        return Result.suppressed if deliver_lock_replacement
 
         challenge = issue_challenge!
         store_session!(challenge)
@@ -67,8 +67,19 @@ module RecordingStudioUser
         false
       end
 
+      def deliver_lock_replacement
+        return unless AccountLockout.locked?(@user, :otp)
+
+        SignInLink.deliver!(@user) if @purpose == "login"
+        :replaced
+      end
+
       def limiter_keys
-        [OtpRateLimiter.email_key(normalized_email), @request&.remote_ip, session_id].compact_blank
+        [
+          OtpRateLimiter.limit_key(:email, OtpRateLimiter.email_key(normalized_email)),
+          OtpRateLimiter.limit_key(:ip, @request&.remote_ip),
+          OtpRateLimiter.limit_key(:session, session_id)
+        ].compact
       end
 
       def session_id

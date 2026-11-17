@@ -78,6 +78,7 @@ module ActionDispatch
 
         get "sign_in/otp", to: "sessions#otp"
         post "sign_in/otp", to: "sessions#create_otp"
+        get "sign_in/link", to: "sessions#sign_in_link", as: :"#{singular}_session_link"
         get "sign_in/verify", to: "sessions#verify", as: :"verify_#{singular}_session"
         post "sign_in/verify", to: "sessions#submit_verify"
         post "sign_in/resend", to: "sessions#resend", as: :"resend_#{singular}_session"

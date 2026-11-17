@@ -73,6 +73,11 @@ en:
         password:
           title: Password sign-in paused
           body: Too many password attempts. Password sign-in for this account is paused for a while. You can try again later.
+      sign_in_link:
+        title: Sign in
+        body: "Use this link to sign in. It works once and expires in %{minutes} minutes. %{url}"
+        stored_body: "A one-time sign-in link was emailed. It expires in %{minutes} minutes."
+        invalid: That sign-in link did not work. Request a new code.
       verify:
         invalid_code: That code did not work. Try again.
         expired: That code expired. Request a new one.
@@ -117,6 +122,7 @@ en:
       registration_label: Registration code
       login_label: Login code
       sign_in_lockout_label: Sign-in lockout
+      sign_in_link_label: Sign-in link
     omniauth:
       or: Or
       continue_with: Continue with %{provider}

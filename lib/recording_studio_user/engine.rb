@@ -39,7 +39,7 @@ module RecordingStudioUser
       OmniAuth.config.request_validation_phase = OmniAuth::RailsCsrfProtection::TokenVerifier.new
       RecordingStudioUser::Engine.remember_omniauth_return_to!
       RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
-      RecordingStudioUser::Services::AuthRateLimiter.warn_unless_shared_store!
+      RecordingStudioUser::Services::AuthRateLimiter.require_shared_store!
     end
 
     rake_tasks do
@@ -80,7 +80,7 @@ module RecordingStudioUser
     end
 
     initializer "recording_studio_user.filter_parameters" do |app|
-      app.config.filter_parameters += %i[otp code login_code]
+      app.config.filter_parameters += %i[otp code login_code sign_in_token]
     end
 
     def self.load_view_helpers! = EngineBoot.load_view_helpers!

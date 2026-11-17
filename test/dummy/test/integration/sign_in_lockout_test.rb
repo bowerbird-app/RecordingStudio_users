@@ -85,20 +85,135 @@ class SignInLockoutTest < ActionDispatch::IntegrationTest
     assert_equal 3, RecordingStudioUser::Services::AccountLockout.otp_failure_count(user)
   end
 
-  test "a locked account is told a code was sent and nothing is issued" do
-    user = password_user("otp-silent")
-    lock_otp!(user)
+  test "a locked code request emails a sign-in link and the same notice" do
+    open_user = password_user("otp-open-link")
+    locked_user = password_user("otp-link")
+    lock_otp!(locked_user)
+    Rails.cache.clear
+    ActionMailer::Base.deliveries.clear
 
-    assert_no_difference -> { RecordingStudioUser::OtpChallenge.where(user: user).count } do
-      post "#{new_user_session_path}/otp", params: { user: { email: user.email } }
+    post_code(open_user.email, "203.0.113.10")
+    open_response = [response.status, response.location, flash[:notice], flash[:alert]]
+
+    Rails.cache.clear
+    ActionMailer::Base.deliveries.clear
+    assert_no_difference -> { RecordingStudioUser::OtpChallenge.where(user: locked_user).count } do
+      post_code(locked_user.email, "203.0.113.11")
     end
-    assert_redirected_to verify_user_session_path
-    assert_equal I18n.t("recording_studio_user.auth.eligible_code_sent"), flash[:notice]
 
-    post "/users/sign_in/resend"
-    assert_redirected_to verify_user_session_path
+    assert_equal open_response, [response.status, response.location, flash[:notice], flash[:alert]]
     assert_equal I18n.t("recording_studio_user.auth.eligible_code_sent"), flash[:notice]
-    assert_equal 1, lock_notifications(user).count
+    mail = link_mails.last
+    token = token_from(mail)
+    assert token.present?
+    refute_match(/locked|paused|too many/i, "#{mail.subject} #{mail.text_part.body}")
+    stored = sign_in_link_notifications(locked_user).last
+    refute_includes stored.body.to_s, token
+    refute_includes stored.url.to_s, token
+    assert_equal RecordingStudioUser::SignInLink.digest(token),
+                 RecordingStudioUser::SignInLink.find_by!(user: locked_user).token_digest
+
+    post "/users/sign_in/resend", env: { "REMOTE_ADDR" => "203.0.113.11" }
+    assert_redirected_to verify_user_session_path
+    assert_equal flash[:notice], open_response[2]
+    assert_equal 1, link_mails.size
+    assert_equal 1, lock_notifications(locked_user).count
+  end
+
+  test "a sign-in link is single-use, expires, is bound to its user, and clears both locks" do
+    email = "link-user-#{SecureRandom.hex(4)}@example.com"
+    user = password_user(email)
+    other = password_user("link-other")
+    lock_otp!(user)
+    lock_otp!(other)
+    3.times { post_sign_in(email: email, password: "not-the-password") }
+    assert RecordingStudioUser::Services::AccountLockout.locked?(user, :password)
+    Rails.cache.clear
+    ActionMailer::Base.deliveries.clear
+
+    post_code(user.email, "203.0.113.21")
+    follow_mail_link(link_mails.last)
+
+    assert_signed_in(user)
+    refute RecordingStudioUser::Services::AccountLockout.locked?(user, :otp)
+    refute RecordingStudioUser::Services::AccountLockout.locked?(user, :password)
+    assert RecordingStudioUser::Services::AccountLockout.locked?(other, :otp)
+    assert_equal 0, RecordingStudioUser::PasswordFailure.where(user: user).count
+    assert_equal 0, RecordingStudioUser::Services::AccountLockout.otp_failure_count(user)
+
+    sign_out :user
+    follow_mail_link(link_mails.last)
+    assert_equal "/users/sign_in", URI.parse(response.location).path
+    assert_nil session["warden.user.user.key"]
+    assert_equal I18n.t("recording_studio_user.auth.sign_in_link.invalid"), flash[:alert]
+
+    @config.otp_expires_in = 30.seconds
+    @config.otp_lockout_duration = 10.minutes
+    Rails.cache.clear
+    ActionMailer::Base.deliveries.clear
+    post_code(other.email, "203.0.113.22")
+    expired_mail = link_mails.last
+    travel 1.minute
+    follow_mail_link(expired_mail)
+    assert_nil session["warden.user.user.key"]
+    assert RecordingStudioUser::Services::AccountLockout.locked?(other, :otp)
+
+    get "/users/sign_in/link", params: { sign_in_token: "not-a-real-token" }
+    assert_nil session["warden.user.user.key"]
+  end
+
+  test "a code-only account can sign in with the link" do
+    user = RecordingStudioUser.create_unconfirmed_user!(email: "code-only-#{SecureRandom.hex(4)}@example.com")
+    user.update!(confirmed_at: Time.current)
+    accept_pending_live_terms!(user)
+    lock_otp!(user)
+    Rails.cache.clear
+    ActionMailer::Base.deliveries.clear
+
+    post_code(user.email, "203.0.113.23")
+    follow_mail_link(link_mails.last)
+
+    assert_signed_in(user)
+    refute RecordingStudioUser::Services::AccountLockout.locked?(user, :otp)
+  end
+
+  test "a password reset clears the password lock" do
+    email = "reset-clears-#{SecureRandom.hex(4)}@example.com"
+    user = password_user(email)
+    3.times { post_sign_in(email: email, password: "not-the-password") }
+    assert RecordingStudioUser::Services::AccountLockout.locked?(user, :password)
+
+    raw_token, encrypted_token = Devise.token_generator.generate(User, :reset_password_token)
+    user.update_columns(reset_password_token: encrypted_token, reset_password_sent_at: Time.current)
+    put user_password_path, params: {
+      user: {
+        reset_password_token: raw_token,
+        password: "BrandNewPassword123!",
+        password_confirmation: "BrandNewPassword123!"
+      }
+    }
+
+    assert_redirected_to root_path
+    refute RecordingStudioUser::Services::AccountLockout.locked?(user, :password)
+    assert_equal 0, RecordingStudioUser::PasswordFailure.where(user: user).count
+
+    sign_out :user
+    post_sign_in(email: email, password: "BrandNewPassword123!")
+    assert_redirected_to root_path
+  end
+
+  test "an unknown email runs a password digest compare" do
+    calls = count_password_compares do
+      post_sign_in(email: "missing-#{SecureRandom.hex(4)}@example.com", password: "Password123!")
+    end
+    assert_equal 1, calls
+    assert_password_mismatch(I18n.t("recording_studio_user.auth.email_or_password_mismatch"))
+
+    user = password_user("known-compare")
+    calls = count_password_compares do
+      post_sign_in(email: user.email, password: "Password123!")
+    end
+    assert_equal 1, calls
   end
 
   test "a correct code and a wrong code render the same page while locked" do
@@ -244,6 +359,49 @@ class SignInLockoutTest < ActionDispatch::IntegrationTest
     assert_includes mail.html_part.body.to_s, copy
     refute_match(/\d/, copy)
     refute_match(/\d{6}/, mail.subject.to_s)
+  end
+
+  def assert_signed_in(user)
+    assert_equal "/", URI.parse(response.location).path
+    assert_equal user.id, session["warden.user.user.key"]&.dig(0, 0)
+  end
+
+  def count_password_compares
+    calls = 0
+    singleton = class << Devise::Encryptor; self; end
+    original = Devise::Encryptor.method(:compare)
+    singleton.define_method(:compare) do |*args, **kwargs|
+      calls += 1
+      original.call(*args, **kwargs)
+    end
+    yield
+    calls
+  ensure
+    singleton.define_method(:compare) { |*args, **kwargs| original.call(*args, **kwargs) } if singleton && original
+  end
+
+  def post_code(email, ip)
+    post "/users/sign_in/otp",
+         params: { user: { email: email } },
+         env: { "REMOTE_ADDR" => ip }
+  end
+
+  def link_mails
+    subject = I18n.t("recording_studio_user.auth.sign_in_link.title")
+    ActionMailer::Base.deliveries.select { |mail| mail.subject == subject }
+  end
+
+  def sign_in_link_notifications(user)
+    RecordingStudioNotifications::Notification.where(recipient: user, notification_type: "sign_in_link")
+  end
+
+  def token_from(mail)
+    mail.text_part.body.to_s[/sign_in_token=([^&\s]+)/, 1]
+  end
+
+  def follow_mail_link(mail)
+    uri = URI.parse(mail.text_part.body.to_s[/https?:\/\/\S+/])
+    get "#{uri.path}?#{uri.query}"
   end
 
   def post_sign_in(email:, password:)

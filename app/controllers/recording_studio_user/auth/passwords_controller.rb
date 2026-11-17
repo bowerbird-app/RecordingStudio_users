@@ -21,6 +21,14 @@ module RecordingStudioUser
         neutral_reset_response
       end
 
+      def update
+        super do |resource|
+          next unless resource.errors.empty? && resource.persisted?
+
+          Services::AccountLockout.reset_password!(resource)
+        end
+      end
+
       def respond_with(*resources, **options)
         location = options[:location]
         if popup_password_reset?(location, resources.first)

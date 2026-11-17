@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Development and dummy Gemfiles pin the newest tags that resolve: Recording Studio `v7.3.0`, API `v1.2.1`, Accessible `v0.45.1`, Admin `v2.18.0`, Attachable `v0.31.0`, Cache `v0.7.0`, Icons `v0.4.0`, Logs `v0.8.0`, Metrics `v0.9.0`, Moveable `v6.0.0`, Trashable `v1.0.1`, and FlatPack `v0.1.377`. The dummy app also pins notifications `v0.19.1`, notifications email `v0.5.4`, notifications push `v0.10.0`, site settings `v0.6.0`, Terms and Conditions `v0.22.0`, Publishable `v1.1.0`, Root Switchable `v0.16.0`, OAuth `v0.25.0`, and MCP `v0.35.0`.
 
+## [0.35.0] - 2026-11-17
+
+### Added
+
+- While email codes are paused, requesting a code emails one sign-in link instead of a code. The response matches the usual sent notice. The link stores only a digest, expires with `otp_expires_in`, works once, and signs in that user. Following it clears the code pause and the password pause. It is not a guessable code, so the code pause does not apply to it. One link is sent per request, under the shared per-account send limit.
+
+### Changed
+
+- A completed password reset clears the password pause, as does signing in with the link.
+- Password sign-in runs a password digest compare for an unknown email, an OTP-only account, and an unconfirmed account, the same work as a real password check.
+- The shared per-account send bucket uses `otp_resend_cooldown`.
+- Email, IP, and session rate-limit keys are passed as those types.
+- Boot raises outside development and test when `Rails.cache` is a memory store, a null store, or a file store. One-time codes raise only when codes are on. Password sign-in and reset limits use the same check whenever the store cannot share counts. Development and test log a warning.
+
+### Upgrade notes
+
+- Bump to `0.35.0`.
+- Run `rails generate recording_studio_user:migrations` and migrate. That copies `create_recording_studio_user_sign_in_links`.
+- Point `Rails.cache` at Redis or Memcached before boot in any deployed environment. A file store raises too. Development and test still warn.
+
 ## [0.34.0] - 2026-11-17
 
 ### Added

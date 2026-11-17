@@ -85,7 +85,10 @@ module RecordingStudioUser
       end
 
       def resend_limit_keys
-        [Services::OtpRateLimiter.email_key(pending_auth_email), request.remote_ip].compact_blank
+        [
+          Services::OtpRateLimiter.limit_key(:email, Services::OtpRateLimiter.email_key(pending_auth_email)),
+          Services::OtpRateLimiter.limit_key(:ip, request.remote_ip)
+        ].compact
       end
 
       def render_missing_email

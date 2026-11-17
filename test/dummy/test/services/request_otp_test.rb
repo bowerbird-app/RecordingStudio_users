@@ -16,7 +16,7 @@ class RequestOtpTest < ActiveSupport::TestCase
   test "a throttled new email creates no user" do
     email = unique_email("throttled")
     digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(email)
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: digest)
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: digest, type: :email)
 
     assert_no_difference -> { User.count } do
       result = request_otp(email, :registration)
@@ -29,7 +29,7 @@ class RequestOtpTest < ActiveSupport::TestCase
   test "a blocked ip does not consume the email bucket or create a user" do
     email = unique_email("blocked-ip")
     ip = "198.51.100.20"
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: ip)
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: ip, type: :ip)
     digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(email)
 
     assert_no_difference -> { User.count } do
@@ -84,7 +84,7 @@ class RequestOtpTest < ActiveSupport::TestCase
   test "issue_otp does not reserve keys that were already checked" do
     user = RecordingStudioUser.create_unconfirmed_user!(email: unique_email("checked"))
     digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(user.email)
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: digest)
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: digest, type: :email)
 
     result = RecordingStudioUser::Services::IssueOtp.call(
       user: user,

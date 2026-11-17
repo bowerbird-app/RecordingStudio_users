@@ -12,9 +12,9 @@ module RecordingStudioUser
     # is incremented. A block on one key does not consume the others.
     #
     # Counters live on +Rails.cache+ and have to be shared by every app
-    # process. Use Redis or Memcached. A memory store or a null store cannot
-    # do that. {warn_unless_shared_store!} logs a warning at boot when the
-    # store is one of those.
+    # process. Use Redis or Memcached. A memory store, a null store, or a
+    # file store cannot do that. {require_shared_store!} raises at boot
+    # outside development and test, and logs a warning in those two.
     class AuthRateLimiter
       STORAGE_KEY_PREFIX = "recording_studio_user:auth:rl"
 
@@ -39,10 +39,8 @@ module RecordingStudioUser
         buckets.each { |bucket| consume!(action, bucket) }
       end
 
-      def self.warn_unless_shared_store!
-        return unless unshared_cache_store?
-
-        Rails.logger.warn(
+      def self.require_shared_store!
+        SharedCacheStore.enforce!(
           "RecordingStudioUser password sign-in and reset limits need a shared, atomic " \
           "cache store (Redis or Memcached). #{Rails.cache.class.name} cannot enforce " \
           "them across processes."
@@ -108,12 +106,6 @@ module RecordingStudioUser
         raise RateLimited, action if result.blocked?
       end
       private_class_method :consume!
-
-      def self.unshared_cache_store?
-        store = Rails.cache
-        store.is_a?(ActiveSupport::Cache::MemoryStore) || store.is_a?(ActiveSupport::Cache::NullStore)
-      end
-      private_class_method :unshared_cache_store?
     end
   end
 end

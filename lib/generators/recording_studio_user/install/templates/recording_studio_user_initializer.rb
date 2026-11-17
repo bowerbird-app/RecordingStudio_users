@@ -88,7 +88,15 @@ RecordingStudioUser.configure do |config|
   # Account lockout. Failures in the window pause that sign-in method for the
   # duration. A correct code or password during the pause looks like a normal
   # miss. Code and password pauses are separate. One email is sent when a
-  # pause starts.
+  # pause starts. While codes are paused, a code request emails a one-time
+  # sign-in link (digest only, expires with otp_expires_in) instead of a code.
+  # The sent notice does not change. Following the link signs that user in and
+  # clears both pauses. A completed password reset also clears the password
+  # pause.
+  # Code and password limits need a shared cache (Redis or Memcached). A
+  # memory store, a null store, or a file store raises at boot outside
+  # development and test. Development and test log a warning. Code limits
+  # raise only when otp_enabled is true.
   # config.otp_lockout_max_failures = 10
   # config.otp_lockout_window = 1.hour
   # config.otp_lockout_duration = 1.hour

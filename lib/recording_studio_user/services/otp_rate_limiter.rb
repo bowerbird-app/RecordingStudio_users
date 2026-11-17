@@ -4,42 +4,34 @@ require "recording_studio_cache"
 
 module RecordingStudioUser
   module Services
-    # Thin adapter: OTP cooldown over {RecordingStudioCache::RateLimiter}.
+    # OTP cooldown over {RecordingStudioCache::RateLimiter}.
     #
-    # Bucket identity is still +scope+ + +key+ (email / IP / session). The email
-    # bucket is not the address. {email_key} is an HMAC-SHA256 of the normalized
-    # email, using a key derived from +secret_key_base+, so a cache dump does
-    # not list who asked for a code.
-    #
-    # {allow_requests!} reads every key first. A block on one key raises
-    # {RateLimited} and does not consume the others. The increment itself has
-    # to be atomic, and the counters have to be shared by every app process.
-    # Use Redis or Memcached. A memory store or a null store cannot do that.
-    # {require_shared_store!} raises at boot in production when one-time codes
-    # are on and +Rails.cache+ is one of those stores, and logs a warning in
-    # development and test.
-    #
-    # Send and resend share one account bucket. An email key from {email_key}
-    # is stored under +:account+ for every scope, with a one-minute cooldown.
-    # IP and session keys keep the scope they were called with.
-    #
-    # Storage uses an +otp:rl+ key segment so legacy boolean +true+ values under
-    # +recording_studio_user:otp:#{scope}:#{key}+ are never incremented (that
-    # raises +NoMethodError+). Those legacy keys follow the host cooldown (or
-    # never expire when cooldown is +nil+).
-    #
-    # There is no separate cache setting — the store is +Rails.cache+ — and no
-    # limit setting. One allow, then cooldown. Odd +cooldown_for+ values follow
-    # +expires_in:+ semantics (see +shared_period?+). +fail_closed: true+ only
-    # applies when a custom store raises on increment/write into the shared
-    # limiter rescue list.
+    # Callers pass each key as :email, :ip, or :session. An email key is an
+    # HMAC of the address (not the address) and is stored under +:account+ for
+    # send and resend, using +otp_resend_cooldown+. IP and session keys keep
+    # the caller's scope. {allow_requests!} reads every key before consuming
+    # any of them. Counters must be shared: Redis or Memcached. A memory, null,
+    # or file store raises at boot outside development and test when codes are
+    # on. Password limits use the same check. Development and test warn.
+    # Odd +cooldown_for+ values follow +expires_in:+. Storage uses +otp:rl+ so
+    # a legacy boolean value is not incremented.
     class OtpRateLimiter
       STORAGE_KEY_PREFIX = "recording_studio_user:otp:rl"
       EMAIL_RATE_LIMIT_SALT = "recording studio otp rate limit email"
       # Shared by send and resend so a reissue cannot double the per-account rate.
       ACCOUNT_SCOPE = :account
+      KEY_TYPES = %i[email ip session].freeze
       # Main had no limit config; presence of the cooldown key was the one-shot limit.
       LIMIT = 1
+
+      def self.limit_key(type, value)
+        return if value.blank?
+
+        type = type.to_sym
+        raise ArgumentError, "key type must be email, ip, or session" unless KEY_TYPES.include?(type)
+
+        { type: type, value: value.to_s }
+      end
 
       def self.normalize_email(email)
         email.to_s.strip.downcase
@@ -53,44 +45,50 @@ module RecordingStudioUser
 
       # Check every key. Consume them only when none is already blocked.
       def self.allow_requests!(scope:, keys:)
-        list = Array(keys).compact_blank.uniq
+        list = Array(keys).filter_map { |key| normalize_key(key) }.uniq
         return if list.empty?
-        raise RateLimited, scope if list.any? { |key| blocked?(bucket_scope(scope, key), key) }
+        raise RateLimited, scope if list.any? { |key| blocked?(bucket_for(scope, key), key[:value]) }
 
-        list.each { |key| allow_request!(scope: scope, key: key) }
+        list.each { |key| allow_request!(scope: scope, key: key[:value], type: key[:type]) }
       end
 
-      def self.allow_request!(scope:, key:)
-        bucket = bucket_scope(scope, key)
+      def self.allow_request!(scope:, key:, type:)
+        typed = limit_key(type, key)
+        return if typed.nil?
+
+        bucket = bucket_for(scope, typed)
         period = cooldown_for(bucket)
         # Shared RateLimiter disables when limit <= 0 and coerces String periods
         # via to_i. Main had no limit and passed cooldown straight to expires_in:.
-        return apply_expires_in_cooldown!(bucket, key, period) unless shared_period?(period)
+        return apply_expires_in_cooldown!(bucket, typed[:value], period) unless shared_period?(period)
 
         # Boolean left by a prior 0/nil/odd cooldown must RateLimited, not increment.
-        raise RateLimited, scope if boolean_cooldown_hit?(bucket, key)
-        raise RateLimited, scope if rate_limiter_for(bucket, key, period).throttle.blocked?
+        raise RateLimited, scope if boolean_cooldown_hit?(bucket, typed[:value])
+        raise RateLimited, scope if rate_limiter_for(bucket, typed[:value], period).throttle.blocked?
       end
 
       def self.cooldown_for(scope)
         case scope
-        when :resend
+        when :resend, ACCOUNT_SCOPE
           RecordingStudioUser.config.otp_resend_cooldown
         else
           1.minute
         end
       end
 
-      # Email digests share one bucket. Anything else keeps the caller's scope.
-      def self.bucket_scope(scope, key)
-        account_key?(key) ? ACCOUNT_SCOPE : scope
-      end
-      private_class_method :bucket_scope
+      def self.normalize_key(key)
+        return if key.blank?
+        raise ArgumentError, "rate limit key must include a type" unless key.is_a?(Hash)
 
-      def self.account_key?(key)
-        key.to_s.match?(/\A[0-9a-f]{64}\z/)
+        limit_key(key[:type] || key["type"], key[:value] || key["value"])
       end
-      private_class_method :account_key?
+      private_class_method :normalize_key
+
+      # Email keys share one bucket. IP and session keys keep the caller's scope.
+      def self.bucket_for(scope, key)
+        key[:type] == :email ? ACCOUNT_SCOPE : scope
+      end
+      private_class_method :bucket_for
 
       # Positive Numeric (including ActiveSupport::Duration) only — same values
       # main could pass to expires_in: without error and with a lasting TTL.
@@ -152,22 +150,8 @@ module RecordingStudioUser
       private_class_method :email_rate_limit_key
 
       def self.require_shared_store!
-        return unless RecordingStudioUser.config.otp_enabled?
-        return unless unshared_cache_store?
-
-        message = "RecordingStudioUser one-time codes need a shared, atomic cache store " \
-                  "(Redis or Memcached). #{Rails.cache.class.name} cannot enforce OTP rate " \
-                  "limits across processes."
-        raise message if Rails.env.production?
-
-        Rails.logger.warn(message)
+        SharedCacheStore.enforce_otp!
       end
-
-      def self.unshared_cache_store?
-        store = Rails.cache
-        store.is_a?(ActiveSupport::Cache::MemoryStore) || store.is_a?(ActiveSupport::Cache::NullStore)
-      end
-      private_class_method :unshared_cache_store?
 
       class RateLimited < StandardError
         attr_reader :scope
@@ -176,6 +160,35 @@ module RecordingStudioUser
           @scope = scope
           super("rate limited")
         end
+      end
+    end
+
+    # Memory, null, and file stores cannot share a limit across hosts.
+    module SharedCacheStore
+      module_function
+
+      def enforce_otp!
+        return unless RecordingStudioUser.config.otp_enabled?
+
+        enforce!(
+          "RecordingStudioUser one-time codes need a shared, atomic cache store " \
+          "(Redis or Memcached). #{Rails.cache.class.name} cannot enforce OTP rate " \
+          "limits across processes."
+        )
+      end
+
+      def enforce!(message)
+        return unless unshared?
+        raise message unless Rails.env.development? || Rails.env.test?
+
+        Rails.logger.warn(message)
+      end
+
+      def unshared?
+        store = Rails.cache
+        store.is_a?(ActiveSupport::Cache::MemoryStore) ||
+          store.is_a?(ActiveSupport::Cache::NullStore) ||
+          store.is_a?(ActiveSupport::Cache::FileStore)
       end
     end
   end

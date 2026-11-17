@@ -2,13 +2,10 @@
 
 module RecordingStudioUser
   module Services
-    # Per-account sign-in lockout. Code failures are the sum of
-    # +otp_challenges.attempts_count+ for that user, every purpose, created
-    # inside the window and after the latest consumed challenge. Password
-    # failures are rows in +recording_studio_user_password_failures+. A
-    # successful password sign-in deletes those rows. An expired lock is also
-    # a floor, so the same failures do not start another lock when the pause
-    # ends. Code and password locks do not block each other.
+    # Per-account sign-in lockout. Code failures are challenge attempts in the
+    # window, after the latest consumed challenge. Password failures are rows.
+    # A successful password sign-in, a password reset, or a sign-in link clears
+    # the matching pause. An expired lock is a floor. The two pauses are separate.
     class AccountLockout
       def self.locked?(user, kind)
         active_lock(user, kind).present?
@@ -29,10 +26,11 @@ module RecordingStudioUser
       end
 
       def self.reset_password!(user)
-        return if user.blank?
+        LockReset.clear_password!(user)
+      end
 
-        PasswordFailure.where(user_id: user.id).delete_all
-        SignInLock.where(user_id: user.id, kind: "password").delete_all
+      def self.reset_otp!(user)
+        LockReset.clear_otp!(user, limits(:otp)[:window])
       end
 
       def self.deliver!(lock)
@@ -130,6 +128,25 @@ module RecordingStudioUser
         }
       end
       private_class_method :limits
+    end
+
+    # Clears a pause and the attempts that would start the same pause again.
+    module LockReset
+      module_function
+
+      def clear_password!(user)
+        return if user.blank?
+
+        PasswordFailure.where(user_id: user.id).delete_all
+        SignInLock.where(user_id: user.id, kind: "password").delete_all
+      end
+
+      def clear_otp!(user, window)
+        return if user.blank?
+
+        SignInLock.where(user_id: user.id, kind: "otp").delete_all
+        OtpChallenge.where(user_id: user.id, created_at: (Time.current - window)..).update_all(attempts_count: 0)
+      end
     end
   end
 end

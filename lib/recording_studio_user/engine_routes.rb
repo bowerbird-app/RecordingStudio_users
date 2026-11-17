@@ -93,6 +93,7 @@ module RecordingStudioUser
 
       mapper.get "sign_in/otp", to: "sessions#otp", as: :sign_in_otp
       mapper.post "sign_in/otp", to: "sessions#create_otp"
+      mapper.get "sign_in/link", to: "sessions#sign_in_link", as: :sign_in_link
       mapper.get "sign_in/verify", to: "sessions#verify", as: :sign_in_verify
       mapper.post "sign_in/verify", to: "sessions#submit_verify"
       mapper.post "sign_in/resend", to: "sessions#resend", as: :sign_in_resend

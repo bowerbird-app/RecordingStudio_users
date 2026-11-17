@@ -5,7 +5,20 @@ module RecordingStudioUser
     module SignInCode
       extend ActiveSupport::Concern
 
+      def sign_in_link
+        user = RecordingStudioUser::SignInLink.authenticate!(params[:sign_in_token])
+        return redirect_invalid_sign_in_link unless user
+
+        Services::AccountLockout.reset_otp!(user)
+        Services::AccountLockout.reset_password!(user)
+        finish_sign_in!(user)
+      end
+
       private
+
+      def redirect_invalid_sign_in_link
+        redirect_to host_new_user_session_path, alert: I18n.t("recording_studio_user.auth.sign_in_link.invalid")
+      end
 
       def verify_session_code
         RecordingStudioUser.verify_otp!(
