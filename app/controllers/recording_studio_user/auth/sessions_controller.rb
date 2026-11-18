@@ -6,7 +6,8 @@ module RecordingStudioUser
       include PasswordRateLimit
       include SignInCode
 
-      before_action :require_otp_login_enabled!, only: %i[otp create_otp verify submit_verify resend]
+      before_action :require_otp_login_enabled!,
+                    only: %i[otp create_otp verify submit_verify resend sign_in_link submit_sign_in_link]
 
       def new; end
 
@@ -100,15 +101,6 @@ module RecordingStudioUser
 
       def eligible_for_sign_in?(user)
         user&.confirmed? && user.active_for_authentication?
-      end
-
-      def password_sign_in_allowed?(user)
-        return false unless user&.confirmed? && !user.registered_with_otp?
-
-        password_ok = user.valid_password?(sign_in_params[:password])
-        locked = Services::AccountLockout.locked?(user, :password)
-        Services::AccountLockout.record_password_failure!(user) if locked || !password_ok
-        password_ok && !locked
       end
 
       def render_continue_failure(message)

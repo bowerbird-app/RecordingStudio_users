@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -531,6 +531,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_120000) do
     t.index ["user_id"], name: "index_recording_studio_user_profiles_on_user_id"
   end
 
+  create_table "recording_studio_user_sign_in_links", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "consumed_at"
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["token_digest"], name: "index_rs_user_sign_in_links_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_rs_user_sign_in_links_on_user_id"
+  end
+
   create_table "recording_studio_user_sign_in_locks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "kind", null: false
@@ -581,5 +592,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_120000) do
   add_foreign_key "recording_studio_user_otp_challenges", "users"
   add_foreign_key "recording_studio_user_password_failures", "users"
   add_foreign_key "recording_studio_user_profiles", "users"
+  add_foreign_key "recording_studio_user_sign_in_links", "users"
   add_foreign_key "recording_studio_user_sign_in_locks", "users"
 end

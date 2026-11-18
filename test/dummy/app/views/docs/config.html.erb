@@ -81,6 +81,13 @@
     recording, and recordable fields are protected and cannot be configured for profile updates.
   </p>
 
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    Sign-in limits use <code>Rails.cache</code>. Redis or Memcached can share those counts across hosts.
+    A memory store, a null store, or a file store raises at boot outside development and test.
+    While email codes are paused, a code request emails a one-time sign-in link and returns the usual sent notice.
+    The link expires with <code>otp_expires_in</code>. The per-account send bucket uses <code>otp_resend_cooldown</code>.
+  </p>
+
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Dummy Google OAuth",
     subtitle: "This reference app's client lives in BowerBird Dev, not in a host GCP project.",

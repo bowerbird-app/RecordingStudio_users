@@ -1,0 +1,24 @@
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: { title: t("recording_studio_user.auth.sign_in") } do %>
+  <% if @masked_email.present? %>
+    <%= form_with url: request.original_fullpath.split("?").first, method: :post do %>
+      <input type="hidden" name="sign_in_token" value="<%= @sign_in_token %>">
+      <div class="space-y-4">
+        <%= render FlatPack::Content::Component.new(class: "text-center") do %>
+          <%= t("recording_studio_user.auth.sign_in_link.confirm", email: @masked_email) %>
+        <% end %>
+        <%= render FlatPack::Button::Component.new(
+          text: t("recording_studio_user.auth.sign_in"),
+          style: :primary,
+          size: :md,
+          type: "submit",
+          class: "w-full"
+        ) %>
+      </div>
+    <% end %>
+  <% else %>
+    <%= render FlatPack::Content::Component.new(class: "text-center") do %>
+      <%= t("recording_studio_user.auth.sign_in_link.invalid") %>
+    <% end %>
+  <% end %>
+<% end %>

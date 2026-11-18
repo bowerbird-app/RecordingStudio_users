@@ -86,7 +86,7 @@ class AuthReturnToTest < ActionDispatch::IntegrationTest
     Rails.cache = ActiveSupport::Cache::MemoryStore.new
     email = "return-throttled-#{SecureRandom.hex(4)}@example.com"
     digest = RecordingStudioUser::Services::OtpRateLimiter.email_key(email)
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: digest)
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: digest, type: :email)
 
     post "#{new_user_registration_path}/otp", params: {
       user: { email: email },

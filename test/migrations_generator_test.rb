@@ -150,6 +150,23 @@ class MigrationsGeneratorTest < Minitest::Test
     assert_includes template, "index_rs_user_sign_in_locks_on_user_kind_locked_at"
   end
 
+  def test_sign_in_link_migration_template
+    template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_user/migrations/templates/" \
+        "create_recording_studio_user_sign_in_links.rb.tt",
+        __dir__
+      )
+    )
+
+    assert_includes template, "create_table :recording_studio_user_sign_in_links"
+    assert_includes template, "t.string :token_digest, null: false"
+    assert_includes template, "t.datetime :expires_at, null: false"
+    assert_includes template, "t.datetime :consumed_at"
+    assert_includes template, "index_rs_user_sign_in_links_on_token_digest"
+    refute_includes template, "token,"
+  end
+
   def test_blank_profile_surname_and_time_zone_migration_template
     template = File.read(
       File.expand_path(

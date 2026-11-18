@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "tmpdir"
 
 class OtpRateLimiterTest < ActiveSupport::TestCase
   setup do
@@ -15,10 +16,10 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
   end
 
   test "first allow_request succeeds and second raises RateLimited with scope" do
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "user@example.com")
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "user@example.com", type: :session)
 
     error = assert_raises(RecordingStudioUser::Services::OtpRateLimiter::RateLimited) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "user@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "user@example.com", type: :session)
     end
 
     assert_equal :issue, error.scope
@@ -26,12 +27,12 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
   end
 
   test "different keys and scopes are independent buckets" do
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "a@example.com")
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "b@example.com")
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "a@example.com")
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "a@example.com", type: :session)
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "b@example.com", type: :session)
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "a@example.com", type: :session)
 
     assert_raises(RecordingStudioUser::RateLimited) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "a@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "a@example.com", type: :session)
     end
   end
 
@@ -40,15 +41,15 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     assert_equal 2.seconds, RecordingStudioUser::Services::OtpRateLimiter.cooldown_for(:resend)
     assert_equal 1.minute, RecordingStudioUser::Services::OtpRateLimiter.cooldown_for(:issue)
 
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "cooldown@example.com")
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "cooldown@example.com", type: :session)
     assert_raises(RecordingStudioUser::RateLimited) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "cooldown@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "cooldown@example.com", type: :session)
     end
 
     travel 3.seconds
 
     assert_nothing_raised do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "cooldown@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "cooldown@example.com", type: :session)
     end
   end
 
@@ -57,13 +58,13 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     counter_key = "recording_studio_user:otp:rl:issue:legacy@example.com"
     Rails.cache.write(legacy_key, true, expires_in: 1.minute)
 
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "legacy@example.com")
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "legacy@example.com", type: :session)
 
     assert_equal true, Rails.cache.read(legacy_key)
     assert_equal 1, Rails.cache.read(counter_key)
 
     assert_raises(RecordingStudioUser::RateLimited) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "legacy@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "legacy@example.com", type: :session)
     end
     assert_equal 2, Rails.cache.read(counter_key)
   end
@@ -83,7 +84,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     Rails.cache = failing
 
     error = assert_raises(RecordingStudioUser::RateLimited) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "down@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "down@example.com", type: :session)
     end
     assert_equal :issue, error.scope
   end
@@ -95,7 +96,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     isolated = ActiveSupport::Cache::MemoryStore.new
     Rails.cache = isolated
 
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "store@example.com")
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :issue, key: "store@example.com", type: :session)
 
     assert_equal 1, isolated.read("recording_studio_user:otp:rl:issue:store@example.com")
     assert_nil @previous_cache.read("recording_studio_user:otp:rl:issue:store@example.com")
@@ -111,9 +112,9 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
   test "zero cooldown always allows like main expires_in: 0" do
     RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, 0)
 
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "zero@example.com")
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "zero@example.com", type: :session)
     assert_nothing_raised do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "zero@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "zero@example.com", type: :session)
     end
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:zero@example.com")
   end
@@ -121,9 +122,9 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
   test "nil cooldown sticky-blocks after the first allow like main expires_in: nil" do
     RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, nil)
 
-    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "nil@example.com")
+    RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "nil@example.com", type: :session)
     assert_raises(RecordingStudioUser::RateLimited) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "nil@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "nil@example.com", type: :session)
     end
     assert_equal true, Rails.cache.read("recording_studio_user:otp:rl:resend:nil@example.com")
   end
@@ -133,7 +134,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, -1)
 
     error = assert_raises(ArgumentError) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "neg@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "neg@example.com", type: :session)
     end
     assert_match(/cannot be negative/, error.message)
   end
@@ -142,7 +143,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, "60")
 
     assert_raises(NoMethodError) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "string@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "string@example.com", type: :session)
     end
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:string@example.com")
   end
@@ -151,7 +152,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, "")
 
     assert_raises(NoMethodError) do
-      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "blank@example.com")
+      RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: "blank@example.com", type: :session)
     end
   end
 
@@ -161,7 +162,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
 
       if index.zero?
         RecordingStudioUser.config.instance_variable_set(:@otp_resend_cooldown, nil)
-        RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: email)
+        RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: email, type: :session)
       else
         Rails.cache.write(storage_key, true, expires_in: 0)
         Rails.cache.write(storage_key, true)
@@ -171,7 +172,7 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
       RecordingStudioUser.config.otp_resend_cooldown = 60.seconds
 
       error = assert_raises(RecordingStudioUser::RateLimited) do
-        RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: email)
+        RecordingStudioUser::Services::OtpRateLimiter.allow_request!(scope: :resend, key: email, type: :session)
       end
       assert_equal :resend, error.scope
       assert_equal true, Rails.cache.read(storage_key)
@@ -194,10 +195,17 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     email_key = limiter.email_key("person@example.com")
     ip = "203.0.113.9"
     session_id = "session-9"
-    limiter.allow_request!(scope: :issue, key: ip)
+    limiter.allow_request!(scope: :issue, key: ip, type: :ip)
 
     assert_raises(RecordingStudioUser::RateLimited) do
-      limiter.allow_requests!(scope: :issue, keys: [ email_key, ip, session_id ])
+      limiter.allow_requests!(
+        scope: :issue,
+        keys: [
+          limiter.limit_key(:email, email_key),
+          limiter.limit_key(:ip, ip),
+          limiter.limit_key(:session, session_id)
+        ]
+      )
     end
 
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:account:#{email_key}")
@@ -212,7 +220,14 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     ip = "203.0.113.10"
     session_id = "session-10"
 
-    limiter.allow_requests!(scope: :issue, keys: [ email_key, ip, session_id ])
+    limiter.allow_requests!(
+      scope: :issue,
+      keys: [
+        limiter.limit_key(:email, email_key),
+        limiter.limit_key(:ip, ip),
+        limiter.limit_key(:session, session_id)
+      ]
+    )
 
     assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:account:#{email_key}")
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
@@ -225,19 +240,61 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     email_key = limiter.email_key("shared@example.com")
     ip = "203.0.113.40"
 
-    limiter.allow_request!(scope: :issue, key: email_key)
+    limiter.allow_request!(scope: :issue, key: email_key, type: :email)
     assert_raises(RecordingStudioUser::RateLimited) do
-      limiter.allow_request!(scope: :resend, key: email_key)
+      limiter.allow_request!(scope: :resend, key: email_key, type: :email)
     end
     assert Rails.cache.read("recording_studio_user:otp:rl:account:#{email_key}").to_i.positive?
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:issue:#{email_key}")
     assert_nil Rails.cache.read("recording_studio_user:otp:rl:resend:#{email_key}")
 
-    limiter.allow_request!(scope: :issue, key: ip)
-    assert_nothing_raised { limiter.allow_request!(scope: :resend, key: ip) }
+    limiter.allow_request!(scope: :issue, key: ip, type: :ip)
+    assert_nothing_raised { limiter.allow_request!(scope: :resend, key: ip, type: :ip) }
   end
 
-  test "warns outside production and raises in production for a memory or null store" do
+  test "the account bucket follows otp_resend_cooldown" do
+    RecordingStudioUser.config.otp_resend_cooldown = 2.seconds
+    limiter = RecordingStudioUser::Services::OtpRateLimiter
+    email_key = limiter.email_key("account-cooldown@example.com")
+
+    assert_equal 2.seconds, limiter.cooldown_for(:account)
+    assert_equal 1.minute, limiter.cooldown_for(:issue)
+
+    limiter.allow_request!(scope: :issue, key: email_key, type: :email)
+    assert_raises(RecordingStudioUser::RateLimited) do
+      limiter.allow_request!(scope: :resend, key: email_key, type: :email)
+    end
+
+    travel 3.seconds
+
+    assert_nothing_raised do
+      limiter.allow_request!(scope: :resend, key: email_key, type: :email)
+    end
+  end
+
+  test "key type is explicit and a 64-hex value is not an email key" do
+    limiter = RecordingStudioUser::Services::OtpRateLimiter
+    email_key = limiter.email_key("typed@example.com")
+    hex_ip = "ab" * 32
+    session_id = "session-typed"
+
+    limiter.allow_requests!(
+      scope: :issue,
+      keys: [
+        limiter.limit_key(:email, email_key),
+        limiter.limit_key(:ip, hex_ip),
+        limiter.limit_key(:session, session_id)
+      ]
+    )
+
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:account:#{email_key}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{hex_ip}")
+    assert_equal 1, Rails.cache.read("recording_studio_user:otp:rl:issue:#{session_id}")
+    assert_nil Rails.cache.read("recording_studio_user:otp:rl:account:#{hex_ip}")
+    assert_raises(ArgumentError) { limiter.limit_key(:user, "x") }
+  end
+
+  test "warns in development and test and raises elsewhere for an unshared store" do
     previous_logger = Rails.logger
     io = StringIO.new
     Rails.logger = Logger.new(io)
@@ -257,37 +314,58 @@ class OtpRateLimiterTest < ActiveSupport::TestCase
     io.rewind
     Rails.cache = quiet_cache_store
     RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
+    RecordingStudioUser::Services::AuthRateLimiter.require_shared_store!
     assert_empty io.string
+
+    Dir.mktmpdir do |dir|
+      Rails.cache = ActiveSupport::Cache::FileStore.new(dir)
+      RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
+      assert_match(/FileStore/, io.string)
+    end
 
     RecordingStudioUser.config.otp_enabled = false
     Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    io.truncate(0)
+    io.rewind
     RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
     assert_empty io.string
 
     RecordingStudioUser.config.otp_enabled = true
-    with_production_env do
+    with_env("staging") do
+      Rails.cache = ActiveSupport::Cache::MemoryStore.new
       error = assert_raises(RuntimeError) do
         RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
       end
       assert_match(/MemoryStore/, error.message)
+      assert_raises(RuntimeError) { RecordingStudioUser::Services::AuthRateLimiter.require_shared_store! }
 
       Rails.cache = ActiveSupport::Cache::NullStore.new
-      assert_raises(RuntimeError) do
-        RecordingStudioUser::Services::OtpRateLimiter.require_shared_store!
+      assert_raises(RuntimeError) { RecordingStudioUser::Services::OtpRateLimiter.require_shared_store! }
+      assert_raises(RuntimeError) { RecordingStudioUser::Services::AuthRateLimiter.require_shared_store! }
+
+      Dir.mktmpdir do |dir|
+        Rails.cache = ActiveSupport::Cache::FileStore.new(dir)
+        assert_raises(RuntimeError) { RecordingStudioUser::Services::OtpRateLimiter.require_shared_store! }
+        file_error = assert_raises(RuntimeError) do
+          RecordingStudioUser::Services::AuthRateLimiter.require_shared_store!
+        end
+        assert_match(/FileStore/, file_error.message)
       end
 
       RecordingStudioUser.config.otp_enabled = false
+      Rails.cache = ActiveSupport::Cache::MemoryStore.new
       assert_nothing_raised { RecordingStudioUser::Services::OtpRateLimiter.require_shared_store! }
+      assert_raises(RuntimeError) { RecordingStudioUser::Services::AuthRateLimiter.require_shared_store! }
     end
   ensure
     RecordingStudioUser.config.otp_enabled = true
     Rails.logger = previous_logger
   end
 
-  def with_production_env
+  def with_env(name)
     singleton = class << Rails; self; end
     original = Rails.method(:env)
-    singleton.define_method(:env) { ActiveSupport::StringInquirer.new("production") }
+    singleton.define_method(:env) { ActiveSupport::StringInquirer.new(name) }
     yield
   ensure
     singleton.define_method(:env) { original.call }

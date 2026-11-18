@@ -76,8 +76,14 @@ module ActionDispatch
         draw_recording_studio_user_password_session_routes(singular)
         return unless recording_studio_user_otp_login_routes?
 
+        draw_recording_studio_user_otp_session_routes(singular)
+      end
+
+      def draw_recording_studio_user_otp_session_routes(singular)
         get "sign_in/otp", to: "sessions#otp"
         post "sign_in/otp", to: "sessions#create_otp"
+        get "sign_in/link", to: "sessions#sign_in_link", as: :"#{singular}_session_link"
+        post "sign_in/link", to: "sessions#submit_sign_in_link"
         get "sign_in/verify", to: "sessions#verify", as: :"verify_#{singular}_session"
         post "sign_in/verify", to: "sessions#submit_verify"
         post "sign_in/resend", to: "sessions#resend", as: :"resend_#{singular}_session"

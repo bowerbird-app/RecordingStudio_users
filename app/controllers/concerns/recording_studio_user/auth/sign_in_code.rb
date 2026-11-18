@@ -5,7 +5,27 @@ module RecordingStudioUser
     module SignInCode
       extend ActiveSupport::Concern
 
+      def sign_in_link
+        @sign_in_token = params[:sign_in_token].to_s
+        @masked_email = RecordingStudioUser::OtpCodeForm.mask(pending_sign_in_link_user&.email)
+        @sign_in_token = nil if @masked_email.blank?
+        render :sign_in_link
+      end
+
+      def submit_sign_in_link
+        user = RecordingStudioUser::SignInLink.authenticate!(params[:sign_in_token])
+        return render :sign_in_link, status: :unprocessable_entity unless user
+
+        Services::AccountLockout.reset_otp!(user)
+        Services::AccountLockout.reset_password!(user)
+        finish_sign_in!(user)
+      end
+
       private
+
+      def pending_sign_in_link_user
+        RecordingStudioUser::SignInLink.pending_user(@sign_in_token)
+      end
 
       def verify_session_code
         RecordingStudioUser.verify_otp!(

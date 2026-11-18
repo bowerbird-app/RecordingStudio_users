@@ -70,7 +70,11 @@ module RecordingStudioUser
       end
 
       def rate_limit_keys
-        [OtpRateLimiter.email_key(@normalized_email), @request&.remote_ip, session_id].compact_blank
+        [
+          OtpRateLimiter.limit_key(:email, OtpRateLimiter.email_key(@normalized_email)),
+          OtpRateLimiter.limit_key(:ip, @request&.remote_ip),
+          OtpRateLimiter.limit_key(:session, session_id)
+        ].compact
       end
 
       def session_id
