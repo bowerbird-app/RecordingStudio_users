@@ -28,6 +28,7 @@ class ConfigurationTest < Minitest::Test
     assert_empty @configuration.omniauth_providers
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?
+    assert_nil @configuration.after_auth_path
     assert_empty @configuration.after_registration_hooks
     assert_empty @configuration.popup_opener_origins
     assert_equal 10, @configuration.otp_lockout_max_failures

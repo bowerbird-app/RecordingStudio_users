@@ -53,14 +53,6 @@ module RecordingStudioUser
         raise ActionController::RoutingError, "OTP login is not enabled"
       end
 
-      def after_sign_in_path_for(resource)
-        stored_auth_return_path(resource)
-      end
-
-      def after_sign_up_path_for(resource)
-        stored_auth_return_path(resource)
-      end
-
       def generic_login_notice
         I18n.t("recording_studio_user.auth.eligible_code_sent")
       end

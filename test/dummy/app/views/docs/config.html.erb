@@ -82,6 +82,15 @@
   </p>
 
   <p class="text-sm leading-6 text-(--surface-content-color)">
+    <code>config.after_auth_path</code> (default nil) is a callable
+    <code>-&gt;(controller:, user:) { path_or_nil }</code>. Password, OAuth, one-time code,
+    and the sign-in link use it for sign-in and for finishing sign-up. A path is the redirect.
+    Nil keeps the stored return path or the host root. A Terms and Conditions host can return
+    <code>RecordingStudioTermsAndConditions::Gate.after_auth_path(controller, user)</code>,
+    which is nil when nothing is pending.
+  </p>
+
+  <p class="text-sm leading-6 text-(--surface-content-color)">
     Sign-in limits use <code>Rails.cache</code>. Redis or Memcached can share those counts across hosts.
     A memory store, a null store, or a file store raises at boot outside development and test.
     While email codes are paused, a code request emails a one-time sign-in link and returns the usual sent notice.

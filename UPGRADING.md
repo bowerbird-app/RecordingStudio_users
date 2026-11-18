@@ -1,5 +1,19 @@
 # Upgrading
 
+## 0.37.0
+
+Bump to `0.37.0`. No Users migration.
+
+`config.after_auth_path` (default `nil`) is where people land after sign-in or sign-up. Password, OAuth, one-time code, and the sign-in link all use it. Return a path to redirect there. Return nil, or leave the setting nil, to keep the stored return path or the host root.
+
+```ruby
+config.after_auth_path = ->(controller:, user:) {
+  RecordingStudioTermsAndConditions::Gate.after_auth_path(controller, user)
+}
+```
+
+`Gate.after_auth_path` returns nil when that person has no pending terms. Set the callable in the host initializer.
+
 ## 0.36.0
 
 Bump to `0.36.0`. No Users migration.

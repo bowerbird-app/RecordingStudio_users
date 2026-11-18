@@ -137,6 +137,7 @@ RecordingStudioUser.configure do |config|
   # config.auth_logo = :square # or :wide
   # config.auth_body_start_partial = "shared/views_tracking"
   # config.signup_notice_partials = ["shared/signup_notice"]
+  # config.after_auth_path = ->(controller:, user:) { "/welcome" }
 end
 ```
 
@@ -201,6 +202,26 @@ window.addEventListener("message", (event) => {
 ```
 
 An embed on another origin adds that origin to `config.popup_opener_origins` and checks `event.origin` against the same list. OTP, account creation, signup terms, confirmations, and rate limits stay on their host flags. `return_to` does not turn them on.
+
+## Land on a host path after sign-in or sign-up
+
+`config.after_auth_path` (default `nil`) is a callable. Password, OAuth, one-time code, and the sign-in link all ask it where to go, for a sign-in and for finishing a sign-up. A path is the redirect. `nil`, or a callable that returns `nil`, keeps the stored `return_to` or the host root.
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.after_auth_path = ->(controller:, user:) { "/welcome" }
+end
+```
+
+A Terms and Conditions host sends someone with pending terms to Accept and leaves everyone else on that default:
+
+```ruby
+config.after_auth_path = ->(controller:, user:) {
+  RecordingStudioTermsAndConditions::Gate.after_auth_path(controller, user)
+}
+```
+
+`Gate.after_auth_path` returns nil when nothing is pending. Set the callable in the host initializer. The auth controllers read it in one place.
 
 ## Send a code when you already have the email
 
