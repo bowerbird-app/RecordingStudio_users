@@ -68,17 +68,6 @@ class HostViewOverrideTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Choose a new password"
     refute_includes response.body, "Save password"
   end
-
-  test "signup view paths prefer host then users over other gems" do
-    RecordingStudioUser::Engine.prefer_signup_view_paths!
-
-    paths = ActionController::Base.view_paths.map(&:to_s)
-    host = Rails.root.join("app/views").to_s
-    users = RecordingStudioUser::Engine.root.join("app/views").to_s
-
-    assert_equal host, paths[0]
-    assert_equal users, paths[1]
-  end
 end
 
 # Separate class so no override files exist and the gem templates resolve cleanly.

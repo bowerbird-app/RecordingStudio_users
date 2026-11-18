@@ -13,6 +13,7 @@
         autocomplete: "one-time-code",
         maxlength: 6
       ) %>
+      <%= render partial: "recording_studio_user/auth/signup_notices" %>
       <%= render FlatPack::Button::Component.new(
         text: t("recording_studio_user.otp_challenge.continue"),
         style: :primary,
@@ -32,8 +33,6 @@
       class: "w-full"
     ) %>
   <% end %>
-
-  <%= render partial: "recording_studio_user/auth/registrations/extra_fields" %>
 
   <%= render FlatPack::Content::Component.new(class: "text-center") do %>
     <%= render FlatPack::Link::Component.new(

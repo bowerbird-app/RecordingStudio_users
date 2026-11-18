@@ -1,5 +1,9 @@
 # Demo stills
 
+Users 0.36.0 renders `config.signup_notice_partials` on signup and auth forms. It does not detect Terms and Conditions. The stills below are from earlier releases.
+
+
+
 ## Create-password extra_fields slot (Users 0.12.1)
 
 PR: https://github.com/bowerbird-app/RecordingStudio_users/pull/27

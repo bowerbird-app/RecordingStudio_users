@@ -30,7 +30,9 @@ class OtpCodeFormTest < Minitest::Test
     assert_includes component, "csrf-token"
     assert_includes component, "csrf-param"
     assert_includes component, "title: nil"
-    assert_includes source, "accept_terms"
+    assert_includes source, "recording_studio_user/auth/signup_notices"
+    refute_includes source, "accept_terms"
+    refute_includes source, "Checkbox"
   end
 
   def test_inline_answers_stay_on_the_existing_actions

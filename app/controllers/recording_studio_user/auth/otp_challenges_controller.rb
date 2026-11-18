@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require_dependency RecordingStudioUser::Engine.root.join(
-  "app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb"
-).to_s
-require_dependency RecordingStudioUser::Engine.root.join(
   "app/controllers/concerns/recording_studio_user/auth/direct_otp.rb"
 ).to_s
 require_dependency RecordingStudioUser::Engine.root.join(
@@ -14,7 +11,6 @@ module RecordingStudioUser
   module Auth
     # Code-only entry for a sibling gem that already collected an email.
     class OtpChallengesController < BaseController
-      include SignupTermsAcceptance
       include DirectOtp
       include InlineOtp
 
@@ -34,8 +30,6 @@ module RecordingStudioUser
       end
 
       def submit
-        return reject_unchecked_signup_terms! if inline_signup_terms_unchecked?
-
         result = verify_direct_otp
         return render_verify_failure(result) unless result.success?
         return render_inline_signed_in(result) if inline_otp_request?

@@ -6,16 +6,12 @@ require_dependency RecordingStudioUser::Engine.root.join(
 require_dependency RecordingStudioUser::Engine.root.join(
   "app/controllers/concerns/recording_studio_user/auth/registration_otp.rb"
 ).to_s
-require_dependency RecordingStudioUser::Engine.root.join(
-  "app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb"
-).to_s
 
 module RecordingStudioUser
   module Auth
     class RegistrationsController < BaseController
       include RegistrationOtp
       include PasswordSignupSave
-      include SignupTermsAcceptance
 
       before_action :require_password_registration!, only: %i[password create_password]
       before_action :require_otp_registration_enabled!, only: %i[otp create_otp]
@@ -115,7 +111,6 @@ module RecordingStudioUser
 
       def provision_password_account!
         RecordingStudioUser.record_profile!(resource, actor: resource, **Profile.default_attributes_for(resource))
-        accept_pending_terms_on_signup!(resource)
       end
 
       def render_verify_failure(result)

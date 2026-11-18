@@ -3,46 +3,23 @@
 require "test_helper"
 
 class UsersTncBoundaryTest < Minitest::Test
-  def test_users_gem_extra_fields_soft_detects_tnc_without_depending_on_it
-    extra_fields = File.read(
-      File.expand_path("../app/views/recording_studio_user/auth/registrations/_extra_fields.html.erb", __dir__)
-    )
-    helper = File.read(
-      File.expand_path("../app/helpers/recording_studio_user/auth_terms_notice_helper.rb", __dir__)
-    )
-    password = File.read(
-      File.expand_path("../app/views/recording_studio_user/auth/registrations/password.html.erb", __dir__)
-    )
+  COUPLING_NEEDLES = %w[
+    RecordingStudioTermsAndConditions
+    recording_studio_terms_and_conditions
+    accept_terms
+    prefer_signup_view_paths
+    AuthTermsNoticeHelper
+    SignupTermsAcceptance
+  ].freeze
 
-    assert_includes extra_fields, "recording_studio_user_signup_terms_notice"
-    assert_includes helper, "defined?(RecordingStudioTermsAndConditions)"
-    assert_includes helper, "pending_published_list"
-    refute_includes helper, "first_root_with_live_terms"
-    assert_includes helper, "recording_studio_terms_continue_notice"
-    engine = File.read(File.expand_path("../lib/recording_studio_user/engine.rb", __dir__))
-    boot = File.read(File.expand_path("../lib/recording_studio_user/engine_boot.rb", __dir__))
-    assert_includes engine, "prefer_signup_view_paths!"
-    assert_includes boot, "prepend_view_path(users_views)"
-    assert_includes boot, "prepend_view_path(host_views)"
-    refute_match(/By continuing|agreed|checkbox/i, extra_fields)
-    assert_includes password, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
+  def test_users_gem_does_not_couple_to_terms
+    root = File.expand_path("..", __dir__)
+    offenders = coupled_files(root).map { |path| path.delete_prefix("#{root}/") }
 
-    controller = File.read(
-      File.expand_path("../app/controllers/recording_studio_user/auth/registrations_controller.rb", __dir__)
-    )
-    base = File.read(
-      File.expand_path("../app/controllers/recording_studio_user/auth/base_controller.rb", __dir__)
-    )
-    concern = File.read(
-      File.expand_path("../app/controllers/concerns/recording_studio_user/auth/signup_terms_acceptance.rb", __dir__)
-    )
-    assert_includes base, "prefer_host_then_users_signup_views"
-    assert_includes base, "prepend_view_path(Rails.root.join(\"app/views\"))"
-    assert_includes controller, "include SignupTermsAcceptance"
-    assert_includes controller, "accept_pending_terms_on_signup!(resource)"
-    assert_includes concern, "defined?(RecordingStudioTermsAndConditions::Gate)"
-    assert_includes concern, 'source: "continue_notice"'
-    assert_includes concern, '"source" => source'
+    assert_empty offenders
+    notices = File.read(File.expand_path("../app/views/recording_studio_user/auth/_signup_notices.html.erb", __dir__))
+    assert_includes notices, "signup_notice_partials"
+    refute_match(/checkbox/i, notices)
   end
 
   def test_production_users_does_not_depend_on_tnc
@@ -75,5 +52,17 @@ class UsersTncBoundaryTest < Minitest::Test
     refute_includes dummy_lock, "recording_studio_publishable (0.6.0)"
     refute_includes dummy_lock, "6e7da3c8a9359dfcde7a177d29a49886f85fdbf8"
     assert_includes dummy_lock, "flat_pack (0.1.377)"
+  end
+
+  private
+
+  def coupled_files(root)
+    Dir[File.join(root, "{app,lib,config}/**/*.{rb,erb,yml}")].select do |path|
+      coupled?(File.read(path))
+    end
+  end
+
+  def coupled?(source)
+    COUPLING_NEEDLES.any? { |needle| source.include?(needle) }
   end
 end

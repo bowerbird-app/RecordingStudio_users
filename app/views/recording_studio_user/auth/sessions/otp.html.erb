@@ -12,6 +12,7 @@
         autocomplete: "email",
         aria: { label: t("recording_studio_user.auth.email") }
       ) %>
+      <%= render partial: "recording_studio_user/auth/signup_notices" %>
       <%= render FlatPack::Button::Component.new(
         text: t("recording_studio_user.sessions.send_code"),
         style: :primary,

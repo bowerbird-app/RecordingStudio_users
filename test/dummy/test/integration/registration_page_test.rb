@@ -9,8 +9,8 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
   AUTH_PASSWORD_VIEW = RecordingStudioUser::Engine.root.join(
     "app/views/recording_studio_user/auth/registrations/password.html.erb"
   ).freeze
-  AUTH_EXTRA_FIELDS_PARTIAL = RecordingStudioUser::Engine.root.join(
-    "app/views/recording_studio_user/auth/registrations/_extra_fields.html.erb"
+  AUTH_SIGNUP_NOTICES = RecordingStudioUser::Engine.root.join(
+    "app/views/recording_studio_user/auth/_signup_notices.html.erb"
   ).freeze
 
   test "sign up paints Flatpack email only without confirmation by default" do
@@ -95,10 +95,10 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     RecordingStudioUser.config.primary_login_type = original
   end
 
-  test "create-password extra_fields soft-detects a live Terms notice" do
+  test "create-password renders configured signup notices and no checkbox" do
     original = RecordingStudioUser.config.primary_login_type
     RecordingStudioUser.config.primary_login_type = :email
-    email = "extra-fields-#{SecureRandom.hex(4)}@example.com"
+    email = "signup-notice-#{SecureRandom.hex(4)}@example.com"
 
     post new_user_registration_path, params: { user: { email: email } }
     follow_redirect!
@@ -107,12 +107,14 @@ class RegistrationPageTest < ActionDispatch::IntegrationTest
     assert_select "form" do
       assert_select "input#user_password[type='password']"
       assert_select "button[type='submit']", text: "Sign up"
+      assert_select "input[type=checkbox]", count: 0
     end
+    assert_includes response.body, "By continuing you agree to the Terms"
     password_source = File.read(AUTH_PASSWORD_VIEW)
-    extra_fields = File.read(AUTH_EXTRA_FIELDS_PARTIAL)
-    assert_includes password_source, 'render partial: "recording_studio_user/auth/registrations/extra_fields"'
-    assert_includes extra_fields, "recording_studio_user_signup_terms_notice"
-    refute_match(/By continuing|agreed|checkbox/i, extra_fields)
+    notices = File.read(AUTH_SIGNUP_NOTICES)
+    assert_includes password_source, 'render partial: "recording_studio_user/auth/signup_notices"'
+    assert_includes notices, "signup_notice_partials"
+    refute_match(/checkbox/i, notices)
   ensure
     RecordingStudioUser.config.primary_login_type = original
   end

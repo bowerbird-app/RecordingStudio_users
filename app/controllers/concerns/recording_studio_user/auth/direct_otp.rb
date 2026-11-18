@@ -35,7 +35,6 @@ module RecordingStudioUser
 
       def finish_registration!(result)
         user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
-        accept_pending_terms_on_signup!(user)
         finish_sign_up!(user)
       end
 

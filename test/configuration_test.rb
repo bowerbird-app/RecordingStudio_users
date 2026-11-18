@@ -24,6 +24,7 @@ class ConfigurationTest < Minitest::Test
     assert_predicate @configuration, :auth_logo_square?
     refute_predicate @configuration, :auth_logo_wide?
     assert_nil @configuration.auth_body_start_partial
+    assert_empty @configuration.signup_notice_partials
     assert_empty @configuration.omniauth_providers
     assert_predicate @configuration, :omniauth_create_account?
     refute_predicate @configuration, :omniauth_configured?
@@ -161,6 +162,19 @@ class ConfigurationTest < Minitest::Test
 
     @configuration.auth_body_start_partial = "  "
     assert_nil @configuration.auth_body_start_partial
+  end
+
+  def test_signup_notice_partials_default_empty_and_strip_blanks
+    assert_empty @configuration.signup_notice_partials
+
+    @configuration.signup_notice_partials = [" shared/signup_notice ", "", nil, "shared/other"]
+    assert_equal ["shared/signup_notice", "shared/other"], @configuration.signup_notice_partials
+
+    @configuration.signup_notice_partials = "shared/one"
+    assert_equal ["shared/one"], @configuration.signup_notice_partials
+
+    @configuration.signup_notice_partials = nil
+    assert_empty @configuration.signup_notice_partials
   end
 
   def test_auth_logo_defaults_to_square

@@ -88,26 +88,10 @@ module RecordingStudioUser
       end
 
       def inline_registration_destination!(result)
-        return if inline_signup_terms_unchecked?
-
         user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
-        accept_pending_terms_on_signup!(user, source: "checkbox")
         clear_pending_auth_email!
         sign_in_user!(user)
         after_sign_up_path_for(user)
-      end
-
-      def inline_signup_terms_unchecked?
-        inline_otp_request? && registration_challenge? && pending_signup_terms? && !terms_box_checked?
-      end
-
-      def terms_box_checked?
-        params[:accept_terms].to_s == "1"
-      end
-
-      def reject_unchecked_signup_terms!
-        flash.now[:alert] = I18n.t("recording_studio_user.otp_challenge.agree_to_continue")
-        render_inline_otp(status: :unprocessable_entity)
       end
 
       def inline_form(signed_in_return_to: nil, csrf_param: nil, csrf_token: nil)

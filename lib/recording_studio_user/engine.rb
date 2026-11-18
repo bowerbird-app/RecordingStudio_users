@@ -16,13 +16,11 @@ module RecordingStudioUser
         helper RecordingStudioUser::OmniauthHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthRoutesHelper if respond_to?(:helper)
         helper RecordingStudioUser::AuthSiteLogoHelper if respond_to?(:helper)
-        helper RecordingStudioUser::AuthTermsNoticeHelper if respond_to?(:helper)
       end
       ActiveSupport.on_load(:action_view) do
         include RecordingStudioUser::OmniauthHelper
         include RecordingStudioUser::AuthRoutesHelper
         include RecordingStudioUser::AuthSiteLogoHelper
-        include RecordingStudioUser::AuthTermsNoticeHelper
       end
     end
 
@@ -69,23 +67,11 @@ module RecordingStudioUser
       config.to_prepare { RecordingStudioUser::Metrics.register! }
     end
 
-    # TnC prepends its registrations/extra_fields override onto ActionController::Base.
-    # Re-assert Users after TnC so soft-detect wins over TnC's hard partial,
-    # then put the host app/views in front so hosts override either gem —
-    # normal Rails precedence (host > this gem > TnC/Devise).
-    initializer "recording_studio_user.signup_view_path" do
-      ActiveSupport.on_load(:action_controller_base) do
-        RecordingStudioUser::EngineBoot.prefer_signup_view_paths!
-      end
-      config.to_prepare { RecordingStudioUser::EngineBoot.prefer_signup_view_paths! }
-    end
-
     initializer "recording_studio_user.filter_parameters" do |app|
       app.config.filter_parameters += %i[otp code login_code sign_in_token]
     end
 
     def self.load_view_helpers! = EngineBoot.load_view_helpers!
-    def self.prefer_signup_view_paths! = EngineBoot.prefer_signup_view_paths!
     def self.apply_profiled_user! = EngineBoot.apply_profiled_user!
     def self.apply_otp_setup!(user_class) = EngineBoot.apply_otp_setup!(user_class)
     def self.load_user_class = EngineBoot.load_user_class
