@@ -581,12 +581,11 @@ class SignInLockoutTest < ActionDispatch::IntegrationTest
   end
 
   def with_forgery_protection
-    controllers = [ActionController::Base, RecordingStudioUser::ApplicationController]
-    originals = controllers.to_h { |controller| [controller, controller.allow_forgery_protection] }
-    controllers.each { |controller| controller.allow_forgery_protection = true }
+    original = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
     yield
   ensure
-    originals&.each { |controller, value| controller.allow_forgery_protection = value }
+    ActionController::Base.allow_forgery_protection = original
   end
 
   def post_sign_in(email:, password:)
