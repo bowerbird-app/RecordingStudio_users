@@ -6,7 +6,8 @@ module RecordingStudioUser
       include PasswordRateLimit
       include SignInCode
 
-      before_action :require_otp_login_enabled!, only: %i[otp create_otp verify submit_verify resend sign_in_link]
+      before_action :require_otp_login_enabled!,
+                    only: %i[otp create_otp verify submit_verify resend sign_in_link submit_sign_in_link]
 
       def new; end
 

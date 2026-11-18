@@ -15,11 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- While email codes are paused, requesting a code emails one sign-in link instead of a code. The response matches the usual sent notice. The link stores only a digest, expires with `otp_expires_in`, works once, and signs in that user. Following it clears the code pause and the password pause. It is not a guessable code, so the code pause does not apply to it. One link is sent per request, under the shared per-account send limit.
+- While email codes are paused, requesting a code emails one sign-in link instead of a code. The response matches the usual sent notice. The link stores only a digest, expires with `otp_expires_in`, and works once. Opening it shows a confirmation page and does not use the link. Signing in happens when that page is submitted, and that clears the code pause and the password pause. An invalid, expired, or used link shows the same page. It is not a guessable code, so the code pause does not apply to it. One link is sent per request, under the shared per-account send limit. The email is queued the same way as a code email.
 
 ### Changed
 
 - A completed password reset clears the password pause, as does signing in with the link.
+- A successful sign-in with a code, a password, or a link retires that user's unused sign-in links.
 - Password sign-in runs a password digest compare for an unknown email, an OTP-only account, and an unconfirmed account, the same work as a real password check.
 - The shared per-account send bucket uses `otp_resend_cooldown`.
 - Email, IP, and session rate-limit keys are passed as those types.

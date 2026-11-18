@@ -6,8 +6,15 @@ module RecordingStudioUser
       extend ActiveSupport::Concern
 
       def sign_in_link
+        @sign_in_token = params[:sign_in_token].to_s
+        @masked_email = RecordingStudioUser::OtpCodeForm.mask(pending_sign_in_link_user&.email)
+        @sign_in_token = nil if @masked_email.blank?
+        render :sign_in_link
+      end
+
+      def submit_sign_in_link
         user = RecordingStudioUser::SignInLink.authenticate!(params[:sign_in_token])
-        return redirect_invalid_sign_in_link unless user
+        return render :sign_in_link, status: :unprocessable_entity unless user
 
         Services::AccountLockout.reset_otp!(user)
         Services::AccountLockout.reset_password!(user)
@@ -16,8 +23,8 @@ module RecordingStudioUser
 
       private
 
-      def redirect_invalid_sign_in_link
-        redirect_to host_new_user_session_path, alert: I18n.t("recording_studio_user.auth.sign_in_link.invalid")
+      def pending_sign_in_link_user
+        RecordingStudioUser::SignInLink.pending_user(@sign_in_token)
       end
 
       def verify_session_code

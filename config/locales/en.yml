@@ -77,6 +77,7 @@ en:
         title: Sign in
         body: "Use this link to sign in. It works once and expires in %{minutes} minutes. %{url}"
         stored_body: "A one-time sign-in link was emailed. It expires in %{minutes} minutes."
+        confirm: "Sign in as %{email}"
         invalid: That sign-in link did not work. Request a new code.
       verify:
         invalid_code: That code did not work. Try again.

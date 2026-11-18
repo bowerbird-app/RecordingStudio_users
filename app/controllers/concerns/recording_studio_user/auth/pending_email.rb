@@ -26,6 +26,7 @@ module RecordingStudioUser
       end
 
       def finish_sign_in!(user)
+        RecordingStudioUser::SignInLink.retire_unused!(user)
         clear_pending_auth_email!
         sign_in_user!(user)
         complete_signed_in!(user, :after_sign_in_path_for)

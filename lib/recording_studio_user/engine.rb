@@ -32,6 +32,7 @@ module RecordingStudioUser
 
     config.to_prepare do
       RecordingStudioUser::OtpDeliveryDeferral.install!
+      RecordingStudioUser::SignInLinkDelivery.install!
     end
 
     config.after_initialize do

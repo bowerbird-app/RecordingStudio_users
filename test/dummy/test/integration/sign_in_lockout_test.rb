@@ -142,10 +142,14 @@ class SignInLockoutTest < ActionDispatch::IntegrationTest
     assert_equal 0, RecordingStudioUser::Services::AccountLockout.otp_failure_count(user)
 
     sign_out :user
-    follow_mail_link(link_mails.last)
-    assert_equal "/users/sign_in", URI.parse(response.location).path
+    used_mail = link_mails.last
+    open_sign_in_link(used_mail)
+    used_page = generic_sign_in_link_signature
     assert_nil session["warden.user.user.key"]
-    assert_equal I18n.t("recording_studio_user.auth.sign_in_link.invalid"), flash[:alert]
+    post link_path(used_mail), params: { sign_in_token: token_from(used_mail) }
+    assert_response :unprocessable_entity
+    assert_includes response.body, I18n.t("recording_studio_user.auth.sign_in_link.invalid")
+    assert_nil session["warden.user.user.key"]
 
     @config.otp_expires_in = 30.seconds
     @config.otp_lockout_duration = 10.minutes
@@ -153,13 +157,18 @@ class SignInLockoutTest < ActionDispatch::IntegrationTest
     ActionMailer::Base.deliveries.clear
     post_code(other.email, "203.0.113.22")
     expired_mail = link_mails.last
+    follow_redirect!
     travel 1.minute
-    follow_mail_link(expired_mail)
+    open_sign_in_link(expired_mail)
+    expired_page = generic_sign_in_link_signature
     assert_nil session["warden.user.user.key"]
     assert RecordingStudioUser::Services::AccountLockout.locked?(other, :otp)
 
-    get "/users/sign_in/link", params: { sign_in_token: "not-a-real-token" }
+    get "/recording_studio_users/auth/sign_in/link", params: { sign_in_token: "not-a-real-token" }
+    unknown_page = generic_sign_in_link_signature
     assert_nil session["warden.user.user.key"]
+    assert_equal used_page, expired_page
+    assert_equal used_page, unknown_page
   end
 
   test "a code-only account can sign in with the link" do
@@ -175,6 +184,123 @@ class SignInLockoutTest < ActionDispatch::IntegrationTest
 
     assert_signed_in(user)
     refute RecordingStudioUser::Services::AccountLockout.locked?(user, :otp)
+  end
+
+  test "get sign-in link does not consume the token" do
+    user = password_user("get-link")
+    mail = request_link_mail(user, "203.0.113.32")
+    link = RecordingStudioUser::SignInLink.find_by!(user: user)
+    before = link.attributes.slice("token_digest", "consumed_at", "expires_at", "updated_at")
+
+    open_sign_in_link(mail)
+    assert_sign_in_confirm(user)
+    assert_nil session["warden.user.user.key"]
+    assert_equal before, link.reload.attributes.slice("token_digest", "consumed_at", "expires_at", "updated_at")
+
+    open_sign_in_link(mail)
+    assert_equal before, link.reload.attributes.slice("token_digest", "consumed_at", "expires_at", "updated_at")
+  end
+
+  test "post sign-in link signs in" do
+    user = password_user("post-link")
+    mail = request_link_mail(user, "203.0.113.33")
+
+    follow_mail_link(mail)
+
+    assert_signed_in(user)
+    assert RecordingStudioUser::SignInLink.find_by!(user: user).consumed_at
+  end
+
+  test "post sign-in link without a csrf token fails" do
+    user = password_user("csrf-link")
+    mail = request_link_mail(user, "203.0.113.34")
+    link = RecordingStudioUser::SignInLink.find_by!(user: user)
+    raw = token_from(mail)
+
+    with_forgery_protection do
+      open_sign_in_link(mail)
+      assert_sign_in_confirm(user)
+      post confirm_sign_in_path, params: { sign_in_token: raw }
+
+      assert_response :unprocessable_entity
+      assert_nil session["warden.user.user.key"]
+      assert_nil link.reload.consumed_at
+
+      open_sign_in_link(mail)
+      post confirm_sign_in_path, params: {
+        sign_in_token: raw,
+        authenticity_token: css_select("input[name=authenticity_token]").first["value"]
+      }
+      assert_signed_in(user)
+    end
+
+    assert link.reload.consumed_at
+  end
+
+  test "a successful sign-in retires unused sign-in links" do
+    email = "retire-links-#{SecureRandom.hex(4)}@example.com"
+    user = password_user(email)
+    kept = unused_sign_in_link(password_user("retire-other"))
+
+    password_link = unused_sign_in_link(user)
+    post_sign_in(email: email, password: "Password123!")
+    assert_redirected_to root_path
+    assert password_link.reload.consumed_at
+    assert_nil kept.reload.consumed_at
+    sign_out :user
+
+    Rails.cache.clear
+    code_link = unused_sign_in_link(user)
+    post "/users/sign_in/otp", params: { user: { email: email } }
+    code = RecordingStudioUser::OtpChallenge.find(session[:otp_challenge_id]).decrypt_delivery_code!
+    post verify_user_session_path, params: { code: code }
+    assert_redirected_to root_path
+    assert code_link.reload.consumed_at
+    assert_nil kept.reload.consumed_at
+    sign_out :user
+
+    mail = request_link_mail(user, "203.0.113.35")
+    issued = RecordingStudioUser::SignInLink.find_by!(user: user, consumed_at: nil)
+    extra = unused_sign_in_link(user)
+    follow_mail_link(mail)
+
+    assert_signed_in(user)
+    assert issued.reload.consumed_at
+    assert extra.reload.consumed_at
+    assert_nil kept.reload.consumed_at
+  end
+
+  test "a sign-in link email is queued the same way as a code email" do
+    user = password_user("queued-link")
+    lock_otp!(user)
+    configuration = RecordingStudioNotifications.configuration
+    previous_later = configuration.deliver_later
+    previous_adapter = ActiveJob::Base.queue_adapter
+    configuration.deliver_later = true
+    ActiveJob::Base.queue_adapter = ActiveJob::QueueAdapters::TestAdapter.new
+    Rails.cache.clear
+    ActionMailer::Base.deliveries.clear
+
+    post_code(user.email, "203.0.113.36")
+
+    queued = ActiveJob::Base.queue_adapter.enqueued_jobs.select do |job|
+      job[:job] == RecordingStudioNotifications::DeliveryJob
+    end
+    assert_equal 1, queued.size
+    assert_empty ActionMailer::Base.deliveries
+    stored = sign_in_link_notifications(user).last
+    assert_includes stored.body.to_s, "sign_in_token="
+
+    queued.each { |payload| payload[:job].deserialize(payload).perform_now }
+
+    token = token_from(link_mails.last)
+    assert token.present?
+    stored.reload
+    refute_includes stored.body.to_s, token
+    refute_includes stored.url.to_s, token
+  ensure
+    configuration.deliver_later = previous_later if configuration
+    ActiveJob::Base.queue_adapter = previous_adapter if previous_adapter
   end
 
   test "a password reset clears the password lock" do
@@ -399,9 +525,68 @@ class SignInLockoutTest < ActionDispatch::IntegrationTest
     mail.text_part.body.to_s[/sign_in_token=([^&\s]+)/, 1]
   end
 
-  def follow_mail_link(mail)
+  def request_link_mail(user, ip)
+    lock_otp!(user)
+    Rails.cache.clear
+    ActionMailer::Base.deliveries.clear
+    post_code(user.email, ip)
+    link_mails.last
+  end
+
+  def open_sign_in_link(mail)
     uri = URI.parse(mail.text_part.body.to_s[/https?:\/\/\S+/])
     get "#{uri.path}?#{uri.query}"
+  end
+
+  def follow_mail_link(mail)
+    open_sign_in_link(mail)
+    post confirm_sign_in_path, params: { sign_in_token: token_from(mail) }
+  end
+
+  def confirm_sign_in_path
+    css_select("form").first["action"]
+  end
+
+  def link_path(mail)
+    URI.parse(mail.text_part.body.to_s[/https?:\/\/\S+/]).path
+  end
+
+  def assert_sign_in_confirm(user)
+    masked = RecordingStudioUser::OtpCodeForm.mask(user.email)
+    assert_response :success
+    assert_includes response.body, I18n.t("recording_studio_user.auth.sign_in_link.confirm", email: masked)
+    refute_includes response.body, user.email
+    assert_select "form[method=post]"
+    assert_select "input[name=sign_in_token]"
+    assert_select "button", text: I18n.t("recording_studio_user.auth.sign_in")
+  end
+
+  def generic_sign_in_link_signature
+    assert_response :success
+    assert_includes response.body, I18n.t("recording_studio_user.auth.sign_in_link.invalid")
+    assert_select "form", count: 0
+    assert_select "input[name=sign_in_token]", count: 0
+    body = response.body.gsub(/sign_in_token=[^&"'\s]+/, "TOKEN")
+    body = body.gsub(/authenticity_token" value="[^"]+"/, "TOKEN")
+    body = body.gsub(/csrf-token" content="[^"]+"/, "TOKEN")
+    [response.status, flash[:alert], flash[:notice], body]
+  end
+
+  def unused_sign_in_link(user)
+    RecordingStudioUser::SignInLink.create!(
+      user: user,
+      token_digest: RecordingStudioUser::SignInLink.digest(SecureRandom.urlsafe_base64(32)),
+      expires_at: 1.hour.from_now
+    )
+  end
+
+  def with_forgery_protection
+    controllers = [ActionController::Base, RecordingStudioUser::ApplicationController]
+    originals = controllers.to_h { |controller| [controller, controller.allow_forgery_protection] }
+    controllers.each { |controller| controller.allow_forgery_protection = true }
+    yield
+  ensure
+    originals&.each { |controller, value| controller.allow_forgery_protection = value }
   end
 
   def post_sign_in(email:, password:)

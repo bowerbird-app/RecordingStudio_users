@@ -77,6 +77,7 @@ fr:
         title: Connexion
         body: "Utilisez ce lien pour vous connecter. Il fonctionne une fois et expire dans %{minutes} minutes. %{url}"
         stored_body: "Un lien de connexion à usage unique a été envoyé. Il expire dans %{minutes} minutes."
+        confirm: "Connexion en tant que %{email}"
         invalid: Ce lien de connexion n'a pas fonctionné. Demandez un nouveau code.
       signup_did_not_save: "Cette inscription n'a pas été enregistrée"
       password_did_not_save: "Ce mot de passe n'a pas été enregistré"

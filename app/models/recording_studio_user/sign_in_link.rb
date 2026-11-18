@@ -2,7 +2,7 @@
 
 module RecordingStudioUser
   # One-time sign-in link issued while codes are paused. Only the digest is
-  # stored. The raw token exists in the email that is sent in this request,
+  # stored. The raw token exists in the email that is sent for this link,
   # then the saved notice is rewritten without it.
   class SignInLink < ApplicationRecord
     self.table_name = "recording_studio_user_sign_in_links"
@@ -34,6 +34,17 @@ module RecordingStudioUser
       link.with_lock { consume!(link) }
     end
 
+    # Read-only. Opening the link must not consume it or change the row.
+    def self.pending_user(token)
+      return if token.blank?
+
+      link = find_by(token_digest: digest(token))
+      return if link.nil? || spent?(link)
+
+      user = link.user
+      user if user&.confirmed? && user.active_for_authentication?
+    end
+
     def self.issue!(user)
       raw = SecureRandom.urlsafe_base64(32)
       link = transaction do
@@ -62,9 +73,10 @@ module RecordingStudioUser
     private_class_method :spent?
 
     def self.retire_unused!(user)
+      return if user.blank? || user.id.blank?
+
       where(user_id: user.id, consumed_at: nil).update_all(consumed_at: Time.current, updated_at: Time.current)
     end
-    private_class_method :retire_unused!
 
     def self.link_expires_at
       RecordingStudioUser.config.otp_expires_in.from_now
@@ -77,14 +89,15 @@ module RecordingStudioUser
     private_class_method :hmac_key
   end
 
-  # Sends the link, then drops the raw token from the stored notice.
+  # Sends the link the same way as a code email, then drops the raw token
+  # from the stored notice once that send has finished.
   module SignInLinkMail
     module_function
 
     def deliver!(user, raw, link)
       RecordingStudioNotifications.notify(**notice(user, url_for(raw), link))
     ensure
-      scrub!(link)
+      scrub_if_settled!(link)
     end
 
     def notice(user, url, link)
@@ -95,21 +108,49 @@ module RecordingStudioUser
         body: I18n.t("recording_studio_user.auth.sign_in_link.body", minutes: expiry_minutes, url: url),
         channels: [:email],
         metadata: { "sign_in_link_id" => link.id },
-        idempotency_key: "#{SignInLink::IDEMPOTENCY_PREFIX}/#{link.id}",
-        deliver_later: false
+        idempotency_key: "#{SignInLink::IDEMPOTENCY_PREFIX}/#{link.id}"
       }
     end
 
+    def scrub_sent!(notification, delivery)
+      return unless notification&.notification_type&.to_s == "sign_in_link"
+      return if delivery.blank? || delivery.reload.status.in?(%w[pending processing])
+
+      link = SignInLink.find_by(id: notification.metadata["sign_in_link_id"])
+      scrub!(link) if link
+    end
+
+    def scrub_if_settled!(link)
+      notification = notification_for(link)
+      return if notification.blank? || email_open?(notification)
+
+      scrub!(link)
+    end
+
     def scrub!(link)
-      notification = RecordingStudioNotifications::Notification.find_by(
-        idempotency_key: "#{SignInLink::IDEMPOTENCY_PREFIX}/#{link.id}"
-      )
+      notification = notification_for(link)
       return if notification.blank?
 
       notification.update_columns(
         body: I18n.t("recording_studio_user.auth.sign_in_link.stored_body", minutes: expiry_minutes),
         url: nil,
         updated_at: Time.current
+      )
+    end
+
+    def notification_for(link)
+      return if link.blank?
+
+      RecordingStudioNotifications::Notification.find_by(
+        idempotency_key: "#{SignInLink::IDEMPOTENCY_PREFIX}/#{link.id}"
+      )
+    end
+
+    def email_open?(notification)
+      RecordingStudioNotifications::Delivery.exists?(
+        notification_id: notification.id,
+        channel: "email",
+        status: %w[pending processing]
       )
     end
 
