@@ -68,7 +68,7 @@ module RecordingStudioUser
       minimum_password_length: 12
     }.freeze
 
-    attr_accessor :user_class_name, :auth_site_root_resolver
+    attr_accessor :user_class_name, :auth_site_root_resolver, :after_auth_path
     attr_reader(
       :layout,
       *(DEFAULTS.keys - %i[user_class_name layout]),
@@ -124,6 +124,7 @@ module RecordingStudioUser
       @signup_notice_partials = []
       @omniauth_providers = {}
       @auth_site_root_resolver = nil
+      @after_auth_path = nil
       @after_registration_hooks = []
       @popup_opener_origins = []
     end

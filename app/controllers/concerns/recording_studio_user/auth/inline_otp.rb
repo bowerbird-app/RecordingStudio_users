@@ -77,21 +77,21 @@ module RecordingStudioUser
 
         clear_pending_auth_email!
         sign_in_user!(result.user)
-        after_sign_in_path_for(result.user)
+        after_auth_path_for(result.user)
       end
 
       def inline_confirmation_destination!(result)
         user = confirm_password_signup!(result.user)
         clear_pending_auth_email!
         sign_in_user!(user)
-        after_sign_in_path_for(user)
+        after_auth_path_for(user)
       end
 
       def inline_registration_destination!(result)
         user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
         clear_pending_auth_email!
         sign_in_user!(user)
-        after_sign_up_path_for(user)
+        after_auth_path_for(user)
       end
 
       def inline_form(signed_in_return_to: nil, csrf_param: nil, csrf_token: nil)

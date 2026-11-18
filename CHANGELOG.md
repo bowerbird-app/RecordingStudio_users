@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Development and dummy Gemfiles pin the newest tags that resolve: Recording Studio `v7.3.0`, API `v1.2.1`, Accessible `v0.45.1`, Admin `v2.18.0`, Attachable `v0.31.0`, Cache `v0.7.0`, Icons `v0.4.0`, Logs `v0.8.0`, Metrics `v0.9.0`, Moveable `v6.0.0`, Trashable `v1.0.1`, and FlatPack `v0.1.377`. The dummy app also pins notifications `v0.19.1`, notifications email `v0.5.4`, notifications push `v0.10.0`, site settings `v0.6.0`, Terms and Conditions `v0.22.0`, Publishable `v1.1.0`, Root Switchable `v0.16.0`, OAuth `v0.25.0`, and MCP `v0.35.0`.
 
+## [0.37.0] - 2026-11-18
+
+### Added
+
+- `config.after_auth_path` (default `nil`). A callable `->(controller:, user:) { path_or_nil }`. Password, OAuth, one-time code, and the sign-in link use it for sign-in and for finishing sign-up. A path is the redirect. `nil`, or a callable that returns `nil`, keeps the stored return path or the host root.
+
+### Changed
+
+- Successful sign-in and sign-up resolve that path in one method. A host sets `config.after_auth_path` in its initializer.
+
+### Upgrade notes
+
+- Bump to `0.37.0`. No Users migration.
+- Set `config.after_auth_path` when sign-in or sign-up should land somewhere other than the stored return path or the host root. A Terms and Conditions host can return `RecordingStudioTermsAndConditions::Gate.after_auth_path(controller, user)`.
+
 ## [0.36.0] - 2026-11-18
 
 ### Added

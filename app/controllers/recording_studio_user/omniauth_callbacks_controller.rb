@@ -13,10 +13,6 @@ module RecordingStudioUser
 
     recording_studio_layout { RecordingStudioUser.configuration.layout }
 
-    def after_sign_in_path_for(resource)
-      stored_auth_return_path(resource)
-    end
-
     # Devise routes each configured provider to a same-named action.
     Omniauth::PROVIDER_LABELS.each_key do |provider|
       define_method(provider) { handle_omniauth }
@@ -52,7 +48,7 @@ module RecordingStudioUser
     def sign_in_from_omniauth!(auth)
       user = Omniauth.find_or_create_user!(auth)
       sign_in_user!(user, event: :authentication)
-      complete_signed_in!(user, :after_sign_in_path_for)
+      complete_signed_in!(user)
     end
 
     def after_connect_path

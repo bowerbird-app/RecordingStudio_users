@@ -30,11 +30,23 @@ module RecordingStudioUser
         response.headers["Content-Security-Policy"] = [policy.presence, directive].compact.join("; ")
       end
 
-      def complete_signed_in!(user, path_method)
-        destination = public_send(path_method, user)
+      def complete_signed_in!(user)
+        destination = after_auth_path_for(user)
         return render_auth_popup!(destination) if RecordingStudioUser::ReturnTo.popup?(session)
 
         redirect_to destination
+      end
+
+      # One landing path for sign-in and sign-up. A host path wins. Nil keeps
+      # the stored return path, or the host root.
+      def after_auth_path_for(user)
+        callable = RecordingStudioUser.config.after_auth_path
+        if callable
+          path = callable.call(controller: self, user: user)
+          return path unless path.nil?
+        end
+
+        stored_auth_return_path(user)
       end
 
       def render_auth_popup!(destination)

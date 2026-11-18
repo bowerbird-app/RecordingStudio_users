@@ -72,6 +72,14 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Replace this placeholder"
   end
 
+  test "config page documents the after auth path" do
+    get docs_config_path
+
+    assert_response :success
+    assert_includes response.body, "config.after_auth_path"
+    assert_includes response.body, "Gate.after_auth_path"
+  end
+
   test "recordable types page renders configured recordables dynamically" do
     summary_data = create_recordable_type_summary_data
 

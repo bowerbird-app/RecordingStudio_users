@@ -47,6 +47,11 @@ RecordingStudioUser.configure do |config|
   # unsigned auth forms. Default is an empty list, which renders nothing.
   # Same path style as auth_body_start_partial.
   # config.signup_notice_partials = ["shared/signup_notice"]
+  # Where people land after sign-in or sign-up. Default nil keeps the stored
+  # return path, or the host root. The callable receives controller: and user:
+  # and returns a path or nil. Password, OAuth, one-time code, and the
+  # sign-in link all use it, including finishing sign-up.
+  # config.after_auth_path = ->(controller:, user:) { "/welcome" }
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
   # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in
