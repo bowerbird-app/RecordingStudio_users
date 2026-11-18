@@ -74,6 +74,7 @@ module RecordingStudioUser
       *(DEFAULTS.keys - %i[user_class_name layout]),
       :after_registration_hooks,
       :auth_body_start_partial,
+      :signup_notice_partials,
       :popup_opener_origins
     )
 
@@ -120,6 +121,7 @@ module RecordingStudioUser
       DEFAULTS.each { |setting, value| instance_variable_set("@#{setting}", value) }
       @login_title = nil
       @auth_body_start_partial = nil
+      @signup_notice_partials = []
       @omniauth_providers = {}
       @auth_site_root_resolver = nil
       @after_registration_hooks = []
@@ -231,6 +233,13 @@ module RecordingStudioUser
 
     def auth_body_start_partial=(value)
       @auth_body_start_partial = value&.to_s&.strip.presence
+    end
+
+    # Partial paths rendered next to the submit button on signup and other
+    # unsigned auth forms. Same path style as auth_body_start_partial.
+    # Default is an empty list, which renders nothing.
+    def signup_notice_partials=(value)
+      @signup_notice_partials = Array(value).map { |partial| partial.to_s.strip }.reject(&:empty?)
     end
 
     def popup_opener_origins=(value)

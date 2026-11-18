@@ -1,5 +1,18 @@
 # Upgrading
 
+## 0.36.0
+
+Bump to `0.36.0`. No Users migration.
+
+`config.signup_notice_partials` (default `[]`) is a list of partial paths rendered next to the submit button on signup and other unsigned auth forms. An empty list renders nothing. The path style matches `auth_body_start_partial`.
+
+Users no longer calls Terms and Conditions, shows a terms checkbox, or reads `accept_terms`. Record acceptance from `after_registration` with `user:` and `method:` (`:password`, `:oauth`, or `:otp`). The registration event is unchanged.
+
+```ruby
+config.signup_notice_partials = ["shared/signup_notice"]
+config.after_registration ->(user:, method:) { }
+```
+
 ## 0.30.0
 
 Bump to `0.30.0`. No Users migration.

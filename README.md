@@ -107,7 +107,15 @@ A view that already filled the slot with `content_for` wins, and the configured 
 <% end %>
 ```
 
-The helper in that example is a host helper (for example from RecordingStudio_views). This gem does not depend on it. Do not prepend onto `AuthSiteLogoHelper` to fill this slot. A host that needs different chrome sets `RecordingStudioUser.configuration.layout` or `RecordingStudio.configure { |c| c.layout = ... }`. Password screens work with `otp_enabled` still `false`. Password sign-up still emails a confirmation code, so the code tables and `recording_studio_notifications` are required then too, and `/users/sign_up/verify` stays routed. A failed send does not keep the account. Login code routes (`/users/sign_in/otp`, `/users/sign_in/verify`) are drawn only when OTP login is on. The password sign-in code action is drawn only when a code screen exists. When those flags are off the missing paths are absent, not error pages. Hosts override a view only when the product must differ; do not copy the gem templates into the app. Place the override under the host `app/views/` with the same path as the gem (for example `app/views/recording_studio_user/auth/registrations/new.html.erb`) — host views win over the gem, and the gem still wins over TnC and Devise. Create-password `extra_fields` calls `recording_studio_user_signup_terms_notice`. Hosts that also install `recording_studio_terms_and_conditions` and have live Terms pending get the continue-notice automatically — including when the current workspace has no live Terms, in which case the helper falls back to the first root that does. Users keeps its soft-detect `extra_fields` ahead of TnC's copy, then prefers the host `app/views` so a host override still wins. Without TnC the helper is a no-op. Addons may still override the partial.
+Signup and other unsigned auth forms render `config.signup_notice_partials` next to the submit button. The default is an empty list, which renders nothing. Each entry is a partial path, the same style as `auth_body_start_partial`:
+
+```ruby
+config.signup_notice_partials = ["shared/signup_notice"]
+```
+
+Put continue-notice copy in that partial. Record acceptance from `after_registration` (`user:` and `method:`, where `method` is `:password`, `:oauth`, or `:otp`). A valid submit is the consent.
+
+The helper in that example is a host helper (for example from RecordingStudio_views). This gem does not depend on it. Do not prepend onto `AuthSiteLogoHelper` to fill this slot. A host that needs different chrome sets `RecordingStudioUser.configuration.layout` or `RecordingStudio.configure { |c| c.layout = ... }`. Password screens work with `otp_enabled` still `false`. Password sign-up still emails a confirmation code, so the code tables and `recording_studio_notifications` are required then too, and `/users/sign_up/verify` stays routed. A failed send does not keep the account. Login code routes (`/users/sign_in/otp`, `/users/sign_in/verify`) are drawn only when OTP login is on. The password sign-in code action is drawn only when a code screen exists. When those flags are off the missing paths are absent, not error pages. Hosts override a view only when the product must differ; do not copy the gem templates into the app. Place the override under the host `app/views/` with the same path as the gem (for example `app/views/recording_studio_user/auth/registrations/new.html.erb`). Host views win over the gem.
 
 Route configuration values for `mount_path`, `profile_route_path`, and `admin_route_path` must be available **before the host evaluates the engine mount and Rails draws routes**:
 
@@ -128,6 +136,7 @@ RecordingStudioUser.configure do |config|
   # config.primary_login_type = :email # or :otp when OTP is enabled
   # config.auth_logo = :square # or :wide
   # config.auth_body_start_partial = "shared/views_tracking"
+  # config.signup_notice_partials = ["shared/signup_notice"]
 end
 ```
 
@@ -216,7 +225,7 @@ Or POST `email`, `return_to`, and optional `popup=1` to `recording_studio_user_o
 
 The code page shows the code field, a masked address, resend, and a link back to the normal sign-in screen (still carrying `return_to`). No password, social buttons, or sign-up form. A valid code goes to `return_to`, or to the popup completion page when `popup=1`.
 
-An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_enabled?` are on. A new address creates an account only when `otp_enabled?` and `otp_registration_enabled?` are on, and signup terms still apply on that new account. Otherwise nothing is sent and no account is created. The redirect and the notice stay the same either way. Rate limits match the other code requests, per email and per IP. The route is absent when one-time codes are off.
+An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_enabled?` are on. A new address creates an account only when `otp_enabled?` and `otp_registration_enabled?` are on. `after_registration` runs for that new account. Otherwise nothing is sent and no account is created. The redirect and the notice stay the same either way. Rate limits match the other code requests, per email and per IP. The route is absent when one-time codes are off.
 
 ## A code box inside your own modal
 
@@ -235,9 +244,9 @@ The form posts to the same start, verify, and resend actions. Resend stays a POS
 
 A caller that wants JSON sends `Accept: application/json` and the CSRF token. Start and resend return `{ "ok": true }` (or a 429). A valid code returns `{ "ok": true, "return_to": "/messages/42/join", "csrf_param": "authenticity_token", "csrf_token": "..." }` and signs the person in, including the usual session rotation. Session rotation changes the CSRF token. The JSON body carries the new one and does not include the email address.
 
-When the challenge is a new address and Terms and Conditions has pending live terms for signup, the box shows a terms checkbox. The label is "I agree to Studio's Terms & Conditions", with that product's terms name and link. Send `accept_terms=1` with the code. A missing or unticked box does not finish the account, sign the person in, or record acceptance. A ticked box records acceptance with source `checkbox`. An existing person signing in does not see the box. The full-page code step still shows the continue notice and records `continue_notice`. Without Terms and Conditions, the checkbox is absent and nothing is accepted.
+Configured `signup_notice_partials` render in the box above Continue, the same slot as the full-page code form. A valid code finishes a new account without an extra parameter. `after_registration` runs for that new account.
 
-A request with an `Origin` other than this host is rejected. Nothing on these actions adds CORS headers, and auth responses stay frame-denied. Login, registration, signup terms, rate limits, and the single registration event follow the same rules as the code page.
+A request with an `Origin` other than this host is rejected. Nothing on these actions adds CORS headers, and auth responses stay frame-denied. Login, registration, rate limits, and the single registration event follow the same rules as the code page.
 
 ## Social sign-in
 
@@ -352,7 +361,8 @@ end
 Multiple registrations are allowed; each runs in order. A hook error is logged
 and reported through `Rails.error` and does not break sign-up or later hooks.
 Hooks do **not** run on login or when an OAuth identity is linked to an
-existing user.
+existing user. A continue-notice belongs in `signup_notice_partials`. Record
+acceptance inside one of these hooks.
 
 ## User contract
 
@@ -582,7 +592,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 The dummy mounts Users auth with `recording_studio_user_auth_for :users`. Login, sign up, password reset, and resend confirmation are gem screens on core `recording_studio/default_layout` through `recording_studio_layout`, no Card, no Remember me, no seed Badge. First screens are email only with **Continue with email**, then `continue_with_providers`. Password is the second screen when `primary_login_type` is `:email` (the default), with a **Forgot your password?** link into the reset flow. Login uses `login_title` (I18n default **Welcome back** in English). Dummy ships its own `config/locales/fr.yml` and can switch Users screens with `?locale=fr` or a saved profile locale. Sign-up confirmation appears only when `require_password_confirmation` is true. Dummy credentials (`test/dummy/config/credentials.yml.enc` and `test/dummy/config/credentials/*.yml.enc`) use the shared RecordingStudio_* development master key — set `RAILS_MASTER_KEY` or put that key in the gitignored dummy key files; keep the encrypted files and do not mint a per-repo key. Committed OmniAuth values are placeholders; put real Google (or other) secrets locally with `credentials:edit`. If the master key is missing, dummy still boots with those same placeholders so Devise OmniAuth callbacks load (Google in development, all five providers in test). Deep-link OTP lives on `/users/sign_in/otp` and `/users/sign_up/otp`. Dummy does not copy or override core's default layout. Core 6.1 puts `data-theme="rounded"` on `html`. Dummy's `recording_studio/_default_layout_head` repeats that attribute so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.1.377`.
 
-Dummy also installs released `recording_studio_terms_and_conditions` `v0.22.0` (Publishable `v1.1.0`) as an end-to-end signup demo. That pin lives in `test/dummy/Gemfile` only. The Users gemspec and root Gemfile stay free of TnC. The path gem satisfies TnC’s `recording_studio_user >= 0.30.0` requirement. Dummy seeds one live Terms record under **My workspace**. Users then detects the installed gem and the live record, so create-password shows the continue-notice without a host `extra_fields` override. Dummy does not override the Accept screen. The same dummy Gemfile pins `recording_studio_root_switchable` `v0.16.0` for the top-nav switcher (switch rate limit via RecordingStudioCache; no host code change). Root and dummy pin Recording Studio core `v7.3.0` (English fallback for shipped `recording_studio.*` keys via `RecordingStudio.t`).
+Dummy also installs released `recording_studio_terms_and_conditions` `v0.22.0` (Publishable `v1.1.0`) as an end-to-end signup demo. That pin lives in `test/dummy/Gemfile` only. The Users gemspec and root Gemfile stay free of TnC. The path gem satisfies TnC’s `recording_studio_user >= 0.30.0` requirement. Dummy seeds one live Terms record under **My workspace**. Dummy sets `signup_notice_partials` to its own partial (`By continuing you agree to the Terms`) and accepts pending terms from `after_registration`. The same dummy Gemfile pins `recording_studio_root_switchable` `v0.16.0` for the top-nav switcher (switch rate limit via RecordingStudioCache; no host code change). Root and dummy pin Recording Studio core `v7.3.0` (English fallback for shipped `recording_studio.*` keys via `RecordingStudio.t`).
 
 Profile show/edit are that chrome only — no sidebar, Sign out, Root Switchable, or Access slot. Show is Avatar plus Edit at `:xl`. Edit hosts `#profile-photo` with `FlatPack::ImageInput::Component` at `:"2xl"` (FlatPack `0.1.329`). Dummy still mounts Attachable and keeps a leftover attachment-show override (one core PageNav) if that URL is opened directly. Seeded accounts include:
 

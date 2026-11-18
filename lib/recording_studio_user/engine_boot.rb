@@ -10,24 +10,9 @@ module RecordingStudioUser
         omniauth_helper
         auth_routes_helper
         auth_site_logo_helper
-        auth_terms_notice_helper
       ].each do |name|
         require engine_root.join("app/helpers/recording_studio_user/#{name}").to_s
       end
-    end
-
-    def prefer_signup_view_paths!
-      return unless defined?(ActionController::Base)
-      return unless defined?(Rails.root)
-
-      users_views = engine_root.join("app/views").to_s
-      host_views = Rails.root.join("app/views").to_s
-      paths = ActionController::Base.view_paths.map(&:to_s)
-      return if paths[0] == host_views && paths[1] == users_views
-
-      # Users before TnC/Devise; host before Users.
-      ActionController::Base.prepend_view_path(users_views)
-      ActionController::Base.prepend_view_path(host_views)
     end
 
     def apply_profiled_user!

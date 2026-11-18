@@ -43,6 +43,10 @@ RecordingStudioUser.configure do |config|
   # content_for :recording_studio_user_auth_body_start wins, so the partial
   # is not rendered twice.
   # config.auth_body_start_partial = "shared/views_tracking"
+  # Partial paths rendered next to the submit button on signup and other
+  # unsigned auth forms. Default is an empty list, which renders nothing.
+  # Same path style as auth_body_start_partial.
+  # config.signup_notice_partials = ["shared/signup_notice"]
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
   # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in
@@ -106,7 +110,8 @@ RecordingStudioUser.configure do |config|
   # Optional host callbacks after successful sign-up (password, OAuth new-user,
   # or OTP). Callable or class-name string responding to .call(user:, method:).
   # Multiple registrations are allowed. Errors are logged and reported; sign-up
-  # continues. Does not fire on login or identity linking.
+  # continues. Does not fire on login or identity linking. Put continue-notice
+  # copy in signup_notice_partials and record acceptance from this hook.
   # config.after_registration ->(user:, method:) { }
   # config.after_registration "Host::AfterRegistration"
 end

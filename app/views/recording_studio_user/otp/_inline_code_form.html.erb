@@ -33,17 +33,7 @@
               autocomplete: "one-time-code",
               maxlength: 6
             ) %>
-            <% if inline_terms.present? %>
-              <div>
-                <%= render FlatPack::Checkbox::Component.new(
-                  name: "accept_terms",
-                  value: "1",
-                  required: true,
-                  label: inline_terms[:label]
-                ) %>
-                <%= inline_terms[:modals] %>
-              </div>
-            <% end %>
+            <%= render partial: "recording_studio_user/auth/signup_notices" %>
           </div>
           <%= render FlatPack::Button::Component.new(
             text: t("recording_studio_user.otp_challenge.continue"),

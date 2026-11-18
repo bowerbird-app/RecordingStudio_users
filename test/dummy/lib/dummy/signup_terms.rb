@@ -56,6 +56,18 @@ module Dummy
       RecordingStudioTermsAndConditions.accept!(actor, terms, SEED_PROVENANCE)
     end
 
+    # Called from after_registration. Continuing sign-up is the consent.
+    def accept_on_signup!(actor, method:)
+      return if actor.blank?
+
+      provenance = { "source" => "signup", "method" => method.to_s }
+      RecordingStudioTermsAndConditions.pending_published_list(actor).each do |terms|
+        RecordingStudioTermsAndConditions.accept!(actor, terms, provenance)
+      end
+    rescue RecordingStudioTermsAndConditions::NotLive
+      nil
+    end
+
     def existing_terms_recording(root = root_recording)
       RecordingStudio::Recording.kept.find_by(
         recordable_type: RecordingStudioTermsAndConditions::Terms.name,

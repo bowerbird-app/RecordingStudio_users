@@ -117,7 +117,7 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: email)
 
     post recording_studio_user_otp_challenge_path,
-         params: { code: registration_code(user), accept_terms: "1" },
+         params: { code: registration_code(user) },
          headers: frame_headers
 
     assert_response :success
@@ -131,18 +131,11 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     assert_equal [ { user_id: user.id, method: :otp } ], @events
     assert RecordingStudioTermsAndConditions.accepted?(user)
     receipt = RecordingStudioTermsAndConditions::Acceptance.order(:created_at).last
-    assert_equal({ "source" => "checkbox" }, receipt.provenance)
+    assert_equal "signup", receipt.provenance["source"]
+    assert_equal "otp", receipt.provenance["method"]
   end
 
-  test "a missing terms checkbox does not finish a new account" do
-    refute_inline_registration_without_terms
-  end
-
-  test "an unticked terms checkbox does not finish a new account" do
-    refute_inline_registration_without_terms(accept_terms: "0")
-  end
-
-  test "a ticked terms checkbox finishes the account and the same code still works after a miss" do
+  test "a wrong code does not finish a new account and the same code still works" do
     ensure_live_terms!
     email = "inline-tick-#{SecureRandom.hex(4)}@example.com"
     start_code(email, "/after-inline-tick")
@@ -150,21 +143,21 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     code = registration_code(user)
 
     post recording_studio_user_otp_challenge_path,
-         params: { code: code },
+         params: { code: "000000" },
          headers: json_headers
 
     assert_response :unprocessable_entity
     refute user.reload.confirmed?
 
     post recording_studio_user_otp_challenge_path,
-         params: { code: code, accept_terms: "1" },
+         params: { code: code },
          headers: json_headers
 
     assert_response :success
     assert_equal true, response.parsed_body["ok"]
     assert user.reload.confirmed?
     receipt = RecordingStudioTermsAndConditions::Acceptance.order(:created_at).last
-    assert_equal({ "source" => "checkbox" }, receipt.provenance)
+    assert_equal "signup", receipt.provenance["source"]
   end
 
   test "a turbo resend stays in the frame" do
@@ -332,7 +325,7 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Continue with Google"
   end
 
-  test "a new address shows the terms checkbox in the demo modal" do
+  test "a new address shows the signup notice and no checkbox in the demo modal" do
     ensure_live_terms!
     email = "inline-box-#{SecureRandom.hex(4)}@example.com"
     start_code(email, "/after-inline-box")
@@ -341,10 +334,9 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "link[rel=stylesheet][href*='flat_pack']"
-    assert_select "#inline-code-demo input[type=checkbox][name=accept_terms]"
-    assert_select "#inline-code-demo label button[type=button][data-modal-id]", text: "Terms & Conditions"
-    assert_includes CGI.unescapeHTML(response.body), "I agree to Studio's"
-    refute_includes CGI.unescapeHTML(response.body), "By continuing, you agree"
+    assert_select "#inline-code-demo input[type=checkbox]", count: 0
+    assert_select "#inline-code-demo input[name=accept_terms]", count: 0
+    assert_includes response.body, "By continuing you agree to the Terms"
   end
 
   private
@@ -405,25 +397,6 @@ class OtpInlineFormTest < ActionDispatch::IntegrationTest
     library = terms_library_root
     recording = record_terms(library, title: "Signup Terms", body: "Be kind on the way in.")
     publish_terms!(recording, slug: "inline-terms-#{SecureRandom.hex(4)}")
-  end
-
-  def refute_inline_registration_without_terms(extra = {})
-    ensure_live_terms!
-    email = "inline-deny-#{SecureRandom.hex(4)}@example.com"
-    start_code(email, "/after-inline-deny")
-    user = User.find_by!(email: email)
-
-    assert_no_difference -> { RecordingStudioTermsAndConditions::Acceptance.count } do
-      post recording_studio_user_otp_challenge_path,
-           params: { code: registration_code(user) }.merge(extra),
-           headers: json_headers
-    end
-
-    assert_response :unprocessable_entity
-    assert_equal false, response.parsed_body["ok"]
-    refute user.reload.confirmed?
-    get root_path
-    assert_redirected_to new_user_session_path
   end
 
   def csrf_pair
