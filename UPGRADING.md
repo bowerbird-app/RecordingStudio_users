@@ -1,5 +1,19 @@
 # Upgrading
 
+## 0.41.0
+
+Bump to `0.41.0`. No Users migration.
+
+Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+
+flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+
+Hosts that mount Recording Studio API need `config/recording_studio_api.yml`. A missing or invalid file raises while the API engine loads. `timeout: 5` matches the API default.
+
+Hosts on notifications `0.21.0` need that gem's inbox-index and inbound-reply migrations. Hosts on API `1.21.2` need the API client `owner` columns.
+
+Development pins move to Recording Studio `v7.8.0`, FlatPack `v0.2.0`, Accessible `v0.58.0`, Admin `v2.20.0`, API `v1.21.2`, Attachable `v0.34.0`, Cache `v0.8.0`, Icons `v0.5.0`, Logs `v0.9.0`, Metrics `v0.10.0`, Moveable `v6.1.0`, and Trashable `v1.3.0`. The dummy app also pins notifications `v0.21.0`, Publishable `v1.5.0`, and Root Switchable `v0.17.0`.
+
 ## 0.40.0
 
 Bump to `0.40.0`. No Users migration. No host gem pin changes. Password sign-in, OAuth, the existing code screens, and the paused-code sign-in link stay as they are. A successful code still rotates the session.

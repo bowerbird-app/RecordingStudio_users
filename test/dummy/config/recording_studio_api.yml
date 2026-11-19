@@ -1,0 +1,12 @@
+# Loaded at boot. API raises when this file is missing or invalid.
+shared:
+  timeout: 5
+
+development:
+  timeout: 5
+
+test:
+  timeout: 5
+
+production:
+  timeout: 5
