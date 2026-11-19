@@ -29,6 +29,11 @@
 
 en:
   hello: "Hello world"
+  dummy:
+    signup:
+      trial:
+        title: Start your trial
+        subtitle: Fourteen days, on us.
   notifications:
     mail:
       settings_title: Notification settings

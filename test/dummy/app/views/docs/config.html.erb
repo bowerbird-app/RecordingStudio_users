@@ -41,11 +41,16 @@
         config.additional_profile_attributes |= %i[display_name]
         config.require_password_confirmation = false
         # config.login_title = "Welcome back"
+        # config.sign_up_variants = { trial: { title: "my_app.signup.trial.title", subtitle: "my_app.signup.trial.subtitle" } }
         # config.primary_login_type = :email # or :otp when OTP is enabled
       end
     CODE
   ) %>
 
+  <p class="text-sm leading-6 text-(--surface-content-color)">
+    <code>sign_up_variants</code> gives one sign-up link its own title and subtitle.
+    Each name points at i18n keys. The page translates a registered name and ignores other query text.
+  </p>
   <p class="text-sm leading-6 text-(--surface-content-color)">
     <code>primary_login_type</code> chooses the second auth screen after email on login and registration:
     <code>:email</code> (default) opens password; <code>:otp</code> issues a code and opens verify.

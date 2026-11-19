@@ -42,16 +42,17 @@ module RecordingStudioUser
       session&.delete(POPUP_KEY)
     end
 
-    def with_query(path, return_to: nil, popup: false)
-      query = query_pairs(return_to, popup)
+    def with_query(path, return_to: nil, popup: false, variant: nil)
+      query = query_pairs(return_to, popup, variant)
       return path if query.empty?
 
       joiner = path.include?("?") ? "&" : "?"
       "#{path}#{joiner}#{Rack::Utils.build_query(query)}"
     end
 
-    def auth_path(screen, return_to: nil, popup: false)
-      with_query(screen_path(screen), return_to: return_to, popup: popup)
+    def auth_path(screen, return_to: nil, popup: false, variant: nil)
+      name = screen.to_sym == :sign_up ? variant : nil
+      with_query(screen_path(screen), return_to: return_to, popup: popup, variant: name)
     end
 
     def screen_path(screen)
@@ -112,11 +113,13 @@ module RecordingStudioUser
       decoded.valid_encoding? ? decoded : nil
     end
 
-    def query_pairs(return_to, popup)
+    def query_pairs(return_to, popup, variant = nil)
       pairs = {}
       accepted = accept(return_to)
       pairs["return_to"] = accepted if accepted
       pairs["popup"] = "1" if popup
+      name = RecordingStudioUser.config.sign_up_variant_name(variant)
+      pairs["variant"] = name if name
       pairs
     end
   end

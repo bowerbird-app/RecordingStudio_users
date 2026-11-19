@@ -175,6 +175,24 @@ recording_studio_user_sign_up_path(return_to: "/messages/42/join", popup: true)
 RecordingStudioUser.auth_url_for(:sign_in, return_to: "/messages/42/join")
 ```
 
+A host can give one sign-up link its own title and subtitle. Register the name, and point `title` and `subtitle` at i18n keys. `subtitle` is optional.
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.sign_up_variants = {
+    trial: {
+      title: "my_app.signup.trial.title",
+      subtitle: "my_app.signup.trial.subtitle"
+    }
+  }
+end
+
+recording_studio_user_sign_up_path(variant: :trial, return_to: "/billing", popup: true)
+RecordingStudioUser.auth_url_for(:sign_up, variant: :trial, return_to: "/billing")
+```
+
+That link is `/users/sign_up?variant=trial`. The page translates the keys for that name. An unknown name, a missing key, or any other query value keeps the default **Sign up** title and shows no subtitle. The page does not print the key, and it does not print text from the URL. A failed email submit on that page keeps the same title. The link from sign-up to sign-in does not carry `variant`. Put the strings in the host locale files. The dummy app registers `trial` in English and French.
+
 `return_to` is accepted on the email step, the password step, one-time code request, verify, and resend, sign-up, password reset, confirmation, and the OAuth start. OAuth keeps the path in the session. It is not added to the provider URL.
 
 The value has to be a relative path that starts with one `/`. One percent-decoding applies to the whole value, and anything longer than 2048 characters is dropped. The person then lands on the default page.
@@ -695,7 +713,7 @@ The host owns administration and must create its admin recordable/root, mount Re
 
 ## Dummy app
 
-The dummy mounts Users auth with `recording_studio_user_auth_for :users`. Login, sign up, password reset, and resend confirmation are gem screens on core `recording_studio/default_layout` through `recording_studio_layout`, no Card, no Remember me, no seed Badge. First screens are email only with **Continue with email**, then `continue_with_providers`. Password is the second screen when `primary_login_type` is `:email` (the default), with a **Forgot your password?** link into the reset flow. Login uses `login_title` (I18n default **Welcome back** in English). Dummy ships its own `config/locales/fr.yml` and can switch Users screens with `?locale=fr` or a saved profile locale. Sign-up confirmation appears only when `require_password_confirmation` is true. Dummy credentials (`test/dummy/config/credentials.yml.enc` and `test/dummy/config/credentials/*.yml.enc`) use the shared RecordingStudio_* development master key — set `RAILS_MASTER_KEY` or put that key in the gitignored dummy key files; keep the encrypted files and do not mint a per-repo key. Committed OmniAuth values are placeholders; put real Google (or other) secrets locally with `credentials:edit`. If the master key is missing, dummy still boots with those same placeholders so Devise OmniAuth callbacks load (Google in development, all five providers in test). Deep-link OTP lives on `/users/sign_in/otp` and `/users/sign_up/otp`. Dummy does not copy or override core's default layout. Core 6.1 puts `data-theme="rounded"` on `html`. Dummy's `recording_studio/_default_layout_head` repeats that attribute so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.2.0`.
+The dummy mounts Users auth with `recording_studio_user_auth_for :users`. Login, sign up, password reset, and resend confirmation are gem screens on core `recording_studio/default_layout` through `recording_studio_layout`, no Card, no Remember me, no seed Badge. First screens are email only with **Continue with email**, then `continue_with_providers`. Password is the second screen when `primary_login_type` is `:email` (the default), with a **Forgot your password?** link into the reset flow. Login uses `login_title` (I18n default **Welcome back** in English). Dummy registers a `trial` sign-up variant, so `/users/sign_up?variant=trial` shows **Start your trial**. Dummy ships its own `config/locales/fr.yml` and can switch Users screens with `?locale=fr` or a saved profile locale. Sign-up confirmation appears only when `require_password_confirmation` is true. Dummy credentials (`test/dummy/config/credentials.yml.enc` and `test/dummy/config/credentials/*.yml.enc`) use the shared RecordingStudio_* development master key — set `RAILS_MASTER_KEY` or put that key in the gitignored dummy key files; keep the encrypted files and do not mint a per-repo key. Committed OmniAuth values are placeholders; put real Google (or other) secrets locally with `credentials:edit`. If the master key is missing, dummy still boots with those same placeholders so Devise OmniAuth callbacks load (Google in development, all five providers in test). Deep-link OTP lives on `/users/sign_in/otp` and `/users/sign_up/otp`. Dummy does not copy or override core's default layout. Core 6.1 puts `data-theme="rounded"` on `html`. Dummy's `recording_studio/_default_layout_head` repeats that attribute so primary buttons inherit charcoal, not `:root` blue. Dummy pins Flatpack `v0.2.0`.
 
 Dummy also installs released `recording_studio_terms_and_conditions` `v0.22.0` (Publishable `v1.5.0`) as an end-to-end signup demo. That pin lives in `test/dummy/Gemfile` only. The Users gemspec and root Gemfile stay free of TnC. The path gem satisfies TnC’s `recording_studio_user >= 0.30.0` requirement. Dummy seeds one live Terms record under **My workspace**. Dummy sets `signup_notice_partials` to its own partial (`By continuing you agree to the Terms`) and accepts pending terms from `after_registration`. The same dummy Gemfile pins `recording_studio_root_switchable` `v0.17.0` for the top-nav switcher (switch rate limit via RecordingStudioCache; no host code change). Root and dummy pin Recording Studio core `v7.8.0` (English fallback for shipped `recording_studio.*` keys via `RecordingStudio.t`).
 

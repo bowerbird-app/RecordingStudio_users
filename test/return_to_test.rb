@@ -80,6 +80,31 @@ class ReturnToTest < Minitest::Test
     assert_equal "/next", query["return_to"]
   end
 
+  def test_with_query_adds_only_a_registered_sign_up_variant
+    original = RecordingStudioUser.config.sign_up_variants
+    RecordingStudioUser.config.sign_up_variants = {
+      trial: { title: "my_app.signup.trial.title" }
+    }
+
+    path = RecordingStudioUser::ReturnTo.with_query(
+      "/users/sign_up",
+      return_to: "/next",
+      popup: true,
+      variant: :trial
+    )
+    query = Rack::Utils.parse_query(path.split("?", 2).last)
+
+    assert_equal "/next", query["return_to"]
+    assert_equal "1", query["popup"]
+    assert_equal "trial", query["variant"]
+    assert_equal(
+      "/users/sign_up",
+      RecordingStudioUser::ReturnTo.with_query("/users/sign_up", variant: "Start your trial")
+    )
+  ensure
+    RecordingStudioUser.config.sign_up_variants = original
+  end
+
   private
 
   def accept(raw)

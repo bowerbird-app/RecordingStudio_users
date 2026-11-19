@@ -31,6 +31,7 @@ class ConfigurationTest < Minitest::Test
     assert_nil @configuration.after_auth_path
     assert_empty @configuration.after_registration_hooks
     assert_empty @configuration.popup_opener_origins
+    assert_empty @configuration.sign_up_variants
     assert_equal 10, @configuration.otp_lockout_max_failures
     assert_equal 1.hour, @configuration.otp_lockout_window
     assert_equal 1.hour, @configuration.otp_lockout_duration
@@ -323,6 +324,50 @@ class ConfigurationTest < Minitest::Test
     assert_includes source, "confirm: false"
     refute_includes source, "existing_policy"
     refute_includes source, "skip_confirmation_for_password_account"
+  end
+
+  def test_sign_up_variants_translate_a_registered_name
+    I18n.backend.store_translations(
+      :en,
+      my_app: { signup: { trial: { title: "Start your trial", subtitle: "Fourteen days, on us." } } }
+    )
+    @configuration.sign_up_variants = {
+      trial: { title: "my_app.signup.trial.title", subtitle: "my_app.signup.trial.subtitle" }
+    }
+
+    assert_equal(
+      { trial: { title: "my_app.signup.trial.title", subtitle: "my_app.signup.trial.subtitle" } },
+      @configuration.sign_up_variants
+    )
+    assert_equal "trial", @configuration.sign_up_variant_name(:trial)
+    assert_equal "trial", @configuration.sign_up_variant_name("trial")
+    assert_nil @configuration.sign_up_variant_name("Start your trial")
+    assert_equal(
+      { title: "Start your trial", subtitle: "Fourteen days, on us." },
+      @configuration.sign_up_heading("trial")
+    )
+
+    @configuration.sign_up_variants = { trial: { title: "my_app.signup.trial.title" } }
+    assert_equal({ title: "Start your trial", subtitle: nil }, @configuration.sign_up_heading(:trial))
+
+    @configuration.sign_up_variants = { bare: { title: "my_app.signup.missing.title" } }
+    assert_equal({ title: "Sign up", subtitle: nil }, @configuration.sign_up_heading("bare"))
+    assert_equal({ title: "Sign up", subtitle: nil }, @configuration.sign_up_heading(nil))
+  end
+
+  def test_sign_up_variants_reject_free_text
+    assert_raises(ArgumentError) do
+      @configuration.sign_up_variants = { trial: { title: "Start your trial" } }
+    end
+    assert_empty @configuration.sign_up_variants
+
+    assert_raises(ArgumentError) do
+      @configuration.sign_up_variants = { "Start here" => { title: "my_app.signup.trial.title" } }
+    end
+    assert_raises(ArgumentError) do
+      @configuration.sign_up_variants = { trial: { heading: "my_app.signup.trial.title" } }
+    end
+    assert_raises(ArgumentError) { @configuration.sign_up_variants = "trial" }
   end
 
   def test_mounted_admin_path_uses_configured_paths

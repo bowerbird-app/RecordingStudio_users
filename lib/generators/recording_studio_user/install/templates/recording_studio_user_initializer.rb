@@ -32,6 +32,12 @@ RecordingStudioUser.configure do |config|
   # Sign-in page heading. Leave unset to follow I18n (en: "Welcome back").
   # Hosts add other languages by translating recording_studio_user.* keys.
   # config.login_title = "Welcome back"
+  # config.sign_up_variants = {
+  #   trial: {
+  #     title: "my_app.signup.trial.title",
+  #     subtitle: "my_app.signup.trial.subtitle"
+  #   }
+  # }
   # First auth screen is always email. Next screen follows this setting:
   # :email → password, :otp → email code (requires otp_enabled and OTP flags).
   # config.primary_login_type = :email
