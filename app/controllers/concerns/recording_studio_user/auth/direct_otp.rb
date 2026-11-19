@@ -34,7 +34,11 @@ module RecordingStudioUser
       end
 
       def finish_registration!(result)
-        user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
+        user = RecordingStudioUser.complete_registration!(
+          user: result.user,
+          challenge: result.challenge,
+          session: session
+        )
         finish_sign_up!(user)
       end
 

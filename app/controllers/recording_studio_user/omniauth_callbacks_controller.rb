@@ -46,7 +46,10 @@ module RecordingStudioUser
     end
 
     def sign_in_from_omniauth!(auth)
-      user = Omniauth.find_or_create_user!(auth)
+      source = SignupSource.read(session)
+      user = Omniauth.find_or_create_user!(auth, source: source) do
+        SignupSource.clear!(session)
+      end
       sign_in_user!(user, event: :authentication)
       complete_signed_in!(user)
     end

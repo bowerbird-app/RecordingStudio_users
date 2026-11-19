@@ -81,7 +81,9 @@ module RecordingStudioUser
         result = RecordingStudioUser::Services::ConfirmPasswordSignup.call(user: user, session: session)
         confirmed = result.value.fetch(:user)
         unless result.value.fetch(:already_confirmed)
-          RegistrationCompleted.emit!(user_id: confirmed.id, method: :password)
+          source = SignupSource.read(session)
+          RegistrationCompleted.emit!(user_id: confirmed.id, method: :password, source: source)
+          SignupSource.clear!(session)
         end
         confirmed
       end

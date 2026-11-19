@@ -7,9 +7,10 @@ module RecordingStudioUser
         new(...).call
       end
 
-      def initialize(user:, challenge:)
+      def initialize(user:, challenge:, session: nil)
         @user = user
         @challenge = challenge
+        @session = session
       end
 
       def call
@@ -63,7 +64,9 @@ module RecordingStudioUser
           user_id: @user.id,
           challenge_id: @challenge.id
         )
-        RegistrationCompleted.emit!(user_id: @user.id, method: :otp)
+        source = SignupSource.read(@session)
+        RegistrationCompleted.emit!(user_id: @user.id, method: :otp, source: source)
+        SignupSource.clear!(@session)
       end
 
       def roll_back_confirmation!

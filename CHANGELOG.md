@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-11-19
+
+### Added
+
+- Optional signup `source` for sibling gems. Pass it from server-side Ruby with `RecordingStudioUser.remember_signup_source!(request:, source:)` or `start_otp_challenge!(..., source:)`. When present, `registration.completed.recording_studio_user` includes `source:` for password confirmation, a new OAuth user, and OTP registration. `after_registration` passes `source:` only to hooks that declare that keyword.
+
+### Upgrade notes
+
+- Bump to `0.38.0`. No Users migration. Nothing is stored on the user or the one-time code row.
+- Sign-in, session rotation, and registrations that do not pass a source keep the previous event payload `{ user_id:, method: }`.
+- A hook written as `->(user:, method:)` keeps working. Declare `source: nil` to read the hash. A `source` query param or form field is ignored.
+- A host that calls `complete_registration!` itself must pass `session:` so the stored source reaches the event.
+
 ### Changed
 
 - Development and dummy Gemfiles pin the newest tags that resolve: Recording Studio `v7.3.0`, API `v1.2.1`, Accessible `v0.45.1`, Admin `v2.18.0`, Attachable `v0.31.0`, Cache `v0.7.0`, Icons `v0.4.0`, Logs `v0.8.0`, Metrics `v0.9.0`, Moveable `v6.0.0`, Trashable `v1.0.1`, and FlatPack `v0.1.377`. The dummy app also pins notifications `v0.19.1`, notifications email `v0.5.4`, notifications push `v0.10.0`, site settings `v0.6.0`, Terms and Conditions `v0.22.0`, Publishable `v1.1.0`, Root Switchable `v0.16.0`, OAuth `v0.25.0`, and MCP `v0.35.0`.

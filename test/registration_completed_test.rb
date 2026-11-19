@@ -25,6 +25,37 @@ class RegistrationCompletedTest < Minitest::Test
     assert_equal({ user_id: "user-1", method: :password }, @events.first)
   end
 
+  def test_emit_adds_source_only_when_present
+    RecordingStudioUser::RegistrationCompleted.emit!(
+      user_id: "user-1",
+      method: :otp,
+      source: { "kind" => "kit_download", :recording_id => 9, :early => false }
+    )
+    RecordingStudioUser::RegistrationCompleted.emit!(user_id: "user-2", method: :password, source: nil)
+
+    assert_equal(
+      {
+        user_id: "user-1",
+        method: :otp,
+        source: { kind: "kit_download", recording_id: 9, early: false }
+      },
+      @events[0]
+    )
+    assert_equal({ user_id: "user-2", method: :password }, @events[1])
+    refute @events[1].key?(:source)
+  end
+
+  def test_emit_rejects_an_invalid_source
+    assert_raises(ArgumentError) do
+      RecordingStudioUser::RegistrationCompleted.emit!(
+        user_id: "user-1",
+        method: :oauth,
+        source: { kind: { nested: true } }
+      )
+    end
+    assert_empty @events
+  end
+
   def test_emit_rejects_unknown_method
     assert_raises(ArgumentError) do
       RecordingStudioUser::RegistrationCompleted.emit!(user_id: "user-1", method: :sms)

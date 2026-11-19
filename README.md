@@ -248,6 +248,41 @@ The code page shows the code field, a masked address, resend, and a link back to
 
 An existing person gets a sign-in code only when `otp_enabled?` and `otp_login_enabled?` are on. A new address creates an account only when `otp_enabled?` and `otp_registration_enabled?` are on. `after_registration` runs for that new account. Otherwise nothing is sent and no account is created. The redirect and the notice stay the same either way. Rate limits match the other code requests, per email and per IP. The route is absent when one-time codes are off.
 
+## Pass a signup source
+
+A sibling gem can record where a new account came from. Call one of the two methods below from server-side Ruby. This gem stores the hash in the session and copies it onto `registration.completed.recording_studio_user` when the account is created. It never reads `source` from a form, a query string, `POST` `auth/otp/start`, or an OAuth start URL.
+
+Use `remember_signup_source!` when you redirect to the built-in password, one-time code, or OAuth sign-up page.
+
+```ruby
+RecordingStudioUser.remember_signup_source!(
+  request: request,
+  source: { kind: "press_contact", recording_id: recording.id }
+)
+```
+
+Use `source:` on `start_otp_challenge!` when you already have the email and start the code yourself.
+
+```ruby
+RecordingStudioUser.start_otp_challenge!(
+  request: request,
+  email: email,
+  source: { kind: "kit_download" }
+)
+```
+
+`source` is a Hash with at most 8 keys. Each key is a symbol or a string matching `[a-z_][a-z0-9_]{0,39}`. Each value is a string of at most 255 characters, a symbol, an integer, `true`, `false`, or `nil`. Any other shape raises `ArgumentError`. Values are not checked against a list.
+
+The event gains `source:` only when a hash was stored. Keys on the event are symbols. With no source, the payload stays `{ user_id:, method: }`.
+
+An `after_registration` hook written as `->(user:, method:)` keeps working. Declare `source: nil` to receive the hash on sign-ups that have one, and nil on sign-ups that do not.
+
+The session entry is removed when the event is emitted. A later registration in that session does not see it. The hash is not saved on the user and not saved on the one-time code. Sign-in does not emit it.
+
+A host that calls `complete_registration!` itself must pass `session:`. That keyword is how the stored source reaches the event. The built-in OTP screens already pass it.
+
+A recording id inside `source` is a hint. Check access with Recording Studio Accessible before you show that recording or pick a screen from it. This gem does not grant access.
+
 ## A code box inside your own modal
 
 On this same host, render the box in a modal you already own. It does not bring the auth logo or page layout. Leave the modal title blank so the close control sits alone. Pass `title:` when the heading should sit on its own line above the hint.
@@ -336,13 +371,14 @@ ActiveSupport::Notifications.subscribe(
   "registration.completed.recording_studio_user"
 ) do |_name, _start, _finish, _id, payload|
   # payload: { user_id:, method: } — method is :password, :oauth, or :otp
+  # source: is added only when a sibling gem passed one. See "Pass a signup source".
   user = User.find(payload[:user_id])
 end
 ```
 
 | Path | When it fires | `method` |
 | --- | --- | --- |
-| Password sign-up | After `provision_password_account!` commits | `:password` |
+| Password sign-up | When the email code confirms the new account | `:password` |
 | OAuth | Only when `create_user_from_auth!` creates a **new** user | `:oauth` |
 | OTP registration | Alongside the existing OTP event below | `:otp` |
 
@@ -364,8 +400,9 @@ Other OTP instrumentation (`otp.*.recording_studio_user` for issue/verify and
 Hosts that need their own work on sign-up (beyond subscribing to the event)
 register one or more `after_registration` callbacks. They run in the same
 `after_all_transactions_commit` callback as the event above, after the event
-is instrumented. The event itself is unchanged — RecordingStudio_onboarding
-and other subscribers keep working.
+is instrumented. With no signup source, the payload stays `{ user_id:, method: }`.
+RecordingStudio_onboarding and other subscribers keep working. A hook that
+declares `source: nil` also receives the hash from "Pass a signup source".
 
 ```ruby
 RecordingStudioUser.configure do |config|

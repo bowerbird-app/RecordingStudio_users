@@ -88,7 +88,11 @@ module RecordingStudioUser
       end
 
       def inline_registration_destination!(result)
-        user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
+        user = RecordingStudioUser.complete_registration!(
+          user: result.user,
+          challenge: result.challenge,
+          session: session
+        )
         clear_pending_auth_email!
         sign_in_user!(user)
         after_auth_path_for(user)

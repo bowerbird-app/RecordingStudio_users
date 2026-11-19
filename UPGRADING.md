@@ -1,5 +1,28 @@
 # Upgrading
 
+## 0.38.0
+
+Bump to `0.38.0`. No Users migration. Sign-in and stored user rows stay the same.
+
+A sibling gem can pass an opaque signup `source` from server-side Ruby. The registration event includes `source:` only when that call stored one. Password confirmation, a new OAuth user, and OTP registration read it. The value is removed from the session when the event is emitted. It is not saved on the user or the one-time code.
+
+```ruby
+RecordingStudioUser.remember_signup_source!(
+  request: request,
+  source: { kind: "press_contact", recording_id: recording.id }
+)
+```
+
+`start_otp_challenge!` takes the same `source:` keyword when that gem already has the email. Do not send `source` as a form field or a query param. Those values are ignored.
+
+A host that calls `complete_registration!` itself must pass `session:`. That keyword carries the stored source onto the event.
+
+`source` must be a Hash with at most 8 keys. Keys match `[a-z_][a-z0-9_]{0,39}`. Values are a string of at most 255 characters, a symbol, an integer, `true`, `false`, or `nil`. Anything else raises `ArgumentError`.
+
+Hooks written as `->(user:, method:)` stay valid. Declare `source: nil` to receive the hash. With no source, the event payload is still `{ user_id:, method: }`.
+
+If `source` includes a recording id, treat that id as a hint. Check access with Recording Studio Accessible before you show the recording.
+
 ## 0.37.0
 
 Bump to `0.37.0`. No Users migration.
