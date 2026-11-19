@@ -8,11 +8,10 @@ module RecordingStudioUser
     MAX_KEYS = 8
     MAX_STRING = 255
     KEY_PATTERN = /\A[a-z_][a-z0-9_]{0,39}\z/
-    ENCODERS = { String => "s", Symbol => "y", Integer => "i", TrueClass => "t", FalseClass => "f" }.freeze
     READERS = {
       "s" => ->(rest) { rest },
       "y" => lambda(&:to_sym),
-      "i" => ->(rest) { (rest.match?(/\A-?\d+\z/) && Integer(rest, 10)) || :bad },
+      "i" => ->(rest) { rest.match?(/\A-?\d+\z/) ? Integer(rest, 10) : :bad },
       "t" => ->(rest) { rest.empty? || :bad },
       "f" => ->(rest) { rest.empty? ? false : :bad },
       "n" => ->(rest) { rest.empty? ? nil : :bad }
@@ -90,11 +89,14 @@ module RecordingStudioUser
     end
 
     def encode_value(value)
-      prefix = ENCODERS[value.class]
-      return "n:" unless prefix
+      return "n:" if value.nil?
+      return "t:" if value == true
+      return "f:" if value == false
+      return "s:#{value.to_str}" if value.is_a?(String)
+      return "y:#{value}" if value.is_a?(Symbol)
+      return "i:#{value}" if value.is_a?(Integer)
 
-      suffix = %w[t f].include?(prefix) ? "" : value
-      "#{prefix}:#{suffix}"
+      "n:"
     end
 
     def decode(raw)

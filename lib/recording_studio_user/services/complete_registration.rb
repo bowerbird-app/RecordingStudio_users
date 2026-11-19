@@ -64,11 +64,9 @@ module RecordingStudioUser
           user_id: @user.id,
           challenge_id: @challenge.id
         )
-        RegistrationCompleted.emit!(
-          user_id: @user.id,
-          method: :otp,
-          source: SignupSource.take!(@session)
-        )
+        source = SignupSource.read(@session)
+        RegistrationCompleted.emit!(user_id: @user.id, method: :otp, source: source)
+        SignupSource.clear!(@session)
       end
 
       def roll_back_confirmation!

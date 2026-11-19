@@ -93,6 +93,30 @@ class SignupSourceTest < Minitest::Test
     assert_nil @session[RecordingStudioUser::SignupSource::SESSION_KEY]
   end
 
+  def test_zero_round_trips
+    RecordingStudioUser.remember_signup_source!(request: @request, source: { recording_id: 0 })
+
+    assert_equal({ recording_id: 0 }, RecordingStudioUser::SignupSource.read(@session))
+  end
+
+  def test_a_safe_buffer_round_trips_as_a_string
+    buffer = ActiveSupport::SafeBuffer.new("press_contact")
+
+    RecordingStudioUser.remember_signup_source!(request: @request, source: { kind: buffer })
+
+    assert_equal({ kind: "press_contact" }, RecordingStudioUser::SignupSource.read(@session))
+    assert_instance_of String, RecordingStudioUser::SignupSource.read(@session)[:kind]
+  end
+
+  def test_remember_does_not_mutate_the_callers_hash
+    source = { "kind" => "press_contact", recording_id: 0 }.freeze
+
+    stored = RecordingStudioUser.remember_signup_source!(request: @request, source: source)
+
+    assert_equal({ "kind" => "press_contact", recording_id: 0 }, source)
+    assert_equal({ kind: "press_contact", recording_id: 0 }, stored)
+  end
+
   def test_a_forty_character_key_and_a_255_character_string_are_kept
     key = "k" * 40
     value = "v" * 255

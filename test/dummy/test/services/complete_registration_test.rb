@@ -75,6 +75,29 @@ class CompleteRegistrationTest < ActiveSupport::TestCase
     ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
   end
 
+  test "a failed registration event leaves the signup source in the session" do
+    session = {}
+    RecordingStudioUser.remember_signup_source!(
+      request: Struct.new(:session).new(session),
+      source: { recording_id: 0 }
+    )
+    registered = register_otp_user!("source-kept")
+    original_emit = RecordingStudioUser::RegistrationCompleted.method(:emit!)
+
+    assert_raises(ArgumentError) do
+      begin
+        RecordingStudioUser::RegistrationCompleted.define_singleton_method(:emit!) { |**| raise ArgumentError, "emit failed" }
+        RecordingStudioUser.complete_registration!(
+          user: registered.user, challenge: registered.challenge, session: session
+        )
+      ensure
+        RecordingStudioUser::RegistrationCompleted.define_singleton_method(:emit!, original_emit)
+      end
+    end
+
+    assert_equal({ recording_id: 0 }, RecordingStudioUser::SignupSource.read(session))
+  end
+
   private
 
   def register_otp_user!(label)

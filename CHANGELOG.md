@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump to `0.38.0`. No Users migration. Nothing is stored on the user or the one-time code row.
 - Sign-in, session rotation, and registrations that do not pass a source keep the previous event payload `{ user_id:, method: }`.
 - A hook written as `->(user:, method:)` keeps working. Declare `source: nil` to read the hash. A `source` query param or form field is ignored.
+- A host that calls `complete_registration!` itself must pass `session:` so the stored source reaches the event.
 
 ### Changed
 

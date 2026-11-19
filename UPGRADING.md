@@ -15,6 +15,8 @@ RecordingStudioUser.remember_signup_source!(
 
 `start_otp_challenge!` takes the same `source:` keyword when that gem already has the email. Do not send `source` as a form field or a query param. Those values are ignored.
 
+A host that calls `complete_registration!` itself must pass `session:`. That keyword carries the stored source onto the event.
+
 `source` must be a Hash with at most 8 keys. Keys match `[a-z_][a-z0-9_]{0,39}`. Values are a string of at most 255 characters, a symbol, an integer, `true`, `false`, or `nil`. Anything else raises `ArgumentError`.
 
 Hooks written as `->(user:, method:)` stay valid. Declare `source: nil` to receive the hash. With no source, the event payload is still `{ user_id:, method: }`.

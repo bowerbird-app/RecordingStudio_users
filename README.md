@@ -279,6 +279,8 @@ An `after_registration` hook written as `->(user:, method:)` keeps working. Decl
 
 The session entry is removed when the event is emitted. A later registration in that session does not see it. The hash is not saved on the user and not saved on the one-time code. Sign-in does not emit it.
 
+A host that calls `complete_registration!` itself must pass `session:`. That keyword is how the stored source reaches the event. The built-in OTP screens already pass it.
+
 A recording id inside `source` is a hint. Check access with Recording Studio Accessible before you show that recording or pick a screen from it. This gem does not grant access.
 
 ## A code box inside your own modal
