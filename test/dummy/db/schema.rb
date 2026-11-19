@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_19_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -135,8 +135,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "api_key", default: "public", null: false
+    t.string "owner_type"
+    t.uuid "owner_id"
     t.index ["access_recording_id"], name: "index_recording_studio_api_api_clients_on_access_recording_id", unique: true
     t.index ["api_key"], name: "index_recording_studio_api_api_clients_on_api_key"
+    t.index ["owner_type", "owner_id"], name: "index_rs_api_clients_on_owner"
   end
 
   create_table "recording_studio_api_api_credentials", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -334,8 +337,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
     t.datetime "updated_at", null: false
     t.string "url"
     t.boolean "inbox", default: true, null: false
+    t.string "thread_key"
+    t.index ["recipient_type", "recipient_id", "created_at", "id"], name: "idx_rsn_notifications_inbox", order: { created_at: :desc, id: :desc }, where: "((archived_at IS NULL) AND (inbox = true))"
     t.index ["recipient_type", "recipient_id", "idempotency_key"], name: "idx_rsn_notifications_idempotency", unique: true, where: "(idempotency_key IS NOT NULL)"
     t.index ["recipient_type", "recipient_id", "notification_type"], name: "idx_rsn_notifications_recipient_type"
+    t.index ["recipient_type", "recipient_id"], name: "idx_rsn_notifications_unread", where: "((read_at IS NULL) AND (cleared_at IS NULL) AND (archived_at IS NULL) AND (inbox = true))"
     t.index ["recording_id"], name: "idx_rsn_notifications_recording"
     t.index ["root_recording_id", "created_at"], name: "idx_rsn_notifications_root_created"
   end
@@ -371,6 +377,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
     t.index ["firebase_installation_id"], name: "idx_rsnp_installations_fid"
     t.index ["recipient_type", "recipient_id", "firebase_installation_id"], name: "idx_rsnp_installations_recipient_fid", unique: true
     t.index ["recipient_type", "recipient_id"], name: "idx_rsnp_installations_recipient"
+  end
+
+  create_table "recording_studio_notifications_replies", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "notification_id", null: false
+    t.string "channel", null: false
+    t.string "idempotency_key", null: false
+    t.string "status", null: false
+    t.string "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel", "idempotency_key"], name: "idx_rsn_replies_channel_idempotency", unique: true
+    t.index ["notification_id"], name: "idx_rsn_replies_notification"
   end
 
   create_table "recording_studio_publishable_publishables", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -585,6 +603,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_notifications_deliveries", "recording_studio_notifications_notifications", column: "notification_id"
+  add_foreign_key "recording_studio_notifications_replies", "recording_studio_notifications_notifications", column: "notification_id"
   add_foreign_key "recording_studio_publishable_publishables", "recording_studio_recordings", column: "social_image_attachment_recording_id", name: "fk_rs_publishables_social_image_attachment_recording"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"

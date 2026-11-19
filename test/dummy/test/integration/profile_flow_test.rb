@@ -9,6 +9,8 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
   include ProfileImageTestHelper
 
+  CAMERA_SVG = "M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23"
+
   setup do
     @user = RecordingStudioUser.create_user!(
       email: "profile-flow-#{SecureRandom.hex(4)}@example.com",
@@ -194,7 +196,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, "attachment-chrome-image_slot"
     assert_select "turbo-frame#profile-photo", count: 0
-    refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
+    refute_includes response.body, CAMERA_SVG
     assert_select "input[type='file']", count: 0
     refute_includes response.body, "Choose File"
     refute_includes response.body, recording_studio_attachable.recording_attachment_upload_path(recording)
@@ -247,7 +249,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, "attachment-chrome-image_slot"
     refute_includes response.body, "render_attachment_image_slot"
-    assert_includes response.body, 'data-flat-pack--icon-name-value="camera"'
+    assert_includes response.body, CAMERA_SVG
     assert_includes response.body, "h-24 w-24"
     assert_includes response.body, "mb-8"
     assert_includes unescaped_page, recording_studio_attachable.recording_direct_uploads_path(recording)
@@ -270,7 +272,7 @@ class ProfileFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "parent-attachment-slot"
     refute_includes response.body, "attachment-chrome-image_slot"
     assert_select "turbo-frame#profile-photo", count: 0
-    refute_includes response.body, 'data-flat-pack--icon-name-value="camera"'
+    refute_includes response.body, CAMERA_SVG
     assert_select "input[type='file']", count: 0
     refute_match(%r{href="#{Regexp.escape(recording_studio_attachable.attachment_path(image))}"}, response.body)
     assert(

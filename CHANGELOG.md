@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-11-19
+
+### Changed
+
+- Development and dummy Gemfiles pin Recording Studio `v7.8.0`, FlatPack `v0.2.0`, Accessible `v0.58.0`, Admin `v2.20.0`, API `v1.21.2`, Attachable `v0.34.0`, Cache `v0.8.0`, Icons `v0.5.0`, Logs `v0.9.0`, Metrics `v0.10.0`, Moveable `v6.1.0`, and Trashable `v1.3.0`. The dummy app also pins notifications `v0.21.0`, Publishable `v1.5.0`, and Root Switchable `v0.17.0`. Notifications email `v0.5.4`, notifications push `v0.10.0`, site settings `v0.6.0`, Terms and Conditions `v0.22.0`, OAuth `v0.25.0`, and MCP `v0.35.0` stay on their current tags.
+
+### Upgrade notes
+
+- Bump to `0.41.0`. No Users migration.
+- Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+- flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+- Hosts that mount Recording Studio API need `config/recording_studio_api.yml`. A missing or invalid file raises while the API engine loads. `timeout: 5` matches the API default.
+- Hosts on notifications `0.21.0` need that gem's inbox-index and inbound-reply migrations. Hosts on API `1.21.2` need the API client `owner` columns.
+
 ## [0.40.0] - 2026-11-19
 
 ### Added
@@ -1571,7 +1585,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.30.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.41.0...HEAD
+[0.41.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.40.0...v0.41.0
 [0.30.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.1...v0.29.0
 [0.28.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.0...v0.28.1
