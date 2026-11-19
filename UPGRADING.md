@@ -1,5 +1,31 @@
 # Upgrading
 
+## 0.42.0
+
+Bump to `0.42.0`. No Users migration. Sign-in, sessions, OAuth, one-time codes, and stored user data stay as they are. The default sign-up page still says **Sign up**.
+
+To give one sign-up link its own title, register a name and point it at i18n keys.
+
+```ruby
+RecordingStudioUser.configure do |config|
+  config.sign_up_variants = {
+    trial: {
+      title: "my_app.signup.trial.title",
+      subtitle: "my_app.signup.trial.subtitle"
+    }
+  }
+end
+```
+
+`subtitle` is optional. Translate the keys in each locale you offer. Then build the link with `variant:`.
+
+```ruby
+recording_studio_user_sign_up_path(variant: :trial, return_to: "/billing", popup: true)
+RecordingStudioUser.auth_url_for(:sign_up, variant: :trial, return_to: "/billing")
+```
+
+The page only uses names you registered. An unknown name, a missing translation, or other text in the query keeps the default title and shows no subtitle. It does not print the key. A failed email submit on that page keeps the title. The link from sign-up to sign-in does not include `variant`.
+
 ## 0.41.0
 
 Bump to `0.41.0`. No Users migration.

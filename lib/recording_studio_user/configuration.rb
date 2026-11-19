@@ -14,6 +14,9 @@ module RecordingStudioUser
     PRIMARY_LOGIN_TYPES = %i[email otp].freeze
     AUTH_LOGO_TYPES = %i[square wide].freeze
     POPUP_ORIGIN = %r{\Ahttps?://[a-zA-Z0-9.-]+(?::\d+)?\z}
+    VARIANT_NAME = /\A[a-z][a-z0-9_]{0,40}\z/
+    I18N_KEY = /\A[a-z0-9_]+(?:\.[a-z0-9_]+){0,8}\z/
+    I18N_KEY_MAX = 80
 
     # otp_login_enabled has its own writer because it must stay compatible with
     # the registration methods.
@@ -75,7 +78,8 @@ module RecordingStudioUser
       :after_registration_hooks,
       :auth_body_start_partial,
       :signup_notice_partials,
-      :popup_opener_origins
+      :popup_opener_origins,
+      :sign_up_variants
     )
 
     BOOLEAN_SETTINGS.each do |setting|
@@ -127,6 +131,7 @@ module RecordingStudioUser
       @after_auth_path = nil
       @after_registration_hooks = []
       @popup_opener_origins = []
+      assign_sign_up_variants(empty_sign_up_variants)
     end
 
     # Register a host callback that runs after a successful sign-up (password,
@@ -241,6 +246,25 @@ module RecordingStudioUser
     # Default is an empty list, which renders nothing.
     def signup_notice_partials=(value)
       @signup_notice_partials = Array(value).map { |partial| partial.to_s.strip }.reject(&:empty?)
+    end
+
+    def sign_up_variants=(value)
+      assign_sign_up_variants(compile_sign_up_variants(value))
+    end
+
+    def sign_up_variant_name(raw)
+      text = variant_request_text(raw)
+      return if text.nil? || !@sign_up_variant_index.key?(text)
+
+      text
+    end
+
+    def sign_up_heading(raw)
+      entry = @sign_up_variant_index[sign_up_variant_name(raw)]
+      title = entry && translated_sign_up_key(entry[:title])
+      return default_sign_up_heading unless title
+
+      { title: title, subtitle: translated_sign_up_key(entry[:subtitle]) }
     end
 
     def popup_opener_origins=(value)
@@ -375,6 +399,102 @@ module RecordingStudioUser
       return if value.positive?
 
       raise ArgumentError, "#{name} must be positive"
+    end
+
+    def compile_sign_up_variants(value)
+      return empty_sign_up_variants if value.nil?
+      raise ArgumentError, "sign_up_variants must be a hash of names to i18n keys" unless value.is_a?(Hash)
+
+      compiled = value.each_with_object({ variants: {}, index: {} }) do |(name, copy), memo|
+        store_sign_up_variant(memo, name, copy)
+      end
+      compiled[:variants].freeze
+      compiled[:index].freeze
+      compiled
+    end
+
+    def store_sign_up_variant(memo, name, copy)
+      key = variant_config_name(name)
+      title, subtitle = variant_copy_keys(copy)
+      entry = { title: title }
+      entry[:subtitle] = subtitle if subtitle
+      memo[:variants][key.to_sym] = entry.freeze
+      memo[:index][key] = entry
+    end
+
+    def empty_sign_up_variants
+      { variants: {}.freeze, index: {}.freeze }
+    end
+
+    def assign_sign_up_variants(compiled)
+      @sign_up_variants = compiled.fetch(:variants)
+      @sign_up_variant_index = compiled.fetch(:index)
+    end
+
+    def variant_config_name(name)
+      text = case name
+             when Symbol then name.name
+             when String then name
+             else raise ArgumentError, "sign_up variant name must be a lowercase word"
+             end
+      return text if VARIANT_NAME.match?(text)
+
+      raise ArgumentError, "sign_up variant name must be a lowercase word"
+    end
+
+    def variant_copy_keys(copy)
+      data = variant_copy_data(copy)
+      unknown = data.keys - %w[title subtitle]
+      raise ArgumentError, "sign_up variant only accepts title and subtitle" if unknown.any?
+
+      [sign_up_i18n_key(data["title"], required: true), sign_up_i18n_key(data["subtitle"], required: false)]
+    end
+
+    def variant_copy_data(copy)
+      raise ArgumentError, "sign_up variant needs a title i18n key" unless copy.is_a?(Hash)
+
+      copy.each_with_object({}) { |(key, item), memo| memo[variant_copy_name(key)] = item }
+    end
+
+    def variant_copy_name(key)
+      return key.name if key.is_a?(Symbol)
+      return key if key.is_a?(String)
+
+      raise ArgumentError, "sign_up variant only accepts title and subtitle"
+    end
+
+    def sign_up_i18n_key(value, required:)
+      text = value.to_s.strip
+      return if text.empty? && !required
+      raise ArgumentError, "sign_up variant needs a title i18n key" if text.empty?
+      return text if text.length <= I18N_KEY_MAX && I18N_KEY.match?(text)
+
+      raise ArgumentError, "sign_up variant copy must be an i18n key"
+    end
+
+    def variant_request_text(raw)
+      case raw
+      when Symbol then raw.name
+      when String then raw
+      end
+    end
+
+    def translated_sign_up_key(key)
+      return if key.blank?
+
+      text = I18n.t(key, default: nil)
+      return unless text.is_a?(String)
+
+      stripped = text.strip
+      return if stripped.empty? || stripped == key || stripped.include?("translation missing")
+
+      stripped
+    rescue I18n::MissingTranslationData
+      nil
+    end
+
+    def default_sign_up_heading
+      { title: I18n.t("recording_studio_user.auth.sign_up"), subtitle: nil }
     end
 
     def normalized_popup_origins(value)

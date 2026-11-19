@@ -1,6 +1,9 @@
+<% heading = RecordingStudioUser.config.sign_up_heading(params[:variant]) %>
 <%= render layout: "recording_studio_user/auth/shell",
-           locals: { title: t("recording_studio_user.auth.sign_up") } do %>
-  <%= form_with scope: :user, url: auth_sign_up_path, method: :post do %>
+           locals: { title: heading[:title], subtitle: heading[:subtitle] } do %>
+  <%= form_with scope: :user,
+                url: RecordingStudioUser::ReturnTo.with_query(auth_sign_up_path, variant: params[:variant]),
+                method: :post do %>
     <div class="space-y-4">
       <%= render FlatPack::EmailInput::Component.new(
         name: "user[email]",

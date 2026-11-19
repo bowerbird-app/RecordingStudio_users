@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-11-19
+
+### Added
+
+- `config.sign_up_variants` names a sign-up headline. Each name maps to i18n keys for `title` and an optional `subtitle`. `recording_studio_user_sign_up_path(variant: :trial)` and `RecordingStudioUser.auth_url_for(:sign_up, variant: :trial)` add `variant` to the link. `return_to` and `popup` still work on that link.
+- The sign-up page translates a registered name. An unknown name, a missing key, or text in the query keeps the default title and shows no subtitle. A failed email submit keeps the same title. The link from sign-up to sign-in does not carry the variant.
+
+### Upgrade notes
+
+- Bump to `0.42.0`. No Users migration. Sign-in, sessions, OAuth, OTP, and user data are unchanged.
+- Leave `sign_up_variants` unset to keep the default sign-up title. To use a variant, register the name with i18n keys and translate those keys in each locale. Pass `variant:` when you build the sign-up link.
+
 ## [0.41.0] - 2026-11-19
 
 ### Changed
@@ -1585,7 +1597,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.41.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.42.0...HEAD
+[0.42.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.41.0...v0.42.0
 [0.41.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.40.0...v0.41.0
 [0.30.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.28.1...v0.29.0

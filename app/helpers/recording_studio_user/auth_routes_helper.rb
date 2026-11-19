@@ -78,8 +78,8 @@ module RecordingStudioUser
       RecordingStudioUser.auth_url_for(:sign_in, return_to: return_to, popup: popup)
     end
 
-    def recording_studio_user_sign_up_path(return_to: nil, popup: false)
-      RecordingStudioUser.auth_url_for(:sign_up, return_to: return_to, popup: popup)
+    def recording_studio_user_sign_up_path(return_to: nil, popup: false, variant: nil)
+      RecordingStudioUser.auth_url_for(:sign_up, return_to: return_to, popup: popup, variant: variant)
     end
 
     def otp_direct_challenge_path

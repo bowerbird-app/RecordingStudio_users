@@ -71,4 +71,10 @@ RecordingStudioUser.configure do |config|
   # Apple often uses client_secret: "" plus team_id / key_id / pem strategy options in production.
   config.omniauth_providers = Dummy::OmniauthFallbacks.providers
   config.omniauth_create_account = true
+  config.sign_up_variants = {
+    trial: {
+      title: "dummy.signup.trial.title",
+      subtitle: "dummy.signup.trial.subtitle"
+    }
+  }
 end
