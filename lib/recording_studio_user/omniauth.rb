@@ -80,8 +80,8 @@ module RecordingStudioUser
       user_class.devise :omniauthable, omniauth_providers: providers
     end
 
-    def find_or_create_user!(auth)
-      IdentityFlow.find_or_create_user!(auth)
+    def find_or_create_user!(auth, source: nil, &after_create)
+      IdentityFlow.find_or_create_user!(auth, source: source, &after_create)
     end
 
     def connect!(user, auth)

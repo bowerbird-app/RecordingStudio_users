@@ -15,15 +15,18 @@ module RecordingStudioUser
         new(...).call
       end
 
-      def initialize(request:, email:, return_to: nil, popup: nil)
+      def initialize(request:, email:, return_to: nil, popup: nil, source: nil)
         @request = request
         @email = email
         @return_to = return_to
         @popup = popup
+        @source = source
       end
 
       def call
         raise ArgumentError, "request is required" if @request.nil?
+
+        SignupSource.remember!(session, @source) unless @source.nil?
 
         remember_navigation!
         return IssueOtp::Result.suppressed if normalized_email.blank?

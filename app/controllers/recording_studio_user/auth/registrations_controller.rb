@@ -61,7 +61,7 @@ module RecordingStudioUser
         if result.challenge.confirmation?
           finish_password_confirmation!(result.user, sign_up: true)
         else
-          user = RecordingStudioUser.complete_registration!(user: result.user, challenge: result.challenge)
+          user = complete_otp_registration!(result)
           finish_sign_up!(user)
         end
       end
@@ -107,6 +107,12 @@ module RecordingStudioUser
       def render_password_taken
         flash.now[:alert] = email_taken_message
         render :password, status: :unprocessable_entity
+      end
+
+      def complete_otp_registration!(result)
+        RecordingStudioUser.complete_registration!(
+          user: result.user, challenge: result.challenge, session: session
+        )
       end
 
       def provision_password_account!

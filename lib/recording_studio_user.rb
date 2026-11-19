@@ -33,6 +33,7 @@ require "recording_studio_user/services/complete_registration"
 require "recording_studio_user/services/complete_email_proof"
 require "recording_studio_user/services/confirm_password_signup"
 require "recording_studio_user/after_registration"
+require "recording_studio_user/signup_source"
 require "recording_studio_user/registration_completed"
 require "recording_studio_user/omniauth"
 
@@ -102,15 +103,15 @@ module RecordingStudioUser
       Directory.record_profile!(...)
     end
 
-    def create_unconfirmed_user!(email:)
-      Directory.create_unconfirmed_user!(email: email)
-    end
+    def create_unconfirmed_user!(email:) = Directory.create_unconfirmed_user!(email: email)
 
     def request_otp!(email:, purpose:, request:, session:)
       Services::RequestOtp.call(email: email, purpose: purpose, request: request, session: session)
     end
 
     def start_otp_challenge!(...) = Services::StartOtpChallenge.call(...)
+
+    def remember_signup_source!(request:, source:) = SignupSource.remember_request!(request, source)
 
     def verify_otp!(...)
       Services::VerifyOtp.call(...)

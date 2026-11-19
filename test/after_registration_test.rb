@@ -38,6 +38,26 @@ class AfterRegistrationTest < Minitest::Test
     end
   end
 
+  class StrictHandler
+    class << self
+      attr_accessor :calls
+
+      def call(user:, method:)
+        self.calls = [user.id, method]
+      end
+    end
+  end
+
+  class SourceHandler
+    class << self
+      attr_accessor :calls
+
+      def call(user:, method:, source: nil)
+        self.calls = [user.id, method, source]
+      end
+    end
+  end
+
   def setup
     @original_config = RecordingStudioUser.instance_variable_get(:@config)
     @config = RecordingStudioUser::Configuration.new
@@ -130,6 +150,77 @@ class AfterRegistrationTest < Minitest::Test
     end
 
     assert_empty called
+  end
+
+  def test_class_hooks_pass_source_only_when_the_method_declares_it
+    @config.after_registration "AfterRegistrationTest::StrictHandler"
+    @config.after_registration "AfterRegistrationTest::SourceHandler"
+
+    RecordingStudioUser::AfterRegistration.run!(
+      user_id: @user.id,
+      method: :password,
+      source: { kind: "kit_download" }
+    )
+
+    assert_equal [@user.id, :password], StrictHandler.calls
+    assert_equal [@user.id, :password, { kind: "kit_download" }], SourceHandler.calls
+  end
+
+  def test_hook_without_source_keyword_still_runs_when_source_is_present
+    seen = []
+    @config.after_registration ->(user:, method:) { seen << [user.id, method] }
+
+    RecordingStudioUser::AfterRegistration.run!(
+      user_id: @user.id,
+      method: :otp,
+      source: { kind: "press_contact" }
+    )
+
+    assert_equal [[@user.id, :otp]], seen
+  end
+
+  def test_hook_that_declares_source_receives_it_and_defaults_when_absent
+    seen = []
+    @config.after_registration ->(user:, method:, source: nil) { seen << [user.id, method, source] }
+
+    RecordingStudioUser::AfterRegistration.run!(
+      user_id: @user.id,
+      method: :password,
+      source: { kind: "share_request", recording_id: 4 }
+    )
+    RecordingStudioUser::AfterRegistration.run!(user_id: @user.id, method: :oauth)
+
+    assert_equal [
+      [@user.id, :password, { kind: "share_request", recording_id: 4 }],
+      [@user.id, :oauth, nil]
+    ], seen
+  end
+
+  def test_emit_passes_source_to_hooks_that_declare_it_and_keeps_the_payload
+    events = []
+    subscriber = ActiveSupport::Notifications.subscribe(
+      RecordingStudioUser::RegistrationCompleted::EVENT
+    ) do |_name, _start, _finish, _id, payload|
+      events << payload
+    end
+
+    seen = []
+    @config.after_registration ->(user:, method:) { seen << [:plain, user.id, method] }
+    @config.after_registration ->(user:, method:, source: nil) { seen << [:sourced, user.id, method, source] }
+
+    RecordingStudioUser::RegistrationCompleted.emit!(
+      user_id: @user.id,
+      method: :otp,
+      source: { kind: "embargo" }
+    )
+
+    assert_equal [{ user_id: @user.id, method: :otp, source: { kind: "embargo" } }], events
+    assert_equal [
+      [:plain, @user.id, :otp],
+      [:sourced, @user.id, :otp, { kind: "embargo" }]
+    ], seen
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
   end
 
   def test_emit_runs_hooks_after_event_without_changing_payload

@@ -6,7 +6,7 @@ module RecordingStudioUser
     module IdentityFlow
       module_function
 
-      def find_or_create_user!(auth)
+      def find_or_create_user!(auth, source: nil)
         identity = Identity.find_by(provider: auth.provider, uid: auth.uid.to_s)
         return identity.user if identity
 
@@ -17,7 +17,7 @@ module RecordingStudioUser
 
         raise_if_account_creation_disabled!
 
-        create_user_from_auth!(auth, email)
+        create_user_from_auth!(auth, email, source: source).tap { yield if block_given? }
       end
 
       def connect!(user, auth)
@@ -102,7 +102,7 @@ module RecordingStudioUser
         !user.respond_to?(:confirmed?) || user.confirmed?
       end
 
-      def create_user_from_auth!(auth, email)
+      def create_user_from_auth!(auth, email, source: nil)
         password = Devise.friendly_token[0, 32]
         first_name, last_name = name_parts_from(auth)
 
@@ -112,7 +112,7 @@ module RecordingStudioUser
             first_name: first_name, last_name: last_name, time_zone: "UTC", confirm: true
           )
           create_identity!(user, auth)
-          clear_oauth_password!(user).tap { RegistrationCompleted.emit!(user_id: user.id, method: :oauth) }
+          clear_oauth_password!(user).tap { RegistrationCompleted.emit!(user_id: user.id, method: :oauth, source:) }
         end
       end
 
