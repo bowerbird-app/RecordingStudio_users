@@ -53,7 +53,13 @@ RecordingStudioUser.configure do |config|
   # sign-in link all use it, including finishing sign-up.
   # config.after_auth_path = ->(controller:, user:) { "/welcome" }
   # A signed link for email. It starts a code sign-in for that person.
-  # RecordingStudioUser.code_sign_in_url(user: user, return_to: "/notifications/settings")
+  # title and reason are i18n keys, signed into the link.
+  # RecordingStudioUser.code_sign_in_url(
+  #   user: user,
+  #   return_to: "/notifications/settings",
+  #   title: "notifications.mail.settings_title",
+  #   reason: "notifications.mail.settings_reason"
+  # )
   # OmniAuth. Leave this empty: Continue-with buttons appear only for providers
   # whose secrets are present in Rails credentials (`omniauth:`). Commented or
   # blank credential keys stay hidden. Do not use ENV or OmniAuth test mode in

@@ -62,8 +62,26 @@ module RecordingStudioUser
         if issued.respond_to?(:throttled?) && issued.throttled?
           redirect_to otp_session_verify_path, alert: I18n.t("recording_studio_user.auth.wait_for_code")
         else
-          redirect_to otp_session_verify_path, notice: generic_login_notice
+          redirect_to otp_session_verify_path
         end
+      end
+
+      def prepare_code_sign_in_screen
+        @masked_email = OtpCodeForm.mask(pending_auth_email)
+        claim = CodeSignInToken.read(session[SESSION_KEY])
+        return unless claim
+
+        @code_sign_in_title = CodeSignInCopy.text(claim.title, fallback: code_sign_in_title_fallback)
+        @code_sign_in_subtitle = code_sign_in_sent_line
+        @code_sign_in_reason = CodeSignInCopy.text(claim.reason, fallback: nil)
+      end
+
+      def code_sign_in_title_fallback
+        I18n.t("recording_studio_user.sessions.enter_code")
+      end
+
+      def code_sign_in_sent_line
+        I18n.t("recording_studio_user.auth.code_sign_in.sent_code", email: @masked_email)
       end
 
       def redirect_current_code_sign_in!(outcome)

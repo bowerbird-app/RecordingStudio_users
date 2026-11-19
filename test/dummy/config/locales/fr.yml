@@ -2,6 +2,10 @@
 # English defaults; other languages belong to the host. This file keeps the
 # dummy Language switch (?locale=fr, saved profile locale) working.
 fr:
+  notifications:
+    mail:
+      settings_title: Réglages des notifications
+      settings_reason: Choisissez les e-mails que vous recevez de %{product}.
   recording_studio_user:
     profile:
       unnamed_user: Utilisateur
@@ -78,6 +82,7 @@ fr:
         sign_out_first: Déconnectez-vous d'abord
         other_account: Ce lien est pour un autre compte.
         sign_out_and_continue: Se déconnecter et continuer
+        sent_code: "Nous venons d'envoyer un code à %{email}"
       sign_in_link:
         title: Connexion
         body: "Utilisez ce lien pour vous connecter. Il fonctionne une fois et expire dans %{minutes} minutes. %{url}"

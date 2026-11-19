@@ -47,7 +47,9 @@ class CodeSignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_response :success
-    assert_includes response.body, masked(user.email)
+    assert_includes response.body, sent_line(user.email)
+    assert_includes response.body, I18n.t("recording_studio_user.sessions.enter_code")
+    refute_includes response.body, eligibility_notice
     refute_includes response.body, user.email
     assert_equal "login", session[:otp_purpose]
     session[:planted] = planted
@@ -57,6 +59,79 @@ class CodeSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/notifications/settings"
     assert_nil session[:planted]
     assert_equal user.id, session["warden.user.user.key"]&.dig(0, 0)
+  end
+
+  test "title and reason from the token render on the code screen" do
+    user = password_user("copy")
+    path = code_link(
+      user,
+      "/notifications/settings",
+      title: "notifications.mail.settings_title",
+      reason: { key: "notifications.mail.settings_reason", product: "Notifications" }
+    )
+
+    refute_includes path, "settings_title"
+    refute_includes path, "settings_reason"
+    open_code_screen(path)
+
+    assert_includes response.body, "Notification settings"
+    assert_includes response.body, "Choose which emails you get from Notifications."
+    assert_includes response.body, sent_line(user.email)
+    refute_includes response.body, eligibility_notice
+    refute_includes response.body, "notifications.mail"
+    assert_select "button", text: I18n.t("recording_studio_user.sessions.resend_code")
+    assert_select "button", text: I18n.t("recording_studio_user.auth.sign_in")
+  end
+
+  test "a missing title or reason falls back without showing the key" do
+    user = password_user("missing-copy")
+    open_code_screen(code_link(
+      user,
+      "/notifications/settings",
+      title: "notifications.mail.missing_title",
+      reason: "notifications.mail.missing_reason"
+    ))
+
+    assert_includes response.body, I18n.t("recording_studio_user.sessions.enter_code")
+    assert_includes response.body, sent_line(user.email)
+    refute_includes response.body, "missing_title"
+    refute_includes response.body, "missing_reason"
+    refute_includes response.body, "translation missing"
+    refute_includes response.body, eligibility_notice
+  end
+
+  test "changing the title inside the token voids it" do
+    user = password_user("tampered-copy")
+    token = RecordingStudioUser::CodeSignInToken.issue(
+      user: user,
+      return_to: "/notifications/settings",
+      title: "notifications.mail.settings_title",
+      reason: "notifications.mail.settings_reason"
+    )
+
+    assert_rejected rewrite_token(token, "settings_title", "settings_other")
+  end
+
+  test "a title that is not an i18n key is rejected" do
+    user = password_user("literal")
+
+    assert_raises(ArgumentError) do
+      code_link(user, "/notifications/settings", title: "Enter your code")
+    end
+  end
+
+  test "a normal code sign-in still shows the eligibility notice" do
+    user = password_user("plain")
+
+    post "/users/sign_in/otp", params: { user: { email: user.email } }
+
+    assert_redirected_to verify_user_session_path
+    assert_equal eligibility_notice, flash[:notice]
+    follow_redirect!
+
+    assert_includes response.body, eligibility_notice
+    assert_includes response.body, I18n.t("recording_studio_user.sessions.enter_code")
+    refute_includes response.body, sent_line(user.email)
   end
 
   test "code sign in url is a host link and the path variant omits the host" do
@@ -282,8 +357,40 @@ class CodeSignInTest < ActionDispatch::IntegrationTest
     user
   end
 
-  def code_link(user, return_to)
-    RecordingStudioUser.code_sign_in_path(user: user, return_to: return_to)
+  def code_link(user, return_to, **copy)
+    RecordingStudioUser.code_sign_in_path(user: user, return_to: return_to, **copy)
+  end
+
+  def open_code_screen(path)
+    get path
+    assert_token_left_the_url
+    follow_redirect!
+    assert_redirected_to verify_user_session_path
+    assert_nil flash[:notice]
+    follow_redirect!
+    assert_response :success
+  end
+
+  def sent_line(email)
+    I18n.t("recording_studio_user.auth.code_sign_in.sent_code", email: masked(email))
+  end
+
+  def eligibility_notice
+    I18n.t("recording_studio_user.auth.eligible_code_sent")
+  end
+
+  def rewrite_token(token, from, to)
+    raise ArgumentError, "replacement length must match" unless from.bytesize == to.bytesize
+
+    verifier = Rails.application.message_verifier(RecordingStudioUser::CodeSignInToken::PURPOSE)
+    digest_length = verifier.send(:digest_length_in_hex)
+    encoded = token[0, token.length - digest_length - 2]
+    digest = token[-digest_length, digest_length]
+    raw = Base64.urlsafe_decode64(encoded)
+    flipped = raw.sub(from, to)
+    raise ArgumentError, "signed text was not found" if flipped == raw
+
+    "#{Base64.urlsafe_encode64(flipped, padding: false)}--#{digest}"
   end
 
   def token_from(path)

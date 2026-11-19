@@ -4,18 +4,22 @@
 
 Bump to `0.40.0`. No Users migration. No host gem pin changes. Password sign-in, OAuth, the existing code screens, and the paused-code sign-in link stay as they are. A successful code still rotates the session.
 
-`RecordingStudioUser.code_sign_in_url(user:, return_to:, expires_in: 30.days)` returns a link for one confirmed person. `code_sign_in_path` is the same link without a host. Put it in mail. The link does not sign anyone in. It starts the usual login code for that person.
+`RecordingStudioUser.code_sign_in_url(user:, return_to:, expires_in: 30.days, title: nil, reason: nil)` returns a link for one confirmed person. `code_sign_in_path` is the same link without a host. Put it in mail. The link does not sign anyone in. It starts the usual login code for that person.
 
 ```ruby
 RecordingStudioUser.code_sign_in_url(
   user: user,
-  return_to: "/notifications/settings"
+  return_to: "/notifications/settings",
+  title: "notifications.mail.settings_title",
+  reason: "notifications.mail.settings_reason"
 )
 ```
 
+`title` and `reason` are i18n keys stored in the signed message. On this path the code screen uses the translated title, then "We just sent a code to" the masked address, then the translated reason. A missing key uses "Enter your code" and leaves the reason off. It does not render the key. The normal sign-in screen still says a code was sent if an eligible account exists.
+
 `return_to` must be a relative path on this host. An absolute or external value is dropped. After a correct code, `config.after_auth_path` still wins. When that setting is nil, the person lands on `return_to` or the host root.
 
-The signed message uses purpose `recording_studio_user/code_sign_in`. It is bound to the user id, the normalized email, the safe return path, and `authenticatable_salt` when the user has one. Changing the email or the password voids older links. There is no new table.
+The signed message uses purpose `recording_studio_user/code_sign_in`. It is bound to the user id, the normalized email, the safe return path, `authenticatable_salt` when the user has one, and the `title` and `reason` keys. Changing the email, the password, or those keys voids older links. There is no new table.
 
 Set the mailer host in `default_url_options` before you generate the URL. Login codes must be on. A person who is not confirmed, or a host with login codes off, is sent to the normal sign-in screen. The notice does not say whether the account exists.
 

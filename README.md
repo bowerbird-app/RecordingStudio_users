@@ -211,11 +211,13 @@ A sibling gem can put a link in an email. The link names one existing person and
 RecordingStudioUser.code_sign_in_url(
   user: user,
   return_to: "/notifications/settings",
+  title: "notifications.mail.settings_title",
+  reason: "notifications.mail.settings_reason",
   expires_in: 30.days
 )
 ```
 
-`code_sign_in_path` is the same link without a host. `expires_in` defaults to 30 days. Set the mailer host the same way you do for other mail, because the URL helper reads `default_url_options`.
+`title` and `reason` are optional i18n keys, not sentences. They are signed into the token. A hash adds interpolation params: `reason: { key: "notifications.mail.settings_reason", product: "Notifications" }`. A missing translation uses the usual code-screen title and omits the reason. `code_sign_in_path` is the same link without a host. `expires_in` defaults to 30 days. Set the mailer host the same way you do for other mail, because the URL helper reads `default_url_options`.
 
 Notifications can use that URL as the footer link to notification settings:
 
@@ -223,14 +225,16 @@ Notifications can use that URL as the footer link to notification settings:
 def notification_settings_url(user)
   RecordingStudioUser.code_sign_in_url(
     user: user,
-    return_to: "/notifications/settings"
+    return_to: "/notifications/settings",
+    title: "notifications.mail.settings_title",
+    reason: "notifications.mail.settings_reason"
   )
 end
 ```
 
 Messages can pass a conversation path. Support can pass a ticket path. The return path has to be a relative path on this host. `ReturnTo` drops an absolute or external value, and sign-in then uses `config.after_auth_path` or the host root.
 
-The token is a Rails signed message with purpose `recording_studio_user/code_sign_in`. It carries the user id, the normalized email, the safe return path, and the Devise `authenticatable_salt` when the user has one. Changing the email or the password makes older links fail. There is no new column and no migration.
+The token is a Rails signed message with purpose `recording_studio_user/code_sign_in`. It carries the user id, the normalized email, the safe return path, the Devise `authenticatable_salt` when the user has one, and any `title` or `reason` key. Changing the email, the password, or those keys makes older links fail. There is no new column and no migration.
 
 The first request stores the token in the session and redirects to the same path with no token, so the token stays out of the next page's Referer. `code_sign_in_token` is in `filter_parameters`.
 
@@ -239,7 +243,7 @@ What the person sees:
 - The link is invalid, expired, or void. They land on the normal sign-in screen with one notice. The notice does not say whether an account exists.
 - They are already signed in as that person. They go to the return path and no code is sent.
 - They are signed in as someone else. The screen shows the masked address from the link and a button to sign out. Signing out continues into the code sign-in. The account does not switch on its own.
-- They are signed out, the person is confirmed, and login codes are on. The usual login code is emailed. The code screen shows the masked address. A correct code runs the normal sign-in, including session rotation. `config.after_auth_path` still wins over `return_to`.
+- They are signed out, the person is confirmed, and login codes are on. The usual login code is emailed. The code screen title is the translated `title`, or "Enter your code". Under it: "We just sent a code to" the masked address, then the translated `reason` when one was given. That screen does not use the "eligible account" notice. Resend stays "Resend code". A correct code runs the normal sign-in, including session rotation. `config.after_auth_path` still wins over `return_to`. The ordinary sign-in screen still uses the "eligible account" notice.
 - The person is not confirmed, or login codes are off. They get the same sign-in screen as a bad link. No account is created.
 
 This is separate from the one-time sign-in link sent while codes are paused. That link signs the person in when they submit it. This link only chooses who receives a code.

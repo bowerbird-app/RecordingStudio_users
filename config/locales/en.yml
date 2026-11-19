@@ -78,6 +78,7 @@ en:
         sign_out_first: Sign out first
         other_account: This link is for a different account.
         sign_out_and_continue: Sign out and continue
+        sent_code: "We just sent a code to %{email}"
       sign_in_link:
         title: Sign in
         body: "Use this link to sign in. It works once and expires in %{minutes} minutes. %{url}"

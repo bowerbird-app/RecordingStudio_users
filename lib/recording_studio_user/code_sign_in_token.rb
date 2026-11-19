@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 require "active_support/core_ext/numeric/time"
+require "recording_studio_user/code_sign_in_copy"
 
 module RecordingStudioUser
   class CodeSignInToken
     PURPOSE = "recording_studio_user/code_sign_in"
     DEFAULT_EXPIRES_IN = 30.days
 
-    Claim = Data.define(:user_id, :email, :return_to, :salt) do
+    Claim = Data.define(:user_id, :email, :return_to, :salt, :title, :reason) do
       def matches?(user)
         return false if user.blank? || user.id.blank?
         return false unless user.id.to_s == user_id.to_s
@@ -28,13 +29,17 @@ module RecordingStudioUser
     end
 
     class << self
-      def issue(user:, return_to: nil, expires_in: DEFAULT_EXPIRES_IN)
+      def issue(user:, return_to: nil, expires_in: DEFAULT_EXPIRES_IN, title: nil, reason: nil)
         raise ArgumentError, "user is required" if user.blank? || user.id.blank?
 
         email = Services::OtpRateLimiter.normalize_email(user.email)
         raise ArgumentError, "user email is required" if email.blank?
 
-        verifier.generate(payload_for(user, email, return_to), expires_in: expires_in, purpose: PURPOSE)
+        verifier.generate(
+          payload_for(user, email, return_to, title, reason),
+          expires_in: expires_in,
+          purpose: PURPOSE
+        )
       end
 
       def read(token)
@@ -64,30 +69,44 @@ module RecordingStudioUser
 
       private
 
-      def link(helper, user:, return_to: nil, expires_in: DEFAULT_EXPIRES_IN)
-        token = issue(user:, return_to:, expires_in:)
+      def link(helper, user:, return_to: nil, expires_in: DEFAULT_EXPIRES_IN, title: nil, reason: nil)
+        token = issue(user:, return_to:, expires_in:, title:, reason:)
         options = helper.to_s.end_with?("_url") ? url_options : {}
         Rails.application.routes.url_helpers.public_send(helper, **options, code_sign_in_token: token)
       end
 
-      def payload_for(user, email, return_to)
+      def payload_for(user, email, return_to, title, reason)
         {
           "user_id" => user.id,
           "email" => email,
           "return_to" => ReturnTo.accept(return_to),
-          "salt" => salt_for(user)
-        }
+          "salt" => salt_for(user),
+          "title" => CodeSignInCopy.pack(title),
+          "reason" => CodeSignInCopy.pack(reason)
+        }.compact
       end
 
       def claim_from(payload)
-        data = payload.respond_to?(:stringify_keys) ? payload.stringify_keys : payload
-        return unless data.is_a?(Hash) && data["user_id"].present? && data["email"].present?
+        data = string_hash(payload)
+        return unless data && data["user_id"].present? && data["email"].present?
 
+        copies = CodeSignInCopy.pair(data["title"], data["reason"])
+        claim_for(data, copies) if copies
+      end
+
+      def string_hash(payload)
+        data = payload.respond_to?(:stringify_keys) ? payload.stringify_keys : payload
+        data if data.is_a?(Hash)
+      end
+
+      def claim_for(data, copies)
         Claim.new(
           user_id: data["user_id"],
           email: Services::OtpRateLimiter.normalize_email(data["email"]),
           return_to: ReturnTo.accept(data["return_to"]),
-          salt: data["salt"].to_s
+          salt: data["salt"].to_s,
+          title: copies[0],
+          reason: copies[1]
         )
       end
 

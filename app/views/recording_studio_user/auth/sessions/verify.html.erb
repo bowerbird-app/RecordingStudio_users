@@ -1,10 +1,15 @@
 <%= render layout: "recording_studio_user/auth/shell",
            locals: {
-             title: t("recording_studio_user.sessions.enter_code"),
-             subtitle: @masked_email
+             title: @code_sign_in_title.presence || t("recording_studio_user.sessions.enter_code"),
+             subtitle: @code_sign_in_subtitle.presence || @masked_email
            } do %>
   <%= form_with url: otp_session_verify_path, method: :post do %>
     <div class="space-y-4">
+      <% if @code_sign_in_reason.present? %>
+        <%= render FlatPack::Content::Component.new(class: "text-center") do %>
+          <%= @code_sign_in_reason %>
+        <% end %>
+      <% end %>
       <%= render FlatPack::TextInput::Component.new(
         name: "code",
         label: t("recording_studio_user.sessions.sign_in_code"),

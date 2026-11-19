@@ -55,7 +55,7 @@ module RecordingStudioUser
       end
 
       def verify
-        @masked_email = RecordingStudioUser::OtpCodeForm.mask(pending_auth_email)
+        prepare_code_sign_in_screen
         render :verify
       end
 
@@ -117,6 +117,7 @@ module RecordingStudioUser
       end
 
       def render_verify_failure(result)
+        prepare_code_sign_in_screen
         flash.now[:alert] = if result
                               verify_failure_message(result.reason)
                             else
