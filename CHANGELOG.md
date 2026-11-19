@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-11-19
+
+### Added
+
+- `complete_email_proof!` takes optional `session:`. When the call confirms an account that was not confirmed yet, it emits `registration.completed.recording_studio_user` with `method: :otp`. A session that holds a signup source adds `source:` to that payload and then clears the session key. `otp.email_proof_completed.recording_studio_user` still fires. An already confirmed account does not emit `registration.completed`.
+
+### Upgrade notes
+
+- Bump to `0.39.0`. No Users migration.
+- `after_registration` hooks now run for sibling-gem email-proof signups. A hook written as `->(user:, method:)` receives `method: :otp`. Declare `source:` to read a signup source. Pass `session:` into `complete_email_proof!` when that source should be on the event.
+- Sign-in, session rotation, password confirmation, and `Directory#create_user!` are unchanged. A call without `session:` still emits `{ user_id:, method: :otp }` and does not read or clear a session.
+
 ## [0.38.0] - 2026-11-19
 
 ### Added

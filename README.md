@@ -279,7 +279,7 @@ An `after_registration` hook written as `->(user:, method:)` keeps working. Decl
 
 The session entry is removed when the event is emitted. A later registration in that session does not see it. The hash is not saved on the user and not saved on the one-time code. Sign-in does not emit it.
 
-A host that calls `complete_registration!` itself must pass `session:`. That keyword is how the stored source reaches the event. The built-in OTP screens already pass it.
+A host that calls `complete_registration!` or `complete_email_proof!` itself must pass `session:` when the stored source should reach the event. The built-in OTP screens already pass it to `complete_registration!`.
 
 A recording id inside `source` is a hint. Check access with Recording Studio Accessible before you show that recording or pick a screen from it. This gem does not grant access.
 
@@ -381,8 +381,9 @@ end
 | Password sign-up | When the email code confirms the new account | `:password` |
 | OAuth | Only when `create_user_from_auth!` creates a **new** user | `:oauth` |
 | OTP registration | Alongside the existing OTP event below | `:otp` |
+| Email proof | When `complete_email_proof!` confirms an account that was not confirmed yet. Pass `session:` to include a stored source. | `:otp` |
 
-It does **not** fire for password or OAuth login, for linking an OAuth identity
+It does **not** fire for password or OAuth login, for `complete_email_proof!` on an already confirmed account, for linking an OAuth identity
 to an existing user, or when password sign-up fails validation.
 
 OTP registration still emits the legacy event unchanged:
@@ -570,7 +571,8 @@ verified.user
 RecordingStudioUser.complete_email_proof!(
   user: verified.user,
   challenge_id: issued.challenge_id,
-  profile_attributes: { first_name: "Ada", last_name: "Lovelace" }
+  profile_attributes: { first_name: "Ada", last_name: "Lovelace" },
+  session: session
 )
 
 RecordingStudioUser.resend_otp!(
@@ -589,7 +591,7 @@ Wrong codes are counted per account across registration, login, and confirmation
 
 The host needs a case-insensitive unique index on `users.email` (a unique index on `LOWER(email)` is the usual shape). `create_unconfirmed_user!` rescues `ActiveRecord::RecordNotUnique` and returns the row that won the race. Open challenges — not consumed and not revoked — have a partial unique index on `recording_studio_user_otp_challenges` `(user_id, purpose)`.
 
-`complete_email_proof!` confirms the account after a successful verify. It does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. The shared email bucket uses `otp_resend_cooldown`. Resend's IP and session keys use `otp_resend_cooldown`.
+`complete_email_proof!` confirms the account after a successful verify. When that call confirms an account that was not confirmed yet, it emits `registration.completed.recording_studio_user` with `method: :otp` after the transaction commits. `after_registration` hooks run for that confirmation. Pass `session:` to copy a stored signup source onto the event and then clear the session key. Without `session:`, the event still fires and the payload is `{ user_id:, method: :otp }`. The call does not read or clear a session it was not given. An already confirmed account is a sign-in, and that call does not emit `registration.completed`. `otp.email_proof_completed.recording_studio_user` still fires. The call does not change `registered_with` or the password. A new profile stores the submitted names. A one-word name has no surname, and no time zone is set. An existing profile is left alone. Raise `ArgumentError` when the challenge was not verified first. The shared email bucket uses `otp_resend_cooldown`. Resend's IP and session keys use `otp_resend_cooldown`.
 
 `complete_registration!` is the Users sign-up path. It still requires an OTP account and still fills a default surname and UTC.
 

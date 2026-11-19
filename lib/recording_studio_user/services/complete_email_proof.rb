@@ -7,10 +7,11 @@ module RecordingStudioUser
         new(...).call
       end
 
-      def initialize(user:, challenge_id:, profile_attributes: {})
+      def initialize(user:, challenge_id:, profile_attributes: {}, session: nil)
         @user = user
         @challenge_id = challenge_id
         @profile_attributes = (profile_attributes || {}).to_h.symbolize_keys
+        @session = session
         @started_confirmed = false
       end
 
@@ -74,6 +75,15 @@ module RecordingStudioUser
           user_id: @user.id,
           challenge_id: challenge.id
         )
+        emit_registration_completed!
+      end
+
+      def emit_registration_completed!
+        return if @started_confirmed
+
+        source = @session.nil? ? nil : SignupSource.read(@session)
+        RegistrationCompleted.emit!(user_id: @user.id, method: :otp, source: source)
+        SignupSource.clear!(@session) unless @session.nil?
       end
 
       def roll_back_confirmation!

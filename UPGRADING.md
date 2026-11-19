@@ -1,5 +1,13 @@
 # Upgrading
 
+## 0.39.0
+
+Bump to `0.39.0`. No Users migration. Sign-in, session rotation, password confirmation, and stored user rows stay the same.
+
+`complete_email_proof!` now emits `registration.completed.recording_studio_user` with `method: :otp` when it confirms an account that was not confirmed yet. `after_registration` hooks run for that signup, including sibling-gem email-proof signups. A hook written as `->(user:, method:)` still runs. Declare `source:` to read a signup source.
+
+Pass `session:` so a source stored with `remember_signup_source!` or `start_otp_challenge!` is copied onto the event and then removed from the session. Without `session:`, the payload is `{ user_id:, method: :otp }` and no session is read or cleared. An already confirmed account does not emit the event. `otp.email_proof_completed.recording_studio_user` still fires.
+
 ## 0.38.0
 
 Bump to `0.38.0`. No Users migration. Sign-in and stored user rows stay the same.
