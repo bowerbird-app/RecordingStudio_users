@@ -203,6 +203,47 @@ window.addEventListener("message", (event) => {
 
 An embed on another origin adds that origin to `config.popup_opener_origins` and checks `event.origin` against the same list. OTP, account creation, signup terms, confirmations, and rate limits stay on their host flags. `return_to` does not turn them on.
 
+## Email a link that starts a code sign-in
+
+A sibling gem can put a link in an email. The link names one existing person and a path on this host. Opening it starts the usual code sign-in for that person. The link does not sign anyone in, and it does not create an account.
+
+```ruby
+RecordingStudioUser.code_sign_in_url(
+  user: user,
+  return_to: "/notifications/settings",
+  expires_in: 30.days
+)
+```
+
+`code_sign_in_path` is the same link without a host. `expires_in` defaults to 30 days. Set the mailer host the same way you do for other mail, because the URL helper reads `default_url_options`.
+
+Notifications can use that URL as the footer link to notification settings:
+
+```ruby
+def notification_settings_url(user)
+  RecordingStudioUser.code_sign_in_url(
+    user: user,
+    return_to: "/notifications/settings"
+  )
+end
+```
+
+Messages can pass a conversation path. Support can pass a ticket path. The return path has to be a relative path on this host. `ReturnTo` drops an absolute or external value, and sign-in then uses `config.after_auth_path` or the host root.
+
+The token is a Rails signed message with purpose `recording_studio_user/code_sign_in`. It carries the user id, the normalized email, the safe return path, and the Devise `authenticatable_salt` when the user has one. Changing the email or the password makes older links fail. There is no new column and no migration.
+
+The first request stores the token in the session and redirects to the same path with no token, so the token stays out of the next page's Referer. `code_sign_in_token` is in `filter_parameters`.
+
+What the person sees:
+
+- The link is invalid, expired, or void. They land on the normal sign-in screen with one notice. The notice does not say whether an account exists.
+- They are already signed in as that person. They go to the return path and no code is sent.
+- They are signed in as someone else. The screen shows the masked address from the link and a button to sign out. Signing out continues into the code sign-in. The account does not switch on its own.
+- They are signed out, the person is confirmed, and login codes are on. The usual login code is emailed. The code screen shows the masked address. A correct code runs the normal sign-in, including session rotation. `config.after_auth_path` still wins over `return_to`.
+- The person is not confirmed, or login codes are off. They get the same sign-in screen as a bad link. No account is created.
+
+This is separate from the one-time sign-in link sent while codes are paused. That link signs the person in when they submit it. This link only chooses who receives a code.
+
 ## Land on a host path after sign-in or sign-up
 
 `config.after_auth_path` (default `nil`) is a callable. Password, OAuth, one-time code, and the sign-in link all ask it where to go, for a sign-in and for finishing a sign-up. A path is the redirect. `nil`, or a callable that returns `nil`, keeps the stored `return_to` or the host root.

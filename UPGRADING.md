@@ -1,5 +1,24 @@
 # Upgrading
 
+## 0.40.0
+
+Bump to `0.40.0`. No Users migration. No host gem pin changes. Password sign-in, OAuth, the existing code screens, and the paused-code sign-in link stay as they are. A successful code still rotates the session.
+
+`RecordingStudioUser.code_sign_in_url(user:, return_to:, expires_in: 30.days)` returns a link for one confirmed person. `code_sign_in_path` is the same link without a host. Put it in mail. The link does not sign anyone in. It starts the usual login code for that person.
+
+```ruby
+RecordingStudioUser.code_sign_in_url(
+  user: user,
+  return_to: "/notifications/settings"
+)
+```
+
+`return_to` must be a relative path on this host. An absolute or external value is dropped. After a correct code, `config.after_auth_path` still wins. When that setting is nil, the person lands on `return_to` or the host root.
+
+The signed message uses purpose `recording_studio_user/code_sign_in`. It is bound to the user id, the normalized email, the safe return path, and `authenticatable_salt` when the user has one. Changing the email or the password voids older links. There is no new table.
+
+Set the mailer host in `default_url_options` before you generate the URL. Login codes must be on. A person who is not confirmed, or a host with login codes off, is sent to the normal sign-in screen. The notice does not say whether the account exists.
+
 ## 0.39.0
 
 Bump to `0.39.0`. No Users migration. Sign-in, session rotation, password confirmation, and stored user rows stay the same.

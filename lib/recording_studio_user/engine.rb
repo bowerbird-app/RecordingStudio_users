@@ -68,7 +68,7 @@ module RecordingStudioUser
     end
 
     initializer "recording_studio_user.filter_parameters" do |app|
-      app.config.filter_parameters += %i[otp code login_code sign_in_token]
+      app.config.filter_parameters += %i[otp code login_code sign_in_token code_sign_in_token]
     end
 
     def self.load_view_helpers! = EngineBoot.load_view_helpers!

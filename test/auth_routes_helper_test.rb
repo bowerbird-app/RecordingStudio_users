@@ -15,6 +15,8 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "registrations#new"
     assert_includes source, "registrations#continue"
     assert_includes source, "sessions#otp"
+    assert_includes source, "sessions#code_sign_in"
+    assert_includes source, "draw_recording_studio_user_code_sign_in_routes"
     assert_includes source, "registrations#otp"
     assert_includes source, "recording_studio_user_otp_registration_routes?"
     assert_includes source, "recording_studio_user_otp_login_routes?"
@@ -40,6 +42,8 @@ class AuthRoutesHelperTest < Minitest::Test
     assert_includes source, "resources :otp_codes, only: :show"
     assert_includes source, "otp_challenges#create"
     assert_includes source, "direct_otp_routes?"
+    assert_includes source, 'get "sign_in/code"'
+    assert_includes source, "sessions#code_sign_in"
   end
 
   def test_auth_route_helpers_prefer_host_paths
@@ -95,6 +99,7 @@ class AuthRoutesHelperTest < Minitest::Test
       sessions/password
       sessions/otp
       sessions/verify
+      sessions/code_sign_in
       registrations/new
       registrations/password
       registrations/otp

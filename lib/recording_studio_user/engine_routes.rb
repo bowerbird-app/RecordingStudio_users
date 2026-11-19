@@ -78,6 +78,8 @@ module RecordingStudioUser
       mapper.post "sign_in", to: "sessions#continue"
       mapper.get "sign_in/password", to: "sessions#password", as: :sign_in_password
       mapper.post "sign_in/password", to: "sessions#create_password"
+      mapper.get "sign_in/code", to: "sessions#code_sign_in", as: :code_sign_in
+      mapper.post "sign_in/code", to: "sessions#leave_code_sign_in"
       draw_sign_in_code(mapper)
       draw_session_otp(mapper)
     end
