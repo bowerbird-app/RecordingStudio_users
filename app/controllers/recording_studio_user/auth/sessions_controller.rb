@@ -5,6 +5,7 @@ module RecordingStudioUser
     class SessionsController < BaseController
       include PasswordRateLimit
       include SignInCode
+      include CodeSignIn
 
       before_action :require_otp_login_enabled!,
                     only: %i[otp create_otp verify submit_verify resend sign_in_link submit_sign_in_link]
@@ -54,6 +55,7 @@ module RecordingStudioUser
       end
 
       def verify
+        prepare_code_sign_in_screen
         render :verify
       end
 
@@ -115,6 +117,7 @@ module RecordingStudioUser
       end
 
       def render_verify_failure(result)
+        prepare_code_sign_in_screen
         flash.now[:alert] = if result
                               verify_failure_message(result.reason)
                             else

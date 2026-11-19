@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-11-19
+
+### Added
+
+- `RecordingStudioUser.code_sign_in_url` and `code_sign_in_path` build a signed link other gems can put in email. The link opens the existing code sign-in for that person, with the email already chosen, and a correct code signs them in. `return_to` is a same-site path. Notifications can point the email footer at notification settings. Messages and Support can pass a conversation or ticket path later.
+- The token is a signed message with purpose `recording_studio_user/code_sign_in`. It is bound to the user id, the normalized email, the safe return path, and Devise `authenticatable_salt` when present. An email or password change voids older links. The token does not sign anyone in by itself.
+- `GET /users/sign_in/code` stores the token in the session and redirects to the same path without it. A bad, expired, or void link goes to the normal sign-in screen. The same person, already signed in, goes to `return_to` and skips the code. A different signed-in person sees the masked address and can sign out to continue. An unconfirmed person, or login codes that are off, gets the sign-in screen. No account is created.
+- `code_sign_in_token` is filtered from logs.
+- `code_sign_in_url` and `code_sign_in_path` take optional `title:` and `reason:` i18n keys. The keys are signed into the token. On that path the code screen shows the translated title (or "Enter your code"), "We just sent a code to" the masked address, and the translated reason when the key exists. A missing key falls back and is not shown raw. The "eligible account" notice stays on the normal sign-in screen.
+
+### Upgrade notes
+
+- Bump to `0.40.0`. No Users migration. No host gem pin changes.
+- Existing password, OAuth, code, and paused-code sign-in links behave as before. Session rotation on a successful code is unchanged.
+- Call `code_sign_in_url` from mail when a gem should land a specific person on a same-site path after a code. Pass `title:` and `reason:` as i18n keys when that screen should name the job. Set the mailer host in `default_url_options`, as with other mail. Login codes must be enabled or the link falls back to the sign-in screen. Normal sign-in copy is unchanged.
+
 ## [0.39.0] - 2026-11-19
 
 ### Added

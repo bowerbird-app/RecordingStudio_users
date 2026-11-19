@@ -74,9 +74,15 @@ module ActionDispatch
         get "sign_in", to: "sessions#new", as: :"new_#{singular}_session"
         post "sign_in", to: "sessions#continue"
         draw_recording_studio_user_password_session_routes(singular)
+        draw_recording_studio_user_code_sign_in_routes(singular)
         return unless recording_studio_user_otp_login_routes?
 
         draw_recording_studio_user_otp_session_routes(singular)
+      end
+
+      def draw_recording_studio_user_code_sign_in_routes(singular)
+        get "sign_in/code", to: "sessions#code_sign_in", as: :"#{singular}_code_sign_in"
+        post "sign_in/code", to: "sessions#leave_code_sign_in"
       end
 
       def draw_recording_studio_user_otp_session_routes(singular)

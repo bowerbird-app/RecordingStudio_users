@@ -1,0 +1,21 @@
+<%= render layout: "recording_studio_user/auth/shell",
+           locals: {
+             title: t("recording_studio_user.auth.code_sign_in.sign_out_first"),
+             subtitle: @masked_email
+           } do %>
+  <%= form_with url: request.path, method: :post do %>
+    <div class="space-y-4">
+      <%= render FlatPack::Content::Component.new(class: "text-center") do %>
+        <%= t("recording_studio_user.auth.code_sign_in.other_account") %>
+      <% end %>
+      <%= render partial: "recording_studio_user/auth/signup_notices" %>
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_user.auth.code_sign_in.sign_out_and_continue"),
+        style: :primary,
+        size: :md,
+        type: "submit",
+        class: "w-full"
+      ) %>
+    </div>
+  <% end %>
+<% end %>
