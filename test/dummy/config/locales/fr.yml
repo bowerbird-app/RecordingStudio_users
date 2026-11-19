@@ -73,6 +73,11 @@ fr:
         password:
           title: Connexion par mot de passe en pause
           body: Trop de tentatives de mot de passe. La connexion par mot de passe de ce compte est en pause pendant un moment. Vous pourrez réessayer plus tard.
+      code_sign_in:
+        invalid: Ce lien n'a pas fonctionné. Connectez-vous pour continuer.
+        sign_out_first: Déconnectez-vous d'abord
+        other_account: Ce lien est pour un autre compte.
+        sign_out_and_continue: Se déconnecter et continuer
       sign_in_link:
         title: Connexion
         body: "Utilisez ce lien pour vous connecter. Il fonctionne une fois et expire dans %{minutes} minutes. %{url}"
