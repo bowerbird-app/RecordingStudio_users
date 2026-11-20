@@ -40,7 +40,10 @@ module RecordingStudioUser
       user = nil
       ActiveRecord::Base.transaction do
         user = create_devise_user!(email, password, confirmation, attributes, confirm: confirm)
-        record_profile!(user, actor: actor, **profile_attrs)
+        # The new user is the writer when the caller does not pass one. OmniAuth
+        # sign-up has no signed-in Current.actor, and Recording Studio 6.5+
+        # rejects that write. An explicit actor (staff API create) is kept.
+        record_profile!(user, actor: actor || user, **profile_attrs)
       end
       user
     end
