@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.42.1] - 2026-11-20
+
+### Fixed
+
+- New OmniAuth accounts can be created when nobody is signed in. `Directory.create_user!` recorded the Profile with no actor, so the write used `Current.actor`. A provider sign-up has no signed-in actor. Recording Studio 6.5 and newer then raises `RecordingStudio::ActorRequired`. When the caller omits `actor:`, `create_user!` now records the Profile as the new user. Password sign-up, one-time-code registration, and email proof already passed that user. A caller that passes `actor:` (the operations API) still uses that actor.
+
+### Upgrade notes
+
+- Bump to `0.42.1`. No Users migration. No host code change for Google or other provider sign-up.
+- `create_user!` without `actor:` records the Profile as the new user. Pass `actor:` when a staff writer should stay on that event. The operations API already does.
+
 ## [0.42.0] - 2026-11-19
 
 ### Added
@@ -1597,7 +1608,8 @@ recording_studio_user_auth_for :users
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.42.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.42.1...HEAD
+[0.42.1]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.42.0...v0.42.1
 [0.42.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.41.0...v0.42.0
 [0.41.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.40.0...v0.41.0
 [0.30.0]: https://github.com/bowerbird-app/RecordingStudio_users/compare/v0.29.0...v0.30.0
