@@ -74,22 +74,22 @@ module RecordingStudioUser
       end
 
       def index_description
-        "Paged users (page, per_page; same order as the Admin users screen). Requires Accessible :view on AdminRoot."
+        "Paged users. page and per_page set offset paging. Same order as the Admin users screen. " \
+          "Requires view access to the admin area."
       end
 
       def create_description
-        "Requires Accessible :edit on AdminRoot. Pass a password to call create_user! " \
-          "(Devise user and People-root Profile). Omit the password when one-time codes are on " \
-          "to call create_unconfirmed_user! and record_profile! for any profile fields. " \
-          "Omit it when they are off and the response is 422."
+        "Pass a password to create a confirmed Devise user and People Profile. " \
+          "Omit the password when one-time codes are on to create an unconfirmed otp user. " \
+          "Omit it when they are off and the response is 422. Requires edit access to the admin area."
       end
 
       def show_description
-        "One user. Requires Accessible :view on AdminRoot. Secrets are never returned."
+        "One user. Secrets are never returned. Requires view access to the admin area."
       end
 
       def update_description
-        "Updates profile fields via record_profile!. Email cannot be changed. Requires Accessible :edit on AdminRoot."
+        "Updates profile fields. Email cannot be changed. Requires edit access to the admin area."
       end
     end
   end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "recording_studio_user/engine_boot"
+require_relative "mcp_copy"
 
 module RecordingStudioUser
   class Engine < ::Rails::Engine
@@ -61,6 +62,10 @@ module RecordingStudioUser
 
     initializer "recording_studio_user.api" do
       config.to_prepare { RecordingStudioUser::Api.register! }
+    end
+
+    initializer "recording_studio_user.mcp", after: "recording_studio_user.api" do
+      config.to_prepare { RecordingStudioUser::McpCopy.register! }
     end
 
     initializer "recording_studio_user.metrics" do

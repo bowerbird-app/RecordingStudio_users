@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-11-25
+
+### Added
+
+- `RecordingStudioUser::McpCopy` registers named MCP tools for `users`, `users_create`, `users_show`, and `users_update` when Recording Studio MCP is loaded. `McpCopy.tool_names(api: :operations)` returns every operations metric tool: `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`.
+- MCP endpoint titles and descriptions live in `McpCopy`. Dummy MCP 0.35 (and later `register_tool`) has no overlay for catalog metric copy, so metric tool wording is the catalog title and description. API OpenAPI stays plain and still names view or edit access to the admin area.
+
+### Security
+
+- Dummy and gem lockfiles pick up `puma` 8.1.3 (`GHSA-4v6q-hvv7-49h9`, `GHSA-rhww-p99c-hgj9`) and `rack-protection` 4.2.2 (`GHSA-pf75-2v58-7mxg`, `GHSA-r29j-38x9-qr26`, `GHSA-vvhm-j6m8-64cw`). Dummy Brakeman is 8.1.1 so CI is not failing on an outdated scanner. Root and dummy `.ruby-version` are `3.3.14` for CVE-2026-132825 (Brakeman Ruby2Shell).
+
+### Upgrade notes
+
+- Bump to `0.43.0`. No Users migration. Sign-in, sessions, OAuth, OTP, and stored user rows stay as they are. Tool names are unchanged.
+- This gem still does not depend on `recording_studio_mcp`. Hosts that skip MCP keep the UI and API only.
+- On a named MCP server, include the metric tools with `include_tools *RecordingStudioUser::McpCopy.tool_names(api: :operations)`. Featured In should replace hardcoded `users-total` and `users-signups` with that splat so `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time` are included too.
+- Named endpoint tools are `users`, `users_create`, `users_show`, and `users_update`. Include those names if the host wants the operations users CRUD tools instead of relying on metric discovery alone.
+
 ## [0.42.1] - 2026-11-20
 
 ### Fixed

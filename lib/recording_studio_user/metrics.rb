@@ -10,6 +10,15 @@ module RecordingStudioUser
     API = :operations
     CONFIRMABLE_COLUMN = "confirmed_at"
     EXPOSE = { api: [API] }.freeze
+    VIEW = "Requires view access to the admin area."
+    TOTAL = "How many user rows exist. #{VIEW}".freeze
+    SIGNUPS = "How many users were created in each period. Pass from, to, and interval. #{VIEW}".freeze
+    TOTAL_OVER_TIME = "How many users existed at the end of each period. Pass from, to, and interval. #{VIEW}".freeze
+    BY_METHOD = "How many users registered with each method. #{VIEW}".freeze
+    CONFIRMATION = "How many users are confirmed versus unconfirmed. #{VIEW}".freeze
+    OTP_FAILED =
+      "OTP challenges locked after otp_max_attempts wrong codes, " \
+      "bucketed by when they were locked (revoked_at). Pass from, to, and interval. #{VIEW}".freeze
 
     module_function
 
@@ -44,14 +53,16 @@ module RecordingStudioUser
     end
 
     def define_core(dsl)
-      dsl.count :total, title: "Total users", expose: EXPOSE
-      dsl.timeseries :signups, title: "Signups over time", field: :created_at, expose: EXPOSE
+      dsl.count :total, title: "Total users", description: TOTAL, expose: EXPOSE
+      dsl.timeseries :signups, title: "Signups over time", description: SIGNUPS, field: :created_at, expose: EXPOSE
       dsl.timeseries :total_over_time,
                      title: "Total users over time",
+                     description: TOTAL_OVER_TIME,
                      field: :created_at,
                      semantics: "population_at_end_of_period",
                      expose: EXPOSE
-      dsl.breakdown :by_method, title: "Signups by method", field: :registered_with, expose: EXPOSE
+      dsl.breakdown :by_method, title: "Signups by method", description: BY_METHOD, field: :registered_with,
+                                expose: EXPOSE
     end
 
     def define_confirmation(dsl, user_class)
@@ -60,6 +71,7 @@ module RecordingStudioUser
       dsl.custom :confirmation,
                  result_type: :breakdown,
                  title: "Confirmed vs unconfirmed",
+                 description: CONFIRMATION,
                  unit: "count",
                  expose: EXPOSE,
                  &confirmation_calculator
@@ -74,8 +86,7 @@ module RecordingStudioUser
     def define_otp_failures(dsl)
       dsl.timeseries :failed_over_time,
                      title: "Failed OTP challenges over time",
-                     description: "OTP challenges locked after otp_max_attempts wrong codes, " \
-                                  "bucketed by when they were locked (revoked_at).",
+                     description: OTP_FAILED,
                      field: :revoked_at,
                      unit: "count",
                      group_by: %i[purpose],

@@ -7,6 +7,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
   WINDOW_ARGUMENTS = %w[end end_at from interval start start_at to].freeze
   PLAIN_METRICS = %w[users-by_method users-confirmation users-total].freeze
   SERIES_METRICS = %w[users-signups users-total_over_time].freeze
+  OTP_SERIES_METRIC = "otp_challenges-failed_over_time"
+  OPERATIONS_METRICS = (PLAIN_METRICS + SERIES_METRICS + [OTP_SERIES_METRIC]).freeze
 
   setup do
     @staff = RecordingStudioUser.create_user!(
@@ -42,8 +44,10 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
 
   test "operations viewer sees one tool per users metric" do
     surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
+    names = RecordingStudioUser::McpCopy.tool_names(api: :operations)
 
-    (PLAIN_METRICS + SERIES_METRICS).each do |name|
+    assert_equal OPERATIONS_METRICS.sort, names.sort
+    names.each do |name|
       assert_includes surface.tool_names, name
       assert_equal true, surface.read_only_tool?(name)
     end
@@ -57,10 +61,40 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
       assert_equal %w[day week month year], argument(surface, name, :interval).fetch(:enum)
     end
 
+    otp_arguments = argument_names(surface, OTP_SERIES_METRIC)
+    WINDOW_ARGUMENTS.each { |argument| assert_includes otp_arguments, argument }
+
     (PLAIN_METRICS + SERIES_METRICS).each do |name|
       properties = argument_names(surface, name)
       refute_includes properties, "group_by"
       refute_includes properties, "filters"
+    end
+  end
+
+  test "MCP metric tools show catalog titles and descriptions" do
+    surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
+    catalog = {
+      "users-total" => "users.total",
+      "users-signups" => "users.signups",
+      "users-total_over_time" => "users.total_over_time",
+      "users-by_method" => "users.by_method",
+      "users-confirmation" => "users.confirmation",
+      "otp_challenges-failed_over_time" => "otp_challenges.failed_over_time"
+    }
+
+    catalog.each do |tool_name, identifier|
+      definition = RecordingStudioMetrics.find(identifier)
+      metric = surface.metric_tool(tool_name)
+      listed = tool_definition(surface, tool_name)
+      assert metric, tool_name
+      assert_equal definition.title, metric.title
+      assert_equal definition.description, metric.description
+      assert_equal definition.title, listed[:title] || listed["title"]
+      shown = listed[:description] || listed["description"]
+      assert_equal definition.description.presence || definition.title, shown
+      assert_includes definition.title, "method" if tool_name == "users-by_method"
+      refute_includes definition.title, "registered_with"
+      assert_includes definition.description, "view access to the admin area"
     end
   end
 
@@ -290,8 +324,12 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     @editor_grant ||= operations_grant(access_point: @admin_root, role: :edit, name: "Users editor")
   end
 
+  def tool_definition(surface, name)
+    surface.tool_definitions.find { |tool| (tool[:name] || tool["name"]).to_s == name }
+  end
+
   def tool_schema(surface, name)
-    surface.tool_definitions.find { |tool| tool.fetch(:name) == name }.fetch(:inputSchema)
+    tool_definition(surface, name).fetch(:inputSchema)
   end
 
   def schema_additional_properties(schema)
