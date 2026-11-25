@@ -22,12 +22,12 @@ class UsersMetricsTest < ActiveSupport::TestCase
     assert_includes identifiers, "users.by_method"
     assert_includes identifiers, "users.confirmation"
 
-    assert_equal "Total users", RecordingStudioMetrics.find("users.total").title
-    assert_equal "Signups over time", RecordingStudioMetrics.find("users.signups").title
-    assert_equal "Total users over time", RecordingStudioMetrics.find("users.total_over_time").title
+    assert_equal "User count", RecordingStudioMetrics.find("users.total").title
+    assert_equal "Signups", RecordingStudioMetrics.find("users.signups").title
+    assert_equal "User count over time", RecordingStudioMetrics.find("users.total_over_time").title
     assert_equal "population_at_end_of_period", RecordingStudioMetrics.find("users.total_over_time").semantics
-    assert_equal "Signups by method", RecordingStudioMetrics.find("users.by_method").title
-    assert_equal "Confirmed vs unconfirmed", RecordingStudioMetrics.find("users.confirmation").title
+    assert_equal "Signups by registered_with", RecordingStudioMetrics.find("users.by_method").title
+    assert_equal "Confirmation counts", RecordingStudioMetrics.find("users.confirmation").title
 
     RecordingStudioMetrics.for_resource(:users).each do |definition|
       assert_equal [:operations], definition.exposed_apis

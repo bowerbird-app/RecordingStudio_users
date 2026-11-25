@@ -44,14 +44,14 @@ module RecordingStudioUser
     end
 
     def define_core(dsl)
-      dsl.count :total, title: "Total users", expose: EXPOSE
-      dsl.timeseries :signups, title: "Signups over time", field: :created_at, expose: EXPOSE
+      dsl.count :total, title: "User count", expose: EXPOSE
+      dsl.timeseries :signups, title: "Signups", field: :created_at, expose: EXPOSE
       dsl.timeseries :total_over_time,
-                     title: "Total users over time",
+                     title: "User count over time",
                      field: :created_at,
                      semantics: "population_at_end_of_period",
                      expose: EXPOSE
-      dsl.breakdown :by_method, title: "Signups by method", field: :registered_with, expose: EXPOSE
+      dsl.breakdown :by_method, title: "Signups by registered_with", field: :registered_with, expose: EXPOSE
     end
 
     def define_confirmation(dsl, user_class)
@@ -59,7 +59,7 @@ module RecordingStudioUser
 
       dsl.custom :confirmation,
                  result_type: :breakdown,
-                 title: "Confirmed vs unconfirmed",
+                 title: "Confirmation counts",
                  unit: "count",
                  expose: EXPOSE,
                  &confirmation_calculator
@@ -73,9 +73,8 @@ module RecordingStudioUser
     # failure timestamp, so they are not counted.
     def define_otp_failures(dsl)
       dsl.timeseries :failed_over_time,
-                     title: "Failed OTP challenges over time",
-                     description: "OTP challenges locked after otp_max_attempts wrong codes, " \
-                                  "bucketed by when they were locked (revoked_at).",
+                     title: "Locked OTP challenges",
+                     description: "Challenges revoked at otp_max_attempts, bucketed by revoked_at.",
                      field: :revoked_at,
                      unit: "count",
                      group_by: %i[purpose],

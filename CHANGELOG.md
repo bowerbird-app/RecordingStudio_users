@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-11-25
+
+### Added
+
+- `RecordingStudioUser::McpCopy` registers named MCP tools for `users`, `users_create`, `users_show`, and `users_update` when Recording Studio MCP is loaded. `McpCopy.tool_names(api: :operations)` returns every operations metric tool: `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`.
+- MCP titles and descriptions live in `McpCopy`. API OpenAPI summaries stay short. Metric catalog titles stay the plain API wording.
+
+### Upgrade notes
+
+- Bump to `0.43.0`. No Users migration. Sign-in, sessions, OAuth, OTP, and stored user rows stay as they are. Tool names are unchanged.
+- This gem still does not depend on `recording_studio_mcp`. Hosts that skip MCP keep the UI and API only.
+- On a named MCP server, include the metric tools with `include_tools *RecordingStudioUser::McpCopy.tool_names(api: :operations)`. Featured In should replace hardcoded `users-total` and `users-signups` with that splat so `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time` are included too.
+- Named endpoint tools are `users`, `users_create`, `users_show`, and `users_update`. Include those names if the host wants the operations users CRUD tools instead of relying on metric discovery alone.
+
 ## [0.42.1] - 2026-11-20
 
 ### Fixed

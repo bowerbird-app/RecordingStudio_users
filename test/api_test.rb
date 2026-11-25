@@ -63,6 +63,7 @@ class ApiTest < Minitest::Test
 
     assert_includes engine, 'initializer "recording_studio_user.api"'
     assert_includes engine, "RecordingStudioUser::Api.register!"
+    assert_includes engine, 'initializer "recording_studio_user.mcp", after: "recording_studio_user.api"'
     assert_includes registration, "RecordingStudioApi.register_endpoint"
     assert_includes registration, "return unless RecordingStudioApi.respond_to?(:register_endpoint)"
     assert_includes registration, "handler: Index"
@@ -123,6 +124,31 @@ class ApiTest < Minitest::Test
     refute index.key?(:required_role)
     refute create.key?(:required_role)
     refute show.key?(:required_role)
+  end
+
+  def test_users_openapi_uses_plain_api_wording
+    api = install_test_recording_studio_api!
+
+    RecordingStudioUser::Api.register!
+
+    index = registration_named(api, :users).fetch(:openapi)
+    create = registration_named(api, :users_create).fetch(:openapi)
+    show = registration_named(api, :users_show).fetch(:openapi)
+    update = registration_named(api, :users_update).fetch(:openapi)
+
+    assert_equal "List users", index.fetch(:summary)
+    assert_equal "Paged users. page and per_page set offset paging. Same order as the Admin users screen.",
+                 index.fetch(:description)
+    assert_equal "Create a user", create.fetch(:summary)
+    assert_includes create.fetch(:description), "Pass a password to create a confirmed Devise user"
+    refute_includes create.fetch(:description), "Accessible"
+    assert_equal "Show a user", show.fetch(:summary)
+    assert_equal "One user. Secrets are never returned.", show.fetch(:description)
+    refute_includes show.fetch(:description), "Accessible"
+    assert_equal "Update a user", update.fetch(:summary)
+    assert_equal "Updates profile fields. Email cannot be changed.", update.fetch(:description)
+    refute_includes update.fetch(:description), "Accessible"
+    refute_includes index.fetch(:description), "Accessible"
   end
 
   def test_create_and_update_register_input_contracts_for_writable_fields

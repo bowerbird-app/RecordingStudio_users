@@ -1,5 +1,21 @@
 # Upgrading
 
+## 0.43.0
+
+Bump to `0.43.0`. No Users migration. Sign-in, sessions, OAuth, one-time codes, and stored user data stay as they are. Tool names stay `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`.
+
+This gem does not depend on MCP. Hosts that skip MCP keep the UI and API only.
+
+On a named MCP operations server, include every Users metric tool:
+
+```ruby
+include_tools *RecordingStudioUser::McpCopy.tool_names(api: :operations)
+```
+
+Featured In currently hardcodes `users-total` and `users-signups`. Switch to that splat so the other four metric tools are included. Named endpoint tools (`users`, `users_create`, `users_show`, `users_update`) register when MCP is loaded. Include those names if the host wants the operations users CRUD tools.
+
+MCP titles and descriptions live in `RecordingStudioUser::McpCopy`. API OpenAPI and metric catalog titles are the plain wording.
+
 ## 0.42.0
 
 Bump to `0.42.0`. No Users migration. Sign-in, sessions, OAuth, one-time codes, and stored user data stay as they are. The default sign-up page still says **Sign up**.

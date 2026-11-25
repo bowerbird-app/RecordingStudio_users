@@ -70,9 +70,9 @@ Send writable fields at the JSON root. Do not wrap them in `attributes`.
 
 ## Metric tools
 
-MCP 0.17 lists one tool for each metric that RecordingStudioMetrics discovery exposes on the caller's API. Users does not add a registry entry for this, and `metrics_for("User", api: :operations)` stays empty.
+`metrics_for("User", api: :operations)` stays empty. Catalog metric tools are named `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`. Hosts include that full list with `include_tools *RecordingStudioUser::McpCopy.tool_names(api: :operations)`. MCP wording lives in `RecordingStudioUser::McpCopy`. Metric catalog titles stay plain.
 
-An operations client that passes `RecordingStudioUser::Api::Access.can_view?` sees `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, and `users-confirmation`.
+An operations client that passes `RecordingStudioUser::Api::Access.can_view?` sees those tools.
 
 `users-signups` and `users-total_over_time` accept `from`, `to`, and `interval` (`day`, `week`, `month`, `year`). MCP also accepts `start` and `start_at` as aliases of `from`, and `end` and `end_at` as aliases of `to`. `users-total`, `users-by_method`, and `users-confirmation` accept none of those arguments. None of these five tools accept `group_by` or `filters`.
 

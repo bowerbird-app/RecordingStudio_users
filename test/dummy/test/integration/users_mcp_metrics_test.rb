@@ -7,6 +7,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
   WINDOW_ARGUMENTS = %w[end end_at from interval start start_at to].freeze
   PLAIN_METRICS = %w[users-by_method users-confirmation users-total].freeze
   SERIES_METRICS = %w[users-signups users-total_over_time].freeze
+  OTP_SERIES_METRIC = "otp_challenges-failed_over_time"
+  OPERATIONS_METRICS = (PLAIN_METRICS + SERIES_METRICS + [OTP_SERIES_METRIC]).freeze
 
   setup do
     @staff = RecordingStudioUser.create_user!(
@@ -42,8 +44,10 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
 
   test "operations viewer sees one tool per users metric" do
     surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
+    names = RecordingStudioUser::McpCopy.tool_names(api: :operations)
 
-    (PLAIN_METRICS + SERIES_METRICS).each do |name|
+    assert_equal OPERATIONS_METRICS.sort, names.sort
+    names.each do |name|
       assert_includes surface.tool_names, name
       assert_equal true, surface.read_only_tool?(name)
     end
@@ -57,10 +61,30 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
       assert_equal %w[day week month year], argument(surface, name, :interval).fetch(:enum)
     end
 
+    otp_arguments = argument_names(surface, OTP_SERIES_METRIC)
+    WINDOW_ARGUMENTS.each { |argument| assert_includes otp_arguments, argument }
+
     (PLAIN_METRICS + SERIES_METRICS).each do |name|
       properties = argument_names(surface, name)
       refute_includes properties, "group_by"
       refute_includes properties, "filters"
+    end
+  end
+
+  test "MCP copy wording is distinct from catalog metric titles" do
+    copy = RecordingStudioUser::McpCopy::Copy
+    catalog = {
+      "users-total" => "users.total",
+      "users-signups" => "users.signups",
+      "users-total_over_time" => "users.total_over_time",
+      "users-by_method" => "users.by_method",
+      "users-confirmation" => "users.confirmation",
+      "otp_challenges-failed_over_time" => "otp_challenges.failed_over_time"
+    }
+
+    catalog.each do |tool_name, identifier|
+      definition = RecordingStudioMetrics.find(identifier)
+      refute_equal copy::TITLES.fetch(tool_name), definition.title, tool_name
     end
   end
 

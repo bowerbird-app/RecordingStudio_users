@@ -24,7 +24,7 @@ class OtpChallengesMetricsTest < ActiveSupport::TestCase
     assert_equal [:purpose], definition.group_by
     assert_equal :site, definition.blast_radius
     assert definition.exposed_to_api?(:operations)
-    assert_equal "Failed OTP challenges over time", definition.title
+    assert_equal "Locked OTP challenges", definition.title
     assert_predicate definition.description, :present?
 
     catalog = definition.catalog_metadata

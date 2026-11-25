@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioUserTest < Minitest::Test
   def test_version_and_engine_exist
-    assert_equal "0.42.1", RecordingStudioUser::VERSION
+    assert_equal "0.43.0", RecordingStudioUser::VERSION
     assert_equal "recording_studio_user/code_sign_in", RecordingStudioUser::CodeSignInToken::PURPOSE
     assert_operator RecordingStudioUser::Services::OpenCodeSignIn, :<, RecordingStudio::Services::BaseService
     assert_kind_of Class, RecordingStudioUser::Engine
