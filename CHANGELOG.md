@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RecordingStudioUser::McpCopy` registers named MCP tools for `users`, `users_create`, `users_show`, and `users_update` when Recording Studio MCP is loaded. `McpCopy.tool_names(api: :operations)` returns every operations metric tool: `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`.
 - MCP titles and descriptions live in `McpCopy`. API OpenAPI summaries stay short. Metric catalog titles stay the plain API wording.
 
+### Security
+
+- Dummy and gem lockfiles pick up `puma` 8.1.3 (`GHSA-4v6q-hvv7-49h9`, `GHSA-rhww-p99c-hgj9`) and `rack-protection` 4.2.2 (`GHSA-pf75-2v58-7mxg`, `GHSA-r29j-38x9-qr26`, `GHSA-vvhm-j6m8-64cw`). Dummy Brakeman is 8.1.1 so CI is not failing on an outdated scanner. Root and dummy `.ruby-version` are `3.3.14` for CVE-2026-132825 (Brakeman Ruby2Shell).
+
 ### Upgrade notes
 
 - Bump to `0.43.0`. No Users migration. Sign-in, sessions, OAuth, OTP, and stored user rows stay as they are. Tool names are unchanged.
