@@ -70,7 +70,7 @@ Send writable fields at the JSON root. Do not wrap them in `attributes`.
 
 ## Metric tools
 
-`metrics_for("User", api: :operations)` stays empty. Catalog metric tools are named `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`. Hosts include that full list with `include_tools *RecordingStudioUser::McpCopy.tool_names(api: :operations)`. MCP wording lives in `RecordingStudioUser::McpCopy`. Metric catalog titles stay plain.
+`metrics_for("User", api: :operations)` stays empty. Catalog metric tools are named `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`. Hosts include that full list with `include_tools *RecordingStudioUser::McpCopy.tool_names(api: :operations)`. Endpoint MCP wording lives in `RecordingStudioUser::McpCopy`. Metric MCP titles and descriptions are the catalog strings. OpenAPI names view or edit access to the admin area.
 
 An operations client that passes `RecordingStudioUser::Api::Access.can_view?` sees those tools.
 

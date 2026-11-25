@@ -14,7 +14,7 @@ include_tools *RecordingStudioUser::McpCopy.tool_names(api: :operations)
 
 Featured In currently hardcodes `users-total` and `users-signups`. Switch to that splat so the other four metric tools are included. Named endpoint tools (`users`, `users_create`, `users_show`, `users_update`) register when MCP is loaded. Include those names if the host wants the operations users CRUD tools.
 
-MCP titles and descriptions live in `RecordingStudioUser::McpCopy`. API OpenAPI and metric catalog titles are the plain wording.
+Endpoint MCP titles and descriptions live in `RecordingStudioUser::McpCopy`. Metric MCP wording is the catalog title and description (MCP has no metric-copy overlay). API OpenAPI stays plain and names view or edit access to the admin area.
 
 ## 0.42.0
 

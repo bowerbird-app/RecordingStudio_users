@@ -74,21 +74,22 @@ module RecordingStudioUser
       end
 
       def index_description
-        "Paged users. page and per_page set offset paging. Same order as the Admin users screen."
+        "Paged users. page and per_page set offset paging. Same order as the Admin users screen. " \
+          "Requires view access to the admin area."
       end
 
       def create_description
         "Pass a password to create a confirmed Devise user and People Profile. " \
           "Omit the password when one-time codes are on to create an unconfirmed otp user. " \
-          "Omit it when they are off and the response is 422."
+          "Omit it when they are off and the response is 422. Requires edit access to the admin area."
       end
 
       def show_description
-        "One user. Secrets are never returned."
+        "One user. Secrets are never returned. Requires view access to the admin area."
       end
 
       def update_description
-        "Updates profile fields. Email cannot be changed."
+        "Updates profile fields. Email cannot be changed. Requires edit access to the admin area."
       end
     end
   end

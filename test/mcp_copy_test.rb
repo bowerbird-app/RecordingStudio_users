@@ -4,7 +4,7 @@ require "test_helper"
 
 class McpCopyTest < Minitest::Test
   FORBIDDEN = [
-    "RecordingStudio::", "Access", "Accessible", ":edit", ":view", "permission", "role",
+    "RecordingStudio::", "Accessible", ":edit", ":view", "permission", "role",
     "AdminRoot", "staff", "operations token"
   ].freeze
 
@@ -68,10 +68,10 @@ class McpCopyTest < Minitest::Test
     names.each { |name| assert_match(/\A[A-Za-z][A-Za-z0-9_.-]*\z/, name) }
   end
 
-  def test_mcp_copy_has_wording_for_every_metric_and_endpoint
+  def test_mcp_copy_has_endpoint_wording_and_access
     copy = RecordingStudioUser::McpCopy::Copy
 
-    (OPERATIONS_METRICS + ENDPOINTS).each do |name|
+    ENDPOINTS.each do |name|
       title = copy::TITLES.fetch(name)
       description = copy::DESCRIPTIONS.fetch(name)
       output = copy::OUTPUTS.fetch(name)
@@ -87,13 +87,24 @@ class McpCopyTest < Minitest::Test
       end
     end
 
+    OPERATIONS_METRICS.each do |name|
+      refute copy::TITLES.key?(name), name
+      refute copy::DESCRIPTIONS.key?(name), name
+      refute copy::OUTPUTS.key?(name), name
+    end
+
     assert_includes copy::DESCRIPTIONS.fetch("users"), "page, per_page"
+    assert_includes copy::DESCRIPTIONS.fetch("users"), "view access to the admin area"
     assert_includes copy::DESCRIPTIONS.fetch("users_create"), "record_profile!"
+    assert_includes copy::DESCRIPTIONS.fetch("users_create"), "edit access to the admin area"
+    assert_includes copy::DESCRIPTIONS.fetch("users_show"), "view access to the admin area"
     assert_includes copy::DESCRIPTIONS.fetch("users_update"), "record_profile!"
+    assert_includes copy::DESCRIPTIONS.fetch("users_update"), "edit access to the admin area"
     registration = File.read(File.expand_path("../lib/recording_studio_user/api/registration.rb", __dir__))
     refute_includes registration, "record_profile!"
     refute_includes registration, "Requires Accessible"
-    assert_includes registration, "Updates profile fields. Email cannot be changed."
+    assert_includes registration, "Requires view access to the admin area"
+    assert_includes registration, "Requires edit access to the admin area"
   end
 
   def test_gemspec_does_not_depend_on_recording_studio_mcp

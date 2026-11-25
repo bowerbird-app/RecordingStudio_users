@@ -71,8 +71,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     end
   end
 
-  test "MCP copy wording is distinct from catalog metric titles" do
-    copy = RecordingStudioUser::McpCopy::Copy
+  test "MCP metric tools show catalog titles and descriptions" do
+    surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
     catalog = {
       "users-total" => "users.total",
       "users-signups" => "users.signups",
@@ -84,7 +84,17 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
 
     catalog.each do |tool_name, identifier|
       definition = RecordingStudioMetrics.find(identifier)
-      refute_equal copy::TITLES.fetch(tool_name), definition.title, tool_name
+      metric = surface.metric_tool(tool_name)
+      listed = tool_definition(surface, tool_name)
+      assert metric, tool_name
+      assert_equal definition.title, metric.title
+      assert_equal definition.description, metric.description
+      assert_equal definition.title, listed[:title] || listed["title"]
+      shown = listed[:description] || listed["description"]
+      assert_equal definition.description.presence || definition.title, shown
+      assert_includes definition.title, "method" if tool_name == "users-by_method"
+      refute_includes definition.title, "registered_with"
+      assert_includes definition.description, "view access to the admin area"
     end
   end
 
@@ -314,8 +324,12 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     @editor_grant ||= operations_grant(access_point: @admin_root, role: :edit, name: "Users editor")
   end
 
+  def tool_definition(surface, name)
+    surface.tool_definitions.find { |tool| (tool[:name] || tool["name"]).to_s == name }
+  end
+
   def tool_schema(surface, name)
-    surface.tool_definitions.find { |tool| tool.fetch(:name) == name }.fetch(:inputSchema)
+    tool_definition(surface, name).fetch(:inputSchema)
   end
 
   def schema_additional_properties(schema)

@@ -137,16 +137,20 @@ class ApiTest < Minitest::Test
     update = registration_named(api, :users_update).fetch(:openapi)
 
     assert_equal "List users", index.fetch(:summary)
-    assert_equal "Paged users. page and per_page set offset paging. Same order as the Admin users screen.",
+    assert_equal "Paged users. page and per_page set offset paging. Same order as the Admin users screen. " \
+                 "Requires view access to the admin area.",
                  index.fetch(:description)
     assert_equal "Create a user", create.fetch(:summary)
     assert_includes create.fetch(:description), "Pass a password to create a confirmed Devise user"
+    assert_includes create.fetch(:description), "Requires edit access to the admin area"
     refute_includes create.fetch(:description), "Accessible"
     assert_equal "Show a user", show.fetch(:summary)
-    assert_equal "One user. Secrets are never returned.", show.fetch(:description)
+    assert_equal "One user. Secrets are never returned. Requires view access to the admin area.",
+                 show.fetch(:description)
     refute_includes show.fetch(:description), "Accessible"
     assert_equal "Update a user", update.fetch(:summary)
-    assert_equal "Updates profile fields. Email cannot be changed.", update.fetch(:description)
+    assert_equal "Updates profile fields. Email cannot be changed. Requires edit access to the admin area.",
+                 update.fetch(:description)
     refute_includes update.fetch(:description), "Accessible"
     refute_includes index.fetch(:description), "Accessible"
   end

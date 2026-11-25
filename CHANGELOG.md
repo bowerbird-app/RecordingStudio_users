@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `RecordingStudioUser::McpCopy` registers named MCP tools for `users`, `users_create`, `users_show`, and `users_update` when Recording Studio MCP is loaded. `McpCopy.tool_names(api: :operations)` returns every operations metric tool: `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`.
-- MCP titles and descriptions live in `McpCopy`. API OpenAPI summaries stay short. Metric catalog titles stay the plain API wording.
+- MCP endpoint titles and descriptions live in `McpCopy`. Dummy MCP 0.35 (and later `register_tool`) has no overlay for catalog metric copy, so metric tool wording is the catalog title and description. API OpenAPI stays plain and still names view or edit access to the admin area.
 
 ### Security
 
