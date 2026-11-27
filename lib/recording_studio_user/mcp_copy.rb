@@ -42,7 +42,12 @@ module RecordingStudioUser
     def tool_names(api: nil)
       case api&.to_sym
       when :public then []
-      else OPERATIONS_METRIC_NAMES
+      else
+        if Metrics.confirmable_column?(RecordingStudioUser.config.user_class)
+          OPERATIONS_METRIC_NAMES
+        else
+          OPERATIONS_METRIC_NAMES - %w[users-confirmation]
+        end
       end
     end
 

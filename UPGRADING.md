@@ -1,5 +1,9 @@
 # Upgrading
 
+## 0.43.2
+
+Bump to `0.43.2`. No Users migration. Authorization is unchanged. `McpCopy.tool_names(api: :operations)` now matches the metrics that actually registered. When the users table or `confirmed_at` is missing, the list omits `users-confirmation`. Hosts that splat that list on an operations MCP server do not need a code change.
+
 ## 0.43.1
 
 Bump to `0.43.1`. No Users migration. Authorization is unchanged (`AdminRoot` `:view` / `:edit` via Accessible). MCP metric and users CRUD tool descriptions no longer mention view or edit access. Use the MCP Access line for that. OpenAPI still names view or edit access to the admin area.

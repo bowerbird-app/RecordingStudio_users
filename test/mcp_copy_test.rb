@@ -59,6 +59,7 @@ class McpCopyTest < Minitest::Test
   end
 
   def test_tool_names_returns_every_operations_metric
+    define_user_class(table_exists: true, column_names: %w[id confirmed_at])
     names = RecordingStudioUser::McpCopy.tool_names(api: :operations)
 
     assert_equal OPERATIONS_METRICS, names
@@ -66,6 +67,8 @@ class McpCopyTest < Minitest::Test
     assert_empty RecordingStudioUser::McpCopy.tool_names(api: :public)
     ENDPOINTS.each { |name| refute_includes names, name }
     names.each { |name| assert_match(/\A[A-Za-z][A-Za-z0-9_.-]*\z/, name) }
+  ensure
+    remove_user_class
   end
 
   def test_mcp_copy_has_endpoint_wording_and_access
@@ -115,6 +118,18 @@ class McpCopyTest < Minitest::Test
     assert_includes engine, 'require_relative "mcp_copy"'
     assert_includes engine, 'initializer "recording_studio_user.mcp", after: "recording_studio_user.api"'
     assert_includes engine, "McpCopy.register!"
+  end
+
+  def define_user_class(table_exists:, column_names: %w[id])
+    remove_user_class
+    Object.const_set(:User, Class.new do
+      define_singleton_method(:table_exists?) { table_exists }
+      define_singleton_method(:column_names) { column_names }
+    end)
+  end
+
+  def remove_user_class
+    Object.send(:remove_const, :User) if Object.const_defined?(:User, false)
   end
 
   class RecordingMcp
