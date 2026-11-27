@@ -32,6 +32,7 @@ class UsersMetricsTest < ActiveSupport::TestCase
     RecordingStudioMetrics.for_resource(:users).each do |definition|
       assert_equal [:operations], definition.exposed_apis
       assert_equal :site, definition.blast_radius
+      refute_includes definition.description, "view access to the admin area"
     end
   end
 

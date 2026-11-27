@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.1] - 2026-11-27
+
+### Changed
+
+- MCP metric and users CRUD tool descriptions no longer say who may call them. Access stays on the MCP Access line and in Accessible (`AdminRoot` `:view` / `:edit`). OpenAPI still names view or edit access to the admin area.
+
+### Upgrade notes
+
+- Bump to `0.43.1`. No Users migration. Authorization is unchanged. Hosts that scrape MCP descriptions for the old access sentence should use the Access line instead.
+
 ## [0.43.0] - 2026-11-25
 
 ### Added

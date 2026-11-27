@@ -3,16 +3,13 @@
 module RecordingStudioUser
   module McpCopy
     module Copy
-      VIEW = "Requires view access to the admin area."
-      EDIT = "Requires edit access to the admin area."
-
-      USERS = "Paged users (page, per_page; same order as the Admin users screen). #{VIEW}".freeze
+      USERS = "Paged users (page, per_page; same order as the Admin users screen)."
       USERS_CREATE =
         "Pass a password to call create_user! (Devise user and People-root Profile). " \
         "Omit the password when one-time codes are on to call create_unconfirmed_user! " \
-        "and record_profile! for any profile fields. Omit it when they are off and the response is 422. #{EDIT}".freeze
-      USERS_SHOW = "One user. Secrets are never returned. #{VIEW}".freeze
-      USERS_UPDATE = "Updates profile fields via record_profile!. Email cannot be changed. #{EDIT}".freeze
+        "and record_profile! for any profile fields. Omit it when they are off and the response is 422."
+      USERS_SHOW = "One user. Secrets are never returned."
+      USERS_UPDATE = "Updates profile fields via record_profile!. Email cannot be changed."
 
       PAGE = "Offset page. Defaults to 1."
       PER_PAGE = "Rows per page. Defaults to 50, max 100."

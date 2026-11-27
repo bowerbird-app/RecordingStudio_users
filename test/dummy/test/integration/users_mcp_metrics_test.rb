@@ -94,7 +94,8 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
       assert_equal definition.description.presence || definition.title, shown
       assert_includes definition.title, "method" if tool_name == "users-by_method"
       refute_includes definition.title, "registered_with"
-      assert_includes definition.description, "view access to the admin area"
+      refute_includes definition.description, "view access to the admin area"
+      refute_includes definition.description, "edit access to the admin area"
     end
   end
 

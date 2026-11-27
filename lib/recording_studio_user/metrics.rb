@@ -10,15 +10,14 @@ module RecordingStudioUser
     API = :operations
     CONFIRMABLE_COLUMN = "confirmed_at"
     EXPOSE = { api: [API] }.freeze
-    VIEW = "Requires view access to the admin area."
-    TOTAL = "How many user rows exist. #{VIEW}".freeze
-    SIGNUPS = "How many users were created in each period. Pass from, to, and interval. #{VIEW}".freeze
-    TOTAL_OVER_TIME = "How many users existed at the end of each period. Pass from, to, and interval. #{VIEW}".freeze
-    BY_METHOD = "How many users registered with each method. #{VIEW}".freeze
-    CONFIRMATION = "How many users are confirmed versus unconfirmed. #{VIEW}".freeze
+    TOTAL = "How many user rows exist."
+    SIGNUPS = "How many users were created in each period. Pass from, to, and interval."
+    TOTAL_OVER_TIME = "How many users existed at the end of each period. Pass from, to, and interval."
+    BY_METHOD = "How many users registered with each method."
+    CONFIRMATION = "How many users are confirmed versus unconfirmed."
     OTP_FAILED =
       "OTP challenges locked after otp_max_attempts wrong codes, " \
-      "bucketed by when they were locked (revoked_at). Pass from, to, and interval. #{VIEW}".freeze
+      "bucketed by when they were locked (revoked_at). Pass from, to, and interval."
 
     module_function
 
