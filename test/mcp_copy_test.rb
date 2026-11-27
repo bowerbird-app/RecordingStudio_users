@@ -85,6 +85,8 @@ class McpCopyTest < Minitest::Test
         refute_includes description, phrase
         refute_includes title, phrase
       end
+      refute_includes description, "view access to the admin area"
+      refute_includes description, "edit access to the admin area"
     end
 
     OPERATIONS_METRICS.each do |name|
@@ -94,12 +96,8 @@ class McpCopyTest < Minitest::Test
     end
 
     assert_includes copy::DESCRIPTIONS.fetch("users"), "page, per_page"
-    assert_includes copy::DESCRIPTIONS.fetch("users"), "view access to the admin area"
     assert_includes copy::DESCRIPTIONS.fetch("users_create"), "record_profile!"
-    assert_includes copy::DESCRIPTIONS.fetch("users_create"), "edit access to the admin area"
-    assert_includes copy::DESCRIPTIONS.fetch("users_show"), "view access to the admin area"
     assert_includes copy::DESCRIPTIONS.fetch("users_update"), "record_profile!"
-    assert_includes copy::DESCRIPTIONS.fetch("users_update"), "edit access to the admin area"
     registration = File.read(File.expand_path("../lib/recording_studio_user/api/registration.rb", __dir__))
     refute_includes registration, "record_profile!"
     refute_includes registration, "Requires Accessible"

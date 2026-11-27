@@ -73,6 +73,24 @@ class MetricsTest < Minitest::Test
     assert_includes totals, :total
   end
 
+  def test_metric_descriptions_omit_admin_area_access
+    descriptions = [
+      RecordingStudioUser::Metrics::TOTAL,
+      RecordingStudioUser::Metrics::SIGNUPS,
+      RecordingStudioUser::Metrics::TOTAL_OVER_TIME,
+      RecordingStudioUser::Metrics::BY_METHOD,
+      RecordingStudioUser::Metrics::CONFIRMATION,
+      RecordingStudioUser::Metrics::OTP_FAILED
+    ]
+
+    descriptions.each do |description|
+      refute_empty description
+      refute_includes description, "view access to the admin area"
+      refute_includes description, "edit access to the admin area"
+    end
+    refute defined?(RecordingStudioUser::Metrics::VIEW)
+  end
+
   def test_access_can_view_is_false_without_actor_or_admin_root
     context = Object.new
     def context.access_grant

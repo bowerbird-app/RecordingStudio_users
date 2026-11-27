@@ -1,5 +1,9 @@
 # Upgrading
 
+## 0.43.1
+
+Bump to `0.43.1`. No Users migration. Authorization is unchanged (`AdminRoot` `:view` / `:edit` via Accessible). MCP metric and users CRUD tool descriptions no longer mention view or edit access. Use the MCP Access line for that. OpenAPI still names view or edit access to the admin area.
+
 ## 0.43.0
 
 Bump to `0.43.0`. No Users migration. Sign-in, sessions, OAuth, one-time codes, and stored user data stay as they are. Tool names stay `users-total`, `users-signups`, `users-total_over_time`, `users-by_method`, `users-confirmation`, and `otp_challenges-failed_over_time`.

@@ -26,6 +26,7 @@ class OtpChallengesMetricsTest < ActiveSupport::TestCase
     assert definition.exposed_to_api?(:operations)
     assert_equal "Failed OTP challenges over time", definition.title
     assert_predicate definition.description, :present?
+    refute_includes definition.description, "view access to the admin area"
 
     catalog = definition.catalog_metadata
     assert_equal 5, catalog[:min_group_size]
