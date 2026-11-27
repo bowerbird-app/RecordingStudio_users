@@ -42,6 +42,33 @@ class UsersMcpMetricsTest < ActiveSupport::TestCase
     assert_empty versions.tally.select { |_version, count| count > 1 }
   end
 
+  test "tool_names matches registered metrics when the users table is missing" do
+    original_class_name = RecordingStudioUser.config.user_class_name
+    missing = Class.new(User) do
+      def self.table_exists?
+        false
+      end
+    end
+    Object.const_set(:UsersTableMissing, missing)
+    RecordingStudioUser.config.user_class_name = "UsersTableMissing"
+    RecordingStudioMetrics.registry.reset!
+    RecordingStudioUser::Metrics.register!
+
+    names = RecordingStudioUser::McpCopy.tool_names(api: :operations)
+    registered = (
+      RecordingStudioMetrics.for_resource(:users) +
+      RecordingStudioMetrics.for_resource(:otp_challenges)
+    ).map { |definition| definition.identifier.tr(".", "-") }
+
+    assert_equal registered.sort, names.sort
+    refute_includes names, "users-confirmation"
+  ensure
+    RecordingStudioUser.config.user_class_name = original_class_name if original_class_name
+    Object.send(:remove_const, :UsersTableMissing) if Object.const_defined?(:UsersTableMissing, false)
+    RecordingStudioMetrics.registry.reset!
+    RecordingStudioUser::Metrics.register!
+  end
+
   test "operations viewer sees one tool per users metric" do
     surface = RecordingStudioMcp::ToolSurface.for(access_grant: @viewer_grant)
     names = RecordingStudioUser::McpCopy.tool_names(api: :operations)

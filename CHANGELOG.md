@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.2] - 2026-11-27
+
+### Fixed
+
+- `McpCopy.tool_names(api: :operations)` omits `users-confirmation` when `Metrics.define_confirmation` does not register it. That happens when the users table is missing (empty test DB, host `tailwindcss:build`) or when `confirmed_at` is absent. Recording Studio MCP 0.52.4 raises `unknown tool users-confirmation` if a host splats the old full list. No other Users metric uses that table-exists guard.
+
+### Upgrade notes
+
+- Bump to `0.43.2`. No Users migration. Authorization is unchanged. Hosts that splat `tool_names` on an operations MCP server pick up the shorter list automatically when confirmation is not registered.
+
 ## [0.43.1] - 2026-11-27
 
 ### Changed
